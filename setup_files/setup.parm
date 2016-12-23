@@ -1,0 +1,164 @@
+#-------------------------------------------------------#
+# National Water Model Calibration Configuration
+# 
+# This configuration file is to be filled out by the
+# user only once before initiating the calibration
+# workflow for specified basins. This file will
+# be used one time to make approprate entries into the
+# database containing necessary information on the 
+# calibration job. 
+#
+# Logan Karsten
+# National Center for Atmospheric Research
+# Research Applications Laboratory
+# karsten@ucar.edu
+# 303-497-2693
+#-------------------------------------------------------#
+
+[logistics]
+# Top level directory where output from model runs, etc
+# will be placed. This is essentially your "job" directory
+# containing all the model output, analysis, etc. 
+outDir = './'
+
+# Specify email to send updates/error messages to.
+# This is OPTIONAL. If not desired, leave blank. 
+email = karsten@ucar.edu
+
+# Specify executable to run. This must be a WRF-Hydro executable. 
+wrfExe = './wrf_hydro.exe'
+
+# Specify parameter tables to use for Noah-MP
+genParmTbl = './GENPARM.TBL'
+gwParmTbl = './GWBUCKPARM.TBL'
+mpParmTbl = './MPTABLE.TBL'
+urbParmTbl = './URBPARM.TBL'
+vegParmTbl = './VEGPARM.TBL'
+chanParmTbl = './CHANPARM.TBL'
+hydroParmTbl = './HYDRO.TBL'
+soilParmTbl = './SOILPARM.TBL'
+
+# NOTE Date values should be specified in YYYY-MM-DD format.
+# Specify date range for spinup
+bSpinDate = 2008-10-01
+eSpinDate = 2010-10-01
+
+# Specify date range for sensitivity analysis
+bSensDate = 2008-10-01
+eSensDate = 2010-10-01
+
+# Specify date range for calibration period
+bCalibDate = 2008-10-01
+eCalibDate = 2010-10-01
+
+[gageInfo]
+# Specify USGS GAGES II basins to calibrate on.
+# If SQL command desired, leave gageListFile blank.
+# If file listing gages desired, leave gageListSQL blank.
+gageListSQL = 'ENTER SQL COMMAND TO GET GAGES'
+gageListFile = './gages_calibrate.csv'
+
+[lsmPhysics]
+# namelist.hrldas specific options/flags for NoahMP
+dynVegOption = 4            # Specify the DYNAMIC_VEG_OPTION
+canStomResOption = 1        # Specify the CANOPY_STOMATAL_RESISTANCE_OPTION
+btrOption = 1               # Specify the BTR_OPTION
+runoffOption = 3            # Specify the RUNOFF_OPTION
+sfcDragOption = 1           # Specify the SURFACE_DRAG_OPTION
+frzSoilOption = 1           # Specify the FROZEN_SOIL_OPTION
+supCoolOption = 1           # Specify the SUPERCOOLED_WATER_OPTION
+radTransferOption = 3       # Specify the RADIATIVE_TRANSFER_OPTION
+snAlbOption = 2             # Specify the SNOW_ALBEDO_OPTION
+pcpPartOption = 1           # Specify the PCP_PARTITION_OPTION
+tbotOption = 2              # Specify the TBOT_OPTION
+tempTimeSchOption = 3       # Specify the TEMP_TIME_SCHEME_OPTION
+sfcResOption = 4            # Specify the SURFACE_RESISTENCE_OPTION
+glacierOption = 2           # Specify the GLACIER_OPTION
+
+# Specify thickness of NoahMP soil layers. MUST be four layers.
+soilThick = [0.10,0.30,0.60,1.00]
+
+# Specify level (meters) representative of U/V wind.
+zLvl = 10.0
+
+[forcing]
+# These options will dictate which forcings to use for the workflow.
+forceType = 1                 # 1: HRLDAS hourly LDASIN files
+                              # 2: HRLDAS minute LDASIN files
+                              # 3: WRF output files
+                              # 4: Idealized
+                              # 5: Ideal with specified supplemental precipitation.
+                              # 6: HRLDAS hourly LDASIN files with supplemental precipitation.     
+forceDir = './home/LDASIN'
+
+[modelTime]
+# NoahMP Specific time optionss
+# Specify timestep in seconds
+forceDt = 3600      # Input forcing timestep
+lsmDt = 3600        # NoahMP model timestep
+lsmOutDt = 3600     # Output frequency of NoahMP LDASOUT files
+lsmRstFreq = 3600   # Output frequency of NoahMP restart files
+
+# Hydro specific time options
+# Specify timestep in seconds
+hydroRstFreq = 3600  # Hydro restart output frequency
+hydroOutDt = 3600    # Hydro output frequency
+
+[hydroIO]
+rstType = 1        # Flag for overwriting soil variables from routing restart file (0:Off,1:On)
+
+# IOC-Specific output flags for outputs
+iocFlag = 1        # 0: Diagnostics
+                   # 1: Analysis-Assimilation
+                   # 2: Short Range
+                   # 3: Medium Range
+                   # 4: Long Range
+
+# Hydro specific output options
+chrtoutDomain = 1  # 0: No output
+                   # 1: Streamflow and lateral inflows
+                   # 2: Thinned channel output
+
+chrtoutGrid = 0    # 0: No output
+                   # 1: Output of grided channel streamflow values
+
+lsmDomain = 0      # 0: No output
+                   # 1: Output gridded LSM states from hydro routines.
+
+rtoutDomain = 0    # 0: No output
+                   # 1: Output terrain routing variables on routing grid
+
+gwOut = 0          # 0: No output
+                   # 1: Output NetCDF file of groundwater buckets
+
+lakeOut = 0        # 0: No output
+                   # 1: NetCDF file of lake outputs
+
+# Reset restart accumulation variables in hydro files? (0:Off,1:On)
+resetHydroAcc = 0
+
+# Specify order of streamflow to output (0-?)
+streamOrderOut = 1
+
+[hydroPhysics]
+solarAdj = 0         # Option for TERADJ_SOLAR
+dtChSec = 6          # Channel routing timestep in seconds
+dtTerSec = 6         # Surface and subsurface routing timestep in seconds
+subRouting = 0       # Switch for subsurface routing (0:Off,1:On)
+ovrRouting = 0       # Switch for surface routing (0:Off,1:On)
+channelRouting = 1   # Switch for channel routing (0:Off,1:On)
+
+rtOpt = 1            # 1: Steepest Descent (D8)
+                     # 2: CASC2D
+
+chanRtOpt = 2        # 1: Muskingam-reach
+                     # 2: Muskingam-Cunge-reach
+                     # 3: Diffusive Wave-gridded
+
+gwBaseSw = 1         # 0: No groundwater bucket activation.
+                     # 1: Switch to activate exp. groundwater bucket option
+                     # 2: Switch to activate pass-through groundwater bucket option
+
+# Specify to how to initialize groundwater bucket model (0:cold start from table,1:restart file)
+gwRestart = 0
+
