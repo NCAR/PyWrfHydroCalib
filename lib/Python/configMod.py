@@ -10,6 +10,7 @@
 from ConfigParser import SafeConfigParser
 import os
 import datetime
+import ast
 
 class jobMeta:
     def __init__(self):
@@ -420,9 +421,8 @@ def checkConfig(parser):
         raise
     
     # Check soil moisture thickness values
-    check = parser.get('lsmPhysics','soilThick')
+    check = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
     print check
-    print len(check)
     if len(check) != 4:
         print "ERROR: Must specify four soil layer thicknesses."
         raise
