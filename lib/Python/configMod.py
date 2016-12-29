@@ -167,6 +167,7 @@ def createJob(argsUser):
     configPath = './setup_files/setup.parm'
     parser = SafeConfigParser()
     
+    print 'blah'
     if os.path.isfile(configPath):
         parser.read(configPath)
     else:
