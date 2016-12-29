@@ -14,8 +14,7 @@ def errOut(jobData):
     # is sent out based on the job name. A custom error message
     # passed in by the function will go into the email.
 
-    print jobData.errMsg
-    msgContent = jobData.errMsg[0]
+    msgContent = jobData.errMsg
     
     if jobData.report == 1:
         # Send error email out
