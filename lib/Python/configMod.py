@@ -107,7 +107,7 @@ class jobMeta:
         print self.vegParmTbl
         self.chanParmTbl = str(parser.get('logistics','chanParmTbl'))
         print self.chanParmTbl
-        self.hydroTbl = str(parser.get('logistics','hydroParmTabl'))
+        self.hydroTbl = str(parser.get('logistics','hydroParmTbl'))
         print self.hydroTbl
         self.soilParmTbl = str(parser.get('logistics','soilParmTbl'))
         print self.soilParmTbl
