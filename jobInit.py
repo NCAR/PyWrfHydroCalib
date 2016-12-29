@@ -37,7 +37,7 @@ def main(argv):
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
         
-    print jobData
+    print jobData.fDir
         
 if __name__ == "__main__":
     main(sys.argv[1:])
