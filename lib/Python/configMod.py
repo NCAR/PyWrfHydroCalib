@@ -167,11 +167,13 @@ def createJob(argsUser):
     configPath = './setup_files/setup.parm'
     parser = SafeConfigParser()
     
+    print 'aa'
     if os.path.isfile(configPath):
         parser.read(configPath)
     else:
         print "ERROR: Config file not found."
         raise
+    print 'bb'
 
     # Check entries into the config file to make sure they make sense.
     print '1'
