@@ -174,7 +174,9 @@ def createJob(argsUser):
         raise
 
     # Check entries into the config file to make sure they make sense.
+    print '1'
     checkConfig(parser)
+    print '2'
     #try:
     #    checkConfig(parser)
     #except:
