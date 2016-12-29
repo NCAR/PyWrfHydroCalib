@@ -28,7 +28,7 @@ def main(argv):
     parser.add_argument('jobName',metavar='job',type=str,nargs='+',
                         help='Job name to initialize workflow.')
             
-    args = parser.parse.args()            
+    args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
     try:
