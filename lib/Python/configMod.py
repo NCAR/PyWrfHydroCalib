@@ -135,7 +135,7 @@ class jobMeta:
         print self.gList
         self.dynVegOpt = parser.get('lsmPhysics','dynVegOption')
         print self.dynVegOpt
-        self.canStomOpt = parser.get('lsmPhysics','canStormResOption')
+        self.canStomOpt = parser.get('lsmPhysics','canStomResOption')
         print self.canStomOpt
         self.btrOpt = parser.get('lsmPhysics','btrOption')
         print self.btrOpt        
