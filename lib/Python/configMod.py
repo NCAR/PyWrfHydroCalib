@@ -163,28 +163,22 @@ def createJob(argsUser):
         print "ERROR: Zero Length Job Name Passed To Program."
         raise
     
-    print argsUser.jobName
     configPath = './setup_files/setup.parm'
     parser = SafeConfigParser()
     
-    print 'aa'
-    parser.read(configPath)
-    #if os.path.isfile(configPath):
-    #    parser.read(configPath)
-    #else:
-    #    print "ERROR: Config file not found."
-    #    raise
-    print 'bb'
+    if os.path.isfile(configPath):
+        parser.read(configPath)
+    else:
+        print "ERROR: Config file not found."
+        raise
 
     # Check entries into the config file to make sure they make sense.
-    print '1'
     checkConfig(parser)
-    print '2'
-    #try:
-    #    checkConfig(parser)
-    #except:
-    #    print "ERROR: Improper Entries Into Config File."
-    #    raise
+    try:
+        checkConfig(parser)
+    except:
+        print "ERROR: Improper Entries Into Config File."
+        raise
         
     # Initialize job object
     jobObj = jobMeta()
@@ -341,7 +335,6 @@ def checkConfig(parser):
             raise
         
     # Check LSM physics options
-    print 'a'
     check = int(parser.get('lsmPhysics','dynVegOption'))
     print check
     if check < 0 or check > 4:
@@ -429,6 +422,7 @@ def checkConfig(parser):
     # Check soil moisture thickness values
     check = parser.get('lsmPhysics','soilThick')
     print check
+    print len(check)
     if len(check) != 4:
         print "ERROR: Must specify four soil layer thicknesses."
         raise
