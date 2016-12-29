@@ -18,4 +18,4 @@ def getGageList(jobData):
         
         # PLACEHOLDER FOR CHECKING DB TO ENSURE
         # ALL GAGE NAMES EXIST IN META TABLE
-        jobData.gages = gListTmp.Gages[:]        
+        jobData.gages = gListTmp.Gage[:]        
