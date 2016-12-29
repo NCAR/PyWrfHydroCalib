@@ -335,6 +335,7 @@ def checkConfig(parser):
             raise
         
     # Check LSM physics options
+    print 'a'
     check = int(parser.get('lsmPhysics','dynVegOption'))
     print check
     if check < 0 or check > 4:
