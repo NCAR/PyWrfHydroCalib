@@ -23,5 +23,5 @@ def getGageList(jobData):
         if len(jobData.gages) == 0:
             errMsg = "ERROR: List of gages for calibration is zero."
             print errMsg
-            jobData.errMsg[0] = errMsg
+            jobData.errMsg = errMsg
             raise
