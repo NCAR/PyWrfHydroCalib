@@ -82,9 +82,13 @@ class jobMeta:
     def readConfig(self,parser,jobName):
         """ Read in and check options passed by the config file.
         """
+        print 'READING CONFIG'
         self.jobName = jobName
+        print self.jobName
         self.outDir = parser.get('logistics','outDir')
+        print self.outDir
         self.email = parser.get('logistics','email')
+        print self.email
         if len(self.email) == 0:
             self.report = 0
         else:
