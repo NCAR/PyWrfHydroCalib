@@ -6,7 +6,7 @@
 
 import pandas as pd
 
-def getGageList(jobData):
+def getGageList(jobData,errMsg):
     # Function for extracting list of gages 
     # based on either the CSV file, or an SQL
     # command to extract gages based on a user 
@@ -18,4 +18,8 @@ def getGageList(jobData):
         
         # PLACEHOLDER FOR CHECKING DB TO ENSURE
         # ALL GAGE NAMES EXIST IN META TABLE
-        jobData.gages = gListTmp.Gage[:]        
+        jobData.gages = gListTmp.Gage[:]
+
+        if len(jobData.gages) == 0:
+            errMsg = "ERROR: List of gages for calibration is zero."
+            raise
