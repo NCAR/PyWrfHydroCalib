@@ -90,7 +90,7 @@ class jobMeta:
             self.report = 1
         self.exe = str(parser.get('logistics','wrfExe'))
         self.genParmTbl = str(parser.get('logistics','genParmTbl'))
-        self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
+        #self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
         self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
         self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
         self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
@@ -224,14 +224,14 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = str(parser.get('logistics','gwParmTbl'))
-    print check
-    if len(check) == 0:
-        print "ERROR: Zero length groundwater parameter table provided."
-        raise
-    if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
-        raise
+    #check = str(parser.get('logistics','gwParmTbl'))
+    #print check
+    #if len(check) == 0:
+    #    print "ERROR: Zero length groundwater parameter table provided."
+    #    raise
+    #if not os.path.isfile(check):
+    #    print "ERROR: File: " + check + " not found."
+    #    raise
         
     check = str(parser.get('logistics','mpParmTbl'))
     print check 
