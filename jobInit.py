@@ -17,7 +17,7 @@ import argparse
 import sys
 
 # Set the Python path to include package specific functions.
-sys.path.inser(0,'./lib/Python')
+sys.path.insert(0,'./lib/Python')
 
 import configMod
 
