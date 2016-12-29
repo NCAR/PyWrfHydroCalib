@@ -39,13 +39,11 @@ def main(argv):
         sys.exit(1)
         
     # Extract list of gages to perform workflow on
-    calibIoMod.getGageList(jobData)
-    print jobData.gages
-    #try:
-    #    calibIoMod.getGageList(jobData)
-    #except:
-    #    print "ERROR; Failure to extract list of basins to calibration."
-    #    sys.exit(1)
+    try:
+        calibIoMod.getGageList(jobData)
+    except:
+        print "ERROR; Failure to extract list of basins to calibration."
+        sys.exit(1)
         
 if __name__ == "__main__":
     main(sys.argv[1:])
