@@ -20,6 +20,7 @@ import sys
 sys.path.insert(0,'./lib/Python')
 
 import configMod
+import calibIoMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -37,7 +38,12 @@ def main(argv):
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
         
-    print jobData.fDir
+    # Extract list of gages to perform workflow on
+    try:
+        calibIoMod.getGageList(jobData)
+    except:
+        print "ERROR; Failure to extract list of basins to calibration."
+        sys.exit(1)
         
 if __name__ == "__main__":
     main(sys.argv[1:])

@@ -79,6 +79,7 @@ class jobMeta:
         self.rtOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
+        self.gages = []
     def readConfig(self,parser,jobName):
         """ Read in and check options passed by the config file.
         """
