@@ -202,6 +202,7 @@ def checkConfig(parser):
         print "ERROR: Zero length output directory provided."
         raise
     if not os.path.isdir(check):
+        print os.path.isdir(check)
         print "ERROR: Directory: " + check + " not found."
         raise
 
