@@ -196,7 +196,8 @@ def checkConfig(parser):
     """ Function to check all options in the config file.
     """
     # Go through and check everything put into the config file.
-    check = repr(parser.get('logistics','outDir'))
+    check = parser.get('logistics','outDir')
+    check = repr(check)
     print check
     print os.path.isdir('/glade/u/home/karsten')
     print os.path.isdir('/glade/scratch/karsten/NWM_CALIB_TESTING')
