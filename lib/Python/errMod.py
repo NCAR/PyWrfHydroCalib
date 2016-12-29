@@ -17,7 +17,7 @@ def errOut(jobData,msgContent):
     if jobData.report == 1:
         # Send error email out
         msg = MIMEText(msgContent)
-        emailTitle = "Errors in NWM Calibration for Job: " + jobData.jobName
+        emailTitle = "Errors in NWM Calibration for Job: " + jobData.jobName[0]
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
