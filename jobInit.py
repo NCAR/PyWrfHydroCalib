@@ -41,14 +41,11 @@ def main(argv):
     # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
     # ALREADY BEEN ENTERED INTO DB
         
-    # Create empty errMsg string.
-    errMsg = ''
-    
     # Extract list of gages to perform workflow on
     try:
-        calibIoMod.getGageList(jobData,errMsg)
+        calibIoMod.getGageList(jobData)
     except:
-        errMod.errOut(jobData,errMsg)
+        errMod.errOut(jobData)
         
     
         

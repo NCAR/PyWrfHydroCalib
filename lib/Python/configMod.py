@@ -19,6 +19,7 @@ class jobMeta:
         self.outDir = []
         self.email = []
         self.report = []
+        self.errMsg = []
         self.exe = []
         self.genParmTbl = []
         self.gwParmTbl = []

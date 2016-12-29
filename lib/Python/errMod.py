@@ -8,12 +8,14 @@ import sys
 from email.mime.text import MIMEText
 import smtplib
 
-def errOut(jobData,msgContent):
+def errOut(jobData):
     # Error function for handling communicating error messages
     # to user. If email was provided, an error email
     # is sent out based on the job name. A custom error message
     # passed in by the function will go into the email.
 
+    msgContent = jobData.errMsg[0]
+    
     if jobData.report == 1:
         # Send error email out
         msg = MIMEText(msgContent)

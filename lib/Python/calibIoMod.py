@@ -6,7 +6,7 @@
 
 import pandas as pd
 
-def getGageList(jobData,errMsg):
+def getGageList(jobData):
     # Function for extracting list of gages 
     # based on either the CSV file, or an SQL
     # command to extract gages based on a user 
@@ -22,4 +22,6 @@ def getGageList(jobData,errMsg):
 
         if len(jobData.gages) == 0:
             errMsg = "ERROR: List of gages for calibration is zero."
+            print errMsg
+            jobData.errMsg[0] = errMsg
             raise
