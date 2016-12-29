@@ -88,15 +88,15 @@ class jobMeta:
             self.report = 0
         else:
             self.report = 1
-        self.exe = parser.get('logistics','wrfExe')
-        self.genParmTbl = parser.get('logistics','genParmTbl')
-        self.gwParmTbl = parser.get('logistics','gwParmTbl')
-        self.mpParmTbl = parser.get('logistics','mpParmTbl')
-        self.urbParmTbl = parser.get('logistics','urbParmTbl')
-        self.vegParmTbl = parser.get('logistics','vegParmTbl')
-        self.chanParmTbl = parser.get('logistics','chanParmTbl')
-        self.hydroTbl = parser.get('logistics','hydroParmTabl')
-        self.soilParmTbl = parser.get('logistics','soilParmTbl')
+        self.exe = str(parser.get('logistics','wrfExe'))
+        self.genParmTbl = str(parser.get('logistics','genParmTbl'))
+        self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
+        self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
+        self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
+        self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
+        self.chanParmTbl = str(parser.get('logistics','chanParmTbl'))
+        self.hydroTbl = str(parser.get('logistics','hydroParmTabl'))
+        self.soilParmTbl = str(parser.get('logistics','soilParmTbl'))
         self.bSpinDate = parser.get('logistics','bSpinDate')
         self.bSpinDate = datetime.datetime.strptime(self.bSpinDate,'%Y-%m-%d')
         self.eSpinDate = parser.get('logistics','eSpinDate')
@@ -110,7 +110,7 @@ class jobMeta:
         self.eCalibDate = parser.get('logistics','eCalibDate')
         self.eCalibDate = datetime.datetime.strptime(self.eCalibDate,'%Y-%m-%d')
         self.gSQL = parser.get('gageInfo','gageListSQL')
-        self.gList = parser.get('gageInfo','gageListFile')
+        self.gList = str(parser.get('gageInfo','gageListFile'))
         self.dynVegOpt = parser.get('lsmPhysics','dynVegOption')
         self.canStomOpt = parser.get('lsmPhysics','canStormResOption')
         self.btrOpt = parser.get('lsmPhysics','btrOption')
@@ -128,7 +128,7 @@ class jobMeta:
         self.soilThick = parser.get('lsmPhysics','soilThick')
         self.zLvl = parser.get('lsmPhysics','zLvl')
         self.fType = parser.get('forcing','forceType')
-        self.fDir = parser.get('forcing','forceDir')
+        self.fDir = str(parser.get('forcing','forceDir'))
         self.fDT = parser.get('modelTime','forceDt')
         self.lsmDt = parser.get('modelTime','lsmDt')
         self.lsmOutDt = parser.get('modelTime','lsmOutDt')
@@ -198,9 +198,6 @@ def checkConfig(parser):
     # Go through and check everything put into the config file.
     check = str(parser.get('logistics','outDir'))
     print check
-    print os.path.isdir('/glade/u/home/karsten')
-    print os.path.isdir('/glade/scratch/karsten/NWM_CALIB_TESTING')
-    print os.path.isdir(check)
     if len(check) == 0:
         print "ERROR: Zero length output directory provided."
         raise
@@ -208,7 +205,7 @@ def checkConfig(parser):
         print "ERROR: Directory: " + check + " not found."
         raise
 
-    check = parser.get('logistics','wrfExe')
+    check = str(parser.get('logistics','wrfExe'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length executable provided."
@@ -218,7 +215,7 @@ def checkConfig(parser):
         raise
         
     # Parameter tables
-    check = parser.get('logistics','genParmTbl')
+    check = str(parser.get('logistics','genParmTbl'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length general parameter table provided."
@@ -227,7 +224,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','gwParmTbl')
+    check = str(parser.get('logistics','gwParmTbl'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length groundwater parameter table provided."
@@ -236,7 +233,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','mpParmTbl')
+    check = str(parser.get('logistics','mpParmTbl'))
     print check 
     if len(check) == 0:
         print "ERROR: Zero length MP parameter table provided."
@@ -245,7 +242,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','urbParmTbl')
+    check = str(parser.get('logistics','urbParmTbl'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length urban parameter table provided."
@@ -254,7 +251,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','vegParmTbl')
+    check = str(parser.get('logistics','vegParmTbl'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length vegetation parameter table provided."
@@ -263,7 +260,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','chanParmTbl')
+    check = str(parser.get('logistics','chanParmTbl'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length channel parameter table provided."
@@ -272,7 +269,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','hydroParmTbl')
+    check = str(parser.get('logistics','hydroParmTbl'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length hydro parameter table provided."
@@ -281,7 +278,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','soilParmTbl')
+    check = str(parser.get('logistics','soilParmTbl'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length soil parameter table provided."
@@ -322,8 +319,8 @@ def checkConfig(parser):
         raise
     
     # Check gauge information
-    check1 = parser.get('gageInfo','gageListFile')
-    check2 = parser.get('gageInfo','gageListSQL')
+    check1 = str(parser.get('gageInfo','gageListFile'))
+    check2 = str(parser.get('gageInfo','gageListSQL'))
     print check1
     print check2
     if len(check1) == 0 and len(check2) == 0:
@@ -449,7 +446,7 @@ def checkConfig(parser):
         print "ERROR: Invalid forceType value passed to program."
         raise
         
-    check = parser.get('forcing','forceDir')
+    check = str(parser.get('forcing','forceDir'))
     print check
     if len(check) == 0:
         print "ERROR: Zero length forceDir passed to program."
