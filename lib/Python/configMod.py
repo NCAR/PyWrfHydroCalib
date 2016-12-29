@@ -133,91 +133,91 @@ class jobMeta:
         print self.gSQL
         self.gList = str(parser.get('gageInfo','gageListFile'))
         print self.gList
-        self.dynVegOpt = parser.get('lsmPhysics','dynVegOption')
+        self.dynVegOpt = int(parser.get('lsmPhysics','dynVegOption'))
         print self.dynVegOpt
-        self.canStomOpt = parser.get('lsmPhysics','canStomResOption')
+        self.canStomOpt = int(parser.get('lsmPhysics','canStomResOption'))
         print self.canStomOpt
-        self.btrOpt = parser.get('lsmPhysics','btrOption')
+        self.btrOpt = int(parser.get('lsmPhysics','btrOption'))
         print self.btrOpt        
-        self.runOffOpt = parser.get('lsmPhysics','runoffOption')
+        self.runOffOpt = int(parser.get('lsmPhysics','runoffOption'))
         print self.runOffOpt
-        self.sfcDragOpt = parser.get('lsmPhysics','sfcDragOption')
+        self.sfcDragOpt = int(parser.get('lsmPhysics','sfcDragOption'))
         print self.sfcDragOpt
-        self.frzSoilOpt = parser.get('lsmPhysics','frzSoilOption')
+        self.frzSoilOpt = int(parser.get('lsmPhysics','frzSoilOption'))
         print self.frzSoilOpt
-        self.supCoolOpt = parser.get('lsmPhysics','supCoolOption')
+        self.supCoolOpt = int(parser.get('lsmPhysics','supCoolOption'))
         print self.supCoolOpt
-        self.radTOpt = parser.get('lsmPhysics','radTransferOption')
+        self.radTOpt = int(parser.get('lsmPhysics','radTransferOption'))
         print self.radTOpt
-        self.snAlbOpt = parser.get('lsmPhysics','snAlbOption')
+        self.snAlbOpt = int(parser.get('lsmPhysics','snAlbOption'))
         print self.snAlbOpt
-        self.pcpPartOpt = parser.get('lsmPhysics','pcpPartOption')
+        self.pcpPartOpt = int(parser.get('lsmPhysics','pcpPartOption'))
         print self.pcpPartOpt
-        self.tbotOpt = parser.get('lsmPhysics','tbotOption')
+        self.tbotOpt = int(parser.get('lsmPhysics','tbotOption'))
         print self.tbotOpt
-        self.timeSchmOpt = parser.get('lsmPhysics','tempTimeSchOption')
+        self.timeSchmOpt = int(parser.get('lsmPhysics','tempTimeSchOption'))
         print self.timeSchmOpt
-        self.sfcResOpt = parser.get('lsmPhysics','sfcResOption')
+        self.sfcResOpt = int(parser.get('lsmPhysics','sfcResOption'))
         print self.sfcResOpt
-        self.glacier = parser.get('lsmPhysics','glacierOption')
+        self.glacier = int(parser.get('lsmPhysics','glacierOption'))
         print self.glacier
         self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
         print self.soilThick
-        self.zLvl = parser.get('lsmPhysics','zLvl')
+        self.zLvl = float(parser.get('lsmPhysics','zLvl'))
         print self.zLvl
-        self.fType = parser.get('forcing','forceType')
+        self.fType = int(parser.get('forcing','forceType'))
         print self.fType
         self.fDir = str(parser.get('forcing','forceDir'))
         print self.fDir
-        self.fDT = parser.get('modelTime','forceDt')
+        self.fDT = int(parser.get('modelTime','forceDt'))
         print self.fDT
-        self.lsmDt = parser.get('modelTime','lsmDt')
+        self.lsmDt = int(parser.get('modelTime','lsmDt'))
         print self.lsmDt
-        self.lsmOutDt = parser.get('modelTime','lsmOutDt')
+        self.lsmOutDt = int(parser.get('modelTime','lsmOutDt'))
         print self.lsmOutDt
-        self.lsmRstFreq = parser.get('modelTime','lsmRstFreq')
+        self.lsmRstFreq = int(parser.get('modelTime','lsmRstFreq'))
         print self.lsmRstFreq
-        self.hydroRstFreq = parser.get('modelTime','hydroRstFreq')
+        self.hydroRstFreq = int(parser.get('modelTime','hydroRstFreq'))
         print self.hydroRstFreq
-        self.hydroOutDt = parser.get('modelTime','hydroOutDt')
+        self.hydroOutDt = int(parser.get('modelTime','hydroOutDt'))
         print self.hydroOutDt
-        self.rstType = parser.get('hydroIO','rstType')
+        self.rstType = int(parser.get('hydroIO','rstType'))
         print self.rstType
-        self.iocFlag = parser.get('hydroIO','iocFlag')
+        self.iocFlag = int(parser.get('hydroIO','iocFlag'))
         print self.iocFlag
-        self.chrtoutDomain = parser.get('hydroIO','chrtoutDomain')
+        self.chrtoutDomain = int(parser.get('hydroIO','chrtoutDomain'))
         print self.chrtoutDomain
-        self.chrtoutGrid = parser.get('hydroIO','chrtoutGrid')
+        self.chrtoutGrid = int(parser.get('hydroIO','chrtoutGrid'))
         print self.chrtoutGrid
-        self.lsmDomain = parser.get('hydroIO','lsmDomain')
+        self.lsmDomain = int(parser.get('hydroIO','lsmDomain'))
         print self.lsmDomain
-        self.rtoutDomain = parser.get('hydroIO','rtoutDomain')
+        self.rtoutDomain = int(parser.get('hydroIO','rtoutDomain'))
         print self.rtoutDomain
-        self.gwOut = parser.get('hydroIO','gwOut')
+        self.gwOut = int(parser.get('hydroIO','gwOut'))
         print self.gwOut
-        self.lakeOut = parser.get('hydroIO','lakeOut')
+        self.lakeOut = int(parser.get('hydroIO','lakeOut'))
         print self.lakeOut
-        self.resetHydro = parser.get('hydroIO','resetHydroAcc')
+        self.resetHydro = int(parser.get('hydroIO','resetHydroAcc'))
         print self.resetHydro
-        self.strOrder = parser.get('hydroIO','streamOrderOut')
+        self.strOrder = int(parser.get('hydroIO','streamOrderOut'))
         print self.strOrder
-        self.solarAdj = parser.get('hydroPhysics','solarAdj')
+        self.solarAdj = int(parser.get('hydroPhysics','solarAdj'))
         print self.solarAdj
-        self.dtChRt = parser.get('hydroPhysics','dtChSec')
+        self.dtChRt = int(parser.get('hydroPhysics','dtChSec'))
         print self.dtChRt
-        self.dtTerRt = parser.get('hydroPhysics','dtTerSec')
+        self.dtTerRt = int(parser.get('hydroPhysics','dtTerSec'))
         print self.dtTerRt
-        self.subRtFlag = parser.get('hydroPhysics','subRouting')
+        self.subRtFlag = int(parser.get('hydroPhysics','subRouting'))
         print self.subRtFlag
-        self.ovrRtFlag = parser.get('hydroPhysics','ovrRouting')
+        self.ovrRtFlag = int(parser.get('hydroPhysics','ovrRouting'))
         print self.ovrRtFlag
-        self.rtOpt = parser.get('hydroPhysics','rtOpt')
+        self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
         print self.rtOpt
-        self.chnRtFlag = parser.get('hydroPhysics','chanRtOpt')
+        self.chnRtFlag = int(parser.get('hydroPhysics','chanRtOpt'))
         print self.chnRtFlag
-        self.gwBaseFlag = parser.get('hydroPhysics','gwBaseSw')
+        self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         print self.gwBaseFlag
-        self.gwRst = parser.get('hydroPhysics','gwRestart')
+        self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         print self.gwRst
         
 def createJob(argsUser):
