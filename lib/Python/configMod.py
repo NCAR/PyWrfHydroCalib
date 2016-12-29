@@ -198,6 +198,7 @@ def checkConfig(parser):
     # Go through and check everything put into the config file.
     check = parser.get('logistics','outDir')
     print check
+    print os.path.isdir('/glade/u/home/karsten')
     if len(check) == 0:
         print "ERROR: Zero length output directory provided."
         raise
