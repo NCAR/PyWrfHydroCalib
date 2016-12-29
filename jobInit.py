@@ -40,6 +40,7 @@ def main(argv):
         
     # Extract list of gages to perform workflow on
     calibIoMod.getGageList(jobData)
+    print jobData.gages
     #try:
     #    calibIoMod.getGageList(jobData)
     #except:
