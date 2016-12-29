@@ -200,12 +200,11 @@ def checkConfig(parser):
     print check
     print os.path.isdir('/glade/u/home/karsten')
     print os.path.isdir('/glade/scratch/karsten/NWM_CALIB_TESTING')
-    print os.path.isdir('/glade/scratch/karsten/NWM_CALIB_TESTING')
+    print os.path.isdir(check)
     if len(check) == 0:
         print "ERROR: Zero length output directory provided."
         raise
     if not os.path.isdir(check):
-        print os.path.isdir(check)
         print "ERROR: Directory: " + check + " not found."
         raise
 
