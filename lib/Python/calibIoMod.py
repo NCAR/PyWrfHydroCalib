@@ -38,7 +38,7 @@ def setupModels(jobData):
     #parentDir = jobData.outDir + "/" + jobData.jobName
     #print parentDir
     print jobData.outDir
-    print jobData.jobName[:]
+    print jobData.jobName
     
     #if os.path.isdir(parentDir):
     #    jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
