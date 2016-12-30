@@ -47,7 +47,14 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
-    
+    # Create necessary run directories to hold output, analysis, etc.
+    try:
+        calibIoMod.setupModels(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # Create DB entries for job name
+    # PLACEHOLDER FOR ENTERING DB INFORMATION    
         
 if __name__ == "__main__":
     main(sys.argv[1:])

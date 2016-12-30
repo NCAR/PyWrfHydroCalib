@@ -4,6 +4,7 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
+import os
 import pandas as pd
 
 def getGageList(jobData):
@@ -22,5 +23,26 @@ def getGageList(jobData):
 
         if len(jobData.gages) == 0:
             errMsg = "ERROR: List of gages for calibration is zero."
-            jobData.errMsg = str(errMsg)
+            jobData.errMsg = errMsg
             raise
+            
+def setupModels(jobData):
+    # Function for setting up all model directories,
+    # links to forcings, namelist files, etc. 
+    # Function will loop through each basin to calibrate,
+    # extract information about geospatial files, nested
+    # index values, etc. This information will be used in 
+    # the setup. 
+    
+    # First create top level directory based on the job name.
+    parentDir = jobData.outDir + "/" + jobData.jobName
+    
+    if os.path.isdir(parentDir):
+        jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
+        raise
+        
+    try:
+        os.mkdir(parentDir)
+    except:
+        jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
+        raise
