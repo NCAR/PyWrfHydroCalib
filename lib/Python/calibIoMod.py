@@ -7,7 +7,29 @@
 import os
 import pandas as pd
 from errMod import wipeJobDir
+import namelistMod
 
+class gageMeta:
+    def __init__(self):
+        # Initialize object to hold metadata about a particular basin.
+        # This will be used to populate namelist files, DB tables,
+        # etc. These files will be listed in the DB metadata table and
+        # should exist on the system.
+        self.gage = []
+        self.geoFile = []
+        self.fullDom = []
+        self.rtLnk = []
+        self.lkFile = []
+        self.gwFile = []
+        self.udMap = []
+        self.wrfInput = []
+        self.soilFile = []
+    def pullGageMeta(self,jobData,gageName):
+        # Function to extract locations of gage-specific spatial files.
+        
+        test = 1
+        # PLACEHOLDER FOR CALLING INTERACTIONS WITH META DB.
+        
 def getGageList(jobData):
     # Function for extracting list of gages 
     # based on either the CSV file, or an SQL
@@ -48,6 +70,9 @@ def setupModels(jobData):
         wipeJobDir(jobData,parentDir)
         jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
         raise
+        
+    # Create gage-specific object that will contain gage-specific information.
+    gageData = gageMeta()
         
     # Loop through each basin and setup appropriate directories.
     for gage in range(0,len(jobData.gages)):
@@ -97,4 +122,14 @@ def setupModels(jobData):
             jobData.errMsg = "ERROR: Failure to create directory: " + calibDir
             raise
         
+        # Extract gage-specific information (geogrid file, fulldom file, etc)
+        # from metadata DB.
+        try:
+            gageData.pullGageMeta(jobData,jobData.gages[gage])
+        except:
+            wipeJobDir(jobData,parentDir)
+            raise
+            
+        # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
+        try:
             
