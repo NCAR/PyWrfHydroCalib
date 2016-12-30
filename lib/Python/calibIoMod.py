@@ -35,7 +35,7 @@ def setupModels(jobData):
     # the setup. 
     
     # First create top level directory based on the job name.
-    parentDir = jobData.outDir + "/" + jobData.jobName
+    parentDir = jobData.outDir[0] + "/" + jobData.jobName[0]
     
     #if os.path.isdir(parentDir):
     #    jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
