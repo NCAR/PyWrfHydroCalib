@@ -50,3 +50,12 @@ def setupModels(jobData):
     # Loop through each basin and setup appropriate directories.
     for gage in range(0,len(jobData.gages)):
         print jobData.gages[gage]
+        gageDir = parentDir + "/" + str(gage)
+        print gageDir
+        
+        try:
+            os.mkdir(gageDir)
+        except:
+            jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
+            raise
+            
