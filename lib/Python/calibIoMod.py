@@ -6,6 +6,7 @@
 
 import os
 import pandas as pd
+from errMod import wipeJobDir
 
 def getGageList(jobData):
     # Function for extracting list of gages 
@@ -38,12 +39,14 @@ def setupModels(jobData):
     parentDir = jobData.outDir + "/" + jobData.jobName
     
     if os.path.isdir(parentDir):
+        wipeJobDir(jobData,parentDir)
         jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
         raise
         
     try:
         os.mkdir(parentDir)
     except:
+        wipeJobDir(jobData,parentDir)
         jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
         raise
         
@@ -56,6 +59,43 @@ def setupModels(jobData):
         try:
             os.mkdir(gageDir)
         except:
+            wipeJobDir(jobData,parentDir)
             jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
             raise
+            
+        # Create symbolic link to forcing directory.
+        fLink = gageDir + "/FORCING"
+        try:
+            os.symlink(jobData.fDir,fLink)
+        except:
+            wipeJobDir(jobData,parentDir)
+            jobData.errMsg = "ERROR: Failure to create FORCING link to: " + jobData.fDir
+            raise
+            
+        # Create observations directory to hold obs for calibration/eval, etc
+        obsDir = gageDir + "/OBS"
+        try:
+            os.mkdir(obsDir)
+        except:
+            wipeJobDir(jobData,parentDir)
+            jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
+            raise
+        
+        # Create sub-directories for spinup/calibration runs.
+        spinupDir = gageDir + "/RUN.SPINUP"
+        try:
+            os.mkdir(spinupDir)
+        except:
+            wipeJobDir(jobData,parentDir)
+            jobData.errMsg = "ERROR: Failure to create directory: " + spinupDir
+            raise
+            
+        calibDir = gageDir + "/RUN.CALIB"
+        try:
+            os.mkdir(calibDir)
+        except:
+            wipeJobDir(jobData,parentDir)
+            jobData.errMsg = "ERROR: Failure to create directory: " + calibDir
+            raise
+        
             

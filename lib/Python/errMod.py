@@ -7,6 +7,7 @@
 import sys
 from email.mime.text import MIMEText
 import smtplib
+import shutil
 
 def errOut(jobData):
     # Error function for handling communicating error messages
@@ -30,3 +31,12 @@ def errOut(jobData):
     else:
         print msgContent
         sys.exit(1)
+        
+def wipeJobDir(jobData,jobDir):
+    # Generic function to remove job directory that was not successfully 
+    # created during initialization routines.
+    try:
+        shutil.rmtree(jobDir)
+    except:
+        print "ERROR: Failure to remove: " + jobDir + " Please remove manually."
+        raise
