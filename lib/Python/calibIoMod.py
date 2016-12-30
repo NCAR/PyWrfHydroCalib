@@ -39,7 +39,6 @@ def setupModels(jobData):
     parentDir = jobData.outDir + "/" + jobData.jobName
     
     if os.path.isdir(parentDir):
-        wipeJobDir(jobData,parentDir)
         jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
         raise
         
