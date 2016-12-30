@@ -36,9 +36,6 @@ def setupModels(jobData):
     
     # First create top level directory based on the job name.
     parentDir = jobData.outDir + "/" + jobData.jobName
-    print parentDir
-    print jobData.outDir
-    print jobData.jobName
     
     if os.path.isdir(parentDir):
         jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
@@ -49,3 +46,7 @@ def setupModels(jobData):
     except:
         jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
         raise
+        
+    # Loop through each basin and setup appropriate directories.
+    for gage in range(0,len(jobData.gages)):
+        print jobData.gages[gage]
