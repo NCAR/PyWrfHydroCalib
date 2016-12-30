@@ -162,7 +162,7 @@ def createJob(argsUser):
     """ Reads in options from teh setup.parm file
     """
     # Check to make sure a non-zero length job name was passed by the user.
-    if len(argsUser.jobName) == 0:
+    if len(argsUser.jobName[0]) == 0:
         print "ERROR: Zero Length Job Name Passed To Program."
         raise
     
