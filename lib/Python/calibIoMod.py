@@ -15,7 +15,7 @@ def getGageList(jobData):
 
     if len(jobData.gList) > 0:
         # User provided CSV file with list of gages.
-        gListTmp = pd.read_csv(jobData.gList)
+        gListTmp = pd.read_csv(jobData.gList,dtype={0: str})
         
         # PLACEHOLDER FOR CHECKING DB TO ENSURE
         # ALL GAGE NAMES EXIST IN META TABLE
