@@ -86,6 +86,7 @@ class jobMeta:
         """
         self.jobName = jobName
         self.outDir = parser.get('logistics','outDir')
+        print self.outDir
         self.email = parser.get('logistics','email')
         if len(self.email) == 0:
             self.report = 0
