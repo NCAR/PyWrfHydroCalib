@@ -77,6 +77,7 @@ class jobMeta:
         self.subRtFlag = []
         self.ovrRtFlag = []
         self.chnRtFlag = []
+        self.chnRtOpt = []
         self.rtOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
@@ -154,7 +155,8 @@ class jobMeta:
         self.subRtFlag = int(parser.get('hydroPhysics','subRouting'))
         self.ovrRtFlag = int(parser.get('hydroPhysics','ovrRouting'))
         self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
-        self.chnRtFlag = int(parser.get('hydroPhysics','chanRtOpt'))
+        self.chnRtFlag = int(parser.get('hydroPhysics','channelRouting'))
+        self.chnRtOpt = int(parser.get('hydroPhysics','chanRtOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
