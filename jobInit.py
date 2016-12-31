@@ -14,12 +14,13 @@
 
 import sys
 import argparse
-import sys
 
 # Set the Python path to include package specific functions.
-sys.path.inser(0,'./lib/Python')
+sys.path.insert(0,'./lib/Python')
 
 import configMod
+import calibIoMod
+import errMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -28,7 +29,7 @@ def main(argv):
     parser.add_argument('jobName',metavar='job',type=str,nargs='+',
                         help='Job name to initialize workflow.')
             
-    args = parser.parse.args()            
+    args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
     try:
@@ -36,6 +37,24 @@ def main(argv):
     except:
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
+        
+    # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
+    # ALREADY BEEN ENTERED INTO DB
+        
+    # Extract list of gages to perform workflow on
+    try:
+        calibIoMod.getGageList(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # Create necessary run directories to hold output, analysis, etc.
+    try:
+        calibIoMod.setupModels(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # Create DB entries for job name
+    # PLACEHOLDER FOR ENTERING DB INFORMATION    
         
 if __name__ == "__main__":
     main(sys.argv[1:])

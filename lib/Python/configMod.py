@@ -10,6 +10,7 @@
 from ConfigParser import SafeConfigParser
 import os
 import datetime
+import ast
 
 class jobMeta:
     def __init__(self):
@@ -18,6 +19,7 @@ class jobMeta:
         self.outDir = []
         self.email = []
         self.report = []
+        self.errMsg = []
         self.exe = []
         self.genParmTbl = []
         self.gwParmTbl = []
@@ -75,28 +77,30 @@ class jobMeta:
         self.subRtFlag = []
         self.ovrRtFlag = []
         self.chnRtFlag = []
+        self.chnRtOpt = []
         self.rtOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
+        self.gages = []
     def readConfig(self,parser,jobName):
         """ Read in and check options passed by the config file.
         """
-        self.jobName = jobName
-        self.outDir = parser.get('logistics','outDir')
-        self.email = parser.get('logistics','email')
+        self.jobName = str(jobName[0])
+        self.outDir = str(parser.get('logistics','outDir'))
+        self.email = str(parser.get('logistics','email'))
         if len(self.email) == 0:
             self.report = 0
         else:
             self.report = 1
-        self.exe = parser.get('logistics','wrfExe')
-        self.genParmTbl = parser.get('logistics','genParmTbl')
-        self.gwParmTbl = parser.get('logistics','gwParmTbl')
-        self.mpParmTbl = parser.get('logistics','mpParmTbl')
-        self.urbParmTbl = parser.get('logistics','urbParmTbl')
-        self.vegParmTbl = parser.get('logistics','vegParmTbl')
-        self.chanParmTbl = parser.get('logistics','chanParmTbl')
-        self.hydroTbl = parser.get('logistics','hydroParmTabl')
-        self.soilParmTbl = parser.get('logistics','soilParmTbl')
+        self.exe = str(parser.get('logistics','wrfExe'))
+        self.genParmTbl = str(parser.get('logistics','genParmTbl'))
+        #self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
+        self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
+        self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
+        self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
+        self.chanParmTbl = str(parser.get('logistics','chanParmTbl'))
+        self.hydroTbl = str(parser.get('logistics','hydroParmTbl'))
+        self.soilParmTbl = str(parser.get('logistics','soilParmTbl'))
         self.bSpinDate = parser.get('logistics','bSpinDate')
         self.bSpinDate = datetime.datetime.strptime(self.bSpinDate,'%Y-%m-%d')
         self.eSpinDate = parser.get('logistics','eSpinDate')
@@ -110,56 +114,57 @@ class jobMeta:
         self.eCalibDate = parser.get('logistics','eCalibDate')
         self.eCalibDate = datetime.datetime.strptime(self.eCalibDate,'%Y-%m-%d')
         self.gSQL = parser.get('gageInfo','gageListSQL')
-        self.gList = parser.get('gageInfo','gageListFile')
-        self.dynVegOpt = parser.get('lsmPhysics','dynVegOption')
-        self.canStomOpt = parser.get('lsmPhysics','canStormResOption')
-        self.btrOpt = parser.get('lsmPhysics','btrOption')
-        self.runOffOpt = parser.get('lsmPhysics','runoffOption')
-        self.sfcDragOpt = parser.get('lsmPhysics','sfcDragOption')
-        self.frzSoilOpt = parser.get('lsmPhysics','frzSoilOption')
-        self.supCoolOpt = parser.get('lsmPhysics','supCoolOption')
-        self.radTOpt = parser.get('lsmPhysics','radTransferOption')
-        self.snAlbOpt = parser.get('lsmPhysics','snAlbOption')
-        self.pcpPartOpt = parser.get('lsmPhysics','pcpPartOption')
-        self.tbotOpt = parser.get('lsmPhysics','tbotOption')
-        self.timeSchmOpt = parser.get('lsmPhysics','tempTimeSchOption')
-        self.sfcResOpt = parser.get('lsmPhysics','sfcResOption')
-        self.glacier = parser.get('lsmPhysics','glacierOption')
-        self.soilThick = parser.get('lsmPhysics','soilThick')
-        self.zLvl = parser.get('lsmPhysics','zLvl')
-        self.fType = parser.get('forcing','forceType')
-        self.fDir = parser.get('forcing','forceDir')
-        self.fDT = parser.get('modelTime','forceDt')
-        self.lsmDt = parser.get('modelTime','lsmDt')
-        self.lsmOutDt = parser.get('modelTime','lsmOutDt')
-        self.lsmRstFreq = parser.get('modelTime','lsmRstFreq')
-        self.hydroRstFreq = parser.get('modelTime','hydroRstFreq')
-        self.hydroOutDt = parser.get('modelTime','hydroOutDt')
-        self.rstType = parser.get('hydroIO','rstType')
-        self.iocFlag = parser.get('hydroIO','iocFlag')
-        self.chrtoutDomain = parser.get('hydroIO','chrtoutDomain')
-        self.chrtoutGrid = parser.get('hydroIO','chrtoutGrid')
-        self.lsmDomain = parser.get('hydroIO','lsmDomain')
-        self.rtoutDomain = parser.get('hydroIO','rtoutDomain')
-        self.gwOut = parser.get('hydroIO','gwOut')
-        self.lakeOut = parser.get('hydroIO','lakeOut')
-        self.resetHydro = parser.get('hydroIO','resetHydroAcc')
-        self.strOrder = parser.get('hydroIO','streamOrderOut')
-        self.solarAdj = parser.get('hydroPhysics','solarAdj')
-        self.dtChRt = parser.get('hydroPhysics','dtChSec')
-        self.dtTerRt = parser.get('hydroPhysics','dtTerSec')
-        self.subRtFlag = parser.get('hydroPhysics','subRouting')
-        self.ovrRtFlag = parser.get('hydroPhysics','ovrRouting')
-        self.rtOpt = parser.get('hydroPhysics','rtOpt')
-        self.chnRtFlag = parser.get('hydroPhysics','chanRtOpt')
-        self.gwBaseFlag = parser.get('hydroPhysics','gwBaseSw')
-        self.gwRst = parser.get('hydroPhysics','gwRestart')
+        self.gList = str(parser.get('gageInfo','gageListFile'))
+        self.dynVegOpt = int(parser.get('lsmPhysics','dynVegOption'))
+        self.canStomOpt = int(parser.get('lsmPhysics','canStomResOption'))
+        self.btrOpt = int(parser.get('lsmPhysics','btrOption'))
+        self.runOffOpt = int(parser.get('lsmPhysics','runoffOption'))
+        self.sfcDragOpt = int(parser.get('lsmPhysics','sfcDragOption'))
+        self.frzSoilOpt = int(parser.get('lsmPhysics','frzSoilOption'))
+        self.supCoolOpt = int(parser.get('lsmPhysics','supCoolOption'))
+        self.radTOpt = int(parser.get('lsmPhysics','radTransferOption'))
+        self.snAlbOpt = int(parser.get('lsmPhysics','snAlbOption'))
+        self.pcpPartOpt = int(parser.get('lsmPhysics','pcpPartOption'))
+        self.tbotOpt = int(parser.get('lsmPhysics','tbotOption'))
+        self.timeSchmOpt = int(parser.get('lsmPhysics','tempTimeSchOption'))
+        self.sfcResOpt = int(parser.get('lsmPhysics','sfcResOption'))
+        self.glacier = int(parser.get('lsmPhysics','glacierOption'))
+        self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
+        self.zLvl = float(parser.get('lsmPhysics','zLvl'))
+        self.fType = int(parser.get('forcing','forceType'))
+        self.fDir = str(parser.get('forcing','forceDir'))
+        self.fDT = int(parser.get('modelTime','forceDt'))
+        self.lsmDt = int(parser.get('modelTime','lsmDt'))
+        self.lsmOutDt = int(parser.get('modelTime','lsmOutDt'))
+        self.lsmRstFreq = int(parser.get('modelTime','lsmRstFreq'))
+        self.hydroRstFreq = int(parser.get('modelTime','hydroRstFreq'))
+        self.hydroOutDt = int(parser.get('modelTime','hydroOutDt'))
+        self.rstType = int(parser.get('hydroIO','rstType'))
+        self.iocFlag = int(parser.get('hydroIO','iocFlag'))
+        self.chrtoutDomain = int(parser.get('hydroIO','chrtoutDomain'))
+        self.chrtoutGrid = int(parser.get('hydroIO','chrtoutGrid'))
+        self.lsmDomain = int(parser.get('hydroIO','lsmDomain'))
+        self.rtoutDomain = int(parser.get('hydroIO','rtoutDomain'))
+        self.gwOut = int(parser.get('hydroIO','gwOut'))
+        self.lakeOut = int(parser.get('hydroIO','lakeOut'))
+        self.resetHydro = int(parser.get('hydroIO','resetHydroAcc'))
+        self.strOrder = int(parser.get('hydroIO','streamOrderOut'))
+        self.solarAdj = int(parser.get('hydroPhysics','solarAdj'))
+        self.dtChRt = int(parser.get('hydroPhysics','dtChSec'))
+        self.dtTerRt = int(parser.get('hydroPhysics','dtTerSec'))
+        self.subRtFlag = int(parser.get('hydroPhysics','subRouting'))
+        self.ovrRtFlag = int(parser.get('hydroPhysics','ovrRouting'))
+        self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
+        self.chnRtFlag = int(parser.get('hydroPhysics','channelRouting'))
+        self.chnRtOpt = int(parser.get('hydroPhysics','chanRtOpt'))
+        self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
+        self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
 def createJob(argsUser):
     """ Reads in options from teh setup.parm file
     """
     # Check to make sure a non-zero length job name was passed by the user.
-    if len(argsUser.jobName) == 0:
+    if len(argsUser.jobName[0]) == 0:
         print "ERROR: Zero Length Job Name Passed To Program."
         raise
     
@@ -173,6 +178,7 @@ def createJob(argsUser):
         raise
 
     # Check entries into the config file to make sure they make sense.
+    checkConfig(parser)
     try:
         checkConfig(parser)
     except:
@@ -195,7 +201,7 @@ def checkConfig(parser):
     """ Function to check all options in the config file.
     """
     # Go through and check everything put into the config file.
-    check = parser.get('logistics','outDir')
+    check = str(parser.get('logistics','outDir'))
     if len(check) == 0:
         print "ERROR: Zero length output directory provided."
         raise
@@ -203,7 +209,7 @@ def checkConfig(parser):
         print "ERROR: Directory: " + check + " not found."
         raise
 
-    check = parser.get('logistics','wrfExe')
+    check = str(parser.get('logistics','wrfExe'))
     if len(check) == 0:
         print "ERROR: Zero length executable provided."
         raise
@@ -212,7 +218,7 @@ def checkConfig(parser):
         raise
         
     # Parameter tables
-    check = parser.get('logistics','genParmTbl')
+    check = str(parser.get('logistics','genParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length general parameter table provided."
         raise
@@ -220,15 +226,15 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','gwParmTbl')
-    if len(check) == 0:
-        print "ERROR: Zero length groundwater parameter table provided."
-        raise
-    if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
-        raise
+    #check = str(parser.get('logistics','gwParmTbl'))
+    #if len(check) == 0:
+    #    print "ERROR: Zero length groundwater parameter table provided."
+    #    raise
+    #if not os.path.isfile(check):
+    #    print "ERROR: File: " + check + " not found."
+    #    raise
         
-    check = parser.get('logistics','mpParmTbl')
+    check = str(parser.get('logistics','mpParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length MP parameter table provided."
         raise
@@ -236,7 +242,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','urbParmTbl')
+    check = str(parser.get('logistics','urbParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length urban parameter table provided."
         raise
@@ -244,7 +250,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','vegParmTbl')
+    check = str(parser.get('logistics','vegParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length vegetation parameter table provided."
         raise
@@ -252,7 +258,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','chanParmTbl')
+    check = str(parser.get('logistics','chanParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length channel parameter table provided."
         raise
@@ -260,7 +266,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','hydroParmTbl')
+    check = str(parser.get('logistics','hydroParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length hydro parameter table provided."
         raise
@@ -268,7 +274,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise
         
-    check = parser.get('logistics','soilParmTbl')
+    check = str(parser.get('logistics','soilParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length soil parameter table provided."
         raise
@@ -302,8 +308,8 @@ def checkConfig(parser):
         raise
     
     # Check gauge information
-    check1 = parser.get('gageInfo','gageListFile')
-    check2 = parser.get('gageInfo','gageListSQL')
+    check1 = str(parser.get('gageInfo','gageListFile'))
+    check2 = str(parser.get('gageInfo','gageListSQL'))
     if len(check1) == 0 and len(check2) == 0:
         print "ERROR: Zero length gage list file and SQL command passed to program."
         raise
@@ -387,7 +393,7 @@ def checkConfig(parser):
         raise
     
     # Check soil moisture thickness values
-    check = parser.get('lsmPhysics','soilThick')
+    check = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
     if len(check) != 4:
         print "ERROR: Must specify four soil layer thicknesses."
         raise
@@ -410,7 +416,7 @@ def checkConfig(parser):
         print "ERROR: Invalid forceType value passed to program."
         raise
         
-    check = parser.get('forcing','forceDir')
+    check = str(parser.get('forcing','forceDir'))
     if len(check) == 0:
         print "ERROR: Zero length forceDir passed to program."
         raise
