@@ -24,7 +24,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     fileObj = open(pathOut,'w')
     fileObj.write('&NOAHLSM_OFFLINE')
     fileObj.write('\n')
-    inStr = ' HRLDAS_SETUP_FILE = "' + gageData.wrfInput + '"'
+    inStr = ' HRLDAS_SETUP_FILE = "' + str(gageData.wrfInput) + '"'
     fileObj.write(inStr)
     inStr = ' INDIR = "' + jobData.fDir + '"'
     fileObj.write(inStr)
