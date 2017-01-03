@@ -20,133 +20,133 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     
     print pathOut
     # Write each line of the expected hrldas.namelist file.
-    try:
-        fileObj = open(pathOut,'w')
-        fileObj.write('&NOAHLSM_OFFLINE')
-        fileObj.write('\n')
-        inStr = ' HRLDAS_SETUP_FILE = "' + gageData.wrfInput + '"'
+    #try:
+    fileObj = open(pathOut,'w')
+    fileObj.write('&NOAHLSM_OFFLINE')
+    fileObj.write('\n')
+    inStr = ' HRLDAS_SETUP_FILE = "' + gageData.wrfInput + '"'
+    fileObj.write(inStr)
+    inStr = ' INDIR = "' + jobData.fDir + '"'
+    fileObj.write(inStr)
+    inStr = ' SPATIAL_FILENAME = "' + gageData.soilFile + '"'
+    fileObj.write(inStr)
+    inStr = ' OUTDIR = "' + outDir + '"'
+    fileObj.write(inStr)
+    fileObj.write('\n')
+    if typeFlag == 1:  # Spinup
+        dt = jobData.eSpinDate - jobData.bSpinDate
+        inStr = ' START_YEAR = ' + jobData.bSpinDate.strftime('%Y')
         fileObj.write(inStr)
-        inStr = ' INDIR = "' + jobData.fDir + '"'
+        inStr = ' START_MONTH = ' + jobData.bSpinDate.strftime('%m')
         fileObj.write(inStr)
-        inStr = ' SPATIAL_FILENAME = "' + gageData.soilFile + '"'
+        inStr = ' START_DAY = ' + jobData.bSpinDate.strftime('%d')
         fileObj.write(inStr)
-        inStr = ' OUTDIR = "' + outDir + '"'
+    else:  # Calibration
+        dt = jobData.eCalibDate - jobData.bCalibDate
+        inStr = ' START_YEAR = ' + jobData.bCalibDate.strftime('%Y')
         fileObj.write(inStr)
-        fileObj.write('\n')
-        if typeFlag == 1:  # Spinup
-            dt = jobData.eSpinDate - jobData.bSpinDate
-            inStr = ' START_YEAR = ' + jobData.bSpinDate.strftime('%Y')
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bSpinDate.strftime('%m')
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bSpinDate.strftime('%d')
-            fileObj.write(inStr)
-        else:  # Calibration
-            dt = jobData.eCalibDate - jobData.bCalibDate
-            inStr = ' START_YEAR = ' + jobData.bCalibDate.strftime('%Y')
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bCalibDate.strftime('%m')
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bCalibDate.strftime('%d')
-            fileObj.write(inStr)
-        fileObj.write(' START_HOUR = 00')
-        fileObj.write(' START_MIN = 00')
-        fileObj.write('\n')
-        if typeFlag == 1:
-            inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" 
-        else:
-            # PLACEHOLDER FOR CHECKING FOR SPINUP RESTART
-            rstFile = ''
-            inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'"
+        inStr = ' START_MONTH = ' + jobData.bCalibDate.strftime('%m')
         fileObj.write(inStr)
-        fileObj.write('\n')
-        inStr = ' KDAY = ' + dt.days
+        inStr = ' START_DAY = ' + jobData.bCalibDate.strftime('%d')
         fileObj.write(inStr)
-        fileObj.write('\n')
-        inStr = ' DYNAMIC_VEG_OPTION = ' + jobData.dynVegOpt
-        fileObj.write(inStr)
-        inStr = ' CANOPY_STOMATAL_RESISTANCE_OPTION = ' + jobData.canStomOpt
-        fileObj.write(inStr)
-        inStr = ' BTR_OPTION = ' + jobData.btrOpt
-        fileObj.write(inStr)
-        inStr = ' RUNOFF_OPTION = ' + jobData.runOffOpt
-        fileObj.write(inStr)
-        inStr = ' SURFACE_DRAG_OPTION = ' + jobData.sfcDragOpt
-        fileObj.write(inStr)
-        inStr = ' FROZEN_SOIL_OPTION = ' + jobData.frzSoilOpt
-        fileObj.write(inStr)
-        inStr = ' SUPERCOOLED_WATER_OPTION = ' + jobData.supCoolOpt
-        fileObj.write(inStr)
-        inStr = ' RADIATIVE_TRANSFER_OPTION = ' + jobData.radTOpt
-        fileObj.write(inStr)
-        inStr = ' SNOW_ALBEDO_OPTION = ' + jobData.snAlbOpt
-        fileObj.write(inStr)
-        inStr = ' PCP_PARTITION_OPTION = ' + jobData.pcpPartOpt
-        fileObj.write(inStr)
-        inStr = ' TBOT_OPTION = ' + jobData.tbotOpt
-        fileObj.write(inStr)
-        inStr = ' TEMP_TIME_SCHEME_OPTION = ' + jobData.timeSchmOpt
-        fileObj.write(inStr)
-        inStr = ' GLACIER_OPTION = ' + jobData.glacier
-        fileObj.write(inStr)
-        inStr = ' SURFACE_RESISTANCE_OPTION = ' + jobData.sfcResOpt
-        fileObj.write(inStr)
-        fileObj.write('\n')
-        fileObj.write('\n')
-        inStr = ' FORCING_TIMESTEP = ' + jobData.fDT
-        fileObj.write(inStr)
-        inStr = ' NOAH_TIMESTEP = ' + jobData.lsmDt
-        fileObj.write(inStr)
-        inStr = ' OUTPUT_TIMESTEP = ' + jobData.lsmOutDt
-        fileObj.write(inStr)
-        fileObj.write('\n')
-        inStr = ' RESTART_FREQUENCY_HOURS = ' + int(jobData.lsmRstFreq/3600.0)
-        fileObj.write(inStr)
-        fileObj.write(' ! Split output after split_output_count output times')
-        fileObj.write(' SPLIT_OUTPUT_COUNT = 1')
-        fileObj.write('\n')
-        fileObj.write('\n')
-        fileObj.write(' ! XSTART = 1')
-        fileObj.wrtie(' ! XEND = 1')
-        fileObj.write(' ! YSTART = 1')
-        fileObj.write(' ! YEND = 1')
-        fileObj.write('\n')
-        fileObj.write(' NSOIL = 4')
-        inStr = ' soil_thick_input(1) = ' + jobData.soilThick[0]
-        fileObj.write(inStr)
-        inStr = ' soil_thick_input(2) = ' + jobData.soilThick[1]
-        fileObj.write(inStr)
-        inStr = ' soil_thick_input(3) = ' + jobData.soilThick[2]
-        fileObj.write(inStr)
-        inStr = ' soil_thick_input(4) = ' + jobData.soilThick[3]
-        fileObj.write(inStr)
-        fileObj.write('\n')
-        inStr = ' ZLVL = ' + jobData.zLvl
-        fileObj.write(inStr)
-        fileObj.write('\n')
-        fileObj.write(' rst_bi_in = 0')
-        fileObj.write(' rst_bi_out = 0')
-        fileObj.write('\n')
-        fileObj.write('/')
-        fileObj.write('\n')
-        fileObj.write('&WRF_HYDRO_OFFLINE')
-        inStr = ' !Specifications of forcing data: 1=HRLDAS-hr format, 2=HRLDAS-min format ' + \
-                '3=WRF, 4=Idealized, 5=Ideal w/ Spec.Precip., 6=HRLDAS-hrl y format w/ Spec. Precip.'
-        fileObj.write(inStr)
-        inStr = ' FORC_TYP = ' + jobData.fType
-        fileObj.write(inStr)
-        inStr = ' !HRLDAS_ini_typ 1: initial and parameters from forcing; 0: from wrfinput'
-        fileObj.write(inStr)
-        inStr = ' HRLDAS_ini_type = 1'
-        fileObj.write(inStr)
-        fileObj.write(' ! for extract greenfrac')
-        inStr = ' GEO_STATIC_FLNM = "' + gageData.geoFile + '"'
-        fileObj.write(inStr)
-        fileObj.write('/')
-        fileObj.close
-    except:
-        jobData.errMsg = "ERROR: Failure to create: " + pathOut
-        raise
+    fileObj.write(' START_HOUR = 00')
+    fileObj.write(' START_MIN = 00')
+    fileObj.write('\n')
+    if typeFlag == 1:
+        inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" 
+    else:
+        # PLACEHOLDER FOR CHECKING FOR SPINUP RESTART
+        rstFile = ''
+        inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'"
+    fileObj.write(inStr)
+    fileObj.write('\n')
+    inStr = ' KDAY = ' + dt.days
+    fileObj.write(inStr)
+    fileObj.write('\n')
+    inStr = ' DYNAMIC_VEG_OPTION = ' + jobData.dynVegOpt
+    fileObj.write(inStr)
+    inStr = ' CANOPY_STOMATAL_RESISTANCE_OPTION = ' + jobData.canStomOpt
+    fileObj.write(inStr)
+    inStr = ' BTR_OPTION = ' + jobData.btrOpt
+    fileObj.write(inStr)
+    inStr = ' RUNOFF_OPTION = ' + jobData.runOffOpt
+    fileObj.write(inStr)
+    inStr = ' SURFACE_DRAG_OPTION = ' + jobData.sfcDragOpt
+    fileObj.write(inStr)
+    inStr = ' FROZEN_SOIL_OPTION = ' + jobData.frzSoilOpt
+    fileObj.write(inStr)
+    inStr = ' SUPERCOOLED_WATER_OPTION = ' + jobData.supCoolOpt
+    fileObj.write(inStr)
+    inStr = ' RADIATIVE_TRANSFER_OPTION = ' + jobData.radTOpt
+    fileObj.write(inStr)
+    inStr = ' SNOW_ALBEDO_OPTION = ' + jobData.snAlbOpt
+    fileObj.write(inStr)
+    inStr = ' PCP_PARTITION_OPTION = ' + jobData.pcpPartOpt
+    fileObj.write(inStr)
+    inStr = ' TBOT_OPTION = ' + jobData.tbotOpt
+    fileObj.write(inStr)
+    inStr = ' TEMP_TIME_SCHEME_OPTION = ' + jobData.timeSchmOpt
+    fileObj.write(inStr)
+    inStr = ' GLACIER_OPTION = ' + jobData.glacier
+    fileObj.write(inStr)
+    inStr = ' SURFACE_RESISTANCE_OPTION = ' + jobData.sfcResOpt
+    fileObj.write(inStr)
+    fileObj.write('\n')
+    fileObj.write('\n')
+    inStr = ' FORCING_TIMESTEP = ' + jobData.fDT
+    fileObj.write(inStr)
+    inStr = ' NOAH_TIMESTEP = ' + jobData.lsmDt
+    fileObj.write(inStr)
+    inStr = ' OUTPUT_TIMESTEP = ' + jobData.lsmOutDt
+    fileObj.write(inStr)
+    fileObj.write('\n')
+    inStr = ' RESTART_FREQUENCY_HOURS = ' + int(jobData.lsmRstFreq/3600.0)
+    fileObj.write(inStr)
+    fileObj.write(' ! Split output after split_output_count output times')
+    fileObj.write(' SPLIT_OUTPUT_COUNT = 1')
+    fileObj.write('\n')
+    fileObj.write('\n')
+    fileObj.write(' ! XSTART = 1')
+    fileObj.wrtie(' ! XEND = 1')
+    fileObj.write(' ! YSTART = 1')
+    fileObj.write(' ! YEND = 1')
+    fileObj.write('\n')
+    fileObj.write(' NSOIL = 4')
+    inStr = ' soil_thick_input(1) = ' + jobData.soilThick[0]
+    fileObj.write(inStr)
+    inStr = ' soil_thick_input(2) = ' + jobData.soilThick[1]
+    fileObj.write(inStr)
+    inStr = ' soil_thick_input(3) = ' + jobData.soilThick[2]
+    fileObj.write(inStr)
+    inStr = ' soil_thick_input(4) = ' + jobData.soilThick[3]
+    fileObj.write(inStr)
+    fileObj.write('\n')
+    inStr = ' ZLVL = ' + jobData.zLvl
+    fileObj.write(inStr)
+    fileObj.write('\n')
+    fileObj.write(' rst_bi_in = 0')
+    fileObj.write(' rst_bi_out = 0')
+    fileObj.write('\n')
+    fileObj.write('/')
+    fileObj.write('\n')
+    fileObj.write('&WRF_HYDRO_OFFLINE')
+    inStr = ' !Specifications of forcing data: 1=HRLDAS-hr format, 2=HRLDAS-min format ' + \
+            '3=WRF, 4=Idealized, 5=Ideal w/ Spec.Precip., 6=HRLDAS-hrl y format w/ Spec. Precip.'
+    fileObj.write(inStr)
+    inStr = ' FORC_TYP = ' + jobData.fType
+    fileObj.write(inStr)
+    inStr = ' !HRLDAS_ini_typ 1: initial and parameters from forcing; 0: from wrfinput'
+    fileObj.write(inStr)
+    inStr = ' HRLDAS_ini_type = 1'
+    fileObj.write(inStr)
+    fileObj.write(' ! for extract greenfrac')
+    inStr = ' GEO_STATIC_FLNM = "' + gageData.geoFile + '"'
+    fileObj.write(inStr)
+    fileObj.write('/')
+    fileObj.close
+    #except:
+    #    jobData.errMsg = "ERROR: Failure to create: " + pathOut
+    #    raise
     
 def createHydroNL(gageData,jobData,outDir,typeFlag):
     # General function for creation of a hydro.namelist file.
