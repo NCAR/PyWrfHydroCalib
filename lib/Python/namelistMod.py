@@ -140,7 +140,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     inStr = ' HRLDAS_ini_type = 1' + '\n'
     fileObj.write(inStr)
     fileObj.write(' ! for extract greenfrac\n')
-    inStr = ' GEO_STATIC_FLNM = "' + gageData.geoFile + '"' + '\n'
+    inStr = ' GEO_STATIC_FLNM = "' + str(gageData.geoFile) + '"' + '\n'
     fileObj.write(inStr)
     fileObj.write('/')
     fileObj.close
