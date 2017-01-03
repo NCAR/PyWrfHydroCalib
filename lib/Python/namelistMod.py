@@ -60,7 +60,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
     fileObj.write(inStr)
     fileObj.write('\n')
-    inStr = ' KDAY = ' + dt.days + '\n'
+    inStr = ' KDAY = ' + str(dt.days) + '\n'
     fileObj.write(inStr)
     fileObj.write('\n')
     inStr = ' DYNAMIC_VEG_OPTION = ' + jobData.dynVegOpt + '\n'
