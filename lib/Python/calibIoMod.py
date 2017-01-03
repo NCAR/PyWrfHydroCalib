@@ -132,4 +132,22 @@ def setupModels(jobData):
             
         # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
         try:
-            
+            namelistMod.createHrldasNL(gageData,jobData,spinupDir,1)
+        except:
+            wipeJobDir(jobData,parentDir)
+            raise
+        #try:
+        #    namelistMod.createHrldasNL(gageData,jobData,calibDir,2)
+        #except:
+        #    wipeJobDir(jobData,parentDir)
+        #    raise
+        #try:
+        #    namelistMod.createHydroNL(gageData,jobData,spinupDir,1)
+        #except:
+        #    wipeJobDir(jobData,parentDir)
+        #    raise
+        #try:
+        #    namelistMod.createHydroNL(gageData,jobData,calibDir,2)
+        #except:
+        #    wipeJobDir(jobData,parentDir)
+        #    raise
