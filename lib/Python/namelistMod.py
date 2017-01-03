@@ -280,7 +280,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
     inStr = ' rt_option = ' + str(jobData.rtOpt) + '\n'
     fileObj.write('\n')
     fileObj.write('!Switch to activate channel routing:\n')
-    inStr = ' CHANRTSWCRT = ' + str(jobData.chRtFlag) + '\n'
+    inStr = ' CHANRTSWCRT = ' + str(jobData.chnRtFlag) + '\n'
     fileObj.write(inStr)
     fileObj.write('!Specify channel routing option: 1=Muskingam-reach, 2=Musk.-Cunge-reach, 3=Diff.Wave-gridded\n')
     inStr = ' channel_option = ' + str(jobData.chnRtOpt) + '\n'
