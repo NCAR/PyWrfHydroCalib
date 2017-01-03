@@ -28,7 +28,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     fileObj.write(inStr)
     inStr = ' INDIR = "' + jobData.fDir + '"' + '\n'
     fileObj.write(inStr)
-    inStr = ' SPATIAL_FILENAME = "' + gageData.soilFile + '"' + '\n'
+    inStr = ' SPATIAL_FILENAME = "' + str(gageData.soilFile) + '"' + '\n'
     fileObj.write(inStr)
     inStr = ' OUTDIR = "' + outDir + '"' + '\n'
     fileObj.write(inStr)
