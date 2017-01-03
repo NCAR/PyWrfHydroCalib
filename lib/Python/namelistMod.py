@@ -202,7 +202,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
     fileObj.write('!  SET = 1 WHEN RUNNING COUPLED TO WRF!!!\n')
     fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
     fileObj.write('\n')
-    fileObj.write(' rst_typ = 1 : overwrite the soil variables from routing restart file\n')
+    fileObj.write(' !rst_typ = 1 : overwrite the soil variables from routing restart file\n')
     inStr = ' rst_typ = ' + str(jobData.rstType)  + '\n'
     fileObj.write(inStr)
     fileObj.write('\n')
@@ -235,6 +235,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
     fileObj.write('!Specify the minimum stream order to output to netcdf point file...(integer)\n')
     fileObj.write('!Note: lower value of stream order produces more output\n')
     inStr = ' order_to_write = ' + str(jobData.strOrder) + '\n'
+    fileObj.write(inStr)
     fileObj.write('\n')
     fileObj.write('!!!! PHYSICS OPTIONS AND RELATED SETTINGS !!!!\n')
     fileObj.write('!Switch for terrain adjustment of incoming solar radiation: 0=no, 1=yes\n')
@@ -302,6 +303,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
     fileObj.write('!Note: Only required in baseflow bucket model is active\n')
     fileObj.write('!gwbasmskfil will not be used if UDMP_OPT = 1\n')
     inStr = ' GWBUCKPARM_file = "' + str(gageData.gwFile) + '"\n'
+    fileObj.write(inStr)
     fileObj.write('\n')
     fileObj.write('! User defined mapping, such NHDPlus\n')
     fileObj.write('!0: default none. 1: yes\n')
