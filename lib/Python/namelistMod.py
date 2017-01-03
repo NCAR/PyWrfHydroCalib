@@ -107,7 +107,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     fileObj.write('\n')
     fileObj.write('\n')
     fileObj.write(' ! XSTART = 1\n')
-    fileObj.wrtie(' ! XEND = 1\n')
+    fileObj.write(' ! XEND = 1\n')
     fileObj.write(' ! YSTART = 1\n')
     fileObj.write(' ! YEND = 1\n')
     fileObj.write('\n')
