@@ -82,6 +82,8 @@ class jobMeta:
         self.gwBaseFlag = []
         self.gwRst = []
         self.gages = []
+        self.dbUName = []
+        self.dbPwd = []
     def readConfig(self,parser,jobName):
         """ Read in and check options passed by the config file.
         """

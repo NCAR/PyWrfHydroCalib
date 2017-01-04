@@ -21,6 +21,7 @@ sys.path.insert(0,'./lib/Python')
 import configMod
 import calibIoMod
 import errMod
+import dbMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -38,6 +39,14 @@ def main(argv):
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
         
+    # Lookup database username/login credentials based on username
+    # running program.
+    try:
+        dbMod.getCredentials(jobData)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
+        
     # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
     # ALREADY BEEN ENTERED INTO DB
         
@@ -48,11 +57,10 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Create necessary run directories to hold output, analysis, etc.
-    calibIoMod.setupModels(jobData)
-    #try:
-    #    calibIoMod.setupModels(jobData)
-    #except:
-    #    errMod.errOut(jobData)
+    try:
+        calibIoMod.setupModels(jobData)
+    except:
+        errMod.errOut(jobData)
         
     # Create DB entries for job name
     # PLACEHOLDER FOR ENTERING DB INFORMATION    
