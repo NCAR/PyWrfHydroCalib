@@ -175,6 +175,7 @@ def createJob(argsUser):
     configPath = argsUser.configFile[0]    
     parser = SafeConfigParser()
     
+    print configPath
     if os.path.isfile(configPath):
         parser.read(configPath)
     else:
