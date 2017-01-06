@@ -88,6 +88,7 @@ class jobMeta:
         """ Read in and check options passed by the config file.
         """
         self.jobName = str(parser.get('logistics','jobName'))
+        print self.jobName
         self.outDir = str(parser.get('logistics','outDir'))
         self.email = str(parser.get('logistics','email'))
         if len(self.email) == 0:

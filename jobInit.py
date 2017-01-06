@@ -48,7 +48,6 @@ def main(argv):
         print pwdTmp
         jobData.dbUName= uNameTmp
         jobData.dbPwd = pwdTmp
-        dbMod.getCredentials(jobData)
     except:
         print "ERROR: Unable to authenticate credentials for database."
         sys.exit(1)
