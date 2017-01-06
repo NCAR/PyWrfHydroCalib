@@ -32,9 +32,10 @@ def errOut(jobData):
         print msgContent
         sys.exit(1)
         
-def wipeJobDir(jobData,jobDir):
+def wipeJobDir(jobData):
     # Generic function to remove job directory that was not successfully 
     # created during initialization routines.
+    jobDir = jobData.outDir + "/" + jobData.jobName
     try:
         shutil.rmtree(jobDir)
     except:

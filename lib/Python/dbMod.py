@@ -5,8 +5,6 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-import os
-import pwd
 import MySQLdb
 
 class Database(object):
@@ -18,7 +16,7 @@ class Database(object):
         self.connected = False
         self.reportLevel = jobData.report
         self.email = jobData.email
-        self.host = 'hydro-c1-web' # Hard-coded for now
+        self.host = 'hydro-c1-web'
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
         self.dbName = 'NWM_Calib_DB'

@@ -45,8 +45,6 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    uNameTmp = raw_input('Enter Database Username: ')
-    pwdTmp = getpass.getpass('Enter Database Password: ')
     try:
         uNameTmp = raw_input('Enter Database Username: ')
         pwdTmp = getpass.getpass('Enter Database Password: ')
@@ -55,6 +53,14 @@ def main(argv):
     except:
         print "ERROR: Unable to authenticate credentials for database."
         sys.exit(1)
+        
+    # Establish database connection.
+    db = dbMod.Database(jobData)
+    try:
+        db.connect(jobData)
+    except:
+        errMod.wipeJobDir(jobData)
+        errMod.errOut(jobData)
         
     # First check to see if unique Job ID already exists. 
     # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
@@ -73,7 +79,13 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Create DB entries for job name
-    # PLACEHOLDER FOR ENTERING DB INFORMATION    
+    # PLACEHOLDER FOR ENTERING DB INFORMATION
+        
+    # Disconnect from the calibration database.
+    try:
+        db.disconnect(jobData)
+    except:
+        errMod.errOut(jobData)
         
 if __name__ == "__main__":
     main(sys.argv[1:])

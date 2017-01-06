@@ -67,7 +67,7 @@ def setupModels(jobData):
     try:
         os.mkdir(parentDir)
     except:
-        wipeJobDir(jobData,parentDir)
+        wipeJobDir(jobData)
         jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
         raise
         
@@ -83,7 +83,7 @@ def setupModels(jobData):
         try:
             os.mkdir(gageDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
             raise
             
@@ -92,7 +92,7 @@ def setupModels(jobData):
         try:
             os.symlink(jobData.fDir,fLink)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create FORCING link to: " + jobData.fDir
             raise
             
@@ -101,7 +101,7 @@ def setupModels(jobData):
         try:
             os.mkdir(obsDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
             raise
         
@@ -110,7 +110,7 @@ def setupModels(jobData):
         try:
             os.mkdir(spinupDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + spinupDir
             raise
             
@@ -118,7 +118,7 @@ def setupModels(jobData):
         try:
             os.mkdir(calibDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + calibDir
             raise
         
@@ -127,27 +127,27 @@ def setupModels(jobData):
         try:
             gageData.pullGageMeta(jobData,jobData.gages[gage])
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             raise
             
         # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
         try:
             namelistMod.createHrldasNL(gageData,jobData,spinupDir,1)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             raise
         try:
             namelistMod.createHrldasNL(gageData,jobData,calibDir,2)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             raise
         try:
             namelistMod.createHydroNL(gageData,jobData,spinupDir,1)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             raise
         try:
             namelistMod.createHydroNL(gageData,jobData,calibDir,2)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             raise
