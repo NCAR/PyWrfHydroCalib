@@ -193,6 +193,7 @@ def createJob(argsUser):
     # Initialize job object
     jobObj = jobMeta()
     
+    print 'TESTTTTT'
     # Read in values
     jobMeta.readConfig(jobObj,parser,argsUser.jobName)
     #try:
