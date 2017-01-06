@@ -191,11 +191,12 @@ def createJob(argsUser):
     jobObj = jobMeta()
     
     # Read in values
-    try:
-        jobMeta.readConfig(jobObj,parser,argsUser.jobName)
-    except:
-        print "ERROR: Unable to assign values from config file."
-        raise
+    jobMeta.readConfig(jobObj,parser,argsUser.jobName)
+    #try:
+    #    jobMeta.readConfig(jobObj,parser,argsUser.jobName)
+    #except:
+    #    print "ERROR: Unable to assign values from config file."
+    #    raise
     
     return jobObj
     
