@@ -27,8 +27,8 @@ def main(argv):
     # Parse arguments. User must input a job name.
     parser = argparse.ArgumentParser(description='Main program to initialize ' + \
              'calibration for the National Water Model')
-    parser.add_argument('jobName',metavar='job',type=str,nargs='+',
-                        help='Job name to initialize workflow.')
+    parser.add_argument('configFile',metavar='config',type=str,nargs='+',
+                        help='Config file to initialize job.')
             
     args = parser.parse_args()            
 
@@ -42,11 +42,18 @@ def main(argv):
     # Lookup database username/login credentials based on username
     # running program.
     try:
+        uNameTmp = input('Enter Database Username: ')
+        pwdTmp = input('Enter Database Password: ')
+        print uNameTmp
+        print pwdTmp
+        jobData.dbUName= uNameTmp
+        jobData.dbPwd = pwdTmp
         dbMod.getCredentials(jobData)
     except:
         print "ERROR: Unable to authenticate credentials for database."
         sys.exit(1)
         
+    # First check to see if unique Job ID already exists. 
     # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
     # ALREADY BEEN ENTERED INTO DB
         

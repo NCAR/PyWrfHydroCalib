@@ -55,19 +55,3 @@ class Database(object):
         self.connected = False
         
         
-def getCredentials(jobData):
-    # Generic routine for looking up DB user name / password
-    # based on who is running program.
-    
-    dbNames = {'karsten':'karstenCalib'}
-    dbPwds = {'karsten':'TEST123'}
-    
-    # Get user ID
-    uId = pwd.getpwuid(os.getuid()).pw_name
-    
-    if not uId in dbNames:
-        print "ERROR: User ID not permitted to access calibration database."
-        raise
-        
-    jobData.dbUName = dbNames[uId]
-    jobData.dbPwd = dbPwds[uId]

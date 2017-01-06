@@ -87,7 +87,7 @@ class jobMeta:
     def readConfig(self,parser,jobName):
         """ Read in and check options passed by the config file.
         """
-        self.jobName = str(jobName[0])
+        self.jobName = str(parser.get('logistics','jobName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.email = str(parser.get('logistics','email'))
         if len(self.email) == 0:
@@ -165,12 +165,12 @@ class jobMeta:
 def createJob(argsUser):
     """ Reads in options from teh setup.parm file
     """
-    # Check to make sure a non-zero length job name was passed by the user.
-    if len(argsUser.jobName[0]) == 0:
-        print "ERROR: Zero Length Job Name Passed To Program."
+    # Check to make sure a non-zero length config file was passed by the user.
+    if len(argsUser.configFile[0]) ==0:
+        print "ERROR: Zero Length Configuration File Passed To Program."
         raise
-    
-    configPath = './setup_files/setup.parm'
+
+    configPath = argsUser.configFile[0]    
     parser = SafeConfigParser()
     
     if os.path.isfile(configPath):
@@ -180,7 +180,6 @@ def createJob(argsUser):
         raise
 
     # Check entries into the config file to make sure they make sense.
-    checkConfig(parser)
     try:
         checkConfig(parser)
     except:
@@ -211,6 +210,11 @@ def checkConfig(parser):
         print "ERROR: Directory: " + check + " not found."
         raise
 
+    check = str(parser.get('logistics','jobName'))
+    if len(check) == 0:
+        print "ERROR: Zero length job name provided."
+        raise
+        
     check = str(parser.get('logistics','wrfExe'))
     if len(check) == 0:
         print "ERROR: Zero length executable provided."
