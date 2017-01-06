@@ -30,8 +30,12 @@ class Database(object):
             jobData.errMsg = "ERROR: Connection to DB already established."
             raise
         
+        print self.host
+        print self.uName
+        print self.pwd
+        print self.dbName
         try:
-            db = MySQLdb.connect(self.host,self.uName,self.pwd,self.ddbName)
+            db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
         except:
             jobData.errMsg = "ERROR: Unable to connect to database: " + self.dbName
             raise
