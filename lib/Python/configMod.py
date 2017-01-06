@@ -87,9 +87,7 @@ class jobMeta:
     def readConfig(self,parser):
         """ Read in and check options passed by the config file.
         """
-        print 'LKASJFLKJ'
         self.jobName = str(parser.get('logistics','jobName'))
-        print self.jobName
         self.outDir = str(parser.get('logistics','outDir'))
         self.email = str(parser.get('logistics','email'))
         if len(self.email) == 0:
@@ -175,7 +173,6 @@ def createJob(argsUser):
     configPath = argsUser.configFile[0]    
     parser = SafeConfigParser()
     
-    print configPath
     if os.path.isfile(configPath):
         parser.read(configPath)
     else:
@@ -185,7 +182,6 @@ def createJob(argsUser):
     # Check entries into the config file to make sure they make sense.
     try:
         checkConfig(parser)
-        print 'alsdkfj'
     except:
         print "ERROR: Improper Entries Into Config File."
         raise
@@ -193,14 +189,12 @@ def createJob(argsUser):
     # Initialize job object
     jobObj = jobMeta()
     
-    print 'TESTTTTT'
     # Read in values
-    jobMeta.readConfig(jobObj,parser)
-    #try:
-    #    jobMeta.readConfig(jobObj,parser,argsUser.jobName)
-    #except:
-    #    print "ERROR: Unable to assign values from config file."
-    #    raise
+    try:
+        jobMeta.readConfig(jobObj,parser,argsUser.jobName)
+    except:
+        print "ERROR: Unable to assign values from config file."
+        raise
     
     return jobObj
     

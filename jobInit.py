@@ -44,16 +44,18 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        uNameTmp = input('Enter Database Username: ')
-        pwdTmp = input('Enter Database Password: ')
-        print uNameTmp
-        print pwdTmp
-        jobData.dbUName= uNameTmp
-        jobData.dbPwd = pwdTmp
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    uNameTmp = input('Enter Database Username: ')
+    print uNameTmp
+    #try:
+    #    uNameTmp = input('Enter Database Username: ')
+    #    pwdTmp = input('Enter Database Password: ')
+    #    print uNameTmp
+    #    print pwdTmp
+    #    jobData.dbUName= uNameTmp
+    #    jobData.dbPwd = pwdTmp
+    #except:
+    #    print "ERROR: Unable to authenticate credentials for database."
+    #    sys.exit(1)
         
     # First check to see if unique Job ID already exists. 
     # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
