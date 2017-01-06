@@ -59,7 +59,6 @@ def main(argv):
     try:
         db.connect(jobData)
     except:
-        errMod.wipeJobDir(jobData)
         errMod.errOut(jobData)
         
     # First check to see if unique Job ID already exists. 
