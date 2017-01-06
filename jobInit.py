@@ -45,7 +45,7 @@ def main(argv):
     # Lookup database username/login credentials based on username
     # running program.
     uNameTmp = input('Enter Database Username: ')
-    print uNameTmp
+    print str(uNameTmp)
     #try:
     #    uNameTmp = input('Enter Database Username: ')
     #    pwdTmp = input('Enter Database Password: ')
