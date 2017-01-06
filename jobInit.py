@@ -14,6 +14,7 @@
 
 import sys
 import argparse
+import getpass
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
@@ -46,6 +47,8 @@ def main(argv):
     # running program.
     uNameTmp = raw_input('Enter Database Username: ')
     print str(uNameTmp)
+    pwdTmp = getpass.getpass()
+    print pwdTmp
     #try:
     #    uNameTmp = input('Enter Database Username: ')
     #    pwdTmp = input('Enter Database Password: ')
