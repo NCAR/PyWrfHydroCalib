@@ -18,6 +18,9 @@ import argparse
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
 
+import warnings
+warnings.filterwarnings("ignore")
+
 import configMod
 import calibIoMod
 import errMod
