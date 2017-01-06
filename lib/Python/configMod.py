@@ -87,6 +87,7 @@ class jobMeta:
     def readConfig(self,parser,jobName):
         """ Read in and check options passed by the config file.
         """
+        print 'LKASJFLKJ'
         self.jobName = str(parser.get('logistics','jobName'))
         print self.jobName
         self.outDir = str(parser.get('logistics','outDir'))
