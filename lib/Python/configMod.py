@@ -84,7 +84,7 @@ class jobMeta:
         self.gages = []
         self.dbUName = []
         self.dbPwd = []
-    def readConfig(self,parser,jobName):
+    def readConfig(self,parser):
         """ Read in and check options passed by the config file.
         """
         print 'LKASJFLKJ'
@@ -195,7 +195,7 @@ def createJob(argsUser):
     
     print 'TESTTTTT'
     # Read in values
-    jobMeta.readConfig(jobObj,parser,argsUser.jobName)
+    jobMeta.readConfig(jobObj,parser)
     #try:
     #    jobMeta.readConfig(jobObj,parser,argsUser.jobName)
     #except:
