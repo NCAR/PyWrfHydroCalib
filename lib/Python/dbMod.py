@@ -16,7 +16,7 @@ class Database(object):
         self.connected = False
         self.reportLevel = jobData.report
         self.email = jobData.email
-        self.host = 'hydro-c1-web'
+        self.host = 'hydro-c1-web.rap.ucar.edu'
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
         self.dbName = 'NWM_Calib_DB'
