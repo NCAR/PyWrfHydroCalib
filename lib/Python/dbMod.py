@@ -56,4 +56,36 @@ class Database(object):
         self.conn = None
         self.connected = False
         
+    def getJobID(self,jobData):
+        """
+        Generic function to return job ID based on information passed in
+        by the config file. Search will look by outputdirectory where 
+        all output will be placed. This is defined by job name, and
+        a top-level directory by the user. This should be unique. May
+        want to add more constraints in the future.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+
+        # Establish job directory uniquely constrained by job name and top level
+        # output directory.            
+        jobDir = jobData.outDir + "/" + jobData.jobName
+        
+        sqlCmd = "select jobID from Job_Meta where Job_Directory='%s'" % (jobDir)
+        
+        try:
+            self.conn.execute(sqlCmd)
+            result = self.conn.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Unable to execute SQL command to inquire job ID."
+            raise
+        
+        if result is None:
+            # This will be a unique value specific to indicating no Job ID has 
+            # been entered for this particular unique job situation.
+            jobData.jobID = -9999
+        else:
+            jobData.jobID = result
+        
         

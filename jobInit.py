@@ -64,6 +64,17 @@ def main(argv):
     # First check to see if unique Job ID already exists. 
     # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
     # ALREADY BEEN ENTERED INTO DB
+    try:
+        db.getJobID(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # If a job ID value was found, this means information from this configuration
+    # file has already been initiated by the workflow into the database. 
+    if int(jobData.jobID) != -9999:
+        jobData.errMsg = "ERROR: Information for this job has already " + \
+                         "been entered as job ID: " + str(jobData.jobID)
+        errMod.errOut(jobData)
         
     # Extract list of gages to perform workflow on
     try:

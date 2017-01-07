@@ -16,6 +16,7 @@ class jobMeta:
     def __init__(self):
         # Initialize empty Python object. 
         self.jobName = []
+        self.jobID = []
         self.outDir = []
         self.email = []
         self.report = []
