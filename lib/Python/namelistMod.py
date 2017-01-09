@@ -18,7 +18,6 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         jobData.errMsg = "ERROR: " + pathOut + " already exists."
         raise
     
-    print pathOut
     # Write each line of the expected hrldas.namelist file.
     try:
         fileObj = open(pathOut,'w')
