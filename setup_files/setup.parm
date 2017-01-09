@@ -56,7 +56,7 @@ eCalibDate = 2010-10-01
 # Specify USGS GAGES II basins to calibrate on.
 # If SQL command desired, leave gageListFile blank.
 # If file listing gages desired, leave gageListSQL blank.
-gageListSQL = 'select * from Domain_Meta;'
+gageListSQL = select * from Domain_Meta;
 gageListFile =
 
 [lsmPhysics]
