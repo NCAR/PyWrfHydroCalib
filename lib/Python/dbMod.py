@@ -73,10 +73,13 @@ class Database(object):
         jobDir = jobData.outDir + "/" + jobData.jobName
         
         sqlCmd = "select jobID from Job_Meta where Job_Directory='%s'" % (jobDir)
+        print jobDir
+        print sqlCmd
         
         try:
             self.conn.execute(sqlCmd)
             result = self.conn.fetchone()
+            print result
         except:
             jobData.errMsg = "ERROR: Unable to execute SQL command to inquire job ID."
             raise
@@ -87,5 +90,7 @@ class Database(object):
             jobData.jobID = -9999
         else:
             jobData.jobID = result
+            
+        print jobData.jobId
         
         
