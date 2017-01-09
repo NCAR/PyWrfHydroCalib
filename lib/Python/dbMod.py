@@ -94,6 +94,6 @@ class Database(object):
             jobData.jobID = result
         
         print 'alsdkjfasldf'
-        print jobData.jobId
+        print jobData.jobID
         
         
