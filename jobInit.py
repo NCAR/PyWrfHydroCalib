@@ -45,15 +45,17 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        uNameTmp = raw_input('Enter Database Username: ')
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbUName= str(uNameTmp)
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
-        
+    #try:
+    #    uNameTmp = raw_input('Enter Database Username: ')
+    #    pwdTmp = getpass.getpass('Enter Database Password: ')
+    #    jobData.dbUName= str(uNameTmp)
+    #    jobData.dbPwd = str(pwdTmp)
+    #except:
+    #    print "ERROR: Unable to authenticate credentials for database."
+    #    sys.exit(1)
+    
+    jobData.dbUname = 'NWM_Calib_rw'
+    jobData.dbPwd = 'IJustWannaCalibrate'    
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
