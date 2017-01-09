@@ -82,7 +82,7 @@ class Database(object):
             # been entered for this particular unique job situation.
             jobData.jobID = -9999
         else:
-            jobData.jobID = result
+            jobData.jobID = result[0]
         
     def enterJobID(self,jobData):
         """
