@@ -69,7 +69,7 @@ def main(argv):
     if int(jobData.jobID) == -9999:
         print "This job has not been entered into the workflow database."
     else:
-        print "JOB ID = " + jobData.jobID
+        print "JOB ID = " + str(jobData.jobID)
         
 if __name__ == "__main__":
     main(sys.argv[1:])
