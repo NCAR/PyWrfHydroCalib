@@ -85,9 +85,11 @@ class Database(object):
             raise
         
         if result is None:
+            print "FOUND NONE"
             # This will be a unique value specific to indicating no Job ID has 
             # been entered for this particular unique job situation.
             jobData.jobID = -9999
+            print jobData.jobID
         else:
             jobData.jobID = result
             
