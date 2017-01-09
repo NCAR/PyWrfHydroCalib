@@ -72,7 +72,7 @@ class Database(object):
         # output directory.            
         jobDir = jobData.outDir + "/" + jobData.jobName
         
-        sqlCmd = "select jobID from Job_Meta where Job_Directory='%s'" % (jobDir)
+        sqlCmd = "select jobID from Job_Meta where Job_Directory='%s'" % (jobDir) + ";"
         print jobDir
         print sqlCmd
         
