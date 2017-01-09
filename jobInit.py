@@ -89,7 +89,10 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Create DB entries for job name
-    # PLACEHOLDER FOR ENTERING DB INFORMATION
+    try:
+        db.enterJobID(jobData)
+    except:
+        errMod.errOut(jobData)
         
     # Disconnect from the calibration database.
     try:
