@@ -323,8 +323,8 @@ def checkConfig(parser):
     if len(check1) > 0 and len(check2) > 0:
         print "ERROR: Cannot have both gage list and SQL command."
         raise
-    if len(check2) > 0:
-        if not os.path.isfile(check2):
+    if len(check1) > 0:
+        if not os.path.isfile(check1):
             print "ERROR: File: " + check2 + " not found."
             raise
         
