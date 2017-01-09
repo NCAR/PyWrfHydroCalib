@@ -112,6 +112,7 @@ class Database(object):
         """
         Function to extract list of gages based on user-provided SQL command.
         """
+        listOut = []
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
@@ -122,7 +123,15 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Unable to query domain metadata for gages list."
             raise
+            
+        if len(results) == 0:
+            jobData.errMsg = "ERROR: Gage query returned 0 gages for calibration."
+            raise
+            
+        numGages = len(results)
+        for gage in range(0,numGages):
+            listOut.append(results[gage][1])
         
-        return results
+        return listOut
             
         

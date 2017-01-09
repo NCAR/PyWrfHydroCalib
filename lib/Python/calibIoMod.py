@@ -52,8 +52,12 @@ def getGageList(jobData,db):
             raise
     elif len(jobData.gSQL) > 0:
         # User provided SQL command to extract list of gages.
-        gageList = db.queryGageList(jobData)
-        
+        try:
+            gageList = db.queryGageList(jobData)
+            jobData.gages = gageList[:]
+        except:
+            raise
+            
         print gageList
             
 def setupModels(jobData):
