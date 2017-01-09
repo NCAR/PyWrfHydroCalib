@@ -92,7 +92,8 @@ class Database(object):
             print jobData.jobID
         else:
             jobData.jobID = result
-            
+        
+        print 'alsdkjfasldf'
         print jobData.jobId
         
         
