@@ -64,8 +64,6 @@ def main(argv):
         errMod.errOut(jobData)
         
     # First check to see if unique Job ID already exists. 
-    # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
-    # ALREADY BEEN ENTERED INTO DB
     try:
         db.getJobID(jobData)
     except:

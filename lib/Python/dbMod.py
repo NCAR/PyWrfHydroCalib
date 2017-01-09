@@ -30,10 +30,6 @@ class Database(object):
             jobData.errMsg = "ERROR: Connection to DB already established."
             raise
         
-        print self.host
-        print self.uName
-        print self.pwd
-        print self.dbName
         try:
             db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
         except:
@@ -73,27 +69,41 @@ class Database(object):
         jobDir = jobData.outDir + "/" + jobData.jobName
         
         sqlCmd = "select jobID from Job_Meta where Job_Directory='%s'" % (jobDir) + ";"
-        print jobDir
-        print sqlCmd
         
         try:
             self.conn.execute(sqlCmd)
             result = self.conn.fetchone()
-            print result
         except:
             jobData.errMsg = "ERROR: Unable to execute SQL command to inquire job ID."
             raise
         
         if result is None:
-            print "FOUND NONE"
             # This will be a unique value specific to indicating no Job ID has 
             # been entered for this particular unique job situation.
             jobData.jobID = -9999
-            print jobData.jobID
         else:
             jobData.jobID = result
         
-        print 'alsdkjfasldf'
-        print jobData.jobID
-        
-        
+    def enterJobID(self,jobData):
+        """
+        Function to create unique Job ID that defines the job being ran.
+        This will be uniquely constrained by the job name, along with 
+        the top level directory where output is being stored. Additional
+        information specific to the job (start/stop dates,iterations,
+        job status,etc) will also be entered in.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+            
+        jobDir = jobData.outDir + "/" + jobData.jobName
+        sqlCmd = "insert into Job_Meta (Job_Directory) values " + \
+                 "('%s');" % (jobDir)
+                 
+        print sqlCmd
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
+            raise
