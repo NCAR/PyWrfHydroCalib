@@ -107,3 +107,22 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
             raise
+            
+    def queryGageList(self,jobData):
+        """
+        Function to extract list of gages based on user-provided SQL command.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+            
+        try:
+            self.conn.execute(str(jobData.gSQL[0]))
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Unable to query domain metadata for gages list."
+            raise
+            
+        return results
+            
+        

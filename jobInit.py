@@ -79,7 +79,7 @@ def main(argv):
         
     # Extract list of gages to perform workflow on
     try:
-        calibIoMod.getGageList(jobData)
+        calibIoMod.getGageList(jobData,db)
     except:
         errMod.errOut(jobData)
         

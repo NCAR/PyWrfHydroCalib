@@ -30,12 +30,14 @@ class gageMeta:
         test = 1
         # PLACEHOLDER FOR CALLING INTERACTIONS WITH META DB.
         
-def getGageList(jobData):
+def getGageList(jobData,db):
     # Function for extracting list of gages 
     # based on either the CSV file, or an SQL
     # command to extract gages based on a user 
     # specified command.
 
+    print jobData.gList
+    print jobData.gSQL
     if len(jobData.gList) > 0:
         # User provided CSV file with list of gages.
         gListTmp = pd.read_csv(jobData.gList,dtype={0: str})
@@ -48,6 +50,11 @@ def getGageList(jobData):
             errMsg = "ERROR: List of gages for calibration is zero."
             jobData.errMsg = errMsg
             raise
+    elif len(jobData.gSQL) > 0:
+        # User provided SQL command to extract list of gages.
+        gageList = db.queryGageList(jobData)
+        
+        print gageList
             
 def setupModels(jobData):
     # Function for setting up all model directories,
