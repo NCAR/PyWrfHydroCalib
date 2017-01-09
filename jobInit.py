@@ -71,7 +71,7 @@ def main(argv):
         
     # If a job ID value was found, this means information from this configuration
     # file has already been initiated by the workflow into the database. 
-    print jobData.jobId
+    print jobData.jobID
     if int(jobData.jobID) != -9999:
         jobData.errMsg = "ERROR: Information for this job has already " + \
                          "been entered as job ID: " + str(jobData.jobID)
