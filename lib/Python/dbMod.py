@@ -118,11 +118,12 @@ class Database(object):
             
         try:
             self.conn.execute(str(jobData.gSQL[0]))
-            results = self.conn.fetchall()
+            #results = self.conn.fetchall()
         except:
             jobData.errMsg = "ERROR: Unable to query domain metadata for gages list."
             raise
-            
+        
+        results = None
         return results
             
         
