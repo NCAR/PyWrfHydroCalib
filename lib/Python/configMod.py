@@ -164,7 +164,7 @@ class jobMeta:
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
 def createJob(argsUser):
-    """ Reads in options from teh setup.parm file
+    """ Reads in options from the setup.parm file
     """
     # Check to make sure a non-zero length config file was passed by the user.
     if len(argsUser.configFile[0]) ==0:
