@@ -143,9 +143,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        print tmpMeta
         sqlCmd = "select * from Domain_Meta where gage_id='" + tmpMeta['gageName'] + "';"
-        print sqlCmd
         
         try:
             self.conn.execute(sqlCmd)
@@ -154,7 +152,6 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
             raise
             
-        print results
         tmpMeta['geoFile'] = results[12]
         tmpMeta['wrfInput'] = results[13]
         tmpMeta['soilFile'] = results[14]
@@ -164,4 +161,3 @@ class Database(object):
         tmpMeta['gwFile'] = results[18]
         tmpMeta['lkFile'] = results[19]
         
-        print tmpMeta
