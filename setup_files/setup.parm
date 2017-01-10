@@ -20,6 +20,7 @@
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
 outDir = /glade/scratch/karsten/NWM_CALIB_TESTING
+jobName = TEST
 
 # Specify email to send updates/error messages to.
 # This is OPTIONAL. If not desired, leave blank. 
@@ -55,8 +56,8 @@ eCalibDate = 2010-10-01
 # Specify USGS GAGES II basins to calibrate on.
 # If SQL command desired, leave gageListFile blank.
 # If file listing gages desired, leave gageListSQL blank.
-gageListSQL =
-gageListFile = /glade/u/home/karsten/CALIB_GAGES.csv
+gageListSQL = select * from Domain_Meta;
+gageListFile =
 
 [lsmPhysics]
 # namelist.hrldas specific options/flags for NoahMP

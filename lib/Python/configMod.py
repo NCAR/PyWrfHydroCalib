@@ -16,6 +16,7 @@ class jobMeta:
     def __init__(self):
         # Initialize empty Python object. 
         self.jobName = []
+        self.jobID = []
         self.outDir = []
         self.email = []
         self.report = []
@@ -82,10 +83,12 @@ class jobMeta:
         self.gwBaseFlag = []
         self.gwRst = []
         self.gages = []
-    def readConfig(self,parser,jobName):
+        self.dbUName = []
+        self.dbPwd = []
+    def readConfig(self,parser):
         """ Read in and check options passed by the config file.
         """
-        self.jobName = str(jobName[0])
+        self.jobName = str(parser.get('logistics','jobName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.email = str(parser.get('logistics','email'))
         if len(self.email) == 0:
@@ -161,14 +164,14 @@ class jobMeta:
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
 def createJob(argsUser):
-    """ Reads in options from teh setup.parm file
+    """ Reads in options from the setup.parm file
     """
-    # Check to make sure a non-zero length job name was passed by the user.
-    if len(argsUser.jobName[0]) == 0:
-        print "ERROR: Zero Length Job Name Passed To Program."
+    # Check to make sure a non-zero length config file was passed by the user.
+    if len(argsUser.configFile[0]) ==0:
+        print "ERROR: Zero Length Configuration File Passed To Program."
         raise
-    
-    configPath = './setup_files/setup.parm'
+
+    configPath = argsUser.configFile[0]    
     parser = SafeConfigParser()
     
     if os.path.isfile(configPath):
@@ -178,7 +181,6 @@ def createJob(argsUser):
         raise
 
     # Check entries into the config file to make sure they make sense.
-    checkConfig(parser)
     try:
         checkConfig(parser)
     except:
@@ -190,7 +192,7 @@ def createJob(argsUser):
     
     # Read in values
     try:
-        jobMeta.readConfig(jobObj,parser,argsUser.jobName)
+        jobMeta.readConfig(jobObj,parser)
     except:
         print "ERROR: Unable to assign values from config file."
         raise
@@ -209,6 +211,11 @@ def checkConfig(parser):
         print "ERROR: Directory: " + check + " not found."
         raise
 
+    check = str(parser.get('logistics','jobName'))
+    if len(check) == 0:
+        print "ERROR: Zero length job name provided."
+        raise
+        
     check = str(parser.get('logistics','wrfExe'))
     if len(check) == 0:
         print "ERROR: Zero length executable provided."
@@ -316,8 +323,8 @@ def checkConfig(parser):
     if len(check1) > 0 and len(check2) > 0:
         print "ERROR: Cannot have both gage list and SQL command."
         raise
-    if len(check2) > 0:
-        if not os.path.isfile(check2):
+    if len(check1) > 0:
+        if not os.path.isfile(check1):
             print "ERROR: File: " + check2 + " not found."
             raise
         

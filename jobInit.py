@@ -14,20 +14,25 @@
 
 import sys
 import argparse
+import getpass
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
 
+import warnings
+warnings.filterwarnings("ignore")
+
 import configMod
 import calibIoMod
 import errMod
+import dbMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
     parser = argparse.ArgumentParser(description='Main program to initialize ' + \
              'calibration for the National Water Model')
-    parser.add_argument('jobName',metavar='job',type=str,nargs='+',
-                        help='Job name to initialize workflow.')
+    parser.add_argument('configFile',metavar='config',type=str,nargs='+',
+                        help='Config file to initialize job.')
             
     args = parser.parse_args()            
 
@@ -38,23 +43,63 @@ def main(argv):
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
         
-    # PLACEHOLDER FOR CHECKING DB TABLES TO ENSURE JOB NAME HASN'T 
-    # ALREADY BEEN ENTERED INTO DB
+    # Lookup database username/login credentials based on username
+    # running program.
+    #try:
+    #    uNameTmp = raw_input('Enter Database Username: ')
+    #    pwdTmp = getpass.getpass('Enter Database Password: ')
+    #    jobData.dbUName= str(uNameTmp)
+    #    jobData.dbPwd = str(pwdTmp)
+    #except:
+    #    print "ERROR: Unable to authenticate credentials for database."
+    #    sys.exit(1)
+    
+    jobData.dbUName = 'NWM_Calib_rw'
+    jobData.dbPwd = 'IJustWannaCalibrate'    
+    # Establish database connection.
+    db = dbMod.Database(jobData)
+    try:
+        db.connect(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # First check to see if unique Job ID already exists. 
+    try:
+        db.getJobID(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # If a job ID value was found, this means information from this configuration
+    # file has already been initiated by the workflow into the database. 
+    if int(jobData.jobID) != -9999:
+        jobData.errMsg = "ERROR: Information for this job has already " + \
+                         "been entered as job ID: " + str(jobData.jobID)
+        errMod.errOut(jobData)
         
     # Extract list of gages to perform workflow on
     try:
-        calibIoMod.getGageList(jobData)
+        calibIoMod.getGageList(jobData,db)
     except:
         errMod.errOut(jobData)
         
     # Create necessary run directories to hold output, analysis, etc.
+    calibIoMod.setupModels(jobData,db)
+    #try:
+    #    calibIoMod.setupModels(jobData,db)
+    #except:
+    #    errMod.errOut(jobData)
+        
+    # Create DB entries for job name
     try:
-        calibIoMod.setupModels(jobData)
+        db.enterJobID(jobData)
     except:
         errMod.errOut(jobData)
         
-    # Create DB entries for job name
-    # PLACEHOLDER FOR ENTERING DB INFORMATION    
+    # Disconnect from the calibration database.
+    try:
+        db.disconnect(jobData)
+    except:
+        errMod.errOut(jobData)
         
 if __name__ == "__main__":
     main(sys.argv[1:])

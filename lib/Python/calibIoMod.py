@@ -24,13 +24,28 @@ class gageMeta:
         self.udMap = []
         self.wrfInput = []
         self.soilFile = []
-    def pullGageMeta(self,jobData,gageName):
+    def pullGageMeta(self,db,jobData,gageName):
         # Function to extract locations of gage-specific spatial files.
         
-        test = 1
-        # PLACEHOLDER FOR CALLING INTERACTIONS WITH META DB.
+        tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
+                   'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
+                   'wrfInput':'','soilFile':''}
+        try:
+            db.queryGageMeta(jobData,tmpMeta)
+        except:
+            raise
+            
+        self.gage = tmpMeta['gageName']
+        self.geoFile = tmpMeta['geoFile']
+        self.fullDom = tmpMeta['fullDomFile']
+        self.rtLnk = tmpMeta['rtLnk']
+        self.lkFile = tmpMeta['lkFile']
+        self.gwFile = tmpMeta['gwFile']
+        self.udMap = tmpMeta['udMap']
+        self.wrfInput = tmpMeta['wrfInput']
+        self.soilFile = tmpMeta['soilFile']
         
-def getGageList(jobData):
+def getGageList(jobData,db):
     # Function for extracting list of gages 
     # based on either the CSV file, or an SQL
     # command to extract gages based on a user 
@@ -48,8 +63,17 @@ def getGageList(jobData):
             errMsg = "ERROR: List of gages for calibration is zero."
             jobData.errMsg = errMsg
             raise
+    elif len(jobData.gSQL) > 0:
+        # User provided SQL command to extract list of gages.
+        gageList = db.queryGageList(jobData)
+        jobData.gages = gageList[:]
+        #try:
+        #    gageList = db.queryGageList(jobData)
+        #    jobData.gages = gageList[:]
+        #except:
+        #    raise
             
-def setupModels(jobData):
+def setupModels(jobData,db):
     # Function for setting up all model directories,
     # links to forcings, namelist files, etc. 
     # Function will loop through each basin to calibrate,
@@ -67,7 +91,7 @@ def setupModels(jobData):
     try:
         os.mkdir(parentDir)
     except:
-        wipeJobDir(jobData,parentDir)
+        wipeJobDir(jobData)
         jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
         raise
         
@@ -76,14 +100,12 @@ def setupModels(jobData):
         
     # Loop through each basin and setup appropriate directories.
     for gage in range(0,len(jobData.gages)):
-        print jobData.gages[gage]
         gageDir = parentDir + "/" + str(jobData.gages[gage])
-        print gageDir
         
         try:
             os.mkdir(gageDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
             raise
             
@@ -92,7 +114,7 @@ def setupModels(jobData):
         try:
             os.symlink(jobData.fDir,fLink)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create FORCING link to: " + jobData.fDir
             raise
             
@@ -101,7 +123,7 @@ def setupModels(jobData):
         try:
             os.mkdir(obsDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
             raise
         
@@ -110,7 +132,7 @@ def setupModels(jobData):
         try:
             os.mkdir(spinupDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + spinupDir
             raise
             
@@ -118,18 +140,37 @@ def setupModels(jobData):
         try:
             os.mkdir(calibDir)
         except:
-            wipeJobDir(jobData,parentDir)
+            wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + calibDir
             raise
         
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
-        try:
-            gageData.pullGageMeta(jobData,jobData.gages[gage])
-        except:
-            wipeJobDir(jobData,parentDir)
-            raise
+        gageData.pullGageMeta(db,jobData,str(jobData.gages[gage]))
+        #try:
+        #    gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
+        #except:
+        #    wipeJobDir(jobData)
+        #    raise
             
         # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
         try:
-            
+            namelistMod.createHrldasNL(gageData,jobData,spinupDir,1)
+        except:
+            wipeJobDir(jobData)
+            raise
+        try:
+            namelistMod.createHrldasNL(gageData,jobData,calibDir,2)
+        except:
+            wipeJobDir(jobData)
+            raise
+        try:
+            namelistMod.createHydroNL(gageData,jobData,spinupDir,1)
+        except:
+            wipeJobDir(jobData)
+            raise
+        try:
+            namelistMod.createHydroNL(gageData,jobData,calibDir,2)
+        except:
+            wipeJobDir(jobData)
+            raise
