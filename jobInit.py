@@ -85,7 +85,7 @@ def main(argv):
         
     # Create necessary run directories to hold output, analysis, etc.
     try:
-        calibIoMod.setupModels(jobData)
+        calibIoMod.setupModels(jobData,db)
     except:
         errMod.errOut(jobData)
         

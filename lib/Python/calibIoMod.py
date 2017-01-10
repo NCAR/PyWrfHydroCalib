@@ -24,11 +24,26 @@ class gageMeta:
         self.udMap = []
         self.wrfInput = []
         self.soilFile = []
-    def pullGageMeta(self,jobData,gageName):
+    def pullGageMeta(self,db,jobData,gageName):
         # Function to extract locations of gage-specific spatial files.
         
-        test = 1
-        # PLACEHOLDER FOR CALLING INTERACTIONS WITH META DB.
+        tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
+                   'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
+                   'wrfInput':'','soilFile':''}
+        try:
+            db.queryGageMeta(jobData,self)
+        except:
+            raise
+            
+        self.gage = tmpMeta['gageName']
+        self.geoFile = tmpMeta['geoFile']
+        self.fullDom = tmpMeta['fullDomFile']
+        self.rtLnk = tmpMeta['rtLnk']
+        self.lkFile = tmpMeta['lkFile']
+        self.gwFile = tmpMeta['gwFile']
+        self.udMap = tmpMeta['udMap']
+        self.wrfInput = tmpMeta['wrfInput']
+        self.soilFile = tmpMeta['soilFile']
         
 def getGageList(jobData,db):
     # Function for extracting list of gages 
@@ -60,7 +75,7 @@ def getGageList(jobData,db):
             
         print gageList
             
-def setupModels(jobData):
+def setupModels(jobData,db):
     # Function for setting up all model directories,
     # links to forcings, namelist files, etc. 
     # Function will loop through each basin to calibrate,
@@ -134,7 +149,7 @@ def setupModels(jobData):
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
         try:
-            gageData.pullGageMeta(jobData,jobData.gages[gage])
+            gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
         except:
             wipeJobDir(jobData)
             raise

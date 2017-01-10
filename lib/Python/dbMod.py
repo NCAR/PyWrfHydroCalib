@@ -133,5 +133,33 @@ class Database(object):
             listOut.append(results[gage][1])
         
         return listOut
-            
         
+    def queryGageMeta(self,jobData,tmpMeta):
+        """
+        Function to query the gages meta table for information specific to
+        each GAGES II basin, such as domain files, indices, etc."
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+            
+        sqlCmd = "select * from Domain_Meta where gage_id='" + tmpMeta['gageName'] + "';"
+        print sqlCmd
+        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
+            raise
+            
+        tmpMeta['geoFile'] = results[0][12]
+        tmpMeta['wrfInput'] = results[0][13]
+        tmpMeta['soilFile'] = results[0][14]
+        tmpMeta['fullDomFile'] = results[0][15]
+        tmpMeta['rtLnk'] = results[0][16]
+        tmpMeta['udMap'] = results[0][17]
+        tmpMeta['gwFile'] = results[0][18]
+        tmpMeta['lkFile'] = results[0][19]
+        
+        print tmpMeta
