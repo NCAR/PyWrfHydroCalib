@@ -31,7 +31,7 @@ class gageMeta:
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':''}
         try:
-            db.queryGageMeta(jobData,self)
+            db.queryGageMeta(jobData,self,tmpMeta)
         except:
             raise
             
