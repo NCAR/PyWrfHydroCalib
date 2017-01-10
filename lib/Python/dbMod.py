@@ -100,7 +100,6 @@ class Database(object):
         sqlCmd = "insert into Job_Meta (Job_Directory) values " + \
                  "('%s');" % (jobDir)
                  
-        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             self.db.commit()
