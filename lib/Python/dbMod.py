@@ -143,6 +143,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
+        print tmpMeta['gageName']
         sqlCmd = "select * from Domain_Meta where gage_id='" + tmpMeta['gageName'] + "';"
         print sqlCmd
         
