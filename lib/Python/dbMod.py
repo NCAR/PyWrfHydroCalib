@@ -155,13 +155,13 @@ class Database(object):
             raise
             
         print results
-        tmpMeta['geoFile'] = results[0][12]
-        tmpMeta['wrfInput'] = results[0][13]
-        tmpMeta['soilFile'] = results[0][14]
-        tmpMeta['fullDomFile'] = results[0][15]
-        tmpMeta['rtLnk'] = results[0][16]
-        tmpMeta['udMap'] = results[0][17]
-        tmpMeta['gwFile'] = results[0][18]
-        tmpMeta['lkFile'] = results[0][19]
+        tmpMeta['geoFile'] = results[12]
+        tmpMeta['wrfInput'] = results[13]
+        tmpMeta['soilFile'] = results[14]
+        tmpMeta['fullDomFile'] = results[15]
+        tmpMeta['rtLnk'] = results[16]
+        tmpMeta['udMap'] = results[17]
+        tmpMeta['gwFile'] = results[18]
+        tmpMeta['lkFile'] = results[19]
         
         print tmpMeta
