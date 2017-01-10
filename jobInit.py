@@ -71,7 +71,6 @@ def main(argv):
         
     # If a job ID value was found, this means information from this configuration
     # file has already been initiated by the workflow into the database. 
-    print jobData.jobID
     if int(jobData.jobID) != -9999:
         jobData.errMsg = "ERROR: Information for this job has already " + \
                          "been entered as job ID: " + str(jobData.jobID)
@@ -84,10 +83,11 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Create necessary run directories to hold output, analysis, etc.
-    try:
-        calibIoMod.setupModels(jobData,db)
-    except:
-        errMod.errOut(jobData)
+    calibIoMod.setupModels(jobData,db)
+    #try:
+    #    calibIoMod.setupModels(jobData,db)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Create DB entries for job name
     try:

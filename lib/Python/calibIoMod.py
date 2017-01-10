@@ -51,8 +51,6 @@ def getGageList(jobData,db):
     # command to extract gages based on a user 
     # specified command.
 
-    print jobData.gList
-    print jobData.gSQL
     if len(jobData.gList) > 0:
         # User provided CSV file with list of gages.
         gListTmp = pd.read_csv(jobData.gList,dtype={0: str})
@@ -67,13 +65,13 @@ def getGageList(jobData,db):
             raise
     elif len(jobData.gSQL) > 0:
         # User provided SQL command to extract list of gages.
-        try:
-            gageList = db.queryGageList(jobData)
-            jobData.gages = gageList[:]
-        except:
-            raise
-            
-        print gageList
+        gageList = db.queryGageList(jobData)
+        jobData.gages = gageList[:]
+        #try:
+        #    gageList = db.queryGageList(jobData)
+        #    jobData.gages = gageList[:]
+        #except:
+        #    raise
             
 def setupModels(jobData,db):
     # Function for setting up all model directories,
@@ -148,11 +146,12 @@ def setupModels(jobData,db):
         
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
-        try:
-            gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
-        except:
-            wipeJobDir(jobData)
-            raise
+        gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
+        #try:
+        #    gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
+        #except:
+        #    wipeJobDir(jobData)
+        #    raise
             
         # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
         try:
