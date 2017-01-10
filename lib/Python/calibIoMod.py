@@ -146,7 +146,7 @@ def setupModels(jobData,db):
         
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
-        gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
+        gageData.pullGageMeta(db,jobData,str(jobData.gages[gage]))
         #try:
         #    gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
         #except:
