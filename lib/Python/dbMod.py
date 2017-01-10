@@ -154,6 +154,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
             raise
             
+        print results
         tmpMeta['geoFile'] = results[0][12]
         tmpMeta['wrfInput'] = results[0][13]
         tmpMeta['soilFile'] = results[0][14]
