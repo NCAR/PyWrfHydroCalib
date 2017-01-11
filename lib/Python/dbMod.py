@@ -96,6 +96,17 @@ class Database(object):
             
         
         jobDir = jobData.outDir + "/" + jobData.jobName
+        print jobDir
+        print jobData.bSpinDate.strftime('%Y-%m-%d')
+        print jobData.eSpinDate.strftime('%Y-%m-%d')
+        print jobData.bCalibDate.strftime('%Y-%m-%d')
+        print jobData.eCalibDate.strftime('%Y-%m-%d')
+        print jobData.nIter
+        print jobData.bValidDate.strftime('%Y-%m-%d')
+        print jobData.eValidDate.strftime('%Y-%m-%d')
+        print jobData.acctKey
+        print jobData.nCores
+        print jobData.exe
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
