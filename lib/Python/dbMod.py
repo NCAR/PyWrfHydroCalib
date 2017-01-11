@@ -111,9 +111,9 @@ class Database(object):
                  "su_complete,date_calib_start,date_calib_end,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
                  "valid_complete,acct_key,num_cores,exe) values " + \
-                 "('%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
-                 jobData.eCalibDate.strftime('%Y-%m-%d'))
+                 jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter)
                  #"('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," + \
                  #"'%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  #jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
