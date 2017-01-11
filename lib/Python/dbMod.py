@@ -108,7 +108,7 @@ class Database(object):
         #         0,jobData.acctKey,jobData.nCores,jobData.exe)
          
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end" + \
-                 ");" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 ") values ('%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'))
         print sqlCmd
         #self.conn.execute(sqlCmd)
