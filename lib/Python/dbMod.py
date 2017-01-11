@@ -124,8 +124,8 @@ class Database(object):
                  #0,jobData.acctKey,jobData.nCores,jobData.exe)
          
         print sqlCmd
-        #self.conn.execute(sqlCmd)
-        #self.db.commit()
+        self.conn.execute(sqlCmd)
+        self.db.commit()
         #try:
         #    self.conn.execute(sqlCmd)
         #    self.db.commit()
