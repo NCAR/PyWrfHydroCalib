@@ -281,7 +281,7 @@ def setupModels(jobData,db):
             wipeJobDir(jobData)
             raise
         try:
-            namelistMod.createHrldasNL(gageData,jobData,calibDir,3)
+            namelistMod.createHrldasNL(gageData,jobData,validDir,3)
         except:
             wipeJobDir(jobData)
             raise
@@ -296,7 +296,7 @@ def setupModels(jobData,db):
             wipeJobDir(jobData)
             raise
         try:
-            namelistMod.createHydroNL(gageData,jobData,calibDir,3)
+            namelistMod.createHydroNL(gageData,jobData,validDir,3)
         except:
             wipeJobDir(jobData)
             raise
