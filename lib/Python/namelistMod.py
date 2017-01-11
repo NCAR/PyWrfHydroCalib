@@ -14,6 +14,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     #       typeFlag = 3 indicates validation
     # Create path for the namelist file
     pathOut = outDir + "/namelist.hrldas"
+    print pathOut
     if os.path.isfile(pathOut):
         jobData.errMsg = "ERROR: " + pathOut + " already exists."
         raise
