@@ -90,10 +90,11 @@ def main(argv):
     #    errMod.errOut(jobData)
         
     # Create DB entries for job name
-    try:
-        db.enterJobID(jobData)
-    except:
-        errMod.errOut(jobData)
+    db.enterJobID(jobData)
+    #try:
+    #    db.enterJobID(jobData)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Disconnect from the calibration database.
     try:

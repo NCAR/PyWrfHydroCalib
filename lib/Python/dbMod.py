@@ -106,12 +106,15 @@ class Database(object):
                  jobData.bValidDate('%Y-%m-%d'),jobData.eValidDate('%Y-%m-%d'),
                  0,jobData.acctKey,jobData.nCores,jobData.exe)
                  
-        try:
-            self.conn.execute(sqlCmd)
-            self.db.commit()
-        except:
-            jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
-            raise
+        print sqlCmd
+        self.conn.execute(sqlCmd)
+        self.db.commit()
+        #try:
+        #    self.conn.execute(sqlCmd)
+        #    self.db.commit()
+        #except:
+        #    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
+        #    raise
             
     def queryGageList(self,jobData):
         """

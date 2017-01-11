@@ -24,7 +24,7 @@ class gageMeta:
         self.udMap = []
         self.wrfInput = []
         self.soilFile = []
-    def pullGageMeta(self,db,jobData,gageName):
+    def pullGageMeta(self,jobData,db,gageName):
         # Function to extract locations of gage-specific spatial files.
         
         tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
