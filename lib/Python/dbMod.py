@@ -110,7 +110,8 @@ class Database(object):
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
-                 "valid_complete,acct_key,num_cores,exe) values "
+                 "valid_complete,acct_key,num_cores,exe) values " + \
+                 "('%s');" % (jobDir)
                  #"('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," + \
                  #"'%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  #jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
