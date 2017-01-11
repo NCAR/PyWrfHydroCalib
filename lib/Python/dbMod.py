@@ -102,9 +102,9 @@ class Database(object):
                  "valid_complete,acct_key,num_cores,exe) values " + \
                  "('%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
-                 jobData.eCalibDate.strftime('%Y-%m-%d'),0,jobData.nIter,0,0,\
+                 jobData.eCalibDate.strftime('%Y-%m-%d'),0,str(jobData.nIter),'0','0',\
                  jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCores,jobData.exe)
+                 '0',jobData.acctKey,str(jobData.nCores),jobData.exe)
                  
         print sqlCmd
         self.conn.execute(sqlCmd)
