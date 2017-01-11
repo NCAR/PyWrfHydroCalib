@@ -14,8 +14,6 @@ class Database(object):
         etc
         """
         self.connected = False
-        self.reportLevel = jobData.report
-        self.email = jobData.email
         self.host = 'hydro-c1-web.rap.ucar.edu'
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
@@ -96,9 +94,17 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
+        
         jobDir = jobData.outDir + "/" + jobData.jobName
-        sqlCmd = "insert into Job_Meta (Job_Directory) values " + \
-                 "('%s');" % (jobDir)
+        sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
+                 "su_complete,date_calib_start,date_calib_end,num_iter," + \
+                 "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
+                 "valid_complete,acct_key,num_cores,exe) values " + \
+                 "('%s');" % (jobDir,jobData.bSpinDate('%Y-%m-%d'),
+                 jobData.eSpinDate('%Y-%m-%d'),0,jobData.bCalibDate('%Y-%m-%d'),
+                 jobData.eCalibDate('%Y-%m-%d'),0,jobData.nIter,0,0,
+                 jobData.bValidDate('%Y-%m-%d'),jobData.eValidDate('%Y-%m-%d'),
+                 0,jobData.acctKey,jobData.nCores,jobData.exe)
                  
         try:
             self.conn.execute(sqlCmd)
@@ -159,4 +165,24 @@ class Database(object):
         tmpMeta['udMap'] = results[17]
         tmpMeta['gwFile'] = results[18]
         tmpMeta['lkFile'] = results[19]
+        
+    def jobStatus(self,jobData):
+        """
+        Function to extract job metadata (including status information) for
+        a given job ID.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+            
+        sqlCmd = "select * from Job_Meta where jobID='" + jobData.jobID + "';"
+        
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + jobData.jobID
+            raise
+            
+        # Fill jobData object with metadata on job and status.
         

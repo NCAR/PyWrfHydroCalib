@@ -17,13 +17,17 @@ class jobMeta:
         # Initialize empty Python object. 
         self.jobName = []
         self.jobID = []
+        self.acctKey = []
+        self.nCores = []
+        self.nIter = []
         self.outDir = []
         self.email = []
         self.report = []
         self.errMsg = []
         self.exe = []
         self.genParmTbl = []
-        self.gwParmTbl = []
+        #self.gwParmTbl = []
+        self.lakeParmTbl = []
         self.mpParmTbl = []
         self.urbParmTbl = []
         self.vegParmTbl = []
@@ -32,10 +36,10 @@ class jobMeta:
         self.soilParmTbl = []
         self.bSpinDate = []
         self.eSpinDate = []
-        self.bSensDate = []
-        self.eSensDate = []
         self.bCalibDate = []
         self.eCalibDate = []
+        self.bValidDate = []
+        self.eValidDate = []
         self.gSQL = []
         self.gList = []
         self.dynVegOpt = []
@@ -90,6 +94,9 @@ class jobMeta:
         """
         self.jobName = str(parser.get('logistics','jobName'))
         self.outDir = str(parser.get('logistics','outDir'))
+        self.acctKey = str(parser.get('logistics','acctKey'))
+        self.nCores = int(parser.get('logistics','nCores'))
+        self.nIter = int(parser.get('logistics','numIter'))
         self.email = str(parser.get('logistics','email'))
         if len(self.email) == 0:
             self.report = 0
@@ -98,6 +105,7 @@ class jobMeta:
         self.exe = str(parser.get('logistics','wrfExe'))
         self.genParmTbl = str(parser.get('logistics','genParmTbl'))
         #self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
+        self.lakeParmTbl = str(parser.get('logistics','lakeParmTbl'))
         self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
         self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
         self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
@@ -108,14 +116,14 @@ class jobMeta:
         self.bSpinDate = datetime.datetime.strptime(self.bSpinDate,'%Y-%m-%d')
         self.eSpinDate = parser.get('logistics','eSpinDate')
         self.eSpinDate = datetime.datetime.strptime(self.eSpinDate,'%Y-%m-%d')
-        self.bSensDate = parser.get('logistics','bSensDate')
-        self.bSensDate = datetime.datetime.strptime(self.bSensDate,'%Y-%m-%d')
-        self.eSensDate = parser.get('logistics','eSensDate')
-        self.eSensDate = datetime.datetime.strptime(self.eSensDate,'%Y-%m-%d')
         self.bCalibDate = parser.get('logistics','bCalibDate')
         self.bCalibDate = datetime.datetime.strptime(self.bCalibDate,'%Y-%m-%d')
         self.eCalibDate = parser.get('logistics','eCalibDate')
         self.eCalibDate = datetime.datetime.strptime(self.eCalibDate,'%Y-%m-%d')
+        self.bValidDate = parser.get('logistics','bValidDate')
+        self.bValidDate = datetime.datetime.strptime(self.bValidDate,'%Y-%m-%d')
+        self.eValidDate = parser.get('logistics','eValidDate')
+        self.eValidDate = datetime.datetime.strptime(self.eValidDate,'%Y-%m-%d')
         self.gSQL = parser.get('gageInfo','gageListSQL')
         self.gList = str(parser.get('gageInfo','gageListFile'))
         self.dynVegOpt = int(parser.get('lsmPhysics','dynVegOption'))
@@ -216,6 +224,30 @@ def checkConfig(parser):
         print "ERROR: Zero length job name provided."
         raise
         
+    check = str(parser.get('logistics','acctKey'))
+    if len(check) == 0:
+        print "ERROR: Zero length account key passed to program."
+        raise
+    if check != 'NRAL0017':
+        print "ERROR: Invalid account key for calibration workflow."
+        raise
+
+    check = int(parser.get('logistics','nCores'))
+    if not check:
+        print "ERROR: Number of cores to use not specified."
+        raise
+    if check <= 0:
+        print "ERROR: Invalid number of cores to use."
+        raise
+        
+    check = int(parser.get('logistics','numIter'))
+    if not check:
+        print "ERROR: Number of calibration iterations not specified."
+        raise
+    if check <= 0:
+        print "ERROR: Invalid number of calibration iterations specified."
+        raise
+        
     check = str(parser.get('logistics','wrfExe'))
     if len(check) == 0:
         print "ERROR: Zero length executable provided."
@@ -240,6 +272,14 @@ def checkConfig(parser):
     #if not os.path.isfile(check):
     #    print "ERROR: File: " + check + " not found."
     #    raise
+        
+    check = str(parser.get('logistics','lakeParmTbl'))
+    if len(check) == 0:
+        print "ERROR: Zero length lake parameter table provided."
+        raise
+    if not os.path.isfile(check):
+        print "ERROR: File: " + check + " not found."
+        raise
         
     check = str(parser.get('logistics','mpParmTbl'))
     if len(check) == 0:
@@ -298,16 +338,16 @@ def checkConfig(parser):
         print "ERROR: Must specify ending spinup date greater than beginning spinup date."
         raise
         
-    bDate = parser.get('logistics','bSensDate')
-    eDate = parser.get('logistics','eSensDate')
+    bDate = parser.get('logistics','bCalibDate')
+    eDate = parser.get('logistics','eCalibDate')
     bDate = datetime.datetime.strptime(str(bDate),'%Y-%m-%d')
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
     if bDate >= eDate:
-        print "ERROR: Must specify ending sensitivity date greater than beginning spinup date."
+        print "ERROR: Must specify ending spinup date greater than beginning spinup date."
         raise
         
-    bDate = parser.get('logistics','bCalibDate')
-    eDate = parser.get('logistics','eCalibDate')
+    bDate = parser.get('logistics','bValidDate')
+    eDate = parser.get('logistics','eValidDate')
     bDate = datetime.datetime.strptime(str(bDate),'%Y-%m-%d')
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
     if bDate >= eDate:

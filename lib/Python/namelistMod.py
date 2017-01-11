@@ -11,7 +11,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     # General function for creation of a namelist.hrldas file.
     
     # NOTE: typeFlag = 1 indicates spinup, 2 indicates calibration.
-    
+    #       typeFlag = 3 indicates validation
     # Create path for the namelist file
     pathOut = outDir + "/namelist.hrldas"
     if os.path.isfile(pathOut):
@@ -40,13 +40,21 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
             fileObj.write(inStr)
             inStr = ' START_DAY = ' + jobData.bSpinDate.strftime('%d') + '\n'
             fileObj.write(inStr)
-        else:  # Calibration
+        elif typeFlag == 2:  # Calibration
             dt = jobData.eCalibDate - jobData.bCalibDate
             inStr = ' START_YEAR = ' + jobData.bCalibDate.strftime('%Y') + '\n'
             fileObj.write(inStr)
             inStr = ' START_MONTH = ' + jobData.bCalibDate.strftime('%m') + '\n'
             fileObj.write(inStr)
             inStr = ' START_DAY = ' + jobData.bCalibDate.strftime('%d') + '\n'
+            fileObj.write(inStr)
+        elif typeFlag == 3: # Validation
+            dt = jobData.eValidDate - jobData.bValidDate
+            inStr = ' START_YEAR = ' + jobData.bValidDate.strftime('%Y') + '\n'
+            fileObj.write(inStr)
+            inStr = ' START_MONTH = ' + jobData.bValidDate.strftime('%m') + '\n'
+            fileObj.write(inStr)
+            inStr = ' START_DAY = ' + jobData.bValidDate.strftime('%d') + '\n'
             fileObj.write(inStr)
         fileObj.write(' START_HOUR = 00\n')
         fileObj.write(' START_MIN = 00\n')
@@ -178,7 +186,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
         if typeFlag == 1: # Spinup
             inStr = ' !RESTART_FILE = ""' + '\n'
             fileObj.write(inStr)
-        else: # Calibration
+        elif typeFlag == 2: # Calibration
             # PLACEHOLDER FOR RESTART FILE 
             restartFile = ''
             inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
