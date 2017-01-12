@@ -205,7 +205,7 @@ class Database(object):
             
         if not results:
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID[0])
-            raise
+            raise Exception('TEST')
             
         # Fill jobData object with metadata on job and status.
         jobData.jobDir = results[1]
