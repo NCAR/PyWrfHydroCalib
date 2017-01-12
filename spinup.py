@@ -58,12 +58,12 @@ def main(argv):
         sys.exit(1)
         
     # Extract job data from database
-    db.jobStatus(jobData)
-    #try:
-    #    db.jobStatus(jobData)
-    #except:
-    #    print jobData.errMsg
-    #    sys.exit(1)
+    #db.jobStatus(jobData)
+    try:
+        db.jobStatus(jobData)
+    except:
+        print jobData.errMsg
+        sys.exit(1)
     
     # Check gages in directory to match what's in the database
     jobData.checkGages()
