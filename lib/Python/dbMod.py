@@ -204,7 +204,7 @@ class Database(object):
             raise
             
         print len(results)
-        if not results
+        if not results:
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID[0])
             raise
             
