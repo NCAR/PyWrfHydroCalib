@@ -226,6 +226,6 @@ class Database(object):
         jobData.nCores = int(results[14])
         jobData.exe = results[15]
         jobData.nGages = int(results[16])
-        jobData.ownder = results[17]
+        jobData.owner = results[17]
         jobData.email = results[18]
 
