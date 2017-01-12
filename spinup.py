@@ -66,7 +66,7 @@ def main(argv):
     #    sys.exit(1)
     
     # Check gages in directory to match what's in the database
-    #jobData.checkGages()
+    jobData.checkGages()
     
 if __name__ == "__main__":
     main(sys.argv[1:])
