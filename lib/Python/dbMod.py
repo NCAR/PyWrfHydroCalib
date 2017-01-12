@@ -82,6 +82,30 @@ class Database(object):
             jobData.jobID = -9999
         else:
             jobData.jobID = result[0]
+            
+    def getDomainID(self,jobData,gageName):
+        """
+        Generic function to return unique ID value for a given basin based on
+        the name of the gage.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        sqlCmd = "select domainID from Domain_Meta where gage_id='%s'" % (str(gageName)) + ";"
+        
+        try:
+            self.conn.execute(sqlCmd)
+            result = self.conn.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Unable to locate ID for gage: " + str(gageName)
+            raise
+            
+        if result is None:
+            jobData.errMsg = "ERROR: gage: " + str(gageName) + " not found in database."
+            raise Exception()
+        
+        return int(result[0])
         
     def enterJobID(self,jobData):
         """
@@ -97,19 +121,6 @@ class Database(object):
             
         
         jobDir = jobData.outDir + "/" + jobData.jobName
-        print jobDir
-        print jobData.bSpinDate.strftime('%Y-%m-%d')
-        print jobData.eSpinDate.strftime('%Y-%m-%d')
-        print jobData.bCalibDate.strftime('%Y-%m-%d')
-        print jobData.eCalibDate.strftime('%Y-%m-%d')
-        print jobData.nIter
-        print jobData.bValidDate.strftime('%Y-%m-%d')
-        print jobData.eValidDate.strftime('%Y-%m-%d')
-        print jobData.acctKey
-        print jobData.nCores
-        print jobData.exe
-        print jobData.email
-        print jobData.owner
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
@@ -120,7 +131,6 @@ class Database(object):
                  jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
                  0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages),jobData.email,jobData.owner)
          
-        print sqlCmd
         self.conn.execute(sqlCmd)
         self.db.commit()
         #try:
@@ -228,4 +238,38 @@ class Database(object):
         jobData.nGages = int(results[16])
         jobData.email = results[17]
         jobData.owner = results[18]
+        
+    def updateJobOwner(self,jobData,newOwner,newContact):
+        """
+        Generic function to update the job owner name and contact information 
+        for situations where a different user is re-starting the job and needs
+        to take over.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+            
+        sqlCmd1 = "update Job_Meta set Job_Meta.owner='" + str(newOwner) + \
+                 "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd2 = "update Job_Meta set Job_Meta.email='" + str(newContact) + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+                  
+        try:
+            self.conn.execute(sqlCmd1)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to update new owner for: " + str(newOwner)
+            raise
+            
+        try:
+            self.conn.execute(sqlCmd2)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to update contact for: " + str(newContact)
+            raise
+            
+        # Update job metadata object
+        jobData.owner = str(newOwner)
+        jobData.email = str(newContact)
+        
 

@@ -15,6 +15,7 @@ import getpass
 import os
 import subprocess
 import pandas as pd
+import pwd
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
@@ -35,6 +36,9 @@ def main(argv):
                         help='Job ID specific to calibration spinup.')
     
     args = parser.parse_args()
+    
+    # Get current user who is running this program.
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
     
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
@@ -70,10 +74,28 @@ def main(argv):
         sys.exit(1)
     
     # Check gages in directory to match what's in the database
-    jobData.checkGages()
+    jobData.checkGages(db)
     
     # Extract active jobs for job owner
     jobsActive = calibIoMod.getYsJobs(jobData)
+    
+    # Some house keeping here. If the spinup is already complete, throw an error. 
+    # also, if this is a re-initiation under a different user, require the new
+    # user to enter a new contact that will be unpdated in the database. 
+    if int(jobData.spinComplete) == 1:
+        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
+                         " has already completed."
+        errMod.errOut(jobData)
+        
+    if userTmp != jobData.owner:
+        print "User: " + userTmp + " is requesting to takeover jobID: " + \
+              str(jobData.jobID) + " from owner: " + str(jobData.owner)
+        newContact = raw_input('Please enter new email/Slack contact:')
+        try:
+            db.updateJobOwner(jobData,userTmp,newContact)
+        except:
+            errMod.errOut(jobData)
+        
     
 if __name__ == "__main__":
     main(sys.argv[1:])
