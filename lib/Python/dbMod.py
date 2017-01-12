@@ -6,6 +6,7 @@
 # Research Applications Laboratory
 
 import MySQLdb
+import datetime
 
 class Database(object):
     def __init__(self,jobData):
@@ -14,8 +15,6 @@ class Database(object):
         etc
         """
         self.connected = False
-        self.reportLevel = jobData.report
-        self.email = jobData.email
         self.host = 'hydro-c1-web.rap.ucar.edu'
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
@@ -28,7 +27,7 @@ class Database(object):
         """
         if self.connected:
             jobData.errMsg = "ERROR: Connection to DB already established."
-            raise
+            raise Exception()
         
         try:
             db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
@@ -46,7 +45,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: Connection to DB already disconnected."
-            raise
+            raise Exception()
             
         if self.conn is not None: self.conn.close()
         self.conn = None
@@ -62,7 +61,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
 
         # Establish job directory uniquely constrained by job name and top level
         # output directory.            
@@ -94,18 +93,42 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
+        
         jobDir = jobData.outDir + "/" + jobData.jobName
-        sqlCmd = "insert into Job_Meta (Job_Directory) values " + \
-                 "('%s');" % (jobDir)
-                 
-        try:
-            self.conn.execute(sqlCmd)
-            self.db.commit()
-        except:
-            jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
-            raise
+        print jobDir
+        print jobData.bSpinDate.strftime('%Y-%m-%d')
+        print jobData.eSpinDate.strftime('%Y-%m-%d')
+        print jobData.bCalibDate.strftime('%Y-%m-%d')
+        print jobData.eCalibDate.strftime('%Y-%m-%d')
+        print jobData.nIter
+        print jobData.bValidDate.strftime('%Y-%m-%d')
+        print jobData.eValidDate.strftime('%Y-%m-%d')
+        print jobData.acctKey
+        print jobData.nCores
+        print jobData.exe
+        print jobData.email
+        print jobData.owner
+        sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
+                 "su_complete,date_calib_start,date_calib_end,num_iter," + \
+                 "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
+                 "valid_complete,acct_key,num_cores,exe,num_gages,owner,email) values " + \
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
+                 jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter,0,0,\
+                 jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
+                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages),jobData.email,jobData.owner)
+         
+        print sqlCmd
+        self.conn.execute(sqlCmd)
+        self.db.commit()
+        #try:
+        #    self.conn.execute(sqlCmd)
+        #    self.db.commit()
+        #except:
+        #    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
+        #    raise
             
     def queryGageList(self,jobData):
         """
@@ -114,7 +137,7 @@ class Database(object):
         listOut = []
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
         try:
             self.conn.execute(str(jobData.gSQL))
@@ -125,7 +148,7 @@ class Database(object):
             
         if len(results) == 0:
             jobData.errMsg = "ERROR: Gage query returned 0 gages for calibration."
-            raise
+            raise Exception()
             
         numGages = len(results)
         for gage in range(0,numGages):
@@ -151,6 +174,10 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
             raise
             
+        if not results:
+            jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
+            raise Exception()
+            
         tmpMeta['geoFile'] = results[12]
         tmpMeta['wrfInput'] = results[13]
         tmpMeta['soilFile'] = results[14]
@@ -160,3 +187,45 @@ class Database(object):
         tmpMeta['gwFile'] = results[18]
         tmpMeta['lkFile'] = results[19]
         
+    def jobStatus(self,jobData):
+        """
+        Function to extract job metadata (including status information) for
+        a given job ID.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+            
+        sqlCmd = "select * from Job_Meta where jobID='" + str(jobData.jobID[0]) + "';"
+        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID[0])
+            raise
+            
+        if not results:
+            jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID[0])
+            raise Exception()
+            
+        # Fill jobData object with metadata on job and status.
+        jobData.jobDir = results[1]
+        jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d')
+        jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d')
+        jobData.spinComplete = int(results[4])
+        jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d')
+        jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d')
+        jobData.nIter = int(results[7])
+        jobData.calibIter = int(results[8])
+        jobData.calibComplete = int(results[9])
+        jobData.bValidDate = datetime.datetime.strptime(str(results[10]),'%Y-%m-%d')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
+        jobData.validComplete = int(results[12])
+        jobData.acctKey = results[13]
+        jobData.nCores = int(results[14])
+        jobData.exe = results[15]
+        jobData.nGages = int(results[16])
+        jobData.email = results[17]
+        jobData.owner = results[18]
+
