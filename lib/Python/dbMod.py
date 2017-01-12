@@ -190,7 +190,8 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd = "select * from Job_Meta where jobID='" + jobData.jobID + "';"
+        sqlCmd = "select * from Job_Meta where jobID='" + str(jobData.jobID) + "';"
+        print sqlCmd        
         
         try:
             self.conn.execute(sqlCmd)
