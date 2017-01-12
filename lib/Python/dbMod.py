@@ -6,6 +6,7 @@
 # Research Applications Laboratory
 
 import MySQLdb
+import datetime
 
 class Database(object):
     def __init__(self,jobData):
@@ -111,17 +112,11 @@ class Database(object):
                  "su_complete,date_calib_start,date_calib_end,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
                  "valid_complete,acct_key,num_cores,exe) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter,0,0,\
                  jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCores,jobData.exe)
-                 #"('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," + \
-                 #"'%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
-                 #jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
-                 #jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter,0,0,\
-                 #jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
-                 #0,jobData.acctKey,jobData.nCores,jobData.exe)
+                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages))
          
         print sqlCmd
         self.conn.execute(sqlCmd)
@@ -199,10 +194,24 @@ class Database(object):
         
         try:
             self.conn.execute(sqlCmd)
-            self.db.commit()
+            results = self.conn.fetcone()
         except:
             jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + jobData.jobID
             raise
             
         # Fill jobData object with metadata on job and status.
-        
+        jobData.jobDir = results[1]
+        jobData.bSpinDate = datetime.datetime.strptime(results[2],'%Y-%m-%d')
+        jobData.eSpinDate = datetime.datetime.strptime(results[3],'%Y-%m-%d')
+        jobData.spinComplete = int(results[4])
+        jobData.bCalibDate = datetime.datetime.strptime(results[5],'%Y-%m-%d')
+        jobData.eCalibDate = datetime.datetime.strptime(results[6],'%Y-%m-%d')
+        jobData.nIter = int(results[7])
+        jobData.calibIter = int(results[8])
+        jobData.calibComplete = int(results[9])
+        jobData.bValidDate = datetime.datetime.strptime(results[10],'%Y-%m-%d')
+        jobData.eValidDate = datetime.datetime.strptime(results[11],'%Y-%m-%d')
+        jobData.validComplete = int(results[12])
+        jobData.acctKey = results[13]
+        jobData.nCores = int(results[14])
+        jobData.exe = results[15]

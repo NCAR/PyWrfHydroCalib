@@ -36,6 +36,9 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = args.jobID
     
+    # Check gages in directory to match what's in the database
+    jobData.checkGages()
+    
     # Lookup database username/login credentials based on username
     # running program.
     #try:
@@ -58,7 +61,12 @@ def main(argv):
         sys.exit(1)
         
     # Extract job data from database
-    
+    #db.jobStatus(jobData)
+    #try:
+    #    db.jobStatus(jobData)
+    #except:
+    #    print jobData.errMsg
+    #    sys.exit(1)
     
 if __name__ == "__main__":
     main(sys.argv[1:])
