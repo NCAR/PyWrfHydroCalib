@@ -16,7 +16,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
     pathOut = outDir + "/namelist.hrldas"
     if os.path.isfile(pathOut):
         jobData.errMsg = "ERROR: " + pathOut + " already exists."
-        raise
+        raise Exception()
     
     # Write each line of the expected hrldas.namelist file.
     try:
@@ -162,7 +162,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
     pathOut = outDir + "/hydro.namelist"
     if os.path.isfile(pathOut):
         jobData.errMsg = "ERROR: " + pathOut + " already exists."
-        raise
+        raise Exception()
         
     # Write each line of the hydro namelist file.
     try:

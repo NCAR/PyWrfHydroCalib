@@ -27,7 +27,7 @@ class Database(object):
         """
         if self.connected:
             jobData.errMsg = "ERROR: Connection to DB already established."
-            raise
+            raise Exception()
         
         try:
             db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
@@ -45,7 +45,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: Connection to DB already disconnected."
-            raise
+            raise Exception()
             
         if self.conn is not None: self.conn.close()
         self.conn = None
@@ -61,7 +61,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
 
         # Establish job directory uniquely constrained by job name and top level
         # output directory.            
@@ -93,7 +93,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
         
         jobDir = jobData.outDir + "/" + jobData.jobName
@@ -135,7 +135,7 @@ class Database(object):
         listOut = []
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
         try:
             self.conn.execute(str(jobData.gSQL))
@@ -146,7 +146,7 @@ class Database(object):
             
         if len(results) == 0:
             jobData.errMsg = "ERROR: Gage query returned 0 gages for calibration."
-            raise
+            raise Exception()
             
         numGages = len(results)
         for gage in range(0,numGages):
@@ -174,7 +174,7 @@ class Database(object):
             
         if not results:
             jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
-            raise
+            raise Exception()
             
         tmpMeta['geoFile'] = results[12]
         tmpMeta['wrfInput'] = results[13]

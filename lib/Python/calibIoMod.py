@@ -62,7 +62,7 @@ def getGageList(jobData,db):
         if len(jobData.gages) == 0:
             errMsg = "ERROR: List of gages for calibration is zero."
             jobData.errMsg = errMsg
-            raise
+            raise Exception()
     elif len(jobData.gSQL) > 0:
         # User provided SQL command to extract list of gages.
         gageList = db.queryGageList(jobData)
@@ -86,7 +86,7 @@ def setupModels(jobData,db):
     
     if os.path.isdir(parentDir):
         jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
-        raise
+        raise Exception()
         
     try:
         os.mkdir(parentDir)

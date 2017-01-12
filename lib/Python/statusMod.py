@@ -36,7 +36,7 @@ class statusMeta:
         
         if len(subDirs) != int(self.nGages):
             self.errMsg = "ERROR: Number of gages sub-directories does not match entry in database."
-            raise
+            raise Exception()
             
         gagesTmp = []
             
