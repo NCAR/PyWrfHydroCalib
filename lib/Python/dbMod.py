@@ -195,7 +195,7 @@ class Database(object):
         
         try:
             self.conn.execute(sqlCmd)
-            results = self.conn.fetcone()
+            results = self.conn.fetchone()
         except:
             jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID[0])
             raise
