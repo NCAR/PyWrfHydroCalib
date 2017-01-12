@@ -36,9 +36,6 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = args.jobID
     
-    # Check gages in directory to match what's in the database
-    jobData.checkGages()
-    
     # Lookup database username/login credentials based on username
     # running program.
     #try:
