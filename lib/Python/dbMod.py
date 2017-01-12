@@ -202,16 +202,16 @@ class Database(object):
             
         # Fill jobData object with metadata on job and status.
         jobData.jobDir = results[1]
-        jobData.bSpinDate = datetime.datetime.strptime(results[2],'%Y-%m-%d')
-        jobData.eSpinDate = datetime.datetime.strptime(results[3],'%Y-%m-%d')
+        jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d')
+        jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d')
         jobData.spinComplete = int(results[4])
-        jobData.bCalibDate = datetime.datetime.strptime(results[5],'%Y-%m-%d')
-        jobData.eCalibDate = datetime.datetime.strptime(results[6],'%Y-%m-%d')
+        jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d')
+        jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d')
         jobData.nIter = int(results[7])
         jobData.calibIter = int(results[8])
         jobData.calibComplete = int(results[9])
-        jobData.bValidDate = datetime.datetime.strptime(results[10],'%Y-%m-%d')
-        jobData.eValidDate = datetime.datetime.strptime(results[11],'%Y-%m-%d')
+        jobData.bValidDate = datetime.datetime.strptime(str(results[10]),'%Y-%m-%d')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
         jobData.validComplete = int(results[12])
         jobData.acctKey = results[13]
         jobData.nCores = int(results[14])
