@@ -46,6 +46,5 @@ class statusMeta:
             strArr = pthTmp.split('/')
             lenTmp = len(strArr)
             gagesTmp.append(strArr[lenTmp-2])
-            print strArr[lenTmp-2]
             
         self.gages = gagesTmp[:]
