@@ -174,7 +174,7 @@ class Database(object):
             
         if not results:
             jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
-            raise
+            raise Exception
             
         tmpMeta['geoFile'] = results[12]
         tmpMeta['wrfInput'] = results[13]
@@ -205,7 +205,7 @@ class Database(object):
             
         if not results:
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID[0])
-            raise
+            raise Exception
             
         # Fill jobData object with metadata on job and status.
         jobData.jobDir = results[1]
