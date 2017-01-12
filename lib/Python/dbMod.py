@@ -216,6 +216,7 @@ class Database(object):
         jobData.acctKey = results[13]
         jobData.nCores = int(results[14])
         jobData.exe = results[15]
+        jobData.nGages = int(results[16])
 
         print jobData.jobDir
         print jobData.bSpinDate
@@ -232,3 +233,4 @@ class Database(object):
         print jobData.acctKey
         print jobData.nCores
         print jobData.exe
+        print jobData.nGages
