@@ -172,6 +172,10 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
             raise
             
+        if not results:
+            jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
+            raise
+            
         tmpMeta['geoFile'] = results[12]
         tmpMeta['wrfInput'] = results[13]
         tmpMeta['soilFile'] = results[14]
@@ -200,7 +204,7 @@ class Database(object):
             raise
             
         print len(results)
-        if len(results) == 0:
+        if not results
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID[0])
             raise
             
