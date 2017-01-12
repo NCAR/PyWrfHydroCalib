@@ -216,3 +216,19 @@ class Database(object):
         jobData.acctKey = results[13]
         jobData.nCores = int(results[14])
         jobData.exe = results[15]
+
+        print jobData.jobDir
+        print jobData.bSpinDate
+        print jobData.eSpinDate
+        print jobData.bCalibDate
+        print jobData.eCalibDate
+        print jobData.bValidDate
+        print jobData.eValidDate
+        print jobData.spinComplete
+        print jobData.calibComplete
+        print jobData.validComplete
+        print jobData.nIter
+        print jobData.calibIter
+        print jobData.acctKey
+        print jobData.nCores
+        print jobData.exe
