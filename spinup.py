@@ -25,6 +25,7 @@ warnings.filterwarnings("ignore")
 import statusMod
 import dbMod
 import errMod
+import calibIoMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -71,18 +72,8 @@ def main(argv):
     # Check gages in directory to match what's in the database
     jobData.checkGages()
     
-    # Get unique PID.
-    pidUnique = os.getpid()
-    csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
-    print cmd
-    subprocess.call(cmd,shell=True)
-    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
-               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
-    print jobs
-    
-    # Create unique CSV file that is a dump of current jobs being ran. 
+    # Extract active jobs for job owner
+    jobsActive = calibIoMod.getYsJobs(jobData)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

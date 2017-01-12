@@ -8,6 +8,8 @@ import os
 import pandas as pd
 from errMod import wipeJobDir
 import namelistMod
+import subprocess
+import math
 
 class gageMeta:
     def __init__(self):
@@ -72,6 +74,62 @@ def getGageList(jobData,db):
         #    jobData.gages = gageList[:]
         #except:
         #    raise
+        
+def getYsJobs(jobData):
+    # Function to obtain a data frame containing Yellowstone
+    # jobs being ran under the owner of the JobID.
+
+    # Get unique PID.
+    pidUnique = os.getpid()
+    
+    csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
+    subprocess.call(cmd,shell=True)
+    
+    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+    jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    lenJobs = len(jobs.JOBID)
+    
+    # Loop through data frame. For jobs across multiple cores, the data frame
+    # needs to be filled in as the duplicate cores have NaN values, except for the
+    # first core.
+    for job in range(0,lenJobs):
+        # Assume a NaN value with the "USER" field means this is a duplicate.
+        jobIdTmp = jobs.JOBID[job]
+        userTmp = jobs.USER[job]
+        statTmp = jobs.STAT[job]
+        queTmp = jobs.QUEUE[job]
+        hostTmp = jobs.FROM_HOST[job]
+        execTmp = jobs.EXEC_HOST[job]
+        jobNameTmp = jobs.JOB_NAME[job]
+        monthTmp = jobs.SUBMIT_MONTH[job]
+        dayTmp = jobs.SUBMIT_DAY[job]
+        hourTmp = jobs.SUBMIT_HHMM[job]
+        
+        if not math.isnan(userTmp):
+            jobIdHold = jobIdTmp
+            userHold = userTmp
+            statHold = statTmp
+            queHold = queTmp
+            hostHold = hostTmp
+            jobNameHold = jobNameTmp
+            monthHold = monthTmp
+            dayHold = dayTmp
+            hourHold = hourTmp
+        else:
+            jobs.JOBID[job] = jobIdHold
+            jobs.USER[job] = userHold
+            jobs.STAT[job] = statHold
+            jobs.QUEUE[job] = queHold
+            jobs.FROM_HOST[job] = hostHold
+            jobs.EXEC_HOST[job] = execTmp
+            jobs.JOB_NAME[job] = jobNameHold
+            jobs.SUBMIT_MONTH[job] = monthHold
+            jobs.SUBMIT_DAY[job] = dayHold
+            jobs.SUBMIT_HHMM[job] = hourHold
+            
+    return jobs
             
 def setupModels(jobData,db):
     # Function for setting up all model directories,

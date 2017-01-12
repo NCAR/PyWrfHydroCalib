@@ -5,6 +5,7 @@
 # National Center for Atmospheric Research
 
 from glob import glob
+import os
 
 class statusMeta:
     def __init__(self):
@@ -51,3 +52,4 @@ class statusMeta:
             
         self.gages = gagesTmp[:]
         print self.gages
+        
