@@ -199,6 +199,10 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID[0])
             raise
             
+        if len(results) == 0:
+            jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID[0])
+            raise
+            
         # Fill jobData object with metadata on job and status.
         jobData.jobDir = results[1]
         jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d')
