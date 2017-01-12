@@ -34,9 +34,6 @@ class statusMeta:
         # Function to check number of gages in output directory.
         subDirs = glob(self.jobDir + '/*/')
         
-        print subDirs
-        print len(subDirs)
-        print int(self.nGages)
         if len(subDirs) != int(self.nGages):
             self.errMsg = "ERROR: Number of gages sub-directories does not match entry in database."
             raise

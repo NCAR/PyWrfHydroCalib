@@ -191,7 +191,6 @@ class Database(object):
             raise
             
         sqlCmd = "select * from Job_Meta where jobID='" + str(jobData.jobID[0]) + "';"
-        print sqlCmd        
         
         try:
             self.conn.execute(sqlCmd)
@@ -218,19 +217,3 @@ class Database(object):
         jobData.exe = results[15]
         jobData.nGages = int(results[16])
 
-        print jobData.jobDir
-        print jobData.bSpinDate
-        print jobData.eSpinDate
-        print jobData.bCalibDate
-        print jobData.eCalibDate
-        print jobData.bValidDate
-        print jobData.eValidDate
-        print jobData.spinComplete
-        print jobData.calibComplete
-        print jobData.validComplete
-        print jobData.nIter
-        print jobData.calibIter
-        print jobData.acctKey
-        print jobData.nCores
-        print jobData.exe
-        print jobData.nGages
