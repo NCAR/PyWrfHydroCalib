@@ -32,8 +32,9 @@ class statusMeta:
         self.dbPwd = []
     def checkGages(self):
         # Function to check number of gages in output directory.
-        subDirs = glob(self.jobDir)
+        subDirs = glob(self.jobDir + '/*/')
         
+        print subDirs
         print len(subDirs)
         print int(self.nGages)
         if len(subDirs) != int(self.nGages):
