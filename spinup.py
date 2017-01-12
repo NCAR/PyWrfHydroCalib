@@ -74,7 +74,7 @@ def main(argv):
     # Get unique PID.
     pidUnique = os.getpid()
     csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + jobData.owner + ' -noheader > ' + csvPath
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
     subprocess.call(cmd,shell=True)
     colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
                'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
