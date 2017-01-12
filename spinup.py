@@ -13,6 +13,8 @@ import sys
 import argparse
 import getpass
 import os
+import subprocess
+import pandas as pd
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
@@ -71,6 +73,13 @@ def main(argv):
     
     # Get unique PID.
     pidUnique = os.getpid()
+    csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    cmd = 'bjobs -u ' + jobData.owner + ' -noheader > ' + csvPath
+    subprocess.call(cmd,shell=True)
+    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+    jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    print jobs
     
     # Create unique CSV file that is a dump of current jobs being ran. 
     
