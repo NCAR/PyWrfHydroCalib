@@ -48,3 +48,4 @@ class statusMeta:
             gagesTmp.append(strArr[lenTmp-2])
             
         self.gages = gagesTmp[:]
+        print self.gages
