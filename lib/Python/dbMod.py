@@ -108,15 +108,17 @@ class Database(object):
         print jobData.acctKey
         print jobData.nCores
         print jobData.exe
+        print jobData.email
+        print jobData.owner
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
                  "valid_complete,acct_key,num_cores,exe,num_gages) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter,0,0,\
                  jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages))
+                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages),jobData.email,jobData.owner)
          
         print sqlCmd
         self.conn.execute(sqlCmd)
@@ -224,4 +226,6 @@ class Database(object):
         jobData.nCores = int(results[14])
         jobData.exe = results[15]
         jobData.nGages = int(results[16])
+        jobData.ownder = results[17]
+        jobData.email = results[18]
 

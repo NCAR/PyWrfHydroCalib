@@ -11,6 +11,7 @@ from ConfigParser import SafeConfigParser
 import os
 import datetime
 import ast
+import pwd
 
 class jobMeta:
     def __init__(self):
@@ -22,6 +23,7 @@ class jobMeta:
         self.nIter = []
         self.outDir = []
         self.email = []
+        self.owner = []
         self.report = []
         self.errMsg = []
         self.exe = []
@@ -204,6 +206,9 @@ def createJob(argsUser):
     except:
         print "ERROR: Unable to assign values from config file."
         raise
+        
+    # Assign ownership to this job
+    jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
     
     return jobObj
     

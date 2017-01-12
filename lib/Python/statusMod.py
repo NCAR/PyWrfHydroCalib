@@ -30,6 +30,8 @@ class statusMeta:
         self.errMsg = []
         self.dbUName = []
         self.dbPwd = []
+        self.owner = []
+        self.email = []
     def checkGages(self):
         # Function to check number of gages in output directory.
         subDirs = glob(self.jobDir + '/*/')

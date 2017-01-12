@@ -12,6 +12,7 @@
 import sys
 import argparse
 import getpass
+import os
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
@@ -67,6 +68,11 @@ def main(argv):
     
     # Check gages in directory to match what's in the database
     jobData.checkGages()
+    
+    # Get unique PID.
+    pidUnique = os.getpid()
+    
+    # Create unique CSV file that is a dump of current jobs being ran. 
     
 if __name__ == "__main__":
     main(sys.argv[1:])
