@@ -7,6 +7,7 @@
 
 import MySQLdb
 import datetime
+from slacker import Slacker
 
 class Database(object):
     def __init__(self,jobData):
@@ -278,6 +279,21 @@ class Database(object):
         jobData.slChan = results[19]
         jobData.slToken = results[20]
         jobData.slUser = results[21]
+        
+        # Initiate Slack if fields are not MISSING
+        if jobData.slChan != "MISSING":
+            jobData.email = None
+            try:
+                jobData.slackObj = Slacker(str(jobData.slToken))
+            except:
+                jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
+                                 str(jobData.slUser) + " channel: " + str(jobData.slChan)
+                raise
+        else:
+            jobData.slChan = None
+            jobData.slToken = None
+            jobData.slUser = None
+            jobData.slackObj = None
         
     def updateJobOwner(self,jobData,newOwner,newContact):
         """

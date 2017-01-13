@@ -73,34 +73,6 @@ def main(argv):
     #    print jobData.errMsg
     #    sys.exit(1)
     
-    print jobData.jobID
-    print jobData.jobDir
-    print jobData.nGages
-    print jobData.gages
-    print jobData.gageIDs
-    print jobData.bSpinDate
-    print jobData.eSpinDate
-    print jobData.spinComplete
-    print jobData.bCalibDate
-    print jobData.eCalibDate
-    print jobData.calibIter
-    print jobData.calibComplete
-    print jobData.bValidDate
-    print jobData.eValidDate
-    print jobData.validComplete
-    print jobData.nIter
-    print jobData.nCores
-    print jobData.acctKey
-    print jobData.exe
-    print jobData.errMsg
-    print jobData.dbUName
-    print jobData.dbPwd
-    print jobData.owner
-    print jobData.email
-    print jobData.slChan
-    print jobData.slToken
-    print jobData.slUser
-    
     ## Check gages in directory to match what's in the database
     #jobData.checkGages(db)
     
