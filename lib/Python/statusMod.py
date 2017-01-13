@@ -33,7 +33,11 @@ class statusMeta:
         self.dbUName = []
         self.dbPwd = []
         self.owner = []
-        self.email = []
+        self.email = None
+        self.slChan = None
+        self.slToken = None
+        self.slUser = None
+        self.slackObj = None
     def checkGages(self,db):
         # Function to check number of gages in output directory. Function
         # also calls the database module to extract unique ID values for each

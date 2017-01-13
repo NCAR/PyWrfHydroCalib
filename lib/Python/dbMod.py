@@ -273,8 +273,11 @@ class Database(object):
         jobData.nCores = int(results[14])
         jobData.exe = results[15]
         jobData.nGages = int(results[16])
-        jobData.email = results[17]
-        jobData.owner = results[18]
+        jobData.owner = results[17]
+        jobData.email = results[18]
+        jobData.slChan = results[19]
+        jobData.slToken = results[20]
+        jobData.slUser = results[21]
         
     def updateJobOwner(self,jobData,newOwner,newContact):
         """
