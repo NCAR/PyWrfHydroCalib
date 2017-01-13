@@ -257,7 +257,7 @@ def checkConfig(parser):
     if len(check1) == 0 and len(check2) == 0:
         print "ERROR: You must specify an error reporting method."
         raise Exception()
-    if len(check2) > 0 and len(check3) > 0:
+    if len(check2) > 0 and len(check3) == 0:
         print "ERROR: You must enter a Slack token."
         raise Exception()
 
