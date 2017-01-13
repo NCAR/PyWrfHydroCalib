@@ -120,7 +120,6 @@ def checkYsJobs(jobData):
             monthHold = monthTmp
             dayHold = dayTmp
             hourHold = hourTmp
-            print jobIdHold
         else:
             jobs.JOBID[job] = jobIdHold
             jobs.USER[job] = userHold
@@ -136,22 +135,23 @@ def checkYsJobs(jobData):
     # Delete temporary CSV file
     os.remove(csvPath)
     
-    ## Loop through and check to make sure no existing jobs are being ran for any 
-    ## of the gages.
-    #if len(jobs) != 0:
-    #    for gageCheck in range(0,jobData.gageIDs):
-    #        jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
-    #        testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
-    #        if len(testDF) != 0:
-    #            jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobId) + \
-    #                             " is already being ran under owner: " + \
-    #                             str(jobData.owner) + ". User: " + \
-    #                             str(userTmp) + " is attempting to initiate a spinup."
-    #            print "ERROR: You are attempting to intiate a job that is already being " + \
-    #                  "ran by user: " + str(jobData.owner)
-    #            raise Exception()
+    # Loop through and check to make sure no existing jobs are being ran for any 
+    # of the gages.
+    if len(jobs) != 0:
+        for gageCheck in range(0,jobData.gageIDs):
+            jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
+            print jobNameCheck
+            testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
+            if len(testDF) != 0:
+                jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobId) + \
+                                 " is already being ran under owner: " + \
+                                 str(jobData.owner) + ". User: " + \
+                                 str(userTmp) + " is attempting to initiate a spinup."
+                print "ERROR: You are attempting to initiate a job that is already being " + \
+                      "ran by user: " + str(jobData.owner)
+                raise Exception()
                 
-    #print jobs
+    print jobs
             
 def setupModels(jobData,db,args):
     # Function for setting up all model directories,
