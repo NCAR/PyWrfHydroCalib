@@ -62,5 +62,5 @@ class statusMeta:
             
         self.gages = gagesTmp[:]
         self.gageIDs = gageIDsTmp[:]
-        print self.gages
+        print self.gageIDs
         
