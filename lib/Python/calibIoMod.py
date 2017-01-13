@@ -138,7 +138,7 @@ def checkYsJobs(jobData):
     # Loop through and check to make sure no existing jobs are being ran for any 
     # of the gages.
     if len(jobs) != 0:
-        for gageCheck in range(0,jobData.gageIDs):
+        for gageCheck in range(0,len(jobData.gageIDs)):
             jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
             print jobNameCheck
             testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
