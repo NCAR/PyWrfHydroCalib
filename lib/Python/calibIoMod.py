@@ -86,9 +86,7 @@ def checkYsJobs(jobData):
     pidUnique = os.getpid()
     userTmp = pwd.getpwuid(os.getuid()).pw_name
     
-    jobDir = jobData.outDir + "/" + jobData.jobName
-    
-    csvPath = jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
     cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
     subprocess.call(cmd,shell=True)
     
