@@ -79,7 +79,10 @@ def main(argv):
         errMod.errOut(jobData)
     
     # Extract active jobs for job owner
-    calibIoMod.checkYsJobs(jobData)
+    try:
+        calibIoMod.checkYsJobs(jobData)
+    except:
+        errMod.errOut(jobData)
     
     ## Some house keeping here. If the spinup is already complete, throw an error. 
     ## also, if this is a re-initiation under a different user, require the new

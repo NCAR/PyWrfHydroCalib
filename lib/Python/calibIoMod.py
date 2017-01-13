@@ -88,11 +88,20 @@ def checkYsJobs(jobData):
     
     csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
     cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
-    subprocess.call(cmd,shell=True)
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+        raise
     
     colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
                'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    try:
+        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    except:
+        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        raise
+        
     lenJobs = len(jobs.JOBID)
     
     # Loop through data frame. For jobs across multiple cores, the data frame
@@ -133,14 +142,17 @@ def checkYsJobs(jobData):
             jobs.SUBMIT_HHMM[job] = hourHold
             
     # Delete temporary CSV file
-    os.remove(csvPath)
+    try:
+        os.remove(csvPath)
+    except:
+        jobData.errMsg = "ERROR: Failure to remove: " + csvPath
+        raise
     
     # Loop through and check to make sure no existing jobs are being ran for any 
     # of the gages.
     if len(jobs) != 0:
         for gageCheck in range(0,len(jobData.gageIDs)):
             jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
-            print jobNameCheck
             testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
             if len(testDF) != 0:
                 jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobId) + \
@@ -151,7 +163,6 @@ def checkYsJobs(jobData):
                       "ran by user: " + str(jobData.owner)
                 raise Exception()
                 
-    print jobs
             
 def setupModels(jobData,db,args):
     # Function for setting up all model directories,
