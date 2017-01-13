@@ -66,15 +66,14 @@ def main(argv):
         sys.exit(1)
         
     # Extract job data from database
-    db.jobStatus(jobData)
-    #try:
-    #    db.jobStatus(jobData)
-    #except:
-    #    print jobData.errMsg
-    #    sys.exit(1)
+    try:
+        db.jobStatus(jobData)
+    except:
+        print jobData.errMsg
+        sys.exit(1)
     
-    ## Check gages in directory to match what's in the database
-    #jobData.checkGages(db)
+    # Check gages in directory to match what's in the database
+    jobData.checkGages(db)
     
     ## Extract active jobs for job owner
     #calibIoMod.checkYsJobs(jobData)
