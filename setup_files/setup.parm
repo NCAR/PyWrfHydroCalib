@@ -33,6 +33,7 @@ numIter = 10
 email = karsten@ucar.edu
 slackChannel =
 slackToken =
+slackUser =
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
 wrfExe = /glade/u/home/karsten/RHAP_home/wrf_hydro_code/NWM_1.1/wrf_hydro_model/trunk/NDHMS/Run/wrf_hydro.exe

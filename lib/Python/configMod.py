@@ -26,6 +26,7 @@ class jobMeta:
         self.email = None
         self.slChan = None
         self.slToken = None
+        self.slUser = None
         self.slackObj = None
         self.owner = []
         self.errMsg = []
@@ -105,6 +106,7 @@ class jobMeta:
         self.email = str(parser.get('logistics','email'))
         self.slChan = str(parser.get('logistics','slackChannel'))
         self.slToken = str(parser.get('logistics','slackToken'))
+        self.slUser = str(parser.get('logistics','slackUser'))
         # Initiate Slack object if user has specified. Throw an error message
         # if Slack is not successfully inititated.
         if len(self.slChan) > 0:
@@ -251,6 +253,7 @@ def checkConfig(parser):
     check1 = str(parser.get('logistics','email'))
     check2 = str(parser.get('logistics','slackChannel'))
     check3 = str(parser.get('logistics','slackToken'))
+    check4 = str(parser.get('logistics','slackUser'))
     if len(check1) > 0 and len(check2) > 0:
         print "ERROR: You must choose either email or Slack for error reporting."
         raise Exception()
@@ -259,6 +262,9 @@ def checkConfig(parser):
         raise Exception()
     if len(check2) > 0 and len(check3) == 0:
         print "ERROR: You must enter a Slack token."
+        raise Exception()
+    if len(check2) > 0 and len(check4) == 0:
+        print "ERROR: You must enter a Slack user name."
         raise Exception()
 
     check = int(parser.get('logistics','nCores'))

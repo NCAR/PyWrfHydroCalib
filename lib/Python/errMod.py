@@ -34,10 +34,8 @@ def errOut(jobData):
         sys.exit(1)
     elif jobData.slackObj:
         msg1 = "ERROR in Job: " + jobData.jobName
-        chStrTmp = "#" + str(jobData.slChan)
-        print chStrTmp
-        jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user='Logan Karsten')
-        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user='Logan_Karsten')
+        jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
+        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
     else:
         print msgContent
         sys.exit(1)
