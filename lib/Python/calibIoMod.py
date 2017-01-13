@@ -151,6 +151,8 @@ def checkYsJobs(jobData):
                 print "ERROR: You are attempting to intiate a job that is already being " + \
                       "ran by user: " + str(jobData.owner)
                 raise Exception()
+                
+    print jobs
             
 def setupModels(jobData,db,args):
     # Function for setting up all model directories,

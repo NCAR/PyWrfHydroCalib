@@ -26,7 +26,7 @@ warnings.filterwarnings("ignore")
 import statusMod
 import dbMod
 import errMod
-#import calibIoMod
+import calibIoMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -78,8 +78,8 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
-    ## Extract active jobs for job owner
-    #calibIoMod.checkYsJobs(jobData)
+    # Extract active jobs for job owner
+    calibIoMod.checkYsJobs(jobData)
     
     ## Some house keeping here. If the spinup is already complete, throw an error. 
     ## also, if this is a re-initiation under a different user, require the new
