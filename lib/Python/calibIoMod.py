@@ -9,8 +9,8 @@ import pandas as pd
 from errMod import wipeJobDir
 import namelistMod
 import subprocess
-import math
 import pwd
+import shutil
 
 class gageMeta:
     def __init__(self):
@@ -58,23 +58,25 @@ def getGageList(jobData,db):
         # User provided CSV file with list of gages.
         gListTmp = pd.read_csv(jobData.gList,dtype={0: str})
         
-        # PLACEHOLDER FOR CHECKING DB TO ENSURE
-        # ALL GAGE NAMES EXIST IN META TABLE
         jobData.gages = gListTmp.Gage[:]
 
         if len(jobData.gages) == 0:
             errMsg = "ERROR: List of gages for calibration is zero."
             jobData.errMsg = errMsg
             raise Exception()
+            
+        for tmpGage in range(0,len(gListTmp.Gage)):
+            try:
+                db.lookupGage(jobData,gListTmp.Gage[tmpGage])
+            except:
+                raise
     elif len(jobData.gSQL) > 0:
         # User provided SQL command to extract list of gages.
-        gageList = db.queryGageList(jobData)
-        jobData.gages = gageList[:]
-        #try:
-        #    gageList = db.queryGageList(jobData)
-        #    jobData.gages = gageList[:]
-        #except:
-        #    raise
+        try:
+            gageList = db.queryGageList(jobData)
+            jobData.gages = gageList[:]
+        except:
+            raise
         
 def checkYsJobs(jobData):
     # Function to obtain a data frame containing Yellowstone
@@ -148,7 +150,7 @@ def checkYsJobs(jobData):
                       "ran by user: " + str(jobData.owner)
                 raise Exception()
             
-def setupModels(jobData,db):
+def setupModels(jobData,db,args):
     # Function for setting up all model directories,
     # links to forcings, namelist files, etc. 
     # Function will loop through each basin to calibrate,
@@ -172,6 +174,19 @@ def setupModels(jobData,db):
         
     # Create gage-specific object that will contain gage-specific information.
     gageData = gageMeta()
+    
+    # Copy config file to the top level directory. This will be used during
+    # restarts to extract information about the job. It was decided to do
+    # this opposed to attempting to enter the plethura of information 
+    # specific to the job into the metadata table. 
+    configPath = str(args.configFile[0])
+    copyPath = jobData.jobDir + '/setup.config'
+    try:
+        shutil.copy(configPath,copyPath)
+    except:
+        wipeJobDir(jobData)
+        jobData.errMsg = "ERROR: Failure to copy configuration setup file."
+        raise
         
     # Loop through each basin and setup appropriate directories.
     for gage in range(0,len(jobData.gages)):

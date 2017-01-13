@@ -108,7 +108,14 @@ def main(argv):
     # nohup to keep track of the models. If anything goes wrong, notifications
     # will either be emailed per the user's info, or piped to Slack for group
     # notification.
-    
+    for basin in range(0,len(jobData.gages)):
+        runDir = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SPINUP"
+        
+        if not os.path.isdir(runDir):
+            jobData.errMsg = "ERROR: " + runDir + " not found."
+            errMod.errOut(jobData)
+            
+        
         
     
 if __name__ == "__main__":

@@ -119,26 +119,39 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
             
-        
+
+        # Fill in None contact information with "MISSING" strings. This will be
+        # useful when extracting for later. 
+        if not jobData.email:
+            emailStr = "MISSING"
+        else:
+            emailStr = str(jobData.email)
+        if not jobData.slChan:
+            slStr1 = "MISSING"
+            slStr2 = "MISSING"
+        else:
+            slStr1 = str(jobData.slChan)
+            slStr2 = str(jobData.slToken)
+            
         jobDir = jobData.outDir + "/" + jobData.jobName
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
-                 "valid_complete,acct_key,num_cores,exe,num_gages,owner,email) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "valid_complete,acct_key,num_cores,exe,num_gages,owner,email," + \
+                 "slack_channel,slack_token) values " + \
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter,0,0,\
                  jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages),jobData.email,jobData.owner)
+                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages),jobData.owner,\
+                 emailStr,slStr1,slStr2)
          
-        self.conn.execute(sqlCmd)
-        self.db.commit()
-        #try:
-        #    self.conn.execute(sqlCmd)
-        #    self.db.commit()
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
-        #    raise
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
+            raise
             
     def queryGageList(self,jobData):
         """
@@ -165,6 +178,28 @@ class Database(object):
             listOut.append(results[gage][1])
         
         return listOut
+        
+    def lookupGage(self,jobData,gageName):
+        """
+        Generic function to check if gage exists in metadata table.
+        This is mostly used to ensure the user specified the correct gage.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
+            
+        sqlCmd = "Select * from Domain_Meta where gage_id='" + str(gageName) + "';"
+        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
+            raise
+            
+        if not results:
+            jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
+            raise Exception()
         
     def queryGageMeta(self,jobData,tmpMeta):
         """

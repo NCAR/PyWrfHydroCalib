@@ -28,8 +28,11 @@ nCores = 256
 numIter = 10
 
 # Specify email to send updates/error messages to.
-# This is OPTIONAL. If not desired, leave blank. 
+# Please fill out either email or Slack information. 
+# You must choose one.
 email = karsten@ucar.edu
+slackChannel =
+slackToken =
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
 wrfExe = /glade/u/home/karsten/RHAP_home/wrf_hydro_code/NWM_1.1/wrf_hydro_model/trunk/NDHMS/Run/wrf_hydro.exe

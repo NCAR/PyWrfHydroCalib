@@ -8,6 +8,10 @@ import sys
 from email.mime.text import MIMEText
 import smtplib
 import shutil
+import pwd
+import os
+
+uid = pwd.getpwuid(os.getuid()).pw_name
 
 def errOut(jobData):
     # Error function for handling communicating error messages
@@ -17,7 +21,7 @@ def errOut(jobData):
 
     msgContent = jobData.errMsg
     
-    if jobData.report == 1:
+    if jobData.email:
         # Send error email out
         msg = MIMEText(msgContent)
         emailTitle = "Errors in NWM Calibration for Job: " + jobData.jobName
@@ -28,6 +32,10 @@ def errOut(jobData):
         s.sendmail(jobData.email,[jobData.email],msg.as_string())
         s.quit()
         sys.exit(1)
+    elif jobData.slackObj:
+        msg1 = "ERROR in Job: " + jobData.jobName
+        jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=uid)
+        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=uid)
     else:
         print msgContent
         sys.exit(1)

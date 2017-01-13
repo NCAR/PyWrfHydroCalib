@@ -12,6 +12,7 @@ import os
 import datetime
 import ast
 import pwd
+from slacker import Slacker
 
 class jobMeta:
     def __init__(self):
@@ -22,9 +23,11 @@ class jobMeta:
         self.nCores = []
         self.nIter = []
         self.outDir = []
-        self.email = []
+        self.email = None
+        self.slChan = None
+        self.slToken = None
+        self.slackObj = None
         self.owner = []
-        self.report = []
         self.errMsg = []
         self.exe = []
         self.genParmTbl = []
@@ -100,10 +103,16 @@ class jobMeta:
         self.nCores = int(parser.get('logistics','nCores'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.email = str(parser.get('logistics','email'))
-        if len(self.email) == 0:
-            self.report = 0
-        else:
-            self.report = 1
+        self.slChan = str(parser.get('logistics','slackChannel'))
+        self.slToken = str(parser.get('logistics','slackToken'))
+        # Initiate Slack object if user has specified. Throw an error message
+        # if Slack is not successfully inititated.
+        if len(self.slChan) > 0:
+            try:
+                self.slackObj = Slacker(str(self.slToken))
+            except:
+                print "ERROR: Failure to initiate Slack."
+                raise
         self.exe = str(parser.get('logistics','wrfExe'))
         self.genParmTbl = str(parser.get('logistics','genParmTbl'))
         #self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
@@ -235,6 +244,21 @@ def checkConfig(parser):
         raise Exception()
     if check != 'NRAL0017':
         print "ERROR: Invalid account key for calibration workflow."
+        raise Exception()
+        
+    # Either email or Slack must be chosen. If Slack is chosen, user
+    # must provide both channel and API token.
+    check1 = str(parser.get('logistics','email'))
+    check2 = str(parser.get('logistics','slackChannel'))
+    check3 = str(parser.get('logistics','slackToken'))
+    if len(check1) > 0 and len(check2) > 0:
+        print "ERROR: You must choose either email or Slack for error reporting."
+        raise Exception()
+    if len(check1) == 0 and len(check2) == 0:
+        print "ERROR: You must specify an error reporting method."
+        raise Exception()
+    if len(check2) > 0 and len(check3) > 0:
+        print "ERROR: You must enter a Slack token."
         raise Exception()
 
     check = int(parser.get('logistics','nCores'))
