@@ -57,10 +57,12 @@ class statusMeta:
             strArr = pthTmp.split('/')
             lenTmp = len(strArr)
             gagesTmp.append(strArr[lenTmp-2])
-            gageID = db.getDomainID(self,strArr[lenTmp-2])
+            try:
+                gageID = db.getDomainID(self,strArr[lenTmp-2])
+            except:
+                raise
             gageIDsTmp.append(gageID)
             
         self.gages = gagesTmp[:]
         self.gageIDs = gageIDsTmp[:]
-        print self.gageIDs
         

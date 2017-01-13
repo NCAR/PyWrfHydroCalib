@@ -25,7 +25,7 @@ warnings.filterwarnings("ignore")
 
 import statusMod
 import dbMod
-#import errMod
+import errMod
 #import calibIoMod
 
 def main(argv):
@@ -73,7 +73,10 @@ def main(argv):
         sys.exit(1)
     
     # Check gages in directory to match what's in the database
-    jobData.checkGages(db)
+    try:
+        jobData.checkGages(db)
+    except:
+        errMod.errOut(jobData)
     
     ## Extract active jobs for job owner
     #calibIoMod.checkYsJobs(jobData)
