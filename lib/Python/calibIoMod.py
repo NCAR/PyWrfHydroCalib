@@ -97,62 +97,63 @@ def checkYsJobs(jobData):
     jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
     lenJobs = len(jobs.JOBID)
     
-    # Loop through data frame. For jobs across multiple cores, the data frame
-    # needs to be filled in as the duplicate cores have NaN values, except for the
-    # first core.
-    for job in range(0,lenJobs):
-        # Assume a NaN value with the "USER" field means this is a duplicate.
-        jobIdTmp = jobs.JOBID[job]
-        userTmp = jobs.USER[job]
-        statTmp = jobs.STAT[job]
-        queTmp = jobs.QUEUE[job]
-        hostTmp = jobs.FROM_HOST[job]
-        jobNameTmp = jobs.JOB_NAME[job]
-        monthTmp = jobs.SUBMIT_MONTH[job]
-        dayTmp = jobs.SUBMIT_DAY[job]
-        hourTmp = jobs.SUBMIT_HHMM[job]
-        
-        if str(userTmp) != 'nan' and str(userTmp) != 'NaN':
-            jobIdHold = jobIdTmp
-            userHold = userTmp
-            statHold = statTmp
-            queHold = queTmp
-            hostHold = hostTmp
-            jobNameHold = jobNameTmp
-            monthHold = monthTmp
-            dayHold = dayTmp
-            hourHold = hourTmp
-        else:
-            jobs.JOBID[job] = jobIdHold
-            jobs.USER[job] = userHold
-            jobs.STAT[job] = statHold
-            jobs.QUEUE[job] = queHold
-            jobs.FROM_HOST[job] = hostHold
-            jobs.EXEC_HOST[job] = userTmp
-            jobs.JOB_NAME[job] = jobNameHold
-            jobs.SUBMIT_MONTH[job] = monthHold
-            jobs.SUBMIT_DAY[job] = dayHold
-            jobs.SUBMIT_HHMM[job] = hourHold
-            
-    # Delete temporary CSV file
-    os.remove(csvPath)
-    
-    # Loop through and check to make sure no existing jobs are being ran for any 
-    # of the gages.
-    if len(jobs) != 0:
-        for gageCheck in range(0,jobData.gageIDs):
-            jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
-            testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
-            if len(testDF) != 0:
-                jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobId) + \
-                                 " is already being ran under owner: " + \
-                                 str(jobData.owner) + ". User: " + \
-                                 str(userTmp) + " is attempting to initiate a spinup."
-                print "ERROR: You are attempting to intiate a job that is already being " + \
-                      "ran by user: " + str(jobData.owner)
-                raise Exception()
-                
     print jobs
+    ## Loop through data frame. For jobs across multiple cores, the data frame
+    ## needs to be filled in as the duplicate cores have NaN values, except for the
+    ## first core.
+    #for job in range(0,lenJobs):
+    #    # Assume a NaN value with the "USER" field means this is a duplicate.
+    #    jobIdTmp = jobs.JOBID[job]
+    #    userTmp = jobs.USER[job]
+    #    statTmp = jobs.STAT[job]
+    #    queTmp = jobs.QUEUE[job]
+    #    hostTmp = jobs.FROM_HOST[job]
+    #    jobNameTmp = jobs.JOB_NAME[job]
+    #    monthTmp = jobs.SUBMIT_MONTH[job]
+    #    dayTmp = jobs.SUBMIT_DAY[job]
+    #    hourTmp = jobs.SUBMIT_HHMM[job]
+    #    
+    #    if str(userTmp) != 'nan' and str(userTmp) != 'NaN':
+    #        jobIdHold = jobIdTmp
+    #        userHold = userTmp
+    #        statHold = statTmp
+    #        queHold = queTmp
+    #        hostHold = hostTmp
+    #        jobNameHold = jobNameTmp
+    #        monthHold = monthTmp
+    #        dayHold = dayTmp
+    #        hourHold = hourTmp
+    #    else:
+    #        jobs.JOBID[job] = jobIdHold
+    #        jobs.USER[job] = userHold
+    #        jobs.STAT[job] = statHold
+    #        jobs.QUEUE[job] = queHold
+    #        jobs.FROM_HOST[job] = hostHold
+    #        jobs.EXEC_HOST[job] = userTmp
+    #        jobs.JOB_NAME[job] = jobNameHold
+    #        jobs.SUBMIT_MONTH[job] = monthHold
+    #        jobs.SUBMIT_DAY[job] = dayHold
+    #        jobs.SUBMIT_HHMM[job] = hourHold
+            
+    ## Delete temporary CSV file
+    #os.remove(csvPath)
+    
+    ## Loop through and check to make sure no existing jobs are being ran for any 
+    ## of the gages.
+    #if len(jobs) != 0:
+    #    for gageCheck in range(0,jobData.gageIDs):
+    #        jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
+    #        testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
+    #        if len(testDF) != 0:
+    #            jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobId) + \
+    #                             " is already being ran under owner: " + \
+    #                             str(jobData.owner) + ". User: " + \
+    #                             str(userTmp) + " is attempting to initiate a spinup."
+    #            print "ERROR: You are attempting to intiate a job that is already being " + \
+    #                  "ran by user: " + str(jobData.owner)
+    #            raise Exception()
+                
+    #print jobs
             
 def setupModels(jobData,db,args):
     # Function for setting up all model directories,
