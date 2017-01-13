@@ -182,7 +182,7 @@ def setupModels(jobData,db,args):
     # this opposed to attempting to enter the plethura of information 
     # specific to the job into the metadata table. 
     configPath = str(args.configFile[0])
-    copyPath = jobData.jobDir + '/setup.config'
+    copyPath = parentDir + '/setup.config'
     try:
         shutil.copy(configPath,copyPath)
     except:
