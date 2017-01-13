@@ -77,7 +77,7 @@ def main(argv):
     jobData.checkGages(db)
     
     # Extract active jobs for job owner
-    jobsActive = calibIoMod.getYsJobs(jobData)
+    calibIoMod.checkYsJobs(jobData)
     
     # Some house keeping here. If the spinup is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
@@ -90,11 +90,25 @@ def main(argv):
     if userTmp != jobData.owner:
         print "User: " + userTmp + " is requesting to takeover jobID: " + \
               str(jobData.jobID) + " from owner: " + str(jobData.owner)
-        newContact = raw_input('Please enter new email/Slack contact:')
+        strTmp = "Please enter new email/Slack conact (LEAVE BLANK IF " + \
+                 "NO CHANGE IN CONTACT DESIRED)"
+        newContact = raw_input(strTmp)
+        if len(newContact) == 0:
+            newContact = str(jobData.email)
+            
         try:
             db.updateJobOwner(jobData,userTmp,newContact)
         except:
             errMod.errOut(jobData)
+            
+    # Walk through spinup directory for each basin. Determine the status of
+    # the model runs by the files available. If restarting, modify the 
+    # namelist files appropriately. Then, restart the model. Once all
+    # basins have been accounted for, fire off the monitoring program through
+    # nohup to keep track of the models. If anything goes wrong, notifications
+    # will either be emailed per the user's info, or piped to Slack for group
+    # notification.
+    
         
     
 if __name__ == "__main__":

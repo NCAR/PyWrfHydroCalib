@@ -76,7 +76,7 @@ def getGageList(jobData,db):
         #except:
         #    raise
         
-def getYsJobs(jobData):
+def checkYsJobs(jobData):
     # Function to obtain a data frame containing Yellowstone
     # jobs being ran under the owner of the JobID.
 
@@ -147,8 +147,6 @@ def getYsJobs(jobData):
                 print "ERROR: You are attempting to intiate a job that is already being " + \
                       "ran by user: " + str(jobData.owner)
                 raise Exception()
-            
-    return jobs
             
 def setupModels(jobData,db):
     # Function for setting up all model directories,
