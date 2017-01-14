@@ -14,6 +14,7 @@ class statusMeta:
         self.jobDir = []
         self.nGages = []
         self.gages = []
+        self.gageIDs = []
         self.bSpinDate = []
         self.eSpinDate = []
         self.spinComplete = []
@@ -32,9 +33,15 @@ class statusMeta:
         self.dbUName = []
         self.dbPwd = []
         self.owner = []
-        self.email = []
-    def checkGages(self):
-        # Function to check number of gages in output directory.
+        self.email = None
+        self.slChan = None
+        self.slToken = None
+        self.slUser = None
+        self.slackObj = None
+    def checkGages(self,db):
+        # Function to check number of gages in output directory. Function
+        # also calls the database module to extract unique ID values for each
+        # gage.
         subDirs = glob(self.jobDir + '/*/')
         
         if len(subDirs) != int(self.nGages):
@@ -42,6 +49,7 @@ class statusMeta:
             raise Exception()
             
         gagesTmp = []
+        gageIDsTmp = []
             
         # Walk job directory and extract gages.
         for subDir in range(0,len(subDirs)):
@@ -49,7 +57,12 @@ class statusMeta:
             strArr = pthTmp.split('/')
             lenTmp = len(strArr)
             gagesTmp.append(strArr[lenTmp-2])
+            try:
+                gageID = db.getDomainID(self,strArr[lenTmp-2])
+            except:
+                raise
+            gageIDsTmp.append(gageID)
             
         self.gages = gagesTmp[:]
-        print self.gages
+        self.gageIDs = gageIDsTmp[:]
         
