@@ -295,7 +295,7 @@ class Database(object):
             jobData.slUser = None
             jobData.slackObj = None
         
-    def updateJobOwner(self,jobData,newOwner,newContact):
+    def updateJobOwner(self,jobData,newOwner,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag):
         """
         Generic function to update the job owner name and contact information 
         for situations where a different user is re-starting the job and needs
@@ -305,27 +305,54 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd1 = "update Job_Meta set Job_Meta.owner='" + str(newOwner) + \
-                 "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd2 = "update Job_Meta set Job_Meta.email='" + str(newContact) + \
+        sqlCmd1 = "update Job_Meta set JobMeta.owner='" + str(newOwner) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
-                  
+        sqlCmd2 = "update Job_Meta set JobMeta.email='" + str(newEmail) + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd3 = "update Job_Meta set JobMeta.slack_channel='" + str(newSlackChannel) + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd4 = "update Job_Meta set JobMeta.slack_token='" + str(newSlackToken) + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd5 = "update Job_Meta set JobMeta.slack_user='" + str(newSlackUName) + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+                 
         try:
+            # Update the owner of the job, regardless of whatever options were filled.
             self.conn.execute(sqlCmd1)
             self.db.commit()
+            jobData.owner = str(newOwner)
         except:
             jobData.errMsg = "ERROR: Failure to update new owner for: " + str(newOwner)
             raise
             
-        try:
-            self.conn.execute(sqlCmd2)
-            self.db.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to update contact for: " + str(newContact)
-            raise
+        if changeFlag != 0:
+            if len(newEmail) != 0:
+                try:
+                    self.conn.execute(sqlCmd2)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner)
+                    raise
+                jobData.email = str(newEmail)
+                jobData.slChan = None
+                jobData.slToken = None
+                jobData.slUser = None
+                jobData.slackObj = None
+                
+            if len(newSlackChannel) != 0:
+                try:
+                    self.conn.execute(sqlCmd3)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd4)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd5)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to update Slack information for: " + str(newOwner)
+                    raise
+                jobData.email = None
+                jobData.slChan = str(newSlackChannel)
+                jobData.slToken = str(newSlackToken)
+                jobData.slUser = str(newSlackUName)
+                jobData.slackObj = Slacker(str(jobData.slToken))
             
-        # Update job metadata object
-        jobData.owner = str(newOwner)
-        jobData.email = str(newContact)
-        
-

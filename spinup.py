@@ -84,22 +84,54 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
-    ## Some house keeping here. If the spinup is already complete, throw an error. 
-    ## also, if this is a re-initiation under a different user, require the new
-    ## user to enter a new contact that will be unpdated in the database. 
-    #if int(jobData.spinComplete) == 1:
-    #    jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
-    #                     " has already completed."
-    #    errMod.errOut(jobData)
+    # Some house keeping here. If the spinup is already complete, throw an error. 
+    # also, if this is a re-initiation under a different user, require the new
+    # user to enter a new contact that will be unpdated in the database. 
+    if int(jobData.spinComplete) == 1:
+        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
+                         " has already completed."
+        errMod.errOut(jobData)
         
-    #if userTmp != jobData.owner:
-    #    print "User: " + userTmp + " is requesting to takeover jobID: " + \
-    #          str(jobData.jobID) + " from owner: " + str(jobData.owner)
-    #    strTmp = "Please enter new email/Slack conact (LEAVE BLANK IF " + \
-    #             "NO CHANGE IN CONTACT DESIRED)"
-    #    newContact = raw_input(strTmp)
-    #    if len(newContact) == 0:
-    #        newContact = str(jobData.email)
+    if userTmp != jobData.owner:
+        print "User: " + userTmp + " is requesting to takeover jobID: " + \
+              str(jobData.jobID) + " from owner: " + str(jobData.owner)
+        strTmp = "Please enter new email address. Leave blank if no email " + \
+                 "change is desired. NOTE if you leave both email and Slack " + \
+                 "information blank, no change in contact will occur. Only " + \
+                 "the owner will be modified."
+        newEmail = raw_input(strTmp)
+        strTmp = "Please enter Slack channel."
+        newSlackChannel = raw_input(strTmp)
+        strTmp = "Please enter Slack token."
+        newSlackToken = raw_input(strTmp)
+        strTmp = "Please enter Slack user name."
+        newSlackUName = raw_input(strTmp)
+        changeFlag = 1
+        if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
+            print "ERROR: You must specify an associated Slacker API token."
+            sys.exit(1)
+        if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
+            print "ERROR: You must specify an associated Slacker user name."
+            sys.exit(1)
+        if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
+            print "ERROR: You must specify an associated Slacker channel name."
+            sys.exit(1)
+        if len(newSlackToken) != 0 and len(newSlackUName) == 0:
+            print "ERROR: You must specify an associated Slacker user name."
+            sys.exit(1)
+        if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
+            print "ERROR: You must specify an associated Slacker channel name."
+            sys.exit(1)
+        if len(newSlackUName) != 0 and len(newSlackToken) == 0:
+            print "ERROR: You must specify an associated Slacker API token."
+            sys.exit(1)
+        if len(newSlackChannel) != 0 and len(newEmail) != 0:
+            print "ERROR: You cannot specify both email and Slack for notifications."
+            sys.exit(1)
+        if len(newSlackChannel) == 0 and len(newEmail) == 0:
+            changeFlag = 0
+            
+        db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
             
     #    try:
     #        db.updateJobOwner(jobData,userTmp,newContact)
