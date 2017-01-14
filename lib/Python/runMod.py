@@ -53,7 +53,7 @@ def runModel(jobData,runDir,typeFlag):
             begDate = dCurrent
             rstFlag = 1
             
-    print begDate
+    print runDir
             
     #if begDate == endDate:
     #    return # Model has completed
