@@ -92,7 +92,7 @@ def main(argv):
                          " has already completed."
         errMod.errOut(jobData)
         
-    if userTmp == jobData.owner:
+    if userTmp != jobData.owner:
         print "User: " + userTmp + " is requesting to takeover jobID: " + \
               str(jobData.jobID) + " from owner: " + str(jobData.owner)
         strTmp = "Please enter new email address. Leave blank if no email " + \
@@ -132,7 +132,6 @@ def main(argv):
             changeFlag = 0
             
         # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
-        db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
             
         try:
             db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
