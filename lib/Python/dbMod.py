@@ -317,13 +317,13 @@ class Database(object):
         sqlCmd5 = "update Job_Meta set Job_Meta.slack_user='" + str(newSlackUName) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
         sqlCmd6 = "update Job_Meta set Job_Meta.email='MISSING'" + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
+                  " where jobID='" + str(jobData.jobID) + "';"
         sqlCmd7 = "update Job_Meta set Job_Meta.slack_channel='MISSING'" + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
+                  " where jobID='" + str(jobData.jobID) + "';"
         sqlCmd8 = "update Job_Meta set Job_Meta.slack_token='MISSING'" + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
+                  " where jobID='" + str(jobData.jobID) + "';"
         sqlCmd9 = "update Job_Meta set Job_Meta.slack_user='MISSING'" + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
+                  " where jobID='" + str(jobData.jobID) + "';"
                   
         # Test Slack object creation if Slack information is entered. This is done
         # before information is updated into the database to ensure information
