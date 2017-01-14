@@ -250,11 +250,11 @@ class Database(object):
             self.conn.execute(sqlCmd)
             results = self.conn.fetchone()
         except:
-            jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID[0])
+            jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID)
             raise
             
         if not results:
-            jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID[0])
+            jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID)
             raise Exception()
             
         # Fill jobData object with metadata on job and status.
