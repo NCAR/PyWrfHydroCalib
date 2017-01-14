@@ -24,7 +24,7 @@ def errOut(jobData):
     if jobData.email:
         # Send error email out
         msg = MIMEText(msgContent)
-        emailTitle = "Errors in NWM Calibration for Job: " + jobData.jobID
+        emailTitle = "Errors in NWM Calibration for Job: " + str(jobData.jobID)
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
@@ -33,7 +33,7 @@ def errOut(jobData):
         s.quit()
         sys.exit(1)
     elif jobData.slackObj:
-        msg1 = "ERROR in Job: " + jobData.jobID
+        msg1 = "ERROR in Job: " + str(jobData.jobID)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
         jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
     else:
