@@ -27,6 +27,7 @@ import statusMod
 import dbMod
 import errMod
 import calibIoMod
+import runMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -148,12 +149,11 @@ def main(argv):
     for basin in range(0,len(jobData.gages)):
         runDir = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SPINUP"
         
-        print runDir
         if not os.path.isdir(runDir):
             jobData.errMsg = "ERROR: " + runDir + " not found."
             errMod.errOut(jobData)
             
-        
+        runMod.runModel(jobData,runDir,1)
         
     
 if __name__ == "__main__":

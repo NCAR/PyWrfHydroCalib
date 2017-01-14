@@ -43,17 +43,19 @@ def runModel(jobData,runDir,typeFlag):
     # Loop through each hour of the period being modeled. Check for both 
     # the LSM and hydro restart file.
     for hourModel in range(0,nHours):
-        dCurrent = bDate + datetime.timedelta(seconds=3600.0*hourModel)
+        dCurrent = begDate + datetime.timedelta(seconds=3600.0*hourModel)
         
         lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H')
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + \
                            ':00_DOMAIN1'
                            
+        print lsmRestartPath
+        print hydroRestartPath
         if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
             begDate = dCurrent
             rstFlag = 1
             
-    if begDate == endDate:
-        return # Model has completed
+    #if begDate == endDate:
+    #    return # Model has completed
 
     
