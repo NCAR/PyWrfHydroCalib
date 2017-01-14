@@ -98,13 +98,13 @@ def main(argv):
         strTmp = "Please enter new email address. Leave blank if no email " + \
                  "change is desired. NOTE if you leave both email and Slack " + \
                  "information blank, no change in contact will occur. Only " + \
-                 "the owner will be modified."
+                 "the owner will be modified:"
         newEmail = raw_input(strTmp)
-        strTmp = "Please enter Slack channel."
+        strTmp = "Please enter Slack channel:"
         newSlackChannel = raw_input(strTmp)
-        strTmp = "Please enter Slack token."
+        strTmp = "Please enter Slack token:"
         newSlackToken = raw_input(strTmp)
-        strTmp = "Please enter Slack user name."
+        strTmp = "Please enter Slack user name:"
         newSlackUName = raw_input(strTmp)
         changeFlag = 1
         if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
@@ -131,29 +131,28 @@ def main(argv):
         if len(newSlackChannel) == 0 and len(newEmail) == 0:
             changeFlag = 0
             
-        jobData.errMsg = "ERROR TESTING"
-        errMod.errOut(jobData)
         # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
         db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
             
-    #    try:
-    #        db.updateJobOwner(jobData,userTmp,newContact)
-    #    except:
-    #        errMod.errOut(jobData)
+        try:
+            db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
+        except:
+            errMod.errOut(jobData)
             
-    ## Walk through spinup directory for each basin. Determine the status of
-    ## the model runs by the files available. If restarting, modify the 
-    ## namelist files appropriately. Then, restart the model. Once all
-    ## basins have been accounted for, fire off the monitoring program through
-    ## nohup to keep track of the models. If anything goes wrong, notifications
-    ## will either be emailed per the user's info, or piped to Slack for group
-    ## notification.
-    #for basin in range(0,len(jobData.gages)):
-    #    runDir = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SPINUP"
+    # Walk through spinup directory for each basin. Determine the status of
+    # the model runs by the files available. If restarting, modify the 
+    # namelist files appropriately. Then, restart the model. Once all
+    # basins have been accounted for, fire off the monitoring program through
+    # nohup to keep track of the models. If anything goes wrong, notifications
+    # will either be emailed per the user's info, or piped to Slack for group
+    # notification.
+    for basin in range(0,len(jobData.gages)):
+        runDir = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SPINUP"
         
-    #    if not os.path.isdir(runDir):
-    #        jobData.errMsg = "ERROR: " + runDir + " not found."
-    #        errMod.errOut(jobData)
+        print runDir
+        if not os.path.isdir(runDir):
+            jobData.errMsg = "ERROR: " + runDir + " not found."
+            errMod.errOut(jobData)
             
         
         
