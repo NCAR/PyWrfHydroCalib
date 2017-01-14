@@ -107,8 +107,6 @@ def main(argv):
         strTmp = "Please enter Slack user name."
         newSlackUName = raw_input(strTmp)
         changeFlag = 1
-        print len(newSlackChannel)
-        print len(newEmail)
         if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
             print "ERROR: You must specify an associated Slacker API token."
             sys.exit(1)
@@ -133,6 +131,8 @@ def main(argv):
         if len(newSlackChannel) == 0 and len(newEmail) == 0:
             changeFlag = 0
             
+        jobData.errMsg = "ERROR TESTING"
+        errMod.errOut(jobData)
         # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
         db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
             
