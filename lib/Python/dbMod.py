@@ -318,6 +318,7 @@ class Database(object):
                  
         try:
             # Update the owner of the job, regardless of whatever options were filled.
+            print sqlCmd1
             self.conn.execute(sqlCmd1)
             self.db.commit()
             jobData.owner = str(newOwner)
