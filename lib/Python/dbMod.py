@@ -315,6 +315,14 @@ class Database(object):
                   "' where jobID='" + str(jobData.jobID) + "';"
         sqlCmd5 = "update Job_Meta set Job_Meta.slack_user='" + str(newSlackUName) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd6 = "update Job_Meta set Job_Meta.email='MISSING'" + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd7 = "update Job_Meta set Job_Meta.slack_channel='MISSING'" + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd8 = "update Job_Meta set Job_Meta.slack_token='MISSING'" + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd9 = "update Job_Meta set Job_Meta.slack_user='MISSING'" + \
+                  "' where jobID='" + str(jobData.jobID) + "';"
                  
         try:
             # Update the owner of the job, regardless of whatever options were filled.
@@ -330,6 +338,12 @@ class Database(object):
             if len(newEmail) != 0:
                 try:
                     self.conn.execute(sqlCmd2)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd7)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd8)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd9)
                     self.db.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner)
@@ -347,6 +361,8 @@ class Database(object):
                     self.conn.execute(sqlCmd4)
                     self.db.commit()
                     self.conn.execute(sqlCmd5)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd6)
                     self.db.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to update Slack information for: " + str(newOwner)
