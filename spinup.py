@@ -131,6 +131,7 @@ def main(argv):
         if len(newSlackChannel) == 0 and len(newEmail) == 0:
             changeFlag = 0
             
+        # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
         db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
             
     #    try:
