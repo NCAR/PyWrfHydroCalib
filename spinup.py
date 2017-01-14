@@ -107,6 +107,8 @@ def main(argv):
         strTmp = "Please enter Slack user name."
         newSlackUName = raw_input(strTmp)
         changeFlag = 1
+        print len(newSlackChannel)
+        print len(newEmail)
         if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
             print "ERROR: You must specify an associated Slacker API token."
             sys.exit(1)
