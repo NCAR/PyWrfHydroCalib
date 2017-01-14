@@ -8,6 +8,7 @@
 import MySQLdb
 import datetime
 from slacker import Slacker
+import sys
 
 class Database(object):
     def __init__(self,jobData):
@@ -323,6 +324,17 @@ class Database(object):
                   "' where jobID='" + str(jobData.jobID) + "';"
         sqlCmd9 = "update Job_Meta set Job_Meta.slack_user='MISSING'" + \
                   "' where jobID='" + str(jobData.jobID) + "';"
+                  
+        # Test Slack object creation if Slack information is entered. This is done
+        # before information is updated into the database to ensure information
+        # is correct.
+        if changeFlag != 0:
+            if len(newSlackChannel) != 0:
+                try:
+                    testSlack = Slacker(str(newSlackToken))
+                except:
+                    print "ERROR: Slack token provided is incorrect."
+                    sys.exit(1)
                  
         try:
             # Update the owner of the job, regardless of whatever options were filled.
