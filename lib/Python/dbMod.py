@@ -305,15 +305,15 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd1 = "update Job_Meta set JobMeta.owner='" + str(newOwner) + \
+        sqlCmd1 = "update Job_Meta set Job_Meta.owner='" + str(newOwner) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd2 = "update Job_Meta set JobMeta.email='" + str(newEmail) + \
+        sqlCmd2 = "update Job_Meta set Job_Meta.email='" + str(newEmail) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd3 = "update Job_Meta set JobMeta.slack_channel='" + str(newSlackChannel) + \
+        sqlCmd3 = "update Job_Meta set Job_Meta.slack_channel='" + str(newSlackChannel) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd4 = "update Job_Meta set JobMeta.slack_token='" + str(newSlackToken) + \
+        sqlCmd4 = "update Job_Meta set Job_Meta.slack_token='" + str(newSlackToken) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd5 = "update Job_Meta set JobMeta.slack_user='" + str(newSlackUName) + \
+        sqlCmd5 = "update Job_Meta set Job_Meta.slack_user='" + str(newSlackUName) + \
                   "' where jobID='" + str(jobData.jobID) + "';"
                  
         try:
