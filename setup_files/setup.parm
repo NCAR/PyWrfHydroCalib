@@ -116,7 +116,7 @@ zLvl = 10.0
 # 5: Ideal with specified supplemental precipitation.
 # 6: HRLDAS hourly LDASIN files with supplemental precipitation.     
 forceType = 1
-forceDir = /glade/u/home/karsten
+#forceDir = /glade/u/home/karsten
 
 [modelTime]
 # NoahMP Specific time optionss

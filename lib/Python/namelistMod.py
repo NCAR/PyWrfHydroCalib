@@ -7,11 +7,11 @@
 
 import os
 
-def createHrldasNL(gageData,jobData,outDir,typeFlag):
+def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
     # General function for creation of a namelist.hrldas file.
     
-    # NOTE: typeFlag = 1 indicates spinup, 2 indicates calibration.
-    #       typeFlag = 3 indicates validation
+    # NOTE: typeFlag = 1 indicates cold start.
+    #       typeFlag = 2 indicates restart.
     # Create path for the namelist file
     pathOut = outDir + "/namelist.hrldas"
     if os.path.isfile(pathOut):
@@ -25,45 +25,27 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         fileObj.write('\n')
         inStr = ' HRLDAS_SETUP_FILE = "' + str(gageData.wrfInput) + '"' + '\n'
         fileObj.write(inStr)
-        inStr = ' INDIR = "' + jobData.fDir + '"' + '\n'
+        inStr = ' INDIR = "' + str(gageData.forceDir) + '"' + '\n'
         fileObj.write(inStr)
         inStr = ' SPATIAL_FILENAME = "' + str(gageData.soilFile) + '"' + '\n'
         fileObj.write(inStr)
         inStr = ' OUTDIR = "' + outDir + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        if typeFlag == 1:  # Spinup
-            dt = jobData.eSpinDate - jobData.bSpinDate
-            inStr = ' START_YEAR = ' + jobData.bSpinDate.strftime('%Y') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bSpinDate.strftime('%m') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bSpinDate.strftime('%d') + '\n'
-            fileObj.write(inStr)
-        elif typeFlag == 2:  # Calibration
-            dt = jobData.eCalibDate - jobData.bCalibDate
-            inStr = ' START_YEAR = ' + jobData.bCalibDate.strftime('%Y') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bCalibDate.strftime('%m') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bCalibDate.strftime('%d') + '\n'
-            fileObj.write(inStr)
-        elif typeFlag == 3: # Validation
-            dt = jobData.eValidDate - jobData.bValidDate
-            inStr = ' START_YEAR = ' + jobData.bValidDate.strftime('%Y') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bValidDate.strftime('%m') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bValidDate.strftime('%d') + '\n'
-            fileObj.write(inStr)
+        dt = eDate - bDate
+        inStr = ' START_YEAR = ' + bDate.strftime('%Y') + '\n'
+        fileObj.write(inStr)
+        inStr = ' START_MONTH = ' + bDate.strftime('%m') + '\n'
+        fileObj.write(inStr)
+        inStr = ' START_DAY = ' + bDate.strftime('%d') + '\n'
+        fileObj.write(inStr)
         fileObj.write(' START_HOUR = 00\n')
         fileObj.write(' START_MIN = 00\n')
         fileObj.write('\n')
         if typeFlag == 1:
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
         else:
-            # PLACEHOLDER FOR CHECKING FOR SPINUP RESTART
-            rstFile = ''
+            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d%H') + "_DOMAIN1"
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
@@ -155,7 +137,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         jobData.errMsg = "ERROR: Failure to create: " + pathOut
         raise
     
-def createHydroNL(gageData,jobData,outDir,typeFlag):
+def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
     # General function for creation of a hydro.namelist file.
 
     # Create path for the namelist file.
@@ -187,8 +169,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
             inStr = ' !RESTART_FILE = ""' + '\n'
             fileObj.write(inStr)
         elif typeFlag == 2: # Calibration
-            # PLACEHOLDER FOR RESTART FILE 
-            restartFile = ''
+            restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d_%H') + ":00_DOMAIN2"
             inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')

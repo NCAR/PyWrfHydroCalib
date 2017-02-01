@@ -227,6 +227,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
             raise Exception()
             
+        tmpMeta['gageID'] = results[0]
         tmpMeta['geoFile'] = results[12]
         tmpMeta['wrfInput'] = results[13]
         tmpMeta['soilFile'] = results[14]
@@ -235,6 +236,8 @@ class Database(object):
         tmpMeta['udMap'] = results[17]
         tmpMeta['gwFile'] = results[18]
         tmpMeta['lkFile'] = results[19]
+        tmpMeta['forceDir'] = results[20]
+        tmpMeta['obsFile'] = results[21]
         
     def jobStatus(self,jobData):
         """
@@ -372,4 +375,21 @@ class Database(object):
                 jobData.slToken = str(newSlackToken)
                 jobData.slUser = str(newSlackUName)
                 jobData.slackObj = Slacker(str(jobData.slToken))
+                
+    def updateSpinupStatus(self,jobData):
+        """
+        Generic function to update the status of the spinup for a particular job.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise
             
+        sqlCmd = "update Job_Meta set Job_Meta.su_complete='" + str(int(jobData.spinComplete)) + \
+                 "' where jobID='" = str(jobData.jobID) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
+            raise

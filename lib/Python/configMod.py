@@ -30,6 +30,7 @@ class jobMeta:
         self.slackObj = None
         self.owner = []
         self.errMsg = []
+        self.genMsg = []
         self.exe = []
         self.genParmTbl = []
         #self.gwParmTbl = []
@@ -65,7 +66,7 @@ class jobMeta:
         self.soilThick = []
         self.zLvl = []
         self.fType = []
-        self.fDir = []
+        #self.fDir = []
         self.fDT = []
         self.lsmDt = []
         self.lsmOutDt = []
@@ -156,7 +157,7 @@ class jobMeta:
         self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
         self.zLvl = float(parser.get('lsmPhysics','zLvl'))
         self.fType = int(parser.get('forcing','forceType'))
-        self.fDir = str(parser.get('forcing','forceDir'))
+        #self.fDir = str(parser.get('forcing','forceDir'))
         self.fDT = int(parser.get('modelTime','forceDt'))
         self.lsmDt = int(parser.get('modelTime','lsmDt'))
         self.lsmOutDt = int(parser.get('modelTime','lsmOutDt'))
@@ -184,6 +185,24 @@ class jobMeta:
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
+def readConfig(configFile):
+    """
+    Generic function to read in data from a configuration file.
+    """
+    parser = SafeConfigParser()
+    parser.read(configFile)
+    
+    jobObj = jobMeta()
+    
+    # Read in values
+    try:
+        jobMeta.readConfig(jobObj,parser)
+    except:
+        print "ERROR: Unable to assign values from config file."
+        raise
+        
+    return jobObj
+    
 def createJob(argsUser):
     """ Reads in options from the setup.parm file
     """
@@ -273,6 +292,11 @@ def checkConfig(parser):
         raise Exception()
     if check <= 0:
         print "ERROR: Invalid number of cores to use."
+        raise Exception()
+    # Check to make sure nCores is an even division of 16 (16 cores/node)
+    check = float(parser.get('logistics','nCores'))/16.0 - int(float(parser.get('logistics','nCores'))/16.0)
+    if check != 0.0:
+        print "ERROR: Number of cores chosen must be multiple of 16"
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))

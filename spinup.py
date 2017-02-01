@@ -16,6 +16,7 @@ import os
 #import subprocess
 #import pandas as pd
 import pwd
+import numpy as np
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
@@ -28,6 +29,7 @@ import dbMod
 import errMod
 import calibIoMod
 import runMod
+import configMod
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -58,6 +60,19 @@ def main(argv):
     
     jobData.dbUName = 'NWM_Calib_rw'
     jobData.dbPwd = 'IJustWannaCalibrate'    
+    
+    # Pull extensive meta-data describing the job from the config file.
+    configPath = str(jobData.jobDir) + "/setup.config"
+    if not os.path.isfile(configPath):
+        print "ERROR: Configuration file: " + configPath + " not found."
+        sys.exit(1)
+
+    try:        
+        staticData = configMod.readConfig(configPath)
+    except:
+        print "ERROR: Failure to read configuration file: " + configPath
+        sys.exit(1)
+        
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
@@ -81,7 +96,7 @@ def main(argv):
     
     # Extract active jobs for job owner
     try:
-        calibIoMod.checkYsJobs(jobData)
+        statusMod.checkYsJobs(jobData)
     except:
         errMod.errOut(jobData)
     
@@ -139,22 +154,62 @@ def main(argv):
         except:
             errMod.errOut(jobData)
             
-    # Walk through spinup directory for each basin. Determine the status of
-    # the model runs by the files available. If restarting, modify the 
-    # namelist files appropriately. Then, restart the model. Once all
-    # basins have been accounted for, fire off the monitoring program through
-    # nohup to keep track of the models. If anything goes wrong, notifications
-    # will either be emailed per the user's info, or piped to Slack for group
-    # notification.
-    for basin in range(0,len(jobData.gages)):
-        runDir = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SPINUP"
-        
-        if not os.path.isdir(runDir):
-            jobData.errMsg = "ERROR: " + runDir + " not found."
-            errMod.errOut(jobData)
-            
-        runMod.runModel(jobData,runDir,1)
-        
+    # Begin an "infinite" do loop. This loop will continue to loop through all 
+    # the basins until spinups are complete. Basins are allowed ONE failure. A restart
+    # will be attempted. If the restart fails again, a LOCK file is placed into the
+    # run directory and an error email is sent to the user.
+    completeStatus = False
+    
+    # Create a "key" array. This array is of length [numBasins] and is initialized to 0.0.
+    # Each array element can have the following values based on current model status:
+    # 0.0 - Initial value
+    # 0.5 - Model simulation in progress
+    # 1.0 - Model simulation complete
+    # -0.5 - Model simulation failed once and a restart has been attempted
+    # -1.0 - Model has failed twice. A LOCK file has been created.
+    # Once all array elements are 1.0, then completeStatus goes to True, an entry into
+    # the database occurs, and the program will complete.
+    keySlot = np.empty(len(jobData.gages))
+    keySlot[:] = 0.0
+    entryValue = float(len(jobData.gages))
+    
+    while not completeStatus:
+        # Walk through spinup directory for each basin. Determine the status of
+        # the model runs by the files available. If restarting, modify the 
+        # namelist files appropriately. Then, restart the model. Once all
+        # basins have been accounted for, fire off the monitoring program through
+        # nohup to keep track of the models. If anything goes wrong, notifications
+        # will either be emailed per the user's info, or piped to Slack for group
+        # notification.
+        # Loop through each basin. Perform the following steps:
+        # 1.) If status is -0.5,0.0, or 0.5, check to see if the model is running
+        #     for this basin.
+        # 2.) If the model is not running, check for expected output and perform
+        #     necessary logistics. Continue to the next basin.
+        # If the status goes to -1.0, a LOCK file is created and must be manually
+        # removed from the user. Once the program detects this, it will restart the
+        # model and the status goes back to 0.5.
+        # If the status is -0.5 and no job is running, output must be complete, or 
+        # status goes to -1.0.
+        # If output is not complete, the model is still running, status stays at 0.5.
+        # If job is not running, and output has been completed, status goes to 1.0.
+        # This continues indefinitely until statuses for ALL basins go to 1.0.
+        for basin in range(0,len(jobData.gages)):
+            try:
+                runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)
+            except:
+                errMod.errOut(jobData)
+                
+        # Check to see if program requirements have been met.
+        if keySlot.sum() == entryValue:
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errout(jobData)
+            jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
+            completeStatus = True
     
 if __name__ == "__main__":
     main(sys.argv[1:])
