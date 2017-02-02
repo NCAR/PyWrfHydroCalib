@@ -210,8 +210,7 @@ def checkBasJob(jobData,gageNum):
     status = False
     
     if lenJobs == 0:
-        jobData.errMsg = "ERROR: No jobs found to be running for job ID: " + str(jobData.jobID)
-        raise Exception()
+        status = False
     else:
         # Find if any jobs for this basin are being ran.
         testDF = jobs.query("JOB_NAME == '" + expName + "'")
