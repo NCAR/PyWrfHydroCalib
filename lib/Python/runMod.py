@@ -197,36 +197,36 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
     #    keyStatus = -0.5
     #    keySlot[basinNum] = -0.5
         
-    #if keyStatus == 0.0 and runFlag:
-    #    # Model needs to be either ran, or restarted
-    #    # First delete namelist files if they exist.
-    #    check = runDir + "/namelist.hrldas"
-    #    check2 = runDir + "/hydro.namelist"
-    #    if os.path.isfile(check):
-    #        os.remove(check)
-    #    if os.path.isfile(check2):
-    #        os.remove(check2)
-    #    
-    #    if begDate == staticData.bSpinDate:
-    #        startType = 1
-    #   else:
-    #        startType = 2
-    #    
-    #    try:
-    #        namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-    #        namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-    #    except:
-    #        raise
+    if keyStatus == 0.0 and runFlag:
+        # Model needs to be either ran, or restarted
+        # First delete namelist files if they exist.
+        check = runDir + "/namelist.hrldas"
+        check2 = runDir + "/hydro.namelist"
+        if os.path.isfile(check):
+            os.remove(check)
+        if os.path.isfile(check2):
+            os.remove(check2)
+        
+        if begDate == staticData.bSpinDate:
+            startType = 1
+        else:
+            startType = 2
+        
+        try:
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+        except:
+            raise
             
-    #    if startType == 2:
-    #        # Clean run directory of any old diagnostics files
-    #        try:
-    #            errMod.cleanRunDir(statusData,runDir)
-    #        except:
-    #            raise
+        if startType == 2:
+            # Clean run directory of any old diagnostics files
+            try:
+                errMod.cleanRunDir(statusData,runDir)
+            except:
+                raise
                 
-    #    # Fire off model.
-    #    cmd = "bsub < " + runDir + "/run_NWM.sh"
+        # Fire off model.
+        cmd = "bsub < " + runDir + "/run_NWM.sh"
     #    try:
     #        subprocess.call(cmd,shell=True)
     #    except:
