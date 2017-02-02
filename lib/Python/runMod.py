@@ -260,7 +260,7 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -R "span[ptile=16]\n')
+        fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -o wrf%J.out\n')
