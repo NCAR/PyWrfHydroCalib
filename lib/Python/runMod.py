@@ -227,6 +227,7 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
                 
         # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
+        print cmd
         try:
             subprocess.call(cmd,shell=True)
         except:
