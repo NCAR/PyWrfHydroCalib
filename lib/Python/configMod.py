@@ -522,13 +522,13 @@ def checkConfig(parser):
         print "ERROR: Invalid forceType value passed to program."
         raise Exception()
         
-    check = str(parser.get('forcing','forceDir'))
-    if len(check) == 0:
-        print "ERROR: Zero length forceDir passed to program."
-        raise Exception()
-    if not os.path.isdir(check):
-        print "ERROR: forceDir not found."
-        raise Exception()
+    #check = str(parser.get('forcing','forceDir'))
+    #if len(check) == 0:
+    #    print "ERROR: Zero length forceDir passed to program."
+    #    raise Exception()
+    #if not os.path.isdir(check):
+    #    print "ERROR: forceDir not found."
+    #    raise Exception()
         
     # Make sure output frequencies aren't < 0
     check = int(parser.get('modelTime','forceDt'))
