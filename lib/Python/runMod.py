@@ -66,18 +66,16 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
     except:
         raise
         
-    print basinStatus
-    
     ## Initialize empty restart paths
     #hydroRst = ""
     #lsmRst = ""
     
-    ## Create path to LOCK file if neeced
-    #lockPath = runDir + "/RUN.LOCK"
+    # Create path to LOCK file if neeced
+    lockPath = runDir + "/RUN.LOCK"
     
-    #if keyStatus == 1.0:
-    #    # Model has already completed
-    #    runFlag = False
+    if keyStatus == 1.0:
+        # Model has already completed
+        runFlag = False
         
     ## For uncompleted simulations that are still listed as running.
     #if keyStatus == 0.5:
@@ -102,20 +100,20 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
     #            keyStatus = 1.0
     #            runFlag = False
                 
-    ## For simulations that are fresh
-    #if keyStatus == 0.0:
-    #    if basinStatus:
-    #        # Model is still running from previous instance of workflow. Allow it to continue.
-    #        keySlot[basinNum] = 0.5
-    #        keyStatus = 0.5
-    #        runFlag = False
-    #    else:
-    #        runFlag = statusMod.walkMod(begDate,endDate,runDir)
-    #        if not runFlag:
-    #            # Model simulation completed before workflow was restarted
-    #            keySlot[basinNum] = 1.0
-    #            keyStatus = 1.0
-    #            runFlag = False
+    # For simulations that are fresh
+    if keyStatus == 0.0:
+        if basinStatus:
+            # Model is still running from previous instance of workflow. Allow it to continue.
+            keySlot[basinNum] = 0.5
+            keyStatus = 0.5
+            runFlag = False
+        else:
+            runFlag = statusMod.walkMod(begDate,endDate,runDir)
+            if not runFlag:
+                # Model simulation completed before workflow was restarted
+                keySlot[basinNum] = 1.0
+                keyStatus = 1.0
+                runFlag = False
                 
     ## For when the model failed TWICE and is locked.
     #if keyStatus == -1.0:

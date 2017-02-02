@@ -236,6 +236,7 @@ def walkMod(bDate,eDate,runDir):
     
     for hourModel in range(0,nHours+1):
         dCurrent = bDate + datetime.timedelta(seconds=3600.0*hourModel)
+        print dCurrent
         lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H')
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
         
@@ -260,5 +261,9 @@ def walkMod(bDate,eDate,runDir):
     # If the bDate has reached the eDate, this means the model completed as expected.
     if bDate == eDate:
         runFlag = True
+        
+    print bDate
+    print eDate
+    print runFlag
         
     return runFlag
