@@ -54,16 +54,18 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
     print runDir
     print begDate
     print endDate
-    ## Pull gage metadata
-    #gageMeta = calibIoMod.gageMeta()
-    #try:
-    #    gageMeta.pullGageMeta(staticData,db,gage)
-    #except:
-    #    raise
+    # Pull gage metadata
+    gageMeta = calibIoMod.gageMeta()
+    try:
+        gageMeta.pullGageMeta(staticData,db,gage)
+    except:
+        raise
         
-    ## Initialize status
-    #keyStatus = keySlot[basinNum]
+    # Initialize status
+    keyStatus = keySlot[basinNum]
     
+    print keyStatus
+    print gageMeta
     #try:
     #    basinStatus = statusMod.checkBasJob(statusData,basinNum)
     #except:
