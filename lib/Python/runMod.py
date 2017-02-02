@@ -51,9 +51,6 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
         
     runFlag = 0
     
-    print runDir
-    print begDate
-    print endDate
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
@@ -68,6 +65,8 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
         basinStatus = statusMod.checkBasJob(statusData,basinNum)
     except:
         raise
+        
+    print basinStatus
     
     ## Initialize empty restart paths
     #hydroRst = ""
