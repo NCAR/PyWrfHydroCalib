@@ -191,6 +191,13 @@ def checkBasJob(jobData,gageNum):
         jobData.errMsg = "ERROR: Failure to read in: " + csvPath
         raise
         
+    # Delete temporary CSV file
+    #try:
+    #    os.remove(csvPath)
+    #except:
+    #    jobData.errMsg = "ERROR: Failure to remove: " + csvPath
+    #    raise
+        
     # Calculate expected number of nodes the job should occupy.
     #numNodes = int(float(jobData.nCores)/16.0)
     
