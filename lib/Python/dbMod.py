@@ -383,8 +383,8 @@ class Database(object):
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
-         
-        sqlCmd = 'foo'
+        
+        sqlCmd = "update Job_Meta set Job_Meta.su_complete='"
         #sqlCmd = "update Job_Meta set Job_Meta.su_complete='" + str(jobData.spinComplete) + \
         #         "' where jobID='" = str(jobData.jobID) + "';"
                  
