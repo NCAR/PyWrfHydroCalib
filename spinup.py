@@ -61,18 +61,6 @@ def main(argv):
     jobData.dbUName = 'NWM_Calib_rw'
     jobData.dbPwd = 'IJustWannaCalibrate'    
     
-    # Pull extensive meta-data describing the job from the config file.
-    configPath = str(jobData.jobDir) + "/setup.config"
-    if not os.path.isfile(configPath):
-        print "ERROR: Configuration file: " + configPath + " not found."
-        sys.exit(1)
-
-    try:        
-        staticData = configMod.readConfig(configPath)
-    except:
-        print "ERROR: Failure to read configuration file: " + configPath
-        sys.exit(1)
-        
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
@@ -88,6 +76,18 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
     
+    # Pull extensive meta-data describing the job from the config file.
+    configPath = str(jobData.jobDir) + "/setup.config"
+    if not os.path.isfile(configPath):
+        print "ERROR: Configuration file: " + configPath + " not found."
+        sys.exit(1)
+
+    try:        
+        staticData = configMod.readConfig(configPath)
+    except:
+        print "ERROR: Failure to read configuration file: " + configPath
+        sys.exit(1)
+        
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages(db)
