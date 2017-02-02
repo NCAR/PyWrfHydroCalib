@@ -36,7 +36,7 @@ slackToken =
 slackUser =
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /glade/u/home/karsten/RHAP_home/wrf_hydro_code/NWM_1.1/wrf_hydro_model/trunk/NDHMS/Run/wrf_hydro.exe
+wrfExe = /glade/u/home/karsten/RHAP_home/wrf_hydro_code/NWM/wrf_hydro_nwm/trunk/NDHMS/Run/wrf_hydro.exe
 
 # Specify parameter tables to use for Noah-MP
 genParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/GENPARM.TBL
@@ -51,8 +51,8 @@ soilParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
-bSpinDate = 2008-10-01
-eSpinDate = 2010-10-01
+bSpinDate = 2007-11-01
+eSpinDate = 2007-12-01
 
 # Specify date range for calibration period
 bCalibDate = 2008-10-01
