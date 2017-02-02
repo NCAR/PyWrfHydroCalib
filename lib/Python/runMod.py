@@ -64,12 +64,10 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
     # Initialize status
     keyStatus = keySlot[basinNum]
     
-    print keyStatus
-    print gageMeta
-    #try:
-    #    basinStatus = statusMod.checkBasJob(statusData,basinNum)
-    #except:
-    #    raise
+    try:
+        basinStatus = statusMod.checkBasJob(statusData,basinNum)
+    except:
+        raise
     
     ## Initialize empty restart paths
     #hydroRst = ""
