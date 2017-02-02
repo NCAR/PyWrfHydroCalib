@@ -227,14 +227,14 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
                 
         # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
-    #    try:
-    #        subprocess.call(cmd,shell=True)
-    #    except:
-    #        statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-    #        raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+            raise
             
-    #    keyStatus = 0.5
-    #    keySlot[basinNum] = 0.5
+        keyStatus = 0.5
+        keySlot[basinNum] = 0.5
                 
 def generateRunScript(jobData,gageID,runDir):
     """
