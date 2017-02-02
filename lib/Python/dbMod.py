@@ -384,7 +384,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd = "update Job_Meta set Job_Meta.su_complete='" + str(int(jobData.spinComplete)) + \
+        sqlCmd = "update Job_Meta set Job_Meta.su_complete='" + str(jobData.spinComplete) + \
                  "' where jobID='" = str(jobData.jobID) + "';"
                  
         try:
