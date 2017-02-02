@@ -304,14 +304,6 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
             raise
             
-        # Create shell scripts that will be used to execute model runs
-        try:
-            runMod.generateRunScript(jobData,int(gageData.gageID),gageDir + "/RUN.SPINUP")
-            runMod.generateRunScript(jobData,int(gageData.gageID),gageDir + "/RUN.CALIB")
-            runMod.generateRunScript(jobData,int(gageData.gageID),gageDir + "/RUN.VALID")
-        except:
-            raise
-            
         # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
         #try:
         #    namelistMod.createHrldasNL(gageData,jobData,spinupDir,1)

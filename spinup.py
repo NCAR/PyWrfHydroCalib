@@ -195,7 +195,7 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)
+            runMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],1,keySlot,basin)
             #try:
             #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)
             #except:

@@ -94,7 +94,7 @@ def main(argv):
         db.enterJobID(jobData)
     except:
         errMod.errOut(jobData)
-       
+    
     # Disconnect from the calibration database.
     try:
         db.disconnect(jobData)

@@ -12,7 +12,7 @@ import statusMod
 import errMod
 import subprocess
 
-def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
+def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -37,6 +37,14 @@ def runModel(statusData,staticData,db,gage,typeFlag,keySlot,basinNum):
     if not os.path.isdir(runDir):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
+        
+    # If BSUB run script doesn't exist, create it here.
+    bsubFile = runDir + "/run_NWM.sh"
+    if not os.path.isfile(bsubFile):
+        try:
+            generateRunScript(statusData,int(gageID),runDir)
+        except:
+            raise
     
     # Calculate datetime objects
     if typeFlag == 1:
