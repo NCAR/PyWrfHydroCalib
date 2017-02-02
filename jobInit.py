@@ -14,7 +14,7 @@
 
 import sys
 import argparse
-import getpass
+#import getpass
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
@@ -37,11 +37,12 @@ def main(argv):
     args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
-    try:
-        jobData = configMod.createJob(args)
-    except:
-        print "ERROR: Failure to initialize calibration workflow job."
-        sys.exit(1)
+    jobData = configMod.createJob(args)
+    #try:
+    #    jobData = configMod.createJob(args)
+    #except:
+    #    print "ERROR: Failure to initialize calibration workflow job."
+    #    sys.exit(1)
         
     # Lookup database username/login credentials based on username
     # running program.
