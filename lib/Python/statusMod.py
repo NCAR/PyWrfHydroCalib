@@ -191,7 +191,6 @@ def checkBasJob(jobData,gageNum):
         jobData.errMsg = "ERROR: Failure to read in: " + csvPath
         raise
         
-    print jobs
     # Delete temporary CSV file
     try:
         os.remove(csvPath)
@@ -205,6 +204,9 @@ def checkBasJob(jobData,gageNum):
     # Compile expected job name that the job should occupy.
     expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
     
+    print jobData.JOB_NAME
+    print expName
+    print "XXXXXXXXXXXX"
     lenJobs = len(jobs.JOBID)
 
     # Assume no jobs for basin are being ran, unless found in the data frame.
