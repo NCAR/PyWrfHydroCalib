@@ -87,30 +87,31 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
         runFlag = False
         
     # For uncompleted simulations that are still listed as running.
-    #if keyStatus == 0.5:
-    #    # If a model is running for this basin, continue and set keyStatus to 0.5
-    #    if basinStatus:
-    #        keySlot[basinNum] = 0.5
-    #        keyStatus = 0.5
-    #        runFlag = False
-    #    else:
-    #        # Either simulation has completed, or potentially crashed.
-    #        runStatus = statusMod.walkMod(begDate,endDate,runDir,hydroRst,lsmRst)
-    #        begDate = runStatus[0]
-    #        endDate = runStatus[1]
-    #        runFlag = runStatus[2]
-    #        if runFlag:
-    #            # Model crashed as simulation is not complete but no processes are running.
-    #            statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-    #                                " Failed. Attempting to restart."
-    #            errMod.sendMsg(statusData)
-    #            keySlot[basinNum] = -0.25
-    #            keyStatus = -0.25
-    #        else:
-    #            # Model has completed!
-    #            keySlot[basinNum] = 1.0
-    #            keyStatus = 1.0
-    #            runFlag = False
+    if keyStatus == 0.5:
+        # If a model is running for this basin, continue and set keyStatus to 0.5
+        if basinStatus:
+            keySlot[basinNum] = 0.5
+            keyStatus = 0.5
+            runFlag = False
+        else:
+            # Either simulation has completed, or potentially crashed.
+            runStatus = statusMod.walkMod(begDate,endDate,runDir,hydroRst,lsmRst)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if runFlag:
+                # Model crashed as simulation is not complete but no processes are running.
+                statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                                    " Failed. Attempting to restart."
+                print statusData.genMsg
+                errMod.sendMsg(statusData)
+                keySlot[basinNum] = -0.25
+                keyStatus = -0.25
+            else:
+                # Model has completed!
+                keySlot[basinNum] = 1.0
+                keyStatus = 1.0
+                runFlag = False
            
     print keyStatus
     # For simulations that are fresh
@@ -185,7 +186,8 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     #            keySlot[basinNum] = 1.0
     #            keyStatus = 1.0
                 
-    #if keyStatus == -0.25 and runFlag:
+    if keyStatus == -0.25 and runFlag:
+        print keyStatus
     #    # Restarting model from one crash
     #    # First delete namelist files if they exist.
     #    check = runDir + "/namelist.hrldas"
