@@ -202,7 +202,8 @@ def checkBasJob(jobData,gageNum):
     #numNodes = int(float(jobData.nCores)/16.0)
     
     # Compile expected job name that the job should occupy.
-    expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+    #expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+    expName = "NWM_3425565236_" + str(jobData.gageIDs[gageNum])
     
     lenJobs = len(jobs.JOBID)
 
