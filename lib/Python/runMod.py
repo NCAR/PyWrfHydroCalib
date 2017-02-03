@@ -95,7 +95,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
             runFlag = False
         else:
             # Either simulation has completed, or potentially crashed.
-            runStatus = statusMod.walkMod(begDate,endDate,runDir,hydroRst,lsmRst)
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
             endDate = runStatus[1]
             runFlag = runStatus[2]
