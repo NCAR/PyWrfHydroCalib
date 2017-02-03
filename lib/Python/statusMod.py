@@ -251,18 +251,18 @@ def walkMod(bDate,eDate,runDir):
                 lsmSize = os.path.getsize(rstPth1)
                 hydroSize = os.path.getsize(rstPth2)
                 
-                print lsmSize
-                print hydroSize
-                print "XXXXXXXXXXXXXXXXX"
+                #print lsmSize
+                #print hydroSize
+                #print "XXXXXXXXXXXXXXXXX"
                 
             if hourModel >= 2:
                 checkLsm = os.path.getsize(lsmRestartPath)
                 checkHydro = os.path.getsize(hydroRestartPath)
                 
-                print lsmRestartPath
-                print hydroRestartPath
-                print checkLsm
-                print checkHydro
+                #print lsmRestartPath
+                #print hydroRestartPath
+                #print checkLsm
+                #print checkHydro
                 #print lsmRestartPath
                 #print checkLsm
                 if checkLsm == lsmSize and checkHydro == hydroSize:
