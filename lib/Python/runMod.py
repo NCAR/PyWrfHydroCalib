@@ -138,26 +138,26 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
                 keyStatus = 1.0
                 runFlag = False
                 
-    ## For when the model failed TWICE and is locked.
-    #if keyStatus == -1.0:
-    #    # If LOCK file exists, no simulation will take place. File must be removed
-    #    # manually by user.
-    #    if os.path.isfile(lockPath):
-    #        runFlag = False
-    #    else:
-    #        # LOCK file was removed, upgrade status to 0.0 temporarily
-    #        runStatus = statusMod.walkMod(begDate,endDate,runDir)
-    #        begDate = runStatus[0]
-    #        endDate = runStatus[1]
-    #        runFlag = runStatus[2]
-    #        if runFlag:
-    #            keySlot[basinNum] = 0.0
-    #            keyStatus = 0.0
-    #        else:
-    #            # Model sucessfully completed.
-    #            keySlot[basinNum] = 1.0
-    #            keyStatus = 1.0
-    #            runFlag = False
+    # For when the model failed TWICE and is locked.
+    if keyStatus == -1.0:
+        # If LOCK file exists, no simulation will take place. File must be removed
+        # manually by user.
+        if os.path.isfile(lockPath):
+            runFlag = False
+        else:
+            # LOCK file was removed, upgrade status to 0.0 temporarily
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if runFlag:
+                keySlot[basinNum] = 0.0
+                keyStatus = 0.0
+            else:
+                # Model sucessfully completed.
+                keySlot[basinNum] = 1.0
+                keyStatus = 1.0
+                runFlag = False
                 
     # For when the model crashed ONCE
     if keyStatus == -0.5:
