@@ -235,6 +235,7 @@ def walkMod(bDate,eDate,runDir):
     # Initialize flag returned to user as True. Assume model needs to ran.
     runFlag = True
     
+    output = []
     #print bDate
     #print eDate
     for hourModel in range(0,nHours+1):
@@ -277,4 +278,7 @@ def walkMod(bDate,eDate,runDir):
     if bDate == eDate:
         runFlag = False
         
-    return runFlag
+    output.append(bDate)
+    output.append(eDate)
+    output.append(runFlag)
+    return output

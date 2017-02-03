@@ -94,7 +94,10 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     #        runFlag = False
     #    else:
     #        # Either simulation has completed, or potentially crashed.
-    #        runFlag = statusMod.walkMod(begDate,endDate,runDir,hydroRst,lsmRst)
+    #        runStatus = statusMod.walkMod(begDate,endDate,runDir,hydroRst,lsmRst)
+    #        begDate = runStatus[0]
+    #        endDate = runStatus[1]
+    #        runFlag = runStatus[2]
     #        if runFlag:
     #            # Model crashed as simulation is not complete but no processes are running.
     #            statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
@@ -119,7 +122,11 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
             print begDate
             print endDate
             print "XXXXXX"
-            runFlag = statusMod.walkMod(begDate,endDate,runDir)
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            print runFlag
             print begDate
             print endDate
             if not runFlag:
@@ -136,7 +143,10 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     #        runFlag = False
     #    else:
     #        # LOCK file was removed, upgrade status to 0.0 temporarily
-    #        runFlag = statusMod.walkMod(begDate,endDate,runDir)
+    #        runStatus = statusMod.walkMod(begDate,endDate,runDir)
+    #        begDate = runStatus[0]
+    #        endDate = runStatus[1]
+    #        runFlag = runStatus[2]
     #        if runFlag:
     #            keySlot[basinNum] = 0.0
     #            keyStatus = 0.0
@@ -155,7 +165,10 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     #        keyStatus = 0.5
     #        runFlag = False
     #    else:
-    #        runFlag = statusMod.walkMod(begDate,endDate,runDir)
+    #        runStatus = statusMod.walkMod(begDate,endDate,runDir)
+    #        begDate = runStatus[0]
+    #        endDate = runStatus[1]
+    #        runFlag = runStatus[2]
     #        if runFlag:
     #            # Model has crashed again, time to lock it up and send a message out.
     #            statusData.genMsg = "ERROR: SIMULATION FOR GAGE: " + statusData.gages[basinNum] + \
