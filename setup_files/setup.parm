@@ -36,7 +36,7 @@ slackToken =
 slackUser =
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /glade/u/home/karsten/RHAP_home/wrf_hydro_code/NWM/wrf_hydro_nwm/trunk/NDHMS/Run/wrf_hydro.exe
+wrfExe = /glade/u/home/adugger/WRF_Hydro/binaries/wrf_hydro_NoahMP_NWM_V1.0_170202_Debug_SpSoils_Realtime_NoNdg.exe
 
 # Specify parameter tables to use for Noah-MP
 genParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/GENPARM.TBL
