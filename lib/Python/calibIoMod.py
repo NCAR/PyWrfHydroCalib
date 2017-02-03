@@ -304,6 +304,17 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
             raise
             
+        # Create sub-directories for each calibration simulation based on the user-input into
+        # the config file.
+        for calibIter in range(1,int(jobData.nIter)+1):
+            dirTmp = gageDir + "/RUN.CALIB/ITERATION_" + str(calibIter)
+            try:
+                os.mkdir(dirTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Failure to create subdirectory: " + dirTmp
+                raise
+            
         # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
         #try:
         #    namelistMod.createHrldasNL(gageData,jobData,spinupDir,1)
