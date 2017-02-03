@@ -196,6 +196,7 @@ def main(argv):
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         #for basin in range(0,len(jobData.gages)):
         for basin in range(0,1):
+            print keySlot
             runMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],1,keySlot,basin)
             #try:
             #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)

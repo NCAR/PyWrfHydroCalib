@@ -198,12 +198,8 @@ def checkBasJob(jobData,gageNum):
         jobData.errMsg = "ERROR: Failure to remove: " + csvPath
         raise
         
-    # Calculate expected number of nodes the job should occupy.
-    #numNodes = int(float(jobData.nCores)/16.0)
-    
     # Compile expected job name that the job should occupy.
-    #expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
-    expName = "NWM_3425565236_" + str(jobData.gageIDs[gageNum])
+    expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
     
     lenJobs = len(jobs.JOBID)
 
@@ -214,9 +210,6 @@ def checkBasJob(jobData,gageNum):
         status = False
     else:
         # Find if any jobs for this basin are being ran.
-        print jobs.JOB_NAME[0]
-        print expName
-        print "XXXXXXXXXXXX"
         testDF = jobs.query("JOB_NAME == '" + expName + "'")
         if len(testDF) != 0:
             status = True

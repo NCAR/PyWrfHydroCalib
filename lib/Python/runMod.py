@@ -111,7 +111,8 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     #            keySlot[basinNum] = 1.0
     #            keyStatus = 1.0
     #            runFlag = False
-                
+           
+    print keyStatus
     # For simulations that are fresh
     if keyStatus == 0.0:
         if basinStatus:
@@ -288,8 +289,7 @@ def generateRunScript(jobData,gageID,runDir):
         inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -R "span[ptile=16]"\n')
-        #inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
-        inStr = "#BSUB -J NWM_3425565236_" + str(gageID) + '\n'
+        inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -o wrf%J.out\n')
         fileObj.write('#BSUB -e wrf%J.err\n')
