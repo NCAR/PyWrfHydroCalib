@@ -195,8 +195,8 @@ def main(argv):
         # If output is not complete, the model is still running, status stays at 0.5.
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
-        #for basin in range(0,len(jobData.gages)):
-        for basin in range(0,1):
+        for basin in range(0,len(jobData.gages)):
+        #for basin in range(0,1):
             print keySlot
             runMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],1,keySlot,basin)
             time.sleep(20)
@@ -206,15 +206,15 @@ def main(argv):
             #    errMod.errOut(jobData)
         
         # Check to see if program requirements have been met.
-        #if keySlot.sum() == entryValue:
-        #    jobData.spinComplete = 1
-        #    try:
-        #        db.updateSpinupStatus(jobData)
-        #    except:
-        #        errMod.errout(jobData)
-        #    jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
-        #    errMod.sendMsg(jobData)
-        #    completeStatus = True
+        if keySlot.sum() == entryValue:
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errout(jobData)
+            jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
+            completeStatus = True
     
 if __name__ == "__main__":
     main(sys.argv[1:])
