@@ -74,7 +74,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     except:
         raise
         
-    print "BASIN STATUS = " + basinStatus
+    print "BASIN STATUS = " + str(basinStatus)
     ## Initialize empty restart paths
     #hydroRst = ""
     #lsmRst = ""
