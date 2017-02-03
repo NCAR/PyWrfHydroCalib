@@ -74,6 +74,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     except:
         raise
         
+    print "BASIN STATUS = " + basinStatus
     ## Initialize empty restart paths
     #hydroRst = ""
     #lsmRst = ""
@@ -85,7 +86,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
         # Model has already completed
         runFlag = False
         
-    ## For uncompleted simulations that are still listed as running.
+    # For uncompleted simulations that are still listed as running.
     #if keyStatus == 0.5:
     #    # If a model is running for this basin, continue and set keyStatus to 0.5
     #    if basinStatus:

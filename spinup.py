@@ -202,7 +202,6 @@ def main(argv):
             #except:
             #    errMod.errOut(jobData)
         
-        completeStatus = True
         # Check to see if program requirements have been met.
         #if keySlot.sum() == entryValue:
         #    jobData.spinComplete = 1

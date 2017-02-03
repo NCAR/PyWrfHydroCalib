@@ -80,7 +80,7 @@ def checkYsJobs(jobData):
     userTmp = pwd.getpwuid(os.getuid()).pw_name
     
     csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
     try:
         subprocess.call(cmd,shell=True)
     except:
@@ -176,7 +176,7 @@ def checkBasJob(jobData,gageNum):
         raise Exception()
     
     csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
     try:
         subprocess.call(cmd,shell=True)
     except:
