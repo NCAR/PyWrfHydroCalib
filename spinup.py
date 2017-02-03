@@ -30,6 +30,7 @@ import errMod
 import calibIoMod
 import runMod
 import configMod
+import time
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -198,6 +199,7 @@ def main(argv):
         for basin in range(0,1):
             print keySlot
             runMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],1,keySlot,basin)
+            time.sleep(10)
             #try:
             #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)
             #except:

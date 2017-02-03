@@ -159,73 +159,77 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     #            keyStatus = 1.0
     #            runFlag = False
                 
-    ## For when the model crashed ONCE
-    #if keyStatus == -0.5:
-    #    if basinStatus:
-    #        # Model is running again, upgrade status
-    #        # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
-    #        keySlot[basinNum] = 0.5
-    #        keyStatus = 0.5
-    #        runFlag = False
-    #    else:
-    #        runStatus = statusMod.walkMod(begDate,endDate,runDir)
-    #        begDate = runStatus[0]
-    #        endDate = runStatus[1]
-    #        runFlag = runStatus[2]
-    #        if runFlag:
-    #            # Model has crashed again, time to lock it up and send a message out.
-    #            statusData.genMsg = "ERROR: SIMULATION FOR GAGE: " + statusData.gages[basinNum] + \
-    #                                " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
-    #                                "MANUALLY REMOVE LOCK FILE: " + lockPath
-    #            open(lockPath,'a').close()
-    #           keySlot[basinNum] = -1.0
-    #            keyStatus = -1.0
-    #            runFlag = False
-    #        else:
-    #            # Model sucessfully completed from first failed attempt.
-    #            keySlot[basinNum] = 1.0
-    #            keyStatus = 1.0
+    # For when the model crashed ONCE
+    if keyStatus == -0.5:
+        if basinStatus:
+            # Model is running again, upgrade status
+            # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
+            keySlot[basinNum] = 0.5
+            keyStatus = 0.5
+            runFlag = False
+        else:
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if runFlag:
+                # Model has crashed again, time to lock it up and send a message out.
+                statusData.genMsg = "ERROR: SIMULATION FOR GAGE: " + statusData.gages[basinNum] + \
+                                    " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
+                                    "MANUALLY REMOVE LOCK FILE: " + lockPath
+                errMod.sendMsg(statusData)
+                print statusData.genMsg
+                open(lockPath,'a').close()
+                keySlot[basinNum] = -1.0
+                keyStatus = -1.0
+                runFlag = False
+            else:
+                # Model sucessfully completed from first failed attempt.
+                keySlot[basinNum] = 1.0
+                keyStatus = 1.0
                 
     if keyStatus == -0.25 and runFlag:
         print keyStatus
-    #    # Restarting model from one crash
-    #    # First delete namelist files if they exist.
-    #    check = runDir + "/namelist.hrldas"
-    #    check2 = runDir + "/hydro.namelist"
-    #    if os.path.isfile(check):
-    #        os.remove(check)
-    #    if os.path.isfile(check2):
-    #        os.remove(check2)
-    #    
-    #    if begDate == staticData.bSpinDate:
-    #        startType = 1
-    #    else:
-    #        startType = 2
-    #    
-    #    try:
-    #        namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-    #        namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-    #    except:
-    #        raise
-    #        
-    #    if startType == 2:
-    #        # Clean run directory of any old diagnostics files
-    #        try:
-    #            errMod.cleanRunDir(statusData,runDir)
-    #        except:
-    #            raise
-    #            
-    #    # Fire off model.
-    #    cmd = "bsub < " + runDir + "/run_NWM.sh"
-    #    try:
-    #        subprocess.call(cmd,shell=True)
-    #    except:
-    #        statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-    #        raise
-    #        
-    #    # Compile 
-    #    keyStatus = -0.5
-    #    keySlot[basinNum] = -0.5
+        # Restarting model from one crash
+        # First delete namelist files if they exist.
+        check = runDir + "/namelist.hrldas"
+        check2 = runDir + "/hydro.namelist"
+        if os.path.isfile(check):
+            os.remove(check)
+        if os.path.isfile(check2):
+            os.remove(check2)
+        
+        if begDate == staticData.bSpinDate:
+            startType = 1
+        else:
+            startType = 2
+        
+        try:
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+        except:
+            raise
+            
+        if startType == 2:
+            # Clean run directory of any old diagnostics files
+            try:
+                errMod.cleanRunDir(statusData,runDir)
+            except:
+                raise
+                
+        # Fire off model.
+        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        print begDate
+        print endDate
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+            
+        # Compile 
+        keyStatus = -0.5
+        keySlot[basinNum] = -0.5
         
     if keyStatus == 0.0 and runFlag:
         # Model needs to be either ran, or restarted
