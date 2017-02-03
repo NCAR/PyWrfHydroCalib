@@ -204,9 +204,6 @@ def checkBasJob(jobData,gageNum):
     # Compile expected job name that the job should occupy.
     expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
     
-    print jobData.JOB_NAME
-    print expName
-    print "XXXXXXXXXXXX"
     lenJobs = len(jobs.JOBID)
 
     # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -216,6 +213,9 @@ def checkBasJob(jobData,gageNum):
         status = False
     else:
         # Find if any jobs for this basin are being ran.
+        print jobData.JOB_NAME
+        print expName
+        print "XXXXXXXXXXXX"
         testDF = jobs.query("JOB_NAME == '" + expName + "'")
         if len(testDF) != 0:
             status = True
