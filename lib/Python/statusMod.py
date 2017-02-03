@@ -236,6 +236,7 @@ def walkMod(bDate,eDate,runDir):
     
     for hourModel in range(0,nHours+1):
         dCurrent = bDate + datetime.timedelta(seconds=3600.0*hourModel)
+        print dCurrent
         lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
         
@@ -254,8 +255,8 @@ def walkMod(bDate,eDate,runDir):
                 checkLsm = os.path.getsize(lsmRestartPath)
                 checkHydro = os.path.getsize(hydroRestartPath)
                 
-                print lsmRestartPath
-                print checkLsm
+                #print lsmRestartPath
+                #print checkLsm
                 if checkLsm == lsmSize and checkHydro == hydroSize:
                     bDate = dCurrent
             
