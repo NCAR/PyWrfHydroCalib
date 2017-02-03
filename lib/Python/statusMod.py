@@ -213,7 +213,7 @@ def checkBasJob(jobData,gageNum):
         status = False
     else:
         # Find if any jobs for this basin are being ran.
-        print jobData.JOB_NAME
+        print jobs.JOB_NAME
         print expName
         print "XXXXXXXXXXXX"
         testDF = jobs.query("JOB_NAME == '" + expName + "'")
