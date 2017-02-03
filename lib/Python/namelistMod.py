@@ -45,7 +45,8 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
         if typeFlag == 1:
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
         else:
-            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d%H') + "_DOMAIN1"
+            #rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d%H') + "_DOMAIN1"
+            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
@@ -169,7 +170,8 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
             inStr = ' !RESTART_FILE = ""' + '\n'
             fileObj.write(inStr)
         elif typeFlag == 2: # Calibration
-            restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d_%H') + ":00_DOMAIN2"
+            #restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d_%H') + ":00_DOMAIN1"
+            restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
             inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')
