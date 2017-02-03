@@ -229,7 +229,7 @@ def walkMod(bDate,eDate,runDir):
     dt = eDate - bDate
     nHours = int((dt.days*24*3600 + dt.seconds)/3600.0)
     
-    bDateOrig = bDate
+    bDateOrig = bDate + datetime.timedelta(seconds=3600.0)
     
     # Initialize flag returned to user as True. Assume model needs to ran.
     runFlag = True
@@ -240,7 +240,7 @@ def walkMod(bDate,eDate,runDir):
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
         
         if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
-            if hourModel == 1:
+            if hourModel == 2:
                 # This implies the first time step of output is present. Get the expected
                 # file size. This will be used to check to make sure the files present
                 # are complete.
@@ -250,7 +250,7 @@ def walkMod(bDate,eDate,runDir):
                 lsmSize = os.path.getsize(rstPth1)
                 hydroSize = os.path.getsize(rstPth2)
                 
-            if hourModel >= 1:
+            if hourModel >= 2:
                 checkLsm = os.path.getsize(lsmRestartPath)
                 checkHydro = os.path.getsize(hydroRestartPath)
                 
