@@ -244,7 +244,7 @@ def walkMod(bDate,eDate,runDir):
                 # This implies the first time step of output is present. Get the expected
                 # file size. This will be used to check to make sure the files present
                 # are complete.
-                rstPth1 = runDir + "/RESTART." + bDateOrig.strftime('%Y%m%d%H')
+                rstPth1 = runDir + "/RESTART." + bDateOrig.strftime('%Y%m%d%H') + "_DOMAIN1"
                 rstPth2 = runDir + "/HYDRO_RST." + bDateOrig.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
                 
                 lsmSize = os.path.getsize(rstPth1)
