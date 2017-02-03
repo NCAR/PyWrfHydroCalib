@@ -236,7 +236,7 @@ def walkMod(bDate,eDate,runDir):
     
     for hourModel in range(0,nHours+1):
         dCurrent = bDate + datetime.timedelta(seconds=3600.0*hourModel)
-        lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H')
+        lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
         
         if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
