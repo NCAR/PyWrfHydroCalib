@@ -259,6 +259,8 @@ def walkMod(bDate,eDate,runDir):
                 checkLsm = os.path.getsize(lsmRestartPath)
                 checkHydro = os.path.getsize(hydroRestartPath)
                 
+                print lsmRestartPath
+                print hydroRestartPath
                 print checkLsm
                 print checkHydro
                 #print lsmRestartPath
