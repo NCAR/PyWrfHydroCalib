@@ -254,6 +254,8 @@ def walkMod(bDate,eDate,runDir):
                 checkLsm = os.path.getsize(lsmRestartPath)
                 checkHydro = os.path.getsize(hydroRestartPath)
                 
+                print lsmRestartPath
+                print checkLsm
                 if checkLsm == lsmSize and checkHydro == hydroSize:
                     bDate = dCurrent
             
