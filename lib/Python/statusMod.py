@@ -229,13 +229,14 @@ def walkMod(bDate,eDate,runDir):
     dt = eDate - bDate
     nHours = int((dt.days*24*3600 + dt.seconds)/3600.0)
     
-    bDateOrig = bDate + datetime.timedelta(seconds=3600.0)
+    bDateOrig = bDate
+    bDateRstChck = bDate + datetime.timedelta(seconds=3600.0)
     
     # Initialize flag returned to user as True. Assume model needs to ran.
     runFlag = True
     
     for hourModel in range(0,nHours+1):
-        dCurrent = bDate + datetime.timedelta(seconds=3600.0*hourModel)
+        dCurrent = bDateOrig + datetime.timedelta(seconds=3600.0*hourModel)
         print dCurrent
         lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
@@ -245,22 +246,22 @@ def walkMod(bDate,eDate,runDir):
                 # This implies the first time step of output is present. Get the expected
                 # file size. This will be used to check to make sure the files present
                 # are complete.
-                rstPth1 = runDir + "/RESTART." + bDateOrig.strftime('%Y%m%d%H') + "_DOMAIN1"
-                rstPth2 = runDir + "/HYDRO_RST." + bDateOrig.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
+                rstPth1 = runDir + "/RESTART." + bDateRstChck.strftime('%Y%m%d%H') + "_DOMAIN1"
+                rstPth2 = runDir + "/HYDRO_RST." + bDateRstChck.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
                 
                 lsmSize = os.path.getsize(rstPth1)
                 hydroSize = os.path.getsize(rstPth2)
                 
-                #print lsmSize
-                #print hydroSize
-                #print "XXXXXXXXXXXXXXXXX"
+                print lsmSize
+                print hydroSize
+                print "XXXXXXXXXXXXXXXXX"
                 
             if hourModel >= 2:
                 checkLsm = os.path.getsize(lsmRestartPath)
                 checkHydro = os.path.getsize(hydroRestartPath)
                 
-                #print lsmRestartPath
-                #print hydroRestartPath
+                print lsmRestartPath
+                print hydroRestartPath
                 #print checkLsm
                 #print checkHydro
                 #print lsmRestartPath
