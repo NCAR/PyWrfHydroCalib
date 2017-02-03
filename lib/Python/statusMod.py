@@ -235,8 +235,8 @@ def walkMod(bDate,eDate,runDir):
     # Initialize flag returned to user as True. Assume model needs to ran.
     runFlag = True
     
-    print bDate
-    print eDate
+    #print bDate
+    #print eDate
     for hourModel in range(0,nHours+1):
         dCurrent = bDateOrig + datetime.timedelta(seconds=3600.0*hourModel)
         #print dCurrent
@@ -271,8 +271,8 @@ def walkMod(bDate,eDate,runDir):
                 if checkLsm == lsmSize and checkHydro == hydroSize:
                     bDate = dCurrent
             
-    print bDate
-    print eDate
+    #print bDate
+    #print eDate
     # If the bDate has reached the eDate, this means the model completed as expected.
     if bDate == eDate:
         runFlag = False

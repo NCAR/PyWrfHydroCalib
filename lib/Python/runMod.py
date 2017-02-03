@@ -116,7 +116,12 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
             keyStatus = 0.5
             runFlag = False
         else:
+            print begDate
+            print endDate
+            print "XXXXXX"
             runFlag = statusMod.walkMod(begDate,endDate,runDir)
+            print begDate
+            print endDate
             if not runFlag:
                 # Model simulation completed before workflow was restarted
                 keySlot[basinNum] = 1.0
@@ -234,13 +239,13 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
                 raise
                 
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
-        print cmd
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        #cmd = "bsub < " + runDir + "/run_NWM.sh"
+        #print cmd
+        #try:
+        #    subprocess.call(cmd,shell=True)
+        #except:
+        #    statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+        #    raise
             
         keyStatus = 0.5
         keySlot[basinNum] = 0.5
