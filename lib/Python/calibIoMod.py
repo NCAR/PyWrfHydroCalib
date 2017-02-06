@@ -296,7 +296,6 @@ def setupModels(jobData,db,args):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to create subdirectory: " + dirTmp
                 raise
-            print dirTmp
             linkTmp = dirTmp + "/wrf_hydro.exe"
             try:
                 os.symlink(str(jobData.exe),linkTmp)
@@ -318,6 +317,8 @@ def setupModels(jobData,db,args):
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.genParmTbl)
             linkTmp = dirTmp + "/HYDRO.TBL"
             try:
+                print linkTmp
+                print jobData.hydroTbl
                 os.symlink(str(jobData.hydroTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
