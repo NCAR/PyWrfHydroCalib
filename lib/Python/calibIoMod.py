@@ -135,7 +135,6 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
             raise
             
-        print gageDir
         # Create observations directory to hold obs for calibration/eval, etc
         obsDir = gageDir + "/OBS"
         try:
@@ -297,6 +296,7 @@ def setupModels(jobData,db,args):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to create subdirectory: " + dirTmp
                 raise
+            print dirTmp
             linkTmp = dirTmp + "/wrf_hydro.exe"
             try:
                 os.symlink(str(jobData.exe),linkTmp)
