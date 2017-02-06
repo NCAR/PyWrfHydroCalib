@@ -422,9 +422,8 @@ class Database(object):
                          "values ('%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue)
 
             try:
-                print sqlCmd
                 self.conn.execute(sqlCmd)
                 self.db.commit()
             except:
-                jobData.errMsg = "ERROR: Unable to enter calibration parameter information for job ID: " + jobID + " parameter: " + paramName
+                jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
                 raise

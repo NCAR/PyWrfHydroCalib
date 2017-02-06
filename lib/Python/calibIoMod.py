@@ -168,7 +168,17 @@ def setupModels(jobData,db,args):
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + validDir
             raise
-        
+            
+        # Create subdirectory that will hold the original parameter files. These
+        # files will be modified by the workflow in-between calibration iterations.
+        baseParmDir = gageDir + "/RUN.CALIB/BASELINE_PARAMETERS"
+        try:
+            os.mkdir(baseParmDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + baseParmDir
+            raise
+            
         # Create symbolic links necessary for model runs.
         link1 = gageDir + "/RUN.SPINUP/wrf_hydro.exe"
         link2 = gageDir + "/RUN.CALIB/wrf_hydro.exe"
@@ -207,11 +217,11 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/HYDRO.TBL"
-        link2 = gageDir + "/RUN.CALIB/HYDRO.TBL"
+        #link2 = gageDir + "/RUN.CALIB/HYDRO.TBL"
         link3 = gageDir + "/RUN.VALID/HYDRO.TBL"
         try:
             os.symlink(str(jobData.hydroTbl),link1)
-            os.symlink(str(jobData.hydroTbl),link2)
+            #os.symlink(str(jobData.hydroTbl),link2)
             os.symlink(str(jobData.hydroTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -284,6 +294,34 @@ def setupModels(jobData,db,args):
             gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
         except:
             wipeJobDir(jobData)
+            raise
+            
+        # Copy original Fulldom, spatial soils, and hydro.tbl file for calibrations.
+        origPath = str(gageData.fullDom)
+        newPath = baseParmDir + "/Fulldom.nc"
+        try:
+            shutil.copy(origPath,newPath)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+            raise
+            
+        origPath = str(gageData.soilFile)
+        newPath = baseParmDir + "/soil_properties.nc"
+        try:
+            shutil.copy(origPath,newPath)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+            raise
+            
+        origPath = str(jobData.hydroTbl)
+        newPath = baseParmDir + "/HYDRO.TBL"
+        try:
+            shutil.copy(origPath,newPath)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
             raise
             
         # Create symbolic link to forcing directory.
