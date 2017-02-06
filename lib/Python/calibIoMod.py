@@ -309,54 +309,54 @@ def setupModels(jobData,db,args):
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.chanParmTbl)
+                raise
             linkTmp = dirTmp + "/GENPARM.TBL"
             try:
                 os.symlink(str(jobData.genParmTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.genParmTbl)
+                raise
             linkTmp = dirTmp + "/HYDRO.TBL"
             try:
-                print linkTmp
-                print jobData.hydroTbl
                 os.symlink(str(jobData.hydroTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.hydroTbl)
+                raise
             linkTmp = dirTmp + "/LAKEPARM.TBL"
             try:
                 os.symlink(str(jobData.lakeParmTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.lakeParmTbl)
-            linkTmp = dirTmp + "/HYDRO.TBL"
-            try:
-                os.symlink(str(jobData.hydroTbl),linkTmp)
-            except:
-                wipeJobDir(jobData)
-                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.hydroTbl)
+                raise
             linkTmp = dirTmp + "/MPTABLE.TBL"
             try:
                 os.symlink(str(jobData.mpParmTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.mpParmTbl)
+                raise
             linkTmp = dirTmp + "/SOILPARM.TBL"
             try:
                 os.symlink(str(jobData.soilParmTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.soilParmTbl)
+                raise
             linkTmp = dirTmp + "/URBPARM.TBL"
             try:
                 os.symlink(str(jobData.urbParmTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.urbParmTbl)
+                raise
             linkTmp = dirTmp + "/VEGPARM.TBL"
             try:
                 os.symlink(str(jobData.vegParmTbl),linkTmp)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.vegParmTbl)
+                raise
             
