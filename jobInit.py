@@ -99,7 +99,7 @@ def main(argv):
         
     # Create DB entries to log the parameters being calibrated.
     try:
-        db.enterCalibParms(jobData,args.parmTbl)
+        db.enterCalibParms(jobData,str(args.parmTbl[0]))
     except:
         errMod.errOut(jobData)
     
