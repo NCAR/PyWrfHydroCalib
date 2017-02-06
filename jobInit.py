@@ -33,6 +33,8 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
+    parser.add_argument('parmTbl',metavar='parmTbl',type=str,nargs='+',
+                        hel='Calibration Parameter Table.')
             
     args = parser.parse_args()            
 
@@ -92,6 +94,12 @@ def main(argv):
     # Create DB entries for job name
     try:
         db.enterJobID(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # Create DB entries to log the parameters being calibrated.
+    try:
+        db.enterCalibParms(jobData,args.parmTbl)
     except:
         errMod.errOut(jobData)
     

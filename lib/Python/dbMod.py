@@ -9,6 +9,7 @@ import MySQLdb
 import datetime
 from slacker import Slacker
 import sys
+import pandas as pd
 
 class Database(object):
     def __init__(self,jobData):
@@ -382,7 +383,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
         
         sqlCmd = "update Job_Meta set Job_Meta.su_complete='" + str(jobData.spinComplete) + \
                  "' where jobID='" + str(jobData.jobID) + "';"
@@ -393,3 +394,36 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
             raise
+            
+    def enterCalibParms(self,jobData,calibTbl):
+        """
+        Generic function to enter model parameter values being calibrated, along
+        with their default, min, and max values.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        # Open parameter table and read values in.
+        tblData = pd.read_csv(calibTbl)
+        if len(tblData) != 14:
+            jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
+            raise Exception()
+            
+        for entry in range(0,len(tblData)):
+            flag = tblData.calib_flag[entry]
+            jobID = int(jobData.jobID)
+            paramName = str(tblData.parameter[entry])
+            defaultValue = str(tblData.default[entry])
+            minValue = str(tblData.min_value[entry])
+            maxValue = str(tblData.max_value[entry])
+            if flag == 1:
+                sqlCmd = "insert into Job_Params (jobID,param,defaultValue,min,max) " + \
+                         "values ('%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue)
+
+            try:
+                self.conn.execute(sqlCmd)
+                self.db.commit()
+            except:
+                jobData.errMsg = "ERROR: Unable to enter calibration parameter information for job ID: " + jobID + " parameter: " + paramName
+                raise

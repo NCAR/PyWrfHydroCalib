@@ -220,6 +220,11 @@ def createJob(argsUser):
         print "ERROR: Config file not found."
         raise Exception()
 
+    # Check to make sure calibration parameter table exists.
+    if not os.path.isfile(argsUser.parmTbl[0]):
+        print "ERROR: Calibration parameter table: " + str(argsUser.parmTbl[0]) + " not found."
+        raise Exception()
+        
     # Check entries into the config file to make sure they make sense.
     try:
         checkConfig(parser)
