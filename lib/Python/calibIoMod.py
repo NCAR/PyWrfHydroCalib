@@ -101,6 +101,8 @@ def setupModels(jobData,db,args):
         jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
         raise Exception()
         
+    print parentDir 
+    print 'blah'
     try:
         os.mkdir(parentDir)
     except:
