@@ -101,8 +101,6 @@ def setupModels(jobData,db,args):
         jobData.errMsg = "ERROR: Top level directory: " + parentDir + " already exists"
         raise Exception()
         
-    print parentDir 
-    print 'blah'
     try:
         os.mkdir(parentDir)
     except:
@@ -137,6 +135,7 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
             raise
             
+        print gageDir
         # Create observations directory to hold obs for calibration/eval, etc
         obsDir = gageDir + "/OBS"
         try:
