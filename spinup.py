@@ -170,8 +170,8 @@ def main(argv):
     # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
-    keySlot = np.empty(len(jobData.gages))
-    keySlot[:] = 0.0
+    keySlot = np.empty(len(jobData.gages),1)
+    keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages))
     
     while not completeStatus:

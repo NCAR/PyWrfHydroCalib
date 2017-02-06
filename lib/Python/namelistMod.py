@@ -90,7 +90,9 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
         inStr = ' OUTPUT_TIMESTEP = ' + str(jobData.lsmOutDt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
+        # Manually over-writing the restart frequency for now.
+        inStr = ' RESTART_FREQUENCY_HOURS = 2304\n'
+        #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write(' ! Split output after split_output_count output times\n')
         fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
@@ -180,7 +182,9 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
         fileObj.write(' IGRID = 1\n')
         fileObj.write('\n')
         fileObj.write('!Specify the restart file write frequency...(minutes)\n')
-        inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
+        # Manually over-writing for now.
+        inStr = ' rst_dt = 138240\n'
+        #inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the output file write frequency...(minutes)\n')

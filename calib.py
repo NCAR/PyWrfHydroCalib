@@ -15,6 +15,7 @@ import argparse
 import os
 #import subprocess
 #import pandas as pd
+import time
 import pwd
 import numpy as np
 
@@ -153,6 +154,70 @@ def main(argv):
             db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
         except:
             errMod.errOut(jobData)
+            
+    # Begin an "infinite" do loop. This loop will continue to loop through all 
+    # the basins until calibrations are complete. Basins are allowed ONE failure. A restart
+    # will be attempted. If the restart fails again, a LOCK file is placed into the
+    # run directory and an error email is sent to the user.
+    completeStatus = False
+    
+    # Create a "key" array. This array is of length [numBasins] and is initialized to 0.0.
+    # Each array element can have the following values based on current model status:
+    # 0.0 - Initial value
+    # 0.5 - Model simulation in progress
+    # 1.0 - Model simulation complete
+    # -0.5 - Model simulation failed once and a restart has been attempted
+    # -1.0 - Model has failed twice. A LOCK file has been created.
+    # Once all array elements are 1.0, then completeStatus goes to True, an entry into
+    # the database occurs, and the program will complete.
+    keySlot = np.empty(len(jobData.gages),int(jobData.nIter))
+    keySlot[:,:] = 0.0
+    entryValue = float(len(jobData.gages)*int(jobData.nIter))
+    
+    while not completeStatus:
+        # Walk through calibration directories for each basin. Determine the status of
+        # the model runs by the files available. If restarting, modify the 
+        # namelist files appropriately. Then, restart the model. Once all
+        # basins have been accounted for, fire off the monitoring program through
+        # nohup to keep track of the models. If anything goes wrong, notifications
+        # will either be emailed per the user's info, or piped to Slack for group
+        # notification. A run directory won't be complete until all output is 
+        # present and the calibration algorithms have successfully completed. Once
+        # that occurs, a COMPLETE flag will be placed into the run directory, indicating
+        # everything for this iteration is complete.  
+        # Loop through each basin. Perform the following steps:
+        # 1.) If status is -0.5,0.0, or 0.5, check to see if the model is running
+        #     for this basin.
+        # 2.) If the model is not running, check for expected output and perform
+        #     necessary logistics. Continue to the next basin.
+        # If the status goes to -1.0, a LOCK file is created and must be manually
+        # removed from the user. Once the program detects this, it will restart the
+        # model and the status goes back to 0.5.
+        # If the status is -0.5 and no job is running, output must be complete, or 
+        # status goes to -1.0.
+        # If output is not complete, the model is still running, status stays at 0.5.
+        # If job is not running, and output has been completed, status goes to 1.0.
+        # This continues indefinitely until statuses for ALL basins go to 1.0.
+    
+        for basin in range(0,len(jobData.gages)):
+            print keySlot
+            runMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],2,keySlot,basin)
+            time.sleep(20)
+            #try:
+            #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)
+            #except:
+            #    errMod.errOut(jobData)
+        
+        # Check to see if program requirements have been met.
+        if keySlot.sum() == entryValue:
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errout(jobData)
+            jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
+            completeStatus = True
         
 if __name__ == "__main__":
     main(sys.argv[1:])

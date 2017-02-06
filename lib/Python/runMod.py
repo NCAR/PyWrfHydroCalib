@@ -27,10 +27,37 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     # typeFlag = 2: Calibration
     # typeFlag = 3: Validation
     
+    # Initialize iteration count. This is mostly used in the calibration looping, 
+    # but is 0.0 by default. 
+    iteration = 0
     if typeFlag == 1:
         runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
+        iteration = 0
     elif typeFlag == 2:
-        runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
+        # Determine which run sub-directory based on COMPLETE flag presence.
+        for iterationCheck in range(0,int(staticData.nIter)):
+            runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/ITERATION_" + str(iterationCheck+1)
+            if os.path.isfile(runDir + "/CALIB.COMPLETE"):
+                iteration = iteration + 1
+                if keySlot[basinNum] == 0.0:
+                    # If the COMPLETE flag hasn't already been accounted for. 
+                    keySlot[basinNum,iteration] = 1.0
+            # Check to make sure symbolic link to spinup state exists.
+            check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+            check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+            if not os.path.isfile(check1):
+                statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+                raise Exception()
+            if not os.path.isfile(check2):
+                statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+                raise Exception()
+            # Create links if they don't exist
+            link1 = runDir + "/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+            link2 = runDir + "/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+            if not os.path.islink(link1):
+                os.symlink(check1,link1)
+            if not os.path.islink(link2):
+                os.symlink(check2,link2)
     elif typeFlag == 3:
         runDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
         
@@ -67,7 +94,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
         raise
         
     # Initialize status
-    keyStatus = keySlot[basinNum]
+    keyStatus = keySlot[basinNum,iteration]
     
     try:
         basinStatus = statusMod.checkBasJob(statusData,basinNum)
@@ -75,10 +102,6 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
         raise
         
     print "BASIN STATUS = " + str(basinStatus)
-    ## Initialize empty restart paths
-    #hydroRst = ""
-    #lsmRst = ""
-    
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
     
@@ -90,7 +113,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     if keyStatus == 0.5:
         # If a model is running for this basin, continue and set keyStatus to 0.5
         if basinStatus:
-            keySlot[basinNum] = 0.5
+            keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -109,7 +132,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
                 keyStatus = -0.25
             else:
                 # Model has completed!
-                keySlot[basinNum] = 1.0
+                keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
            
@@ -118,7 +141,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     if keyStatus == 0.0:
         if basinStatus:
             # Model is still running from previous instance of workflow. Allow it to continue.
-            keySlot[basinNum] = 0.5
+            keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -134,7 +157,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
             print endDate
             if not runFlag:
                 # Model simulation completed before workflow was restarted
-                keySlot[basinNum] = 1.0
+                keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
                 

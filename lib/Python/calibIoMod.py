@@ -171,11 +171,9 @@ def setupModels(jobData,db,args):
         
         # Create symbolic links necessary for model runs.
         link1 = gageDir + "/RUN.SPINUP/wrf_hydro.exe"
-        link2 = gageDir + "/RUN.CALIB/wrf_hydro.exe"
         link3 = gageDir + "/RUN.VALID/wrf_hydro.exe"
         try:
             os.symlink(str(jobData.exe),link1)
-            os.symlink(str(jobData.exe),link2)
             os.symlink(str(jobData.exe),link3)
         except:
             wipeJobDir(jobData)
@@ -183,11 +181,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/CHANPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/CHANPARM.TBL"
         link3 = gageDir + "/RUN.VALID/CHANPARM.TBL"
         try:
             os.symlink(str(jobData.chanParmTbl),link1)
-            os.symlink(str(jobData.chanParmTbl),link2)
             os.symlink(str(jobData.chanParmTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -195,11 +191,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/GENPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/GENPARM.TBL"
         link3 = gageDir + "/RUN.VALID/GENPARM.TBL"
         try:
             os.symlink(str(jobData.genParmTbl),link1)
-            os.symlink(str(jobData.genParmTbl),link2)
             os.symlink(str(jobData.genParmTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -207,11 +201,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/HYDRO.TBL"
-        link2 = gageDir + "/RUN.CALIB/HYDRO.TBL"
         link3 = gageDir + "/RUN.VALID/HYDRO.TBL"
         try:
             os.symlink(str(jobData.hydroTbl),link1)
-            os.symlink(str(jobData.hydroTbl),link2)
             os.symlink(str(jobData.hydroTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -219,11 +211,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/LAKEPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/LAKEPARM.TBL"
         link3 = gageDir + "/RUN.VALID/LAKEPARM.TBL"
         try:
             os.symlink(str(jobData.lakeParmTbl),link1)
-            os.symlink(str(jobData.lakeParmTbl),link2)
             os.symlink(str(jobData.lakeParmTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -231,11 +221,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/MPTABLE.TBL"
-        link2 = gageDir + "/RUN.CALIB/MPTABLE.TBL"
         link3 = gageDir + "/RUN.VALID/MPTABLE.TBL"
         try:
             os.symlink(str(jobData.mpParmTbl),link1)
-            os.symlink(str(jobData.mpParmTbl),link2)
             os.symlink(str(jobData.mpParmTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -243,11 +231,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/SOILPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/SOILPARM.TBL"
         link3 = gageDir + "/RUN.VALID/SOILPARM.TBL"
         try:
             os.symlink(str(jobData.soilParmTbl),link1)
-            os.symlink(str(jobData.soilParmTbl),link2)
             os.symlink(str(jobData.soilParmTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -255,11 +241,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/URBPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/URBPARM.TBL"
         link3 = gageDir + "/RUN.VALID/URBPARM.TBL"
         try:
             os.symlink(str(jobData.urbParmTbl),link1)
-            os.symlink(str(jobData.urbParmTbl),link2)
             os.symlink(str(jobData.urbParmTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -267,11 +251,9 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/VEGPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/VEGPARM.TBL"
         link3 = gageDir + "/RUN.VALID/VEGPARM.TBL"
         try:
             os.symlink(str(jobData.vegParmTbl),link1)
-            os.symlink(str(jobData.vegParmTbl),link2)
             os.symlink(str(jobData.vegParmTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -314,35 +296,65 @@ def setupModels(jobData,db,args):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to create subdirectory: " + dirTmp
                 raise
+            linkTmp = dirTmp + "/wrf_hydro.exe"
+            try:
+                os.symlink(str(jobData.exe),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.exe)
+                raise
+            linkTmp = dirTmp + "/CHANPARM.TBL"
+            try:
+                os.symlink(str(jobData.chanParmTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.chanParmTbl)
+            linkTmp = dirTmp + "/GENPARM.TBL"
+            try:
+                os.symlink(str(jobData.genParmTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.genParmTbl)
+            linkTmp = dirTmp + "/HYDRO.TBL"
+            try:
+                os.symlink(str(jobData.hydroTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.hydroTbl)
+            linkTmp = dirTmp + "/LAKEPARM.TBL"
+            try:
+                os.symlink(str(jobData.lakeParmTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.lakeParmTbl)
+            linkTmp = dirTmp + "/HYDRO.TBL"
+            try:
+                os.symlink(str(jobData.hydroTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.hydroTbl)
+            linkTmp = dirTmp + "/MPTABLE.TBL"
+            try:
+                os.symlink(str(jobData.mpParmTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.mpParmTbl)
+            linkTmp = dirTmp + "/SOILPARM.TBL"
+            try:
+                os.symlink(str(jobData.soilParmTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.soilParmTbl)
+            linkTmp = dirTmp + "/URBPARM.TBL"
+            try:
+                os.symlink(str(jobData.urbParmTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.urbParmTbl)
+            linkTmp = dirTmp + "/VEGPARM.TBL"
+            try:
+                os.symlink(str(jobData.vegParmTbl),linkTmp)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create symbolic link to: " + str(jobData.vegParmTbl)
             
-        # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
-        #try:
-        #    namelistMod.createHrldasNL(gageData,jobData,spinupDir,1)
-        #except:
-        #    wipeJobDir(jobData)
-        #    raise
-        #try:
-        #    namelistMod.createHrldasNL(gageData,jobData,calibDir,2)
-        #except:
-        #    wipeJobDir(jobData)
-        #    raise
-        #try:
-        #    namelistMod.createHrldasNL(gageData,jobData,validDir,3)
-        #except:
-        #    wipeJobDir(jobData)
-        #    raise
-        #try:
-        #    namelistMod.createHydroNL(gageData,jobData,spinupDir,1)
-        #except:
-        #    wipeJobDir(jobData)
-        #    raise
-        #try:
-        #    namelistMod.createHydroNL(gageData,jobData,calibDir,2)
-        #except:
-        #    wipeJobDir(jobData)
-        #    raise
-        #try:
-        #    namelistMod.createHydroNL(gageData,jobData,validDir,3)
-        #except:
-        #    wipeJobDir(jobData)
-        #    raise
