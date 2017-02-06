@@ -34,7 +34,7 @@ def main(argv):
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
     parser.add_argument('parmTbl',metavar='parmTbl',type=str,nargs='+',
-                        hel='Calibration Parameter Table.')
+                        help='Calibration Parameter Table.')
             
     args = parser.parse_args()            
 
