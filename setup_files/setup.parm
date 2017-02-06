@@ -55,8 +55,8 @@ bSpinDate = 2007-11-01
 eSpinDate = 2007-11-10
 
 # Specify date range for calibration period
-bCalibDate = 2007-11-10
-eCalibDate = 2007-11-20
+bCalibDate = 2007-11-05
+eCalibDate = 2007-11-10
 
 # Specify date range for validation period
 bValidDate = 2008-10-01
