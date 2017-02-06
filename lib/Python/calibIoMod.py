@@ -183,7 +183,7 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/CHANPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/wrf_hydro.exe"
+        link2 = gageDir + "/RUN.CALIB/CHANPARM.TBL"
         link3 = gageDir + "/RUN.VALID/CHANPARM.TBL"
         try:
             os.symlink(str(jobData.chanParmTbl),link1)
