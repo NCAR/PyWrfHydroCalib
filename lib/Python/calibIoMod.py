@@ -255,7 +255,7 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/URBPARM.TBL"
-        link2 = gageDir + "/RUN.SPINUP/URBPARM.TBL"
+        link2 = gageDir + "/RUN.CALIB/URBPARM.TBL"
         link3 = gageDir + "/RUN.VALID/URBPARM.TBL"
         try:
             os.symlink(str(jobData.urbParmTbl),link1)
