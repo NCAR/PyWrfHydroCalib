@@ -40,8 +40,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     begDate = statusData.bSpinDate
     endDate = statusData.eSpinDate
         
-    runFlag = 0
-    
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
@@ -206,7 +204,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
             raise
             
-        # Compile 
+        # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
         keySlot[basinNum] = -0.5
         

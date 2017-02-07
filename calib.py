@@ -238,8 +238,9 @@ def main(argv):
         # This continues indefinitely until statuses for ALL basins go to 1.0.
     
         for basin in range(0,len(jobData.gages)):
-            print keySlot
-            calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            for iteration in range(0,int(jobData.nIter)):
+                print keySlot
+                calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
     #        time.sleep(20)
     #        #try:
     #        #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
