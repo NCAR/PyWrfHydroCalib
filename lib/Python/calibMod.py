@@ -23,6 +23,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     the LSM and hydro restart files must be present in order for the
     model to restart. 
     """
+    # First check to make sure previous iteration's status is 1.0 (unless iteration 0).
+    if iteration > 0.0:
+        if keySlot[basinNum,iteration-1] != 1.0:
+            return
+            
     # Determine which run sub-directory based on COMPLETE flag presence.
     runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
     if not os.path.isdir(runDir):
