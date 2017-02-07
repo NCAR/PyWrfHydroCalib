@@ -496,7 +496,7 @@ class Database(object):
                 raise
             
             print results
-            if len(results) == 0:
+            if not results:
                 # Create "empty" entry into table.
                 sqlCmd = "insert into Calib_Stats (jobID,domainID,iteration,objfnVal,bias,rmse," + \
                          "cor,nse,nselog,kge,fdcerr,best,complete) values (" + str(jobID) + \
