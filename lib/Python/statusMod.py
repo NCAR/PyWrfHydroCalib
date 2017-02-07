@@ -241,9 +241,12 @@ def walkMod(bDate,eDate,runDir):
         lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
         
-        countTmp = 0
+        print lsmRestartPath
+        print hydroRestartPath
         if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
             bDate == dCurrent
+            print bDate
+            print eDate
             #if hourModel == 0:
             #    # This implies the first time step of output is present. Get the expected
             #    # file size. This will be used to check to make sure the files present
