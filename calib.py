@@ -195,22 +195,22 @@ def main(argv):
     
     # If this is a reboot of the program, loop through each basin, iteration and ping
     # the DB to see which iterations have been completed.
-    #for basin in range(0,len(jobData.gages)):
-    #    try:
-    #        domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-    #    except:
-    #        errMod.errOut(jobData)
-    #        
-    #    if domainID == -9999:
-    #        jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
-    #        errMod.errOut(jobData)
-    #        
-    #    for iteration in range(0,int(jobData.nIter)):
-    #        try:
-    #            keySlot[basin,iteration] = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
-    #        except:
-    #            errMod.errOut(jobData)
-    
+    for basin in range(0,len(jobData.gages)):
+        try:
+            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
+        except:
+            errMod.errOut(jobData)
+            
+        if domainID == -9999:
+            jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
+            errMod.errOut(jobData)
+            
+        for iteration in range(0,int(jobData.nIter)):
+            try:
+                keySlot[basin,iteration] = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
+            except:
+                errMod.errOut(jobData)
+
     #while not completeStatus:
     #    # Walk through calibration directories for each basin. Determine the status of
     #    # the model runs by the files available. If restarting, modify the 
