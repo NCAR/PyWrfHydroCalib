@@ -481,6 +481,7 @@ class Database(object):
         numIter = int(jobData.nIter)
         
         for iteration in range(1,numIter+1):
+            print "ITER = " + str(iteration)
             # First determine if table row has already been created.
             sqlCmd = "select * from Calib_Stats where jobID='" + str(jobID) + "'" + \
                      " and domainID='" + str(domainID) + "'" + " and iteration='" + \
