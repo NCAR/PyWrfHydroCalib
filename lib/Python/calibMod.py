@@ -83,13 +83,21 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Initialize status
     keyStatus = keySlot[basinNum,iteration]
     
+    # Check to see if a model simulation is occurring.
     try:
         basinStatus = statusMod.checkBasJob(statusData,basinNum)
+    except:
+        raise
+        
+    # Check to see if an R script calibration job is occurring.
+    try:
+        calibStatus = statusMod.checkCalibJob(statusData,basinNum)
     except:
         raise
      
     print keyStatus
     print basinStatus
+    print calibStatus
     #print "BASIN STATUS = " + str(basinStatus)
     # Create path to LOCK file if neeced
     #lockPath = runDir + "/RUN.LOCK"

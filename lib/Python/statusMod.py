@@ -270,3 +270,62 @@ def walkMod(bDate,eDate,runDir):
     output.append(eDate)
     output.append(runFlag)
     return output
+    
+def checkCalibJob(jobData,gageNum):
+    """
+    Generic function to check Yellowstone for calibration R job being ran for a 
+    particular basin for a particular job.
+    Job name follows a prescribed format:
+    NWM_CALIBRATION_JOBID_DOMAINID where:
+    JOBID = Unique job ID pulled from database.
+    DOMAINID = Unique domain ID pulled from database.
+    """
+    
+    # Get unique PID.
+    pidUnique = os.getpid()
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
+    
+    if userTmp != str(jobData.owner):
+        jobData.errMsg = "ERROR: you are not the owner of this job."
+        raise Exception()
+    
+    csvPath = jobData.jobDir + "/BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+        raise
+    
+    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+    try:
+        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    except:
+        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        raise
+        
+    # Delete temporary CSV file
+    try:
+        os.remove(csvPath)
+    except:
+        jobData.errMsg = "ERROR: Failure to remove: " + csvPath
+        raise
+        
+    # Compile expected job name that the job should occupy.
+    expName = "NWM_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+    
+    lenJobs = len(jobs.JOBID)
+
+    # Assume no jobs for basin are being ran, unless found in the data frame.
+    status = False
+    
+    if lenJobs == 0:
+        status = False
+    else:
+        # Find if any jobs for this basin are being ran.
+        testDF = jobs.query("JOB_NAME == '" + expName + "'")
+        if len(testDF) != 0:
+            status = True
+            
+    return status
