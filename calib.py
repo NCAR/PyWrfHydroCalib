@@ -208,6 +208,7 @@ def main(argv):
         for iteration in range(0,int(jobData.nIter)):
             try:
                 keySlot[basin,iteration] = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
+                print keySlot[basin,iteration]
             except:
                 errMod.errOut(jobData)
 
