@@ -423,9 +423,9 @@ class Database(object):
             print paramName
             defaultValue = str(tblData.ini[entry])
             print defaultValue
-            minValue = str(tblData.min[entry])
+            minValue = str(tblData.minValue[entry])
             print minValue
-            maxValue = str(tblData.max[entry])
+            maxValue = str(tblData.maxValue[entry])
             print maxValue
             if flag == 1:
                 sqlCmd = "insert into Job_Params (jobID,param,defaultValue,min,max) " + \

@@ -363,7 +363,7 @@ def genCalibScript(jobData,gageMeta,gageNum):
                 str(jobData.gages[gageNum]) + "/RUN.CALIB'\n"
         fileObj.write('# Parameter bounds\n')
         fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
-        fileObj.write('# "param" for parameter name, "ini" for initial value, "min" for minimum value, "max" for maximum value\n')
+        fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
         inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
         fileObj.write('# Basin-Specific Metadata\n')
         inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"

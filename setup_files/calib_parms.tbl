@@ -1,4 +1,4 @@
-parameter,calib_flag,min,max,ini
+parameter,calib_flag,minValue,maxValue,ini
 bexp,        1,      0.40,      1.90,      1.0       
 smcmax,      1,      0.80,      1.20,      1.0
 dksat,       0,      0.20,      10.0,      1.0
