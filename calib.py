@@ -169,10 +169,11 @@ def main(argv):
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
             errMod.errOut(jobData)
             
-        try:
-            db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
+        db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
+        #try:
+        #    db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
+        #except:
+        #    errMod.errOut(jobData)
             
     # Begin an "infinite" do loop. This loop will continue to loop through all 
     # the basins until calibrations are complete. Basins are allowed ONE failure. A restart
