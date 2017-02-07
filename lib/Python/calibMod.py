@@ -123,12 +123,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                     " Failed. Attempting to restart."
                 print statusData.genMsg
                 errMod.sendMsg(statusData)
-                keySlot[basinNum] = -0.25
+                keySlot[basinNum,iteration] = -0.25
                 keyStatus = -0.25
             else:
                 # Model has completed. Set to 0.75, which indicates calibration code
                 # needs to be ran.
-                keySlot[basinNum,iteration] = 0.75
+                keySlot[basinNum,iteration,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
            
@@ -171,11 +171,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                keySlot[basinNum] = 0.0
+                keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
             else:
                 # Model sucessfully completed. Ready to move onto calibration R code
-                keySlot[basinNum] = 0.75
+                keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
                 
@@ -184,7 +184,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if basinStatus:
             # Model is running again, upgrade status
             # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
-            keySlot[basinNum] = 0.5
+            keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -200,13 +200,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 errMod.sendMsg(statusData)
                 print statusData.genMsg
                 open(lockPath,'a').close()
-                keySlot[basinNum] = -1.0
+                keySlot[basinNum,iteration] = -1.0
                 keyStatus = -1.0
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt. Ready for
                 # calibration R code.
-                keySlot[basinNum] = 0.75
+                keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 
     if keyStatus == -0.25 and runFlag:
@@ -250,7 +250,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
-        keySlot[basinNum] = -0.5
+        keySlot[basinNum,iteration] = -0.5
         
     if keyStatus == 0.0 and runFlag:
         # Model needs to be either ran, or restarted
@@ -290,7 +290,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         keyStatus = 0.5
-        keySlot[basinNum] = 0.5
+        keySlot[basinNum,iteration] = 0.5
                 
 def generateRunScript(jobData,gageID,runDir):
     """
