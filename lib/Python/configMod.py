@@ -254,6 +254,37 @@ def createJob(argsUser):
     
     return jobObj
     
+def queryJob(argsUser):
+    """
+    Generic function to return information from a config file. This is mostly
+    used for getJobID to provide a user with a jobID.
+    """
+    # Check to make sure a non-zero length config file was passed by the user.
+    if len(argsUser.configFile[0]) ==0:
+        print "ERROR: Zero Length Configuration File Passed To Program."
+        raise Exception()
+
+    configPath = argsUser.configFile[0]    
+    parser = SafeConfigParser()
+    
+    if os.path.isfile(configPath):
+        parser.read(configPath)
+    else:
+        print "ERROR: Config file not found."
+        raise Exception()
+
+    # Initialize job object
+    jobObj = jobMeta()
+    
+    # Read in values
+    try:
+        jobMeta.readConfig(jobObj,parser)
+    except:
+        print "ERROR: Unable to assign values from config file."
+        raise
+        
+    return jobObj
+    
 def checkConfig(parser):
     """ Function to check all options in the config file.
     """
