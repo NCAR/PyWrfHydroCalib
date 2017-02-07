@@ -62,6 +62,21 @@ def main(argv):
     jobData.dbUName = 'NWM_Calib_rw'
     jobData.dbPwd = 'IJustWannaCalibrate'    
     
+    # Establish database connection.
+    db = dbMod.Database(jobData)
+    try:
+        db.connect(jobData)
+    except:
+        print jobData.errMsg
+        sys.exit(1)
+        
+    # Extract job data from database
+    try:
+        db.jobStatus(jobData)
+    except:
+        print jobData.errMsg
+        sys.exit(1)
+        
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
     if not os.path.isfile(configPath):
