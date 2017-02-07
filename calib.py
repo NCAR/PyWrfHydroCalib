@@ -212,33 +212,33 @@ def main(argv):
             except:
                 errMod.errOut(jobData)
 
-    #while not completeStatus:
-    #    # Walk through calibration directories for each basin. Determine the status of
-    #    # the model runs by the files available. If restarting, modify the 
-    #    # namelist files appropriately. Then, restart the model. Once all
-    #    # basins have been accounted for, fire off the monitoring program through
-    #    # nohup to keep track of the models. If anything goes wrong, notifications
-    #    # will either be emailed per the user's info, or piped to Slack for group
-    #    # notification. A run directory won't be complete until all output is 
-    #    # present and the calibration algorithms have successfully completed. Once
-    #    # that occurs, a COMPLETE flag will be placed into the run directory, indicating
-    #    # everything for this iteration is complete.  
-    #    # Loop through each basin. Perform the following steps:
-    #    # 1.) If status is -0.5,0.0, or 0.5, check to see if the model is running
-    #    #     for this basin.
-    #    # 2.) If the model is not running, check for expected output and perform
-    #    #     necessary logistics. Continue to the next basin.
-    #    # If the status goes to -1.0, a LOCK file is created and must be manually
-    #    # removed from the user. Once the program detects this, it will restart the
-    #    # model and the status goes back to 0.5.
-    #    # If the status is -0.5 and no job is running, output must be complete, or 
-    #    # status goes to -1.0.
-    #    # If output is not complete, the model is still running, status stays at 0.5.
-    #    # If job is not running, and output has been completed, status goes to 1.0.
-    #    # This continues indefinitely until statuses for ALL basins go to 1.0.
-    #
-    #    for basin in range(0,len(jobData.gages)):
-    #        print keySlot
+    while not completeStatus:
+        # Walk through calibration directories for each basin. Determine the status of
+        # the model runs by the files available. If restarting, modify the 
+        # namelist files appropriately. Then, restart the model. Once all
+        # basins have been accounted for, fire off the monitoring program through
+        # nohup to keep track of the models. If anything goes wrong, notifications
+        # will either be emailed per the user's info, or piped to Slack for group
+        # notification. A run directory won't be complete until all output is 
+        # present and the calibration algorithms have successfully completed. Once
+        # that occurs, a COMPLETE flag will be placed into the run directory, indicating
+        # everything for this iteration is complete.  
+        # Loop through each basin. Perform the following steps:
+        # 1.) If status is -0.5,0.0, or 0.5, check to see if the model is running
+        #     for this basin.
+        # 2.) If the model is not running, check for expected output and perform
+        #     necessary logistics. Continue to the next basin.
+        # If the status goes to -1.0, a LOCK file is created and must be manually
+        # removed from the user. Once the program detects this, it will restart the
+        # model and the status goes back to 0.5.
+        # If the status is -0.5 and no job is running, output must be complete, or 
+        # status goes to -1.0.
+        # If output is not complete, the model is still running, status stays at 0.5.
+        # If job is not running, and output has been completed, status goes to 1.0.
+        # This continues indefinitely until statuses for ALL basins go to 1.0.
+    
+        for basin in range(0,len(jobData.gages)):
+            print keySlot
     #        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],2,keySlot,basin)
     #        time.sleep(20)
     #        #try:
@@ -246,16 +246,18 @@ def main(argv):
     #        #except:
     #        #    errMod.errOut(jobData)
     #    
-    #    # Check to see if program requirements have been met.
-    #    if keySlot.sum() == entryValue:
-    #        jobData.calibComplete = 1
-    #        try:
-    #            db.updateCalibStatus(jobData)
-    #        except:
-    #            errMod.errout(jobData)
-    #        jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
-    #        errMod.sendMsg(jobData)
-    #        completeStatus = True
+        # Check to see if program requirements have been met.
+        print keySlot.sum()
+        print entryValue
+        if keySlot.sum() == entryValue:
+            jobData.calibComplete = 1
+            try:
+                db.updateCalibStatus(jobData)
+            except:
+                errMod.errout(jobData)
+            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
+            completeStatus = True
         
 if __name__ == "__main__":
     main(sys.argv[1:])
