@@ -425,6 +425,7 @@ class Database(object):
                          "values ('%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue)
 
             try:
+                print sqlCmd
                 self.conn.execute(sqlCmd)
                 self.db.commit()
             except:
