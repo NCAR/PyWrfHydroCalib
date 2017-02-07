@@ -390,7 +390,7 @@ def generateCalibScript(jobData,gageID,runDir):
             fileObj.write("#BSUB -n 1\n")
             fileObj.write('#BSUB -R "span[ptile=1]"\n')
             #fileObj.write('#BSUB -R "span[ptile=16]"\n')
-            inStr = "#BSUB -J NWM_CALIB" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#BSUB -o ' + runDir + '/%J.out\n'
             fileObj.write(inStr)
@@ -406,4 +406,4 @@ def generateCalibScript(jobData,gageID,runDir):
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile
-        raise    
+            raise    
