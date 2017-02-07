@@ -198,12 +198,11 @@ def main(argv):
         for basin in range(0,len(jobData.gages)):
         #for basin in range(0,1):
             print keySlot
-            spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            time.sleep(20)
-            #try:
-            #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)
-            #except:
+            try:
+                runMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
+            except:
             #    errMod.errOut(jobData)
+            time.sleep(20)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:

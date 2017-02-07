@@ -239,16 +239,14 @@ def main(argv):
     
         for basin in range(0,len(jobData.gages)):
             print keySlot
-    #        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],2,keySlot,basin)
+            calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
     #        time.sleep(20)
     #        #try:
-    #        #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)
+    #        #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
     #        #except:
     #        #    errMod.errOut(jobData)
     #    
         # Check to see if program requirements have been met.
-        print keySlot.sum()
-        print entryValue
         if keySlot.sum() == entryValue:
             jobData.calibComplete = 1
             try:
