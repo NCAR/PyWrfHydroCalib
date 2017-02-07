@@ -416,11 +416,17 @@ class Database(object):
             
         for entry in range(0,len(tblData)):
             flag = tblData.calib_flag[entry]
+            print flag
             jobID = int(jobData.jobID)
+            print jobID
             paramName = str(tblData.parameter[entry])
+            print paramName
             defaultValue = str(tblData.ini[entry])
+            print defaultValue
             minValue = str(tblData.min[entry])
+            print minValue
             maxValue = str(tblData.max[entry])
+            print maxValue
             if flag == 1:
                 sqlCmd = "insert into Job_Params (jobID,param,defaultValue,min,max) " + \
                          "values ('%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue)
