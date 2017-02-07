@@ -368,9 +368,9 @@ def setupModels(jobData,db,args):
             raise
             
         # Create Rscript file that will be sourced by R for calibration
-        runMod.genCalibScript(jobData,gageMeta,gage)
+        runMod.genCalibScript(jobData,gageData,gage)
         #try:
-        #    runMod.genCalibScript(jobData,gageMeta,gage)
+        #    runMod.genCalibScript(jobData,gageData,gage)
         #except:
         #    wipeJobDir(jobData)
         #    jobData.errMsg = "ERROR: Failure to write calibration R script."
