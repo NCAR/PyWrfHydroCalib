@@ -356,7 +356,7 @@ def genCalibScript(jobData,gageMeta,gageNum):
     inStr = "m <- " + str(jobData.nIter) + '\n'
     fileObj.write(inStr)
     fileObj.write('# Specify DDS parameter (if used).\n')
-    inStr = "r <- " + str(jobData.ddsR)
+    inStr = "r <- " + str(jobData.ddsR) + "\n"
     fileObj.write(inStr)
     fileObj.write("# Specify run directory containing calibration simulations.\n")
     inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
@@ -368,6 +368,7 @@ def genCalibScript(jobData,gageMeta,gageNum):
     fileObj.write('# Basin-Specific Metadata\n')
     inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
     fileObj.write(inStr)
+    print gageMeta.comID
     inStr = "comId <- '" + str(gageMeta.comID) + "'\n"
     fileObj.write(inStr)
     fileObj.close
