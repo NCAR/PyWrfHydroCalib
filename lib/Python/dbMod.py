@@ -408,7 +408,9 @@ class Database(object):
             raise Exception()
             
         # Open parameter table and read values in.
+        print calibTbl
         tblData = pd.read_csv(calibTbl)
+        print 'alksdjf'
         if len(tblData) != 14:
             jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
             raise Exception()
