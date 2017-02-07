@@ -244,7 +244,7 @@ def walkMod(bDate,eDate,runDir):
         print lsmRestartPath
         print hydroRestartPath
         if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
-            bDate == dCurrent
+            bDate = dCurrent
             print "FOUND RESTARTS"
             print dCurrent
             print bDate
