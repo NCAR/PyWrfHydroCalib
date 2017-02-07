@@ -164,6 +164,7 @@ def main(argv):
         except:
             errMod.errOut(jobData)
             
+        print domainID
         if domainID == -9999:
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
             errMod.errOut(jobData)
