@@ -89,21 +89,6 @@ def main(argv):
         print "ERROR: Failure to read configuration file: " + configPath
         sys.exit(1)
         
-    # Establish database connection.
-    db = dbMod.Database(jobData)
-    try:
-        db.connect(jobData)
-    except:
-        print jobData.errMsg
-        sys.exit(1)
-        
-    # Extract job data from database
-    try:
-        db.jobStatus(jobData)
-    except:
-        print jobData.errMsg
-        sys.exit(1)
-    
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages(db)
