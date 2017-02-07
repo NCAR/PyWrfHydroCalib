@@ -158,6 +158,7 @@ def main(argv):
     # Create empty table entries into the Calib_Stats table to be filled in as the workflow progresses.
     # If table entries have already been entered, continue on.
     for basin in range(0,len(jobData.gages)):
+        print basin
         try:
             domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
         except:
