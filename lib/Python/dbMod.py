@@ -398,6 +398,42 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
             raise
             
+    def updateCalibStatus(self,jobData):
+        """
+        Generic function to update the status of the calibration for a particular job.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+        
+        sqlCmd = "update Job_Meta set Job_Meta.calib_complete='" + str(jobData.calibComplete) + \
+                 "' where jobID='" + str(jobData.jobID) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to update calibration status for job ID: " + str(jobData.jobID)
+            raise
+            
+    def updateValidationStatus(self,jobData):
+        """
+        Generic function to update the status of the validation for a particular job.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+        
+        sqlCmd = "update Job_Meta set Job_Meta.valid_complete='" + str(jobData.validComplete) + \
+                 "' where jobID='" + str(jobData.jobID) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
+            raise
+    
     def enterCalibParms(self,jobData,calibTbl):
         """
         Generic function to enter model parameter values being calibrated, along
@@ -430,3 +466,69 @@ class Database(object):
                 except:
                     jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
                     raise
+                    
+    def populateCalibTable(self,jobData,domainID,gageName):
+        """
+        Generic function to create empty table rows that will store calibration 
+        information for each iteration, for each basin, for each job. This information
+        will be updated as the calibration workflow progresses.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        numIter = int(jobData.nIter)
+        
+        for iteration in range(1,numIter+1):
+            # First determine if table row has already been created.
+            sqlCmd = "select * from Calib_Stats where jobID='" + str(jobID) + "'" + \
+                     " and domainID='" + str(domainID) + "'" + " and iteration='" + \
+                     str(iteration) + "';"
+            try:
+                self.conn.execute(sqlCmd)
+                results = self.conn.fetchone()
+            except:
+                jobData.errMsg = "ERROR: Unable to extract calib stats for job ID: " + str(jobID) + \
+                                 " domainID: " + str(domainID) + " Iteration: " + str(iteration)
+                raise
+            
+            if len(results) == 0:
+                # Create "empty" entry into table.
+                sqlCmd = "insert into Calib_Stats (jobID,domainID,iteration,objfnVal,bias,rmse," + \
+                         "cor,nse,nselog,kge,fdcerr,best,complete) values (" + str(jobID) + \
+                         "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999" + \
+                         "-9999,-9999,-9999,-9999,-9999,0,0);"
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Unable to create empty table entry into Calib_Stats for " + \
+                                     "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                     " iteration: " + str(iteration)
+                    raise
+                    
+    def iterationStatus(self,jobData,domainID,iteration,gageName):
+        """
+        Generic function to extract the complete status for a given iteration of 
+        a calibration in a given basin for a given job.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        iterCheck = iteration + 1
+        
+        sqlCmd = "select complete from Calib_Stats where jobID='" + str(jobID) + "'" + \
+                 " and domainID='" + str(domainID) + "'" + " and iteration='" + \
+                 str(iterCheck) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Unable to extract calibration status for job ID: " + str(jobID) + \
+                             " domainID: " + str(domainID) + " Iteration: " + str(iteration)
+            raise
+            
+        return float(results[0])

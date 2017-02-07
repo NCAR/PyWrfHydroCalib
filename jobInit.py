@@ -97,6 +97,13 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
+    # Pull Job ID from newly created job. Will be used for calibration 
+    # parameter DB entries
+    try:
+        db.getJobID(jobData)
+    except:
+        errMod.errOut(jobData)
+        
     # Create DB entries to log the parameters being calibrated.
     try:
         db.enterCalibParms(jobData,str(args.parmTbl[0]))

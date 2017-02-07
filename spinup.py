@@ -28,7 +28,7 @@ import statusMod
 import dbMod
 import errMod
 import calibIoMod
-import runMod
+import spinupMod
 import configMod
 import time
 
@@ -170,7 +170,7 @@ def main(argv):
     # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
-    keySlot = np.empty([len(jobData.gages),1])
+    keySlot = np.empty(len(jobData.gages))
     keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages))
     
@@ -198,7 +198,7 @@ def main(argv):
         for basin in range(0,len(jobData.gages)):
         #for basin in range(0,1):
             print keySlot
-            runMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],1,keySlot,basin)
+            spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
             time.sleep(20)
             #try:
             #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],1,keySlot,basin)

@@ -35,29 +35,29 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
         iteration = 0
     elif typeFlag == 2:
         # Determine which run sub-directory based on COMPLETE flag presence.
-        for iterationCheck in range(0,int(staticData.nIter)):
-            runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/ITERATION_" + str(iterationCheck+1)
-            if os.path.isfile(runDir + "/CALIB.COMPLETE"):
-                iteration = iteration + 1
-                if keySlot[basinNum] == 0.0:
-                    # If the COMPLETE flag hasn't already been accounted for. 
-                    keySlot[basinNum,iteration] = 1.0
-            # Check to make sure symbolic link to spinup state exists.
-            check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-            check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-            if not os.path.isfile(check1):
-                statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
-                raise Exception()
-            if not os.path.isfile(check2):
-                statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
-                raise Exception()
-            # Create links if they don't exist
-            link1 = runDir + "/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-            link2 = runDir + "/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-            if not os.path.islink(link1):
-                os.symlink(check1,link1)
-            if not os.path.islink(link2):
-                os.symlink(check2,link2)
+        runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
+        # Check to make sure symbolic link to spinup state exists.
+        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        if not os.path.isfile(check1):
+            statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+            raise Exception()
+        if not os.path.isfile(check2):
+            statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        link1 = runDir + "/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        link2 = runDir + "/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        if not os.path.islink(link1):
+            os.symlink(check1,link1)
+        if not os.path.islink(link2):
+            os.symlink(check2,link2)
+        # Generate BSUB file necessary for running R calibration/analysis
+        # code.
+        try:
+            generateCalibScript(statusData,int(gageID),runDir)
+        except:
+            raise
     elif typeFlag == 3:
         runDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
         
@@ -320,9 +320,9 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#BSUB -o ' + runDir + '/wrf%J.out\n'
+        inStr = '#BSUB -o ' + runDir + '/%J.out\n'
         fileObj.write(inStr)
-        inStr = '#BSUB -e ' + runDir + '/wrf%J.err\n'
+        inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -W 3:00\n')
         fileObj.write('#BSUB -q premium\n')
@@ -335,7 +335,7 @@ def generateRunScript(jobData,gageID,runDir):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def genCalibScript(jobData,gageMeta,gageNum):
+def generateRScript(jobData,gageMeta,gageNum):
     """
     Generic function to create R script that will be sourced by R during
     calibration.
@@ -376,3 +376,45 @@ def genCalibScript(jobData,gageMeta,gageNum):
         jobData.errMsg = "ERROR: Failure to create: " + outPath
         raise        
         
+def generateCalibScript(jobData,gageID,runDir):
+    """
+    Generic Function function to create BSUB script for running R
+    calibration routines. These jobs will be shorter than 
+    the model runs, but still need to be ran through Yellowstone
+    compute nodes.
+    """
+    
+    outFile = runDir + "/run_NWM_CALIB.sh"
+    
+    if not os.path.isfile(outFile):
+        try:
+            fileObj = open(outFile,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# LSF Batch Script to Run NWM Calibration R Code\n')
+            fileObj.write('#\n')
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
+            #fileObj.write('#BSUB -x\n')
+            #inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
+            #fileObj.write(inStr)
+            fileObj.write("#BSUB -n 1\n")
+            fileObj.write('#BSUB -R "span[ptile=1]"\n')
+            #fileObj.write('#BSUB -R "span[ptile=16]"\n')
+            inStr = "#BSUB -J NWM_CALIB" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            fileObj.write(inStr)
+            inStr = '#BSUB -o ' + runDir + '/%J.out\n'
+            fileObj.write(inStr)
+            inStr = '#BSUB -e ' + runDir + '/%J.err\n'
+            fileObj.write(inStr)
+            fileObj.write('#BSUB -W 3:00\n')
+            fileObj.write('#BSUB -q premium\n')
+            fileObj.write('\n')
+            inStr = 'cd ' + runDir + '\n'
+            fileObj.write(inStr)
+            #PLACEHOLDER FOR FIGURING OUT RUN SCRIPT
+            #fileObj.write('mpirun.lsf ./???\n')
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise    
