@@ -22,6 +22,9 @@ class jobMeta:
         self.acctKey = []
         self.nCores = []
         self.nIter = []
+        self.calibMethod = []
+        self.objFunc = []
+        self.ddsR = []
         self.outDir = []
         self.email = None
         self.slChan = None
@@ -104,6 +107,10 @@ class jobMeta:
         self.acctKey = str(parser.get('logistics','acctKey'))
         self.nCores = int(parser.get('logistics','nCores'))
         self.nIter = int(parser.get('logistics','numIter'))
+        self.objFunc = str(parser.get('logistics','objectiveFunction'))
+        self.ddsR = str(parser.get('logistics','ddsR'))
+        if len(self.ddsR) != 0:
+            self.ddsR = float(self.ddsR)
         self.email = str(parser.get('logistics','email'))
         self.slChan = str(parser.get('logistics','slackChannel'))
         self.slToken = str(parser.get('logistics','slackToken'))
@@ -302,6 +309,17 @@ def checkConfig(parser):
     check = float(parser.get('logistics','nCores'))/16.0 - int(float(parser.get('logistics','nCores'))/16.0)
     if check != 0.0:
         print "ERROR: Number of cores chosen must be multiple of 16"
+        raise Exception()
+        
+    # Check to make sure calibration method is DDS
+    check = str(parser.get('logistics','calibMethod'))
+    if check != "DDS":
+        print "ERROR: Invalid calibration method passed to program."
+        raise Exception()
+        
+    check = str(parser.get('logistics','objectiveFunction'))
+    if len(check) == 0:
+        print "ERROR: Zero length calibration objective function provided."
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))

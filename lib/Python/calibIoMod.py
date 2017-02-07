@@ -21,6 +21,7 @@ class gageMeta:
         # should exist on the system.
         self.gage = []
         self.gageID = []
+        self.comID = []
         self.geoFile = []
         self.fullDom = []
         self.rtLnk = []
@@ -37,7 +38,7 @@ class gageMeta:
         tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','forceDir':'',\
-                   'obsFile':'','gageID':''}
+                   'obsFile':'','gageID':'','comID':''}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:
@@ -55,6 +56,7 @@ class gageMeta:
         self.soilFile = tmpMeta['soilFile']
         self.forceDir = tmpMeta['forceDir']
         self.obsFile = tmpMeta['obsFile']
+        self.comID = tmpMeta['comID']
         
 def getGageList(jobData,db):
     # Function for extracting list of gages 
@@ -177,6 +179,29 @@ def setupModels(jobData,db,args):
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + baseParmDir
+            raise
+            
+        # Copy table user provided with calibration parameters to the calibration directory.
+        origPath = str(args.parmTbl[0])
+        newPath = gageDir + "/RUN.CALIB/calib_parms.tbl"
+        if not os.path.isfile(origPath):
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Input file: " + origPath + " not found."
+            raise
+        try:
+            shutil.copy(origPath,newPath)
+        except:
+            wipeJobDir
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+            raise
+            
+        # Create sub-directory where fianl calibrated parameters will reside.
+        finalParmDir = gageDir + "/RUN.CALIB/FINAL_PARAMETERS"
+        try:
+            os.mkdir(finalParmDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + finalParmDir
             raise
             
         # Create symbolic links necessary for model runs.
@@ -340,5 +365,13 @@ def setupModels(jobData,db,args):
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
+            raise
+            
+        # Create Rscript file that will be sourced by R for calibration
+        try:
+            runMod.genCalibScript(jobData,gageMeta,gage)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to write calibration R script."
             raise
             

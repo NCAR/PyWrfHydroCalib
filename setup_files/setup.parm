@@ -27,6 +27,16 @@ nCores = 256
 # Specify number of model iterations to calibrate over
 numIter = 3
 
+# Specify calibration method (DDS, SCE, etc)
+calibMethod = DDS
+
+# Specify objective function for calibration
+# Define "custom" for custom objective functions
+objectiveFunction = NSE
+
+# DDS specific parameters. Leave blank if not using DDS.
+ddsR = 0.2
+
 # Specify email to send updates/error messages to.
 # Please fill out either email or Slack information. 
 # You must choose one.

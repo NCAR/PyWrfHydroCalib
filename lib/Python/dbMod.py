@@ -239,6 +239,9 @@ class Database(object):
         tmpMeta['lkFile'] = results[19]
         tmpMeta['forceDir'] = results[20]
         tmpMeta['obsFile'] = results[21]
+        # PLACEHOLDER
+        #tmpMeta['comID'] = results[22]
+        tmpMeta['comID'] = -9999
         
     def jobStatus(self,jobData):
         """
@@ -414,9 +417,9 @@ class Database(object):
             flag = tblData.calib_flag[entry]
             jobID = int(jobData.jobID)
             paramName = str(tblData.parameter[entry])
-            defaultValue = str(tblData.default[entry])
-            minValue = str(tblData.min_value[entry])
-            maxValue = str(tblData.max_value[entry])
+            defaultValue = str(tblData.ini[entry])
+            minValue = str(tblData.min[entry])
+            maxValue = str(tblData.max[entry])
             if flag == 1:
                 sqlCmd = "insert into Job_Params (jobID,param,defaultValue,min,max) " + \
                          "values ('%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue)
