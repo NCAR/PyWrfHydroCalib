@@ -34,7 +34,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         raise Exception()
         
     # Check to make sure symbolic link to spinup state exists.
-    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
     check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     print check1
     print check2
