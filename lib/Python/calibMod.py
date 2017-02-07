@@ -77,19 +77,19 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     except:
         raise
      
-    print begDate
-    print endDate
     # Determine the latest iteration that was completed. This will be logged
     # Into a temporary table file created by R after 
         
     # Initialize status
-    #keyStatus = keySlot[basinNum,iteration]
+    keyStatus = keySlot[basinNum,iteration]
     
-    #try:
-    #    basinStatus = statusMod.checkBasJob(statusData,basinNum)
-    #except:
-    #    raise
-        
+    try:
+        basinStatus = statusMod.checkBasJob(statusData,basinNum)
+    except:
+        raise
+     
+    print keyStatus
+    print basinStatus
     #print "BASIN STATUS = " + str(basinStatus)
     # Create path to LOCK file if neeced
     #lockPath = runDir + "/RUN.LOCK"
