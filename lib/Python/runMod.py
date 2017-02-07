@@ -347,7 +347,7 @@ def genCalibScript(jobData,gageMeta,gageNum):
         jobData.errMsg = "ERROR: Calibration R script: " + outPath + " aleady exists."
         raise Exception()
 
-    try:
+    #try:
         fileObj = open(outPath,'w')
         fileObj.write('#### Model Parameters ####\n')
         inStr = "objFunc <- '" + str(jobData.objFunc) + "'\n"
@@ -371,7 +371,7 @@ def genCalibScript(jobData,gageMeta,gageNum):
         inStr = "comId <- '" + str(gageMeta.comID) + "'\n"
         fileObj.write(inStr)
         fileObj.close
-    except:
-        jobData.errMsg = "ERROR: Failure to create: " + outPath
-        raise        
+    #except:
+    #    jobData.errMsg = "ERROR: Failure to create: " + outPath
+    #    raise        
         
