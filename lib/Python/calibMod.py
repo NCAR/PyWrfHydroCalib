@@ -57,7 +57,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         raise
         
     # If BSUB run script doesn't exist, create it here.
-    #bsubFile = runDir + "/run_NWM.sh"
+    bsubFile = runDir + "/run_NWM.sh"
     if not os.path.isfile(bsubFile):
         try:
             generateRunScript(statusData,int(gageID),runDir)
