@@ -185,7 +185,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
         fileObj.write('\n')
         fileObj.write('!Specify the restart file write frequency...(minutes)\n')
         # Manually over-writing for now.
-        inStr = ' rest_dt = ' + str(int(dt.days*24*60.0 + dt.seconds/60.0)) + '\n'
+        inStr = ' rst_dt = ' + str(int(dt.days*24*60.0 + dt.seconds/60.0)) + '\n'
         #inStr = ' rst_dt = -9999\n'
         #inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
         fileObj.write(inStr)
