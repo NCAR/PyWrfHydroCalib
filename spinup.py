@@ -171,7 +171,7 @@ def main(argv):
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
     keySlot = np.empty(len(jobData.gages))
-    keySlot[:,:] = 0.0
+    keySlot[:] = 0.0
     entryValue = float(len(jobData.gages))
     
     while not completeStatus:
