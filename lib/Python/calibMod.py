@@ -36,8 +36,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Check to make sure symbolic link to spinup state exists.
     check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
     check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    print check1
-    print check2
     if not os.path.isfile(check1):
         statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
         raise Exception()
@@ -45,7 +43,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
         raise Exception()
     # Create links if they don't exist
-    link1 = runDir + "/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link1 = runDir + "/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
     link2 = runDir + "/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     if not os.path.islink(link1):
         os.symlink(check1,link1)
