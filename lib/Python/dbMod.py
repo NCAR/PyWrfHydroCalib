@@ -495,12 +495,14 @@ class Database(object):
                                  " domainID: " + str(domainID) + " Iteration: " + str(iteration)
                 raise
             
+            print results
             if len(results) == 0:
                 # Create "empty" entry into table.
                 sqlCmd = "insert into Calib_Stats (jobID,domainID,iteration,objfnVal,bias,rmse," + \
                          "cor,nse,nselog,kge,fdcerr,best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999" + \
                          "-9999,-9999,-9999,-9999,-9999,0,0);"
+                print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
