@@ -347,32 +347,32 @@ def genCalibScript(jobData,gageMeta,gageNum):
         jobData.errMsg = "ERROR: Calibration R script: " + outPath + " aleady exists."
         raise Exception()
 
-    #try:
-    fileObj = open(outPath,'w')
-    fileObj.write('#### Model Parameters ####\n')
-    inStr = "objFunc <- '" + str(jobData.objFunc) + "'\n"
-    fileObj.write(inStr)
-    fileObj.write('# Specify number of calibration iterations.\n')
-    inStr = "m <- " + str(jobData.nIter) + '\n'
-    fileObj.write(inStr)
-    fileObj.write('# Specify DDS parameter (if used).\n')
-    inStr = "r <- " + str(jobData.ddsR) + "\n"
-    fileObj.write(inStr)
-    fileObj.write("# Specify run directory containing calibration simulations.\n")
-    inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
+    try:
+        fileObj = open(outPath,'w')
+        fileObj.write('#### Model Parameters ####\n')
+        inStr = "objFunc <- '" + str(jobData.objFunc) + "'\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify number of calibration iterations.\n')
+        inStr = "m <- " + str(jobData.nIter) + '\n'
+        fileObj.write(inStr)
+        fileObj.write('# Specify DDS parameter (if used).\n')
+        inStr = "r <- " + str(jobData.ddsR) + "\n"
+        fileObj.write(inStr)
+        fileObj.write("# Specify run directory containing calibration simulations.\n")
+        inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
                 str(jobData.gages[gageNum]) + "/RUN.CALIB'\n"
-    fileObj.write('# Parameter bounds\n')
-    fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
-    fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
-    inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
-    fileObj.write('# Basin-Specific Metadata\n')
-    inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
-    fileObj.write(inStr)
-    print gageMeta.comID
-    inStr = "comId <- '" + str(gageMeta.comID) + "'\n"
-    fileObj.write(inStr)
-    fileObj.close
-    #except:
-    #    jobData.errMsg = "ERROR: Failure to create: " + outPath
-    #    raise        
+        fileObj.write(inStr)
+        fileObj.write('# Parameter bounds\n')
+        fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
+        fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
+        inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
+        fileObj.write('# Basin-Specific Metadata\n')
+        inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
+        fileObj.write(inStr)
+        inStr = "comId <- '" + str(gageMeta.comID) + "'\n"
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outPath
+        raise        
         
