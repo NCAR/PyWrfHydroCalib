@@ -241,33 +241,25 @@ def walkMod(bDate,eDate,runDir):
         lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
         
+        countTmp = 0
         if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
-            if hourModel == 2:
-                # This implies the first time step of output is present. Get the expected
-                # file size. This will be used to check to make sure the files present
-                # are complete.
-                rstPth1 = runDir + "/RESTART." + bDateRstChck.strftime('%Y%m%d%H') + "_DOMAIN1"
-                rstPth2 = runDir + "/HYDRO_RST." + bDateRstChck.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
-                
-                lsmSize = os.path.getsize(rstPth1)
-                hydroSize = os.path.getsize(rstPth2)
-                
-                #print lsmSize
-                #print hydroSize
-                #print "XXXXXXXXXXXXXXXXX"
-                
-            if hourModel >= 2:
-                checkLsm = os.path.getsize(lsmRestartPath)
-                checkHydro = os.path.getsize(hydroRestartPath)
-                
-                #print lsmRestartPath
-                #print hydroRestartPath
-                #print checkLsm
-                #print checkHydro
-                #print lsmRestartPath
-                #print checkLsm
-                if checkLsm == lsmSize and checkHydro == hydroSize:
-                    bDate = dCurrent
+            bDate == dCurrent
+            #if hourModel == 0:
+            #    # This implies the first time step of output is present. Get the expected
+            #    # file size. This will be used to check to make sure the files present
+            #    # are complete.
+            #    rstPth1 = runDir + "/RESTART." + bDateRstChck.strftime('%Y%m%d%H') + "_DOMAIN1"
+            #    rstPth2 = runDir + "/HYDRO_RST." + bDateRstChck.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
+            #    
+            #    lsmSize = os.path.getsize(rstPth1)
+            #    hydroSize = os.path.getsize(rstPth2)
+            #    
+            #    countTmp = countTmp + 1
+            #if hourModel >= 1:
+            #    checkLsm = os.path.getsize(lsmRestartPath)
+            #    checkHydro = os.path.getsize(hydroRestartPath)
+            #    if checkLsm == lsmSize and checkHydro == hydroSize:
+            #        bDate = dCurrent
             
     #print bDate
     #print eDate
