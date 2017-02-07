@@ -487,6 +487,7 @@ class Database(object):
                      " and domainID='" + str(domainID) + "'" + " and iteration='" + \
                      str(iteration) + "';"
             try:
+                print sqlCmd
                 self.conn.execute(sqlCmd)
                 results = self.conn.fetchone()
             except:
