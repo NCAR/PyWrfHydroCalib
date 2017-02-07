@@ -51,32 +51,34 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         os.symlink(check2,link2)
     # Generate BSUB file necessary for running R calibration/analysis
     # code.
-    #try:
-    #    generateCalibScript(statusData,int(gageID),runDir)
-    #except:
-    #    raise
+    try:
+        generateCalibScript(statusData,int(gageID),runDir)
+    except:
+        raise
         
     # If BSUB run script doesn't exist, create it here.
     #bsubFile = runDir + "/run_NWM.sh"
-    #if not os.path.isfile(bsubFile):
-    #    try:
-    #        generateRunScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
+    if not os.path.isfile(bsubFile):
+        try:
+            generateRunScript(statusData,int(gageID),runDir)
+        except:
+            raise
     
     # Calculate datetime objects
-    #begDate = statusData.bCalibDate
-    #endDate = statusData.eCalibDate
+    begDate = statusData.bCalibDate
+    endDate = statusData.eCalibDate
         
-    #runFlag = 0
+    runFlag = 0
     
     # Pull gage metadata
-    #gageMeta = calibIoMod.gageMeta()
-    #try:
-    #    gageMeta.pullGageMeta(staticData,db,gage)
-    #except:
-    #    raise
-        
+    gageMeta = calibIoMod.gageMeta()
+    try:
+        gageMeta.pullGageMeta(staticData,db,gage)
+    except:
+        raise
+     
+    print begDate
+    print endDate
     # Determine the latest iteration that was completed. This will be logged
     # Into a temporary table file created by R after 
         
