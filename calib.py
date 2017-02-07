@@ -158,22 +158,19 @@ def main(argv):
     # Create empty table entries into the Calib_Stats table to be filled in as the workflow progresses.
     # If table entries have already been entered, continue on.
     for basin in range(0,len(jobData.gages)):
-        print basin
         try:
             domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
         except:
             errMod.errOut(jobData)
             
-        print domainID
         if domainID == -9999:
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
             errMod.errOut(jobData)
             
-        db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
-        #try:
-        #    db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
-        #except:
-        #    errMod.errOut(jobData)
+        try:
+            db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
+        except:
+            errMod.errOut(jobData)
             
     # Begin an "infinite" do loop. This loop will continue to loop through all 
     # the basins until calibrations are complete. Basins are allowed ONE failure. A restart
