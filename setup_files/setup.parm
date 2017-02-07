@@ -62,7 +62,7 @@ soilParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/SOILPARM.TBL
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
 bSpinDate = 2007-11-01
-eSpinDate = 2007-11-10
+eSpinDate = 2007-11-05
 
 # Specify date range for calibration period
 bCalibDate = 2007-11-05
