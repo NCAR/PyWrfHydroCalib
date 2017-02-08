@@ -492,15 +492,11 @@ class Database(object):
         baseParms = baseParms.reset_index()
         nParms = len(baseParms)
         
-        print baseParms
-        print nParms
         for iteration in range(1,numIter+1):
             for basin in range(0,nBas):
                 for parm in range(0,nParms):
-                    print parm
                     domainID = int(jobData.gageIDs[basin])
                     parmName = str(baseParms.parameter[parm])
-                    print parmName
                     itStr = str(iteration)
                     gageStr = str(jobData.gages[basin])
                     # First determine if table row has already been created.
@@ -508,7 +504,6 @@ class Database(object):
                              " and domainID='" + str(domainID) + "'" + " and iteration='" + \
                              itStr + "'" + " and paramName='" + parmName + "';"
                     try:
-                        print sqlCmd
                         self.conn.execute(sqlCmd)
                         results = self.conn.fetchone()
                     except:
