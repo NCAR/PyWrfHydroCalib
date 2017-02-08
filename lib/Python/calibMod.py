@@ -128,7 +128,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             else:
                 # Model has completed. Set to 0.75, which indicates calibration code
                 # needs to be ran.
-                keySlot[basinNum,iteration,iteration] = 0.75
+                keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
            
