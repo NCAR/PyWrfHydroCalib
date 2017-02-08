@@ -516,7 +516,7 @@ class Database(object):
                         # Create "empty" entry into table.
                         sqlCmd = "insert into Calib_Params (jobID,domainID,iteration,paramName,paramValue) " + \
                                  "values (" + str(jobID) + "," + str(domainID) + "," + \
-                                 str(iteration) + "," + parmName + ",-9999);"
+                                 str(iteration) + ",'" + parmName + "',-9999);"
                         try:
                             print sqlCmd
                             self.conn.execute(sqlCmd)
