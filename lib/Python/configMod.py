@@ -97,6 +97,7 @@ class jobMeta:
         self.gwBaseFlag = []
         self.gwRst = []
         self.gages = []
+        self.gageIDs = []
         self.dbUName = []
         self.dbPwd = []
     def readConfig(self,parser):

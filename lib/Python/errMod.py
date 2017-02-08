@@ -52,6 +52,123 @@ def wipeJobDir(jobData):
     except:
         print "ERROR: Failure to remove: " + jobDir + " Please remove manually."
         raise
+        
+def removeOutput(jobData,runDir):
+    """
+    Generic function to clean up NWM output. This is used specifically
+    between calibration simulations.
+    """
+    filesCheck = glob.glob(runDir + "/diag_hydro.*")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/diag_hydro.*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove hydro diagnostic files from: " + runDir
+            raise
+            
+    filesCheck = glob.glob(runDir + "/*.err")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.err"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove error diagnostic files from: " + runDir
+            raise
+            
+    filesCheck = glob.glob(runDir + "/*.out")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.out"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove misc diagnostic files from: " + runDir
+            raise
+            
+    filesCheck = glob.glob(runDir + "/*.LDASOUT_DOMAIN1")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.LDASOUT_DOMAIN1"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove LDASOUT files from: " + runDir
+            raise
+    
+    filesCheck = glob.glob(runDir + "/*.CHRTOUT_DOMAIN1")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.CHRTOUT_DOMAIN1"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove CHRTOUT files from: " + runDir
+    
+    filesCheck = glob.glob(runDir + "/HYDRO_RST.*")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/HYDRO_RST.*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove Hydro restart files from: " + runDir
+    
+    filesCheck = glob.glob(runDir + "/RESTART.*_DOMAIN1")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/RESTART.*_DOMAIN1"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove LSM restart files from: " + runDir
+    
+    if os.path.isfile(runDir + "/namelist.hrldas"):
+        try:
+            os.remove(runDir + "/namelist.hrldas")
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/namelist.hrldas"
+            raise
+            
+    if os.path.isfile(runDir + "/hydro.namelist"):
+        try:
+            os.remove(runDir + "/hydro.namelist")
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/hydro.namelist"
+            raise
+            
+def cleanCalib(jobData,runDir):
+    """
+    Generic function to cleanup calibration-related output, such as text files,
+    COMPLETE flags, etc in preparation for the next iteration.
+    """
+    
+    calibCompleteFlag = runDir + "/CALIB.COMPLETE"
+    calibTbl = runDir + "/CALIB_PARAMS.txt"
+    statsTbl = runDir + "/CALIB_STATS.txt"
+    
+    if os.path.isfile(calibCompleteFlag):
+        try:
+            os.remove(calibCompleteFlag)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + calibCompleteFlag
+            raise
+            
+    if os.path.isfile(calibTbl):
+        try:
+            os.remove(calibTbl)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + calibTbl
+            raise
+            
+    if os.path.isfile(statsTbl):
+        try:
+            os.remove(statsTbl)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
+            raise
 
 def cleanRunDir(jobData,runDir):
     """

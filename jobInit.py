@@ -109,6 +109,13 @@ def main(argv):
         db.enterCalibParms(jobData,str(args.parmTbl[0]))
     except:
         errMod.errOut(jobData)
+        
+    # Create empty table to hold calibrated parameter values that will be 
+    # calculated during calibration.
+    try:
+        db.populateParmTable(jobData,str(args.parmTbl[0]))
+    except:
+        errMod.errOut(jobData)
     
     # Disconnect from the calibration database.
     try:

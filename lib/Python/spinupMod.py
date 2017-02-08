@@ -62,6 +62,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     if keyStatus == 1.0:
         # Model has already completed
         runFlag = False
+        return
         
     # For uncompleted simulations that are still listed as running.
     if keyStatus == 0.5:

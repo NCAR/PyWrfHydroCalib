@@ -84,7 +84,8 @@ def getGageList(jobData,db):
         # User provided SQL command to extract list of gages.
         try:
             gageList = db.queryGageList(jobData)
-            jobData.gages = gageList[:]
+            jobData.gageIDs = gageList[:][0]
+            jobData.gages = gageList[:][1]
         except:
             raise
         
