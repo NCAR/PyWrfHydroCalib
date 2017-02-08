@@ -199,9 +199,9 @@ def main(argv):
         #for basin in range(0,1):
             print keySlot
             try:
-                runMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
+                spinupMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
             except:
-            #    errMod.errOut(jobData)
+                errMod.errOut(jobData)
             time.sleep(20)
         
         # Check to see if program requirements have been met.
