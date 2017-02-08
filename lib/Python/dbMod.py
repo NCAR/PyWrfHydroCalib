@@ -503,6 +503,7 @@ class Database(object):
                              " and domainID='" + str(domainID) + "'" + " and iteration='" + \
                              itStr + "'" + " and paramName='" + parmName + "';"
                     try:
+                        print sqlCmd
                         self.conn.execute(sqlCmd)
                         results = self.conn.fetchone()
                     except:
@@ -517,6 +518,7 @@ class Database(object):
                                  "values (" + str(jobID) + "," + str(domainID) + "," + \
                                  str(iteration) + "," + parmName + ",-9999);"
                         try:
+                            print sqlCmd
                             self.conn.execute(sqlCmd)
                             self.db.commit()
                         except:
