@@ -7,11 +7,11 @@
 
 import os
 
-def createHrldasNL(gageData,jobData,outDir,typeFlag):
+def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
     # General function for creation of a namelist.hrldas file.
     
-    # NOTE: typeFlag = 1 indicates spinup, 2 indicates calibration.
-    #       typeFlag = 3 indicates validation
+    # NOTE: typeFlag = 1 indicates cold start.
+    #       typeFlag = 2 indicates restart.
     # Create path for the namelist file
     pathOut = outDir + "/namelist.hrldas"
     if os.path.isfile(pathOut):
@@ -25,45 +25,28 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         fileObj.write('\n')
         inStr = ' HRLDAS_SETUP_FILE = "' + str(gageData.wrfInput) + '"' + '\n'
         fileObj.write(inStr)
-        inStr = ' INDIR = "' + jobData.fDir + '"' + '\n'
+        inStr = ' INDIR = "' + str(gageData.forceDir) + '"' + '\n'
         fileObj.write(inStr)
         inStr = ' SPATIAL_FILENAME = "' + str(gageData.soilFile) + '"' + '\n'
         fileObj.write(inStr)
         inStr = ' OUTDIR = "' + outDir + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        if typeFlag == 1:  # Spinup
-            dt = jobData.eSpinDate - jobData.bSpinDate
-            inStr = ' START_YEAR = ' + jobData.bSpinDate.strftime('%Y') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bSpinDate.strftime('%m') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bSpinDate.strftime('%d') + '\n'
-            fileObj.write(inStr)
-        elif typeFlag == 2:  # Calibration
-            dt = jobData.eCalibDate - jobData.bCalibDate
-            inStr = ' START_YEAR = ' + jobData.bCalibDate.strftime('%Y') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bCalibDate.strftime('%m') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bCalibDate.strftime('%d') + '\n'
-            fileObj.write(inStr)
-        elif typeFlag == 3: # Validation
-            dt = jobData.eValidDate - jobData.bValidDate
-            inStr = ' START_YEAR = ' + jobData.bValidDate.strftime('%Y') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_MONTH = ' + jobData.bValidDate.strftime('%m') + '\n'
-            fileObj.write(inStr)
-            inStr = ' START_DAY = ' + jobData.bValidDate.strftime('%d') + '\n'
-            fileObj.write(inStr)
+        dt = eDate - bDate
+        inStr = ' START_YEAR = ' + bDate.strftime('%Y') + '\n'
+        fileObj.write(inStr)
+        inStr = ' START_MONTH = ' + bDate.strftime('%m') + '\n'
+        fileObj.write(inStr)
+        inStr = ' START_DAY = ' + bDate.strftime('%d') + '\n'
+        fileObj.write(inStr)
         fileObj.write(' START_HOUR = 00\n')
         fileObj.write(' START_MIN = 00\n')
         fileObj.write('\n')
         if typeFlag == 1:
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
         else:
-            # PLACEHOLDER FOR CHECKING FOR SPINUP RESTART
-            rstFile = ''
+            #rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d%H') + "_DOMAIN1"
+            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
@@ -107,7 +90,10 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         inStr = ' OUTPUT_TIMESTEP = ' + str(jobData.lsmOutDt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
+        # Manually over-writing the restart frequency for now.
+        inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(dt.days*24+dt.seconds/3600.0)) + '\n'
+        #inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
+        #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write(' ! Split output after split_output_count output times\n')
         fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
@@ -144,7 +130,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         fileObj.write(inStr)
         inStr = ' !HRLDAS_ini_typ 1: initial and parameters from forcing; 0: from wrfinput\n'
         fileObj.write(inStr)
-        inStr = ' HRLDAS_ini_type = 1' + '\n'
+        inStr = ' HRLDAS_ini_typ = 1' + '\n'
         fileObj.write(inStr)
         fileObj.write(' ! for extract greenfrac\n')
         inStr = ' GEO_STATIC_FLNM = "' + str(gageData.geoFile) + '"' + '\n'
@@ -155,7 +141,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag):
         jobData.errMsg = "ERROR: Failure to create: " + pathOut
         raise
     
-def createHydroNL(gageData,jobData,outDir,typeFlag):
+def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
     # General function for creation of a hydro.namelist file.
 
     # Create path for the namelist file.
@@ -166,6 +152,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
         
     # Write each line of the hydro namelist file.
     try:
+        dt = eDate - bDate
         fileObj = open(pathOut,'w')
         fileObj.write('&HYDRO_nlist\n')
         fileObj.write('\n')
@@ -187,8 +174,8 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
             inStr = ' !RESTART_FILE = ""' + '\n'
             fileObj.write(inStr)
         elif typeFlag == 2: # Calibration
-            # PLACEHOLDER FOR RESTART FILE 
-            restartFile = ''
+            #restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d_%H') + ":00_DOMAIN1"
+            restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
             inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')
@@ -197,7 +184,10 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
         fileObj.write(' IGRID = 1\n')
         fileObj.write('\n')
         fileObj.write('!Specify the restart file write frequency...(minutes)\n')
-        inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
+        # Manually over-writing for now.
+        inStr = ' rst_dt = ' + str(int(dt.days*24*60.0 + dt.seconds/60.0)) + '\n'
+        #inStr = ' rst_dt = -9999\n'
+        #inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the output file write frequency...(minutes)\n')
@@ -219,7 +209,8 @@ def createHydroNL(gageData,jobData,outDir,typeFlag):
         fileObj.write(inStr)
         inStr = ' CHRTOUT_GRID = ' + str(jobData.chrtoutGrid) + ' ! Netcdf grid of channel streamflow values' + '\n'
         fileObj.write(inStr)
-        inStr = ' LSMOUT_DOMAIN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
+        inStr = ' LSMOUT_DOMAN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
+        #inStr = ' LSMOUT_DOMAIN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
         fileObj.write(inStr)
         inStr = ' RTOUT_DOMAIN = ' + str(jobData.rtoutDomain) + ' ! Netcdf grid of terrain routing variables on routing grid\n'
         fileObj.write(inStr)

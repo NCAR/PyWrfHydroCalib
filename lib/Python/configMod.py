@@ -22,6 +22,9 @@ class jobMeta:
         self.acctKey = []
         self.nCores = []
         self.nIter = []
+        self.calibMethod = []
+        self.objFunc = []
+        self.ddsR = []
         self.outDir = []
         self.email = None
         self.slChan = None
@@ -30,6 +33,7 @@ class jobMeta:
         self.slackObj = None
         self.owner = []
         self.errMsg = []
+        self.genMsg = []
         self.exe = []
         self.genParmTbl = []
         #self.gwParmTbl = []
@@ -65,7 +69,7 @@ class jobMeta:
         self.soilThick = []
         self.zLvl = []
         self.fType = []
-        self.fDir = []
+        #self.fDir = []
         self.fDT = []
         self.lsmDt = []
         self.lsmOutDt = []
@@ -93,6 +97,7 @@ class jobMeta:
         self.gwBaseFlag = []
         self.gwRst = []
         self.gages = []
+        self.gageIDs = []
         self.dbUName = []
         self.dbPwd = []
     def readConfig(self,parser):
@@ -103,6 +108,10 @@ class jobMeta:
         self.acctKey = str(parser.get('logistics','acctKey'))
         self.nCores = int(parser.get('logistics','nCores'))
         self.nIter = int(parser.get('logistics','numIter'))
+        self.objFunc = str(parser.get('logistics','objectiveFunction'))
+        self.ddsR = str(parser.get('logistics','ddsR'))
+        if len(self.ddsR) != 0:
+            self.ddsR = float(self.ddsR)
         self.email = str(parser.get('logistics','email'))
         self.slChan = str(parser.get('logistics','slackChannel'))
         self.slToken = str(parser.get('logistics','slackToken'))
@@ -156,7 +165,7 @@ class jobMeta:
         self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
         self.zLvl = float(parser.get('lsmPhysics','zLvl'))
         self.fType = int(parser.get('forcing','forceType'))
-        self.fDir = str(parser.get('forcing','forceDir'))
+        #self.fDir = str(parser.get('forcing','forceDir'))
         self.fDT = int(parser.get('modelTime','forceDt'))
         self.lsmDt = int(parser.get('modelTime','lsmDt'))
         self.lsmOutDt = int(parser.get('modelTime','lsmOutDt'))
@@ -184,6 +193,24 @@ class jobMeta:
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
+def readConfig(configFile):
+    """
+    Generic function to read in data from a configuration file.
+    """
+    parser = SafeConfigParser()
+    parser.read(configFile)
+    
+    jobObj = jobMeta()
+    
+    # Read in values
+    try:
+        jobMeta.readConfig(jobObj,parser)
+    except:
+        print "ERROR: Unable to assign values from config file."
+        raise
+        
+    return jobObj
+    
 def createJob(argsUser):
     """ Reads in options from the setup.parm file
     """
@@ -201,6 +228,11 @@ def createJob(argsUser):
         print "ERROR: Config file not found."
         raise Exception()
 
+    # Check to make sure calibration parameter table exists.
+    if not os.path.isfile(argsUser.parmTbl[0]):
+        print "ERROR: Calibration parameter table: " + str(argsUser.parmTbl[0]) + " not found."
+        raise Exception()
+        
     # Check entries into the config file to make sure they make sense.
     try:
         checkConfig(parser)
@@ -221,6 +253,37 @@ def createJob(argsUser):
     # Assign ownership to this job
     jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
     
+    return jobObj
+    
+def queryJob(argsUser):
+    """
+    Generic function to return information from a config file. This is mostly
+    used for getJobID to provide a user with a jobID.
+    """
+    # Check to make sure a non-zero length config file was passed by the user.
+    if len(argsUser.configFile[0]) ==0:
+        print "ERROR: Zero Length Configuration File Passed To Program."
+        raise Exception()
+
+    configPath = argsUser.configFile[0]    
+    parser = SafeConfigParser()
+    
+    if os.path.isfile(configPath):
+        parser.read(configPath)
+    else:
+        print "ERROR: Config file not found."
+        raise Exception()
+
+    # Initialize job object
+    jobObj = jobMeta()
+    
+    # Read in values
+    try:
+        jobMeta.readConfig(jobObj,parser)
+    except:
+        print "ERROR: Unable to assign values from config file."
+        raise
+        
     return jobObj
     
 def checkConfig(parser):
@@ -273,6 +336,22 @@ def checkConfig(parser):
         raise Exception()
     if check <= 0:
         print "ERROR: Invalid number of cores to use."
+        raise Exception()
+    # Check to make sure nCores is an even division of 16 (16 cores/node)
+    check = float(parser.get('logistics','nCores'))/16.0 - int(float(parser.get('logistics','nCores'))/16.0)
+    if check != 0.0:
+        print "ERROR: Number of cores chosen must be multiple of 16"
+        raise Exception()
+        
+    # Check to make sure calibration method is DDS
+    check = str(parser.get('logistics','calibMethod'))
+    if check != "DDS":
+        print "ERROR: Invalid calibration method passed to program."
+        raise Exception()
+        
+    check = str(parser.get('logistics','objectiveFunction'))
+    if len(check) == 0:
+        print "ERROR: Zero length calibration objective function provided."
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))
@@ -498,13 +577,13 @@ def checkConfig(parser):
         print "ERROR: Invalid forceType value passed to program."
         raise Exception()
         
-    check = str(parser.get('forcing','forceDir'))
-    if len(check) == 0:
-        print "ERROR: Zero length forceDir passed to program."
-        raise Exception()
-    if not os.path.isdir(check):
-        print "ERROR: forceDir not found."
-        raise Exception()
+    #check = str(parser.get('forcing','forceDir'))
+    #if len(check) == 0:
+    #    print "ERROR: Zero length forceDir passed to program."
+    #    raise Exception()
+    #if not os.path.isdir(check):
+    #    print "ERROR: forceDir not found."
+    #    raise Exception()
         
     # Make sure output frequencies aren't < 0
     check = int(parser.get('modelTime','forceDt'))

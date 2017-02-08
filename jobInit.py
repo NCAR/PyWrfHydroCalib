@@ -14,7 +14,7 @@
 
 import sys
 import argparse
-import getpass
+#import getpass
 
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'./lib/Python')
@@ -33,12 +33,15 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
+    parser.add_argument('parmTbl',metavar='parmTbl',type=str,nargs='+',
+                        help='Calibration Parameter Table.')
             
     args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
+    #jobData = configMod.createJob(args)
     try:
-        jobData = configMod.createJob(args)
+         jobData = configMod.createJob(args)
     except:
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
@@ -93,7 +96,28 @@ def main(argv):
         db.enterJobID(jobData)
     except:
         errMod.errOut(jobData)
-       
+        
+    # Pull Job ID from newly created job. Will be used for calibration 
+    # parameter DB entries
+    try:
+        db.getJobID(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # Create DB entries to log the parameters being calibrated.
+    try:
+        db.enterCalibParms(jobData,str(args.parmTbl[0]))
+    except:
+        errMod.errOut(jobData)
+        
+    # Create empty table to hold calibrated parameter values that will be 
+    # calculated during calibration.
+    db.populateParmTable(jobData,str(args.parmTbl[0]))   
+    #try:
+    #    db.populateParmTable(jobData,str(args.parmTbl[0]))
+    #except:
+    #    errMod.errOut(jobData)
+    
     # Disconnect from the calibration database.
     try:
         db.disconnect(jobData)

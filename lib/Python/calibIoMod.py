@@ -11,6 +11,7 @@ import namelistMod
 import subprocess
 import pwd
 import shutil
+import runMod
 
 class gageMeta:
     def __init__(self):
@@ -19,6 +20,8 @@ class gageMeta:
         # etc. These files will be listed in the DB metadata table and
         # should exist on the system.
         self.gage = []
+        self.gageID = []
+        self.comID = []
         self.geoFile = []
         self.fullDom = []
         self.rtLnk = []
@@ -27,18 +30,22 @@ class gageMeta:
         self.udMap = []
         self.wrfInput = []
         self.soilFile = []
+        self.forceDir = []
+        self.obsFile = []
     def pullGageMeta(self,jobData,db,gageName):
         # Function to extract locations of gage-specific spatial files.
         
         tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
-                   'wrfInput':'','soilFile':''}
+                   'wrfInput':'','soilFile':'','forceDir':'',\
+                   'obsFile':'','gageID':'','comID':''}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:
             raise
             
         self.gage = tmpMeta['gageName']
+        self.gageID = tmpMeta['gageID']
         self.geoFile = tmpMeta['geoFile']
         self.fullDom = tmpMeta['fullDomFile']
         self.rtLnk = tmpMeta['rtLnk']
@@ -47,6 +54,9 @@ class gageMeta:
         self.udMap = tmpMeta['udMap']
         self.wrfInput = tmpMeta['wrfInput']
         self.soilFile = tmpMeta['soilFile']
+        self.forceDir = tmpMeta['forceDir']
+        self.obsFile = tmpMeta['obsFile']
+        self.comID = tmpMeta['comID']
         
 def getGageList(jobData,db):
     # Function for extracting list of gages 
@@ -74,96 +84,11 @@ def getGageList(jobData,db):
         # User provided SQL command to extract list of gages.
         try:
             gageList = db.queryGageList(jobData)
-            jobData.gages = gageList[:]
+            jobData.gageIDs = gageList[:][0]
+            jobData.gages = gageList[:][1]
         except:
             raise
         
-def checkYsJobs(jobData):
-    # Function to obtain a data frame containing Yellowstone
-    # jobs being ran under the owner of the JobID.
-
-    # Get unique PID.
-    pidUnique = os.getpid()
-    userTmp = pwd.getpwuid(os.getuid()).pw_name
-    
-    csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -noheader > ' + csvPath
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
-        raise
-    
-    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
-               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    try:
-        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
-    except:
-        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        raise
-        
-    lenJobs = len(jobs.JOBID)
-    
-    # Loop through data frame. For jobs across multiple cores, the data frame
-    # needs to be filled in as the duplicate cores have NaN values, except for the
-    # first core.
-    for job in range(0,lenJobs):
-        # Assume a NaN value with the "USER" field means this is a duplicate.
-        jobIdTmp = jobs.JOBID[job]
-        userTmp = jobs.USER[job]
-        statTmp = jobs.STAT[job]
-        queTmp = jobs.QUEUE[job]
-        hostTmp = jobs.FROM_HOST[job]
-        jobNameTmp = jobs.JOB_NAME[job]
-        monthTmp = jobs.SUBMIT_MONTH[job]
-        dayTmp = jobs.SUBMIT_DAY[job]
-        hourTmp = jobs.SUBMIT_HHMM[job]
-        
-        if str(userTmp) != 'nan' and str(userTmp) != 'NaN':
-            jobIdHold = jobIdTmp
-            userHold = userTmp
-            statHold = statTmp
-            queHold = queTmp
-            hostHold = hostTmp
-            jobNameHold = jobNameTmp
-            monthHold = monthTmp
-            dayHold = dayTmp
-            hourHold = hourTmp
-        else:
-            jobs.JOBID[job] = jobIdHold
-            jobs.USER[job] = userHold
-            jobs.STAT[job] = statHold
-            jobs.QUEUE[job] = queHold
-            jobs.FROM_HOST[job] = hostHold
-            jobs.EXEC_HOST[job] = userTmp
-            jobs.JOB_NAME[job] = jobNameHold
-            jobs.SUBMIT_MONTH[job] = monthHold
-            jobs.SUBMIT_DAY[job] = dayHold
-            jobs.SUBMIT_HHMM[job] = hourHold
-            
-    # Delete temporary CSV file
-    try:
-        os.remove(csvPath)
-    except:
-        jobData.errMsg = "ERROR: Failure to remove: " + csvPath
-        raise
-    
-    # Loop through and check to make sure no existing jobs are being ran for any 
-    # of the gages.
-    if len(jobs) != 0:
-        for gageCheck in range(0,len(jobData.gageIDs)):
-            jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
-            testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
-            if len(testDF) != 0:
-                jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobId) + \
-                                 " is already being ran under owner: " + \
-                                 str(jobData.owner) + ". User: " + \
-                                 str(userTmp) + " is attempting to initiate a spinup."
-                print "ERROR: You are attempting to initiate a job that is already being " + \
-                      "ran by user: " + str(jobData.owner)
-                raise Exception()
-                
-            
 def setupModels(jobData,db,args):
     # Function for setting up all model directories,
     # links to forcings, namelist files, etc. 
@@ -213,15 +138,6 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
             raise
             
-        # Create symbolic link to forcing directory.
-        fLink = gageDir + "/FORCING"
-        try:
-            os.symlink(jobData.fDir,fLink)
-        except:
-            wipeJobDir(jobData)
-            jobData.errMsg = "ERROR: Failure to create FORCING link to: " + jobData.fDir
-            raise
-            
         # Create observations directory to hold obs for calibration/eval, etc
         obsDir = gageDir + "/OBS"
         try:
@@ -255,7 +171,40 @@ def setupModels(jobData,db,args):
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + validDir
             raise
-        
+            
+        # Create subdirectory that will hold the original parameter files. These
+        # files will be modified by the workflow in-between calibration iterations.
+        baseParmDir = gageDir + "/RUN.CALIB/BASELINE_PARAMETERS"
+        try:
+            os.mkdir(baseParmDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + baseParmDir
+            raise
+            
+        # Copy table user provided with calibration parameters to the calibration directory.
+        origPath = str(args.parmTbl[0])
+        newPath = gageDir + "/RUN.CALIB/calib_parms.tbl"
+        if not os.path.isfile(origPath):
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Input file: " + origPath + " not found."
+            raise
+        try:
+            shutil.copy(origPath,newPath)
+        except:
+            wipeJobDir
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+            raise
+            
+        # Create sub-directory where fianl calibrated parameters will reside.
+        finalParmDir = gageDir + "/RUN.CALIB/FINAL_PARAMETERS"
+        try:
+            os.mkdir(finalParmDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + finalParmDir
+            raise
+            
         # Create symbolic links necessary for model runs.
         link1 = gageDir + "/RUN.SPINUP/wrf_hydro.exe"
         link2 = gageDir + "/RUN.CALIB/wrf_hydro.exe"
@@ -294,11 +243,11 @@ def setupModels(jobData,db,args):
             raise
             
         link1 = gageDir + "/RUN.SPINUP/HYDRO.TBL"
-        link2 = gageDir + "/RUN.CALIB/HYDRO.TBL"
+        #link2 = gageDir + "/RUN.CALIB/HYDRO.TBL"
         link3 = gageDir + "/RUN.VALID/HYDRO.TBL"
         try:
             os.symlink(str(jobData.hydroTbl),link1)
-            os.symlink(str(jobData.hydroTbl),link2)
+            #os.symlink(str(jobData.hydroTbl),link2)
             os.symlink(str(jobData.hydroTbl),link3)
         except:
             wipeJobDir(jobData)
@@ -373,34 +322,57 @@ def setupModels(jobData,db,args):
             wipeJobDir(jobData)
             raise
             
-        # Create namelist.hrldas, hydro.namelist files for spinup/calibration runs.
+        # Copy original Fulldom, spatial soils, and hydro.tbl file for calibrations.
+        origPath = str(gageData.fullDom)
+        newPath = baseParmDir + "/Fulldom.nc"
         try:
-            namelistMod.createHrldasNL(gageData,jobData,spinupDir,1)
+            shutil.copy(origPath,newPath)
         except:
             wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
             raise
+            
+        origPath = str(gageData.soilFile)
+        newPath = baseParmDir + "/soil_properties.nc"
         try:
-            namelistMod.createHrldasNL(gageData,jobData,calibDir,2)
+            shutil.copy(origPath,newPath)
         except:
             wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
             raise
+            
+        origPath = str(jobData.hydroTbl)
+        newPath = baseParmDir + "/HYDRO.TBL"
         try:
-            namelistMod.createHrldasNL(gageData,jobData,validDir,3)
+            shutil.copy(origPath,newPath)
         except:
             wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
             raise
+            
+        # Create symbolic link to forcing directory.
+        fLink = gageDir + "/FORCING"
         try:
-            namelistMod.createHydroNL(gageData,jobData,spinupDir,1)
+            os.symlink(str(gageData.forceDir),fLink)
         except:
             wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create FORCING link to: " + str(gageData.forceDir)
             raise
+            
+        # Create symbolic link to the observations file.
+        obsLink = gageDir + "/OBS/obsData.Rdata"
         try:
-            namelistMod.createHydroNL(gageData,jobData,calibDir,2)
+            os.symlink(str(gageData.obsFile),obsLink)
         except:
             wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
             raise
+            
+        # Create Rscript file that will be sourced by R for calibration
         try:
-            namelistMod.createHydroNL(gageData,jobData,validDir,3)
+            runMod.generateRScript(jobData,gageData,gage)
         except:
             wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to write calibration R script."
             raise
+            

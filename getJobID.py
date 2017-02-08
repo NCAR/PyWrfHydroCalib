@@ -33,7 +33,7 @@ def main(argv):
     
     # Initialize job using setup.parm and calibration DB.
     try:
-        jobData = configMod.createJob(args)
+        jobData = configMod.queryJob(args)
     except:
         print "ERROR: Failure to read in configuration file."
         sys.exit(1)
