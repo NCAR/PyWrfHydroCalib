@@ -514,7 +514,7 @@ class Database(object):
                         
                     if not results:
                         # Create "empty" entry into table.
-                        sqlCmd = "insert into Calib_Parms (jobID,domainID,iteration,paramName,paramValue) " + \
+                        sqlCmd = "insert into Calib_Params (jobID,domainID,iteration,paramName,paramValue) " + \
                                  "values (" + str(jobID) + "," + str(domainID) + "," + \
                                  str(iteration) + "," + parmName + ",-9999);"
                         try:
