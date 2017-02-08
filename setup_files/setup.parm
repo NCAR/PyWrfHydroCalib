@@ -49,15 +49,15 @@ slackUser =
 wrfExe = /glade/u/home/adugger/WRF_Hydro/binaries/wrf_hydro_NoahMP_NWM_V1.0_170202_Debug_SpSoils_Realtime_NoNdg.exe
 
 # Specify parameter tables to use for Noah-MP
-genParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/GENPARM.TBL
-gwParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/GWBUCKPARM.TBL
-lakeParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/LAKEPARM.TBL
-mpParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/MPTABLE.TBL
-urbParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/URBPARM.TBL
-vegParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/VEGPARM.TBL
-chanParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/CHANPARM.TBL
-hydroParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/HYDRO.TBL
-soilParmTbl = /glade/u/home/adugger/P_NWC/NWMV11_FINALS/PARAM_TBLS/SOILPARM.TBL
+genParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/GENPARM.TBL
+gwParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/GWBUCKPARM.TBL
+lakeParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/LAKEPARM.TBL
+mpParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/MPTABLE.TBL
+urbParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/URBPARM.TBL
+vegParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/VEGPARM.TBL
+chanParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/CHANPARM.TBL
+hydroParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/HYDRO.TBL
+soilParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup

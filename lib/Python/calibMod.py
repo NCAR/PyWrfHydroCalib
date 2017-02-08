@@ -99,11 +99,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
     calibLockPath = runDir + "/CALIB.LOCK"
+    calibCompleteFlag = runDir + "/CALIB.COMPLETE"
     
     if keyStatus == 1.0:
         # Calibration and simulation for this iteration has completed
         runFlag = False
-        
+        runCalib = False
     # For uncompleted simulations that are still listed as running.
     if keyStatus == 0.5:
         # If a model is running for this basin, continue and set keyStatus to 0.5
@@ -111,6 +112,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
+            runCalib = False
         else:
             # Either simulation has completed, or potentially crashed.
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
@@ -125,38 +127,111 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 errMod.sendMsg(statusData)
                 keySlot[basinNum,iteration] = -0.25
                 keyStatus = -0.25
+                runFlag = True
+                runCalib = False
             else:
                 # Model has completed. Set to 0.75, which indicates calibration code
                 # needs to be ran.
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
+                runCalib = True
            
     # For iterations that are ready for run. The first step is to clean out old model output
     # and fire off simulation with newly updated model parameter values. 
     if keyStatus == 0.0:
-        if basinStatus:
-            # Model is still running from previous instance of workflow. Allow it to continue.
-            keySlot[basinNum,iteration] = 0.5
-            keyStatus = 0.5
-            runFlag = False
-        else:
-            print begDate
-            print endDate
-            print "XXXXXX"
-            runStatus = statusMod.walkMod(begDate,endDate,runDir)
-            begDate = runStatus[0]
-            endDate = runStatus[1]
-            runFlag = runStatus[2]
-            print runFlag
-            print begDate
-            print endDate
-            if not runFlag:
-                # Model simulation completed before workflow was restarted. Ready to 
-                # move onto calibration R code.
-                keySlot[basinNum,iteration] = 0.75
-                keyStatus = 0.75
+        if iteration > 0:
+            # Iteration 0 needs to have an inital calibration procedure to generate
+            # an initial parameter dataset.
+            if os.path.isfile(lockPath):
+                # Simulation was locked up. Set status to -1.0.
+                keySlot[basinNum,iteration] = -1.0
+                keyStatus = -1.0
                 runFlag = False
+                runCalib = False
+            if os.path.isfile(calibLockPath):
+                # Calibration failed and locked directory up.
+                keySlot[basinNum,iteration] = -0.75
+                keyStatus = -0.75
+                runFlag = False
+                runCalib = False
+            if basinStatus:
+                # Model is still running from previous instance of workflow. Allow it to continue.
+                keySlot[basinNum,iteration] = 0.5
+                keyStatus = 0.5
+                runFlag = False
+                runCalib = False
+            else:
+                print begDate
+                print endDate
+                print "XXXXXX"
+                runStatus = statusMod.walkMod(begDate,endDate,runDir)
+                begDate = runStatus[0]
+                endDate = runStatus[1]
+                runFlag = runStatus[2]
+                print runFlag
+                print begDate
+                print endDate
+                if not runFlag:
+                    # Model simulation completed before workflow was restarted. Ready to 
+                    # move onto calibration R code.
+                    keySlot[basinNum,iteration] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
+                    runCalib = True
+                    if calibStatus:
+                        # Model has completed, and calibration routines are currently being ran.
+                        keySlot[basinNum,iteration] = 0.90
+                        keyStatus = 0.90
+                        runFlag = False
+                        runCalib = False
+                else:
+                    # Model needs to be re-started.
+                    runFlag = True
+                    runCalib = False
+        else:
+            # Run calibration procedure to generate initial table of values to adjust
+            # parameters with.
+            if os.path.isfile(lockPath):
+                # Simulation was locked up. Set status to -1.0.
+                keySlot[basinNum,iteration] = -1.0
+                keyStatus = -1.0
+                runFlag = False
+                runCalib = False
+            if os.path.isfile(calibLockPath):
+                # Calibration failed and locked directory up.
+                keySlot[basinNum,iteration] = -0.75
+                keyStatus = -0.75
+                runFlag = False
+                runCalib = False
+            if basinStatus:
+                # This means that we are rebooting the program. Parameters were 
+                # adjusted already and the simulation for iteration 0 is underway
+                # still from a previous crash.
+                keySlot[basinNum,iteration] = 0.5
+                keyStatus = 0.5
+                runFlag = False
+                runCalib = False
+            else:
+                runStatus = statusMod.walkMod(begDate,endDate,runDir)
+                begDate = runStatus[0]
+                endDate = runStatus[1]
+                runFlag = runStatus[2]
+                if begDate == statusData.bCalibDate and runFlag:
+                    # Model has not ran at all yet.
+                    if calibStatus:
+                        # First calibration taking place to prepare parameters for
+                        # first iteration.
+                        keySlot[basinNum,iteration] = 0.25
+                        keyStatus = 0.25
+                        runFlag = False
+                        runCalib = False
+                    else:
+                        # Run first calibration and parameter adjustment.
+                        keySlot[basinNum,iteration] = 0.0
+                        keyStatus = 0.0
+                        runFlag = False
+                        runCalib = True
                 
     # For when the model failed TWICE and is locked.
     if keyStatus == -1.0:
@@ -164,6 +239,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # manually by user.
         if os.path.isfile(lockPath):
             runFlag = False
+            runCalib = False
         else:
             # LOCK file was removed, upgrade status to 0.0 temporarily
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
@@ -173,11 +249,47 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             if runFlag:
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
+                runFlag = True
+                runCalib = False
             else:
                 # Model sucessfully completed. Ready to move onto calibration R code
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
+                runCalib = True
+                
+    # For when calibration R code and parameter adjustment failed.
+    if keyStatus == -0.75:
+        # If LOCK file exists, no calibrations can take place. File must
+        # be removed manually by user.
+        if os.path.isfile(calibLockPath):
+            runFlag = False
+            runCalib = False
+        else:
+            # LOCK file was removed, upgrade status.
+            if iteration > 0:
+                keySlot[basinNum,iteration] = 0.75
+                keyStatus = 0.75
+                runFlag = False
+                runCalib = True
+            else:
+                runStatus = statusMod.walkMod(begDate,endDate,runDir)
+                begDate = runStatus[0]
+                endDate = runStatus[1]
+                runFlag = runStatus[2]
+                if begDate == statusData.bCalibDate and runFlag:
+                    # Model has not ran at all yet. Re-run first adjustment to parameters.
+                    keySlot[basinNum,iteration] = 0.0
+                    keyStatus = 0.0
+                    runFlag = False
+                    runCalib = True
+                else:
+                    # First adjustment ot parameters took place, and model already ran.
+                    # Complete calibration to finish iteration 1.
+                    keySlot[basinNum,iteration] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
+                    runCalib = True
                 
     # For when the model crashed ONCE
     if keyStatus == -0.5:
@@ -187,6 +299,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
+            runCalib = False
         else:
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
@@ -203,11 +316,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keySlot[basinNum,iteration] = -1.0
                 keyStatus = -1.0
                 runFlag = False
+                runCalib = False
             else:
                 # Model sucessfully completed from first failed attempt. Ready for
                 # calibration R code.
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
+                runFlag = False
+                runCalib = True
                 
     if keyStatus == -0.25 and runFlag:
         print keyStatus
