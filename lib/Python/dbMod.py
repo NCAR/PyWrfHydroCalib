@@ -489,6 +489,7 @@ class Database(object):
         # Read in CSV file containing parameters being calibrated.
         baseParms = pd.read_csv(calibTbl)
         baseParms = baseParms[baseParms['calib_flag'] == 1]
+        baseParms = baseParms.reset_index()
         nParms = len(baseParms)
         
         print baseParms
