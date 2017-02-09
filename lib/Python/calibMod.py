@@ -100,6 +100,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     calibTbl = runDir + "/CALIB_PARAMS.txt"
     statsTbl = runDir + "/CALIB_STATS.txt"
     
+    iteration = iteration + 1
     
     if keyStatus == 1.0:
         # Calibration and simulation for this iteration has completed
