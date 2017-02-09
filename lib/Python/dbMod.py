@@ -140,16 +140,18 @@ class Database(object):
             
         jobDir = jobData.outDir + "/" + jobData.jobName
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
-                 "su_complete,date_calib_start,date_calib_end,num_iter," + \
-                 "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
-                 "valid_complete,acct_key,num_cores,exe,num_gages,owner,email," + \
+                 "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
+                 "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval" + \
+                 "valid_complete,acct_key,num_cores_model,num_cores_R,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',%s','%s','%s'," + \
+                 "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
-                 jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter,0,0,\
-                 jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages),jobData.owner,\
-                 emailStr,slStr1,slStr2,slStr3)
+                 jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
+                 jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
+                 jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
+                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.exe,len(jobData.gages),\
+                 jobData.owner,emailStr,slStr1,slStr2,slStr3)
         
         try:
             self.conn.execute(sqlCmd)
@@ -277,21 +279,24 @@ class Database(object):
         jobData.spinComplete = int(results[4])
         jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d')
         jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d')
-        jobData.nIter = int(results[7])
-        jobData.calibIter = int(results[8])
-        jobData.calibComplete = int(results[9])
-        jobData.bValidDate = datetime.datetime.strptime(str(results[10]),'%Y-%m-%d')
-        jobData.eValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
-        jobData.validComplete = int(results[12])
-        jobData.acctKey = results[13]
-        jobData.nCores = int(results[14])
-        jobData.exe = results[15]
-        jobData.nGages = int(results[16])
-        jobData.owner = results[17]
-        jobData.email = results[18]
-        jobData.slChan = results[19]
-        jobData.slToken = results[20]
-        jobData.slUser = results[21]
+        jobData.bCalibDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d')
+        jobData.nIter = int(results[8])
+        jobData.calibIter = int(results[9])
+        jobData.calibComplete = int(results[10])
+        jobData.bValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d')
+        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d')
+        jobData.validComplete = int(results[14])
+        jobData.acctKey = results[15]
+        jobData.nCoresMod = int(results[16])
+        jobData.nCoresR = int(results[17])
+        jobData.exe = results[18]
+        jobData.nGages = int(results[19])
+        jobData.owner = results[20]
+        jobData.email = results[21]
+        jobData.slChan = results[22]
+        jobData.slToken = results[23]
+        jobData.slUser = results[24]
         
         # Initiate Slack if fields are not MISSING
         if jobData.slChan != "MISSING":

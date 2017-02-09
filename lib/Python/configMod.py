@@ -20,7 +20,8 @@ class jobMeta:
         self.jobName = []
         self.jobID = []
         self.acctKey = []
-        self.nCores = []
+        self.nCoresMod = []
+        self.nCoresR = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -48,8 +49,10 @@ class jobMeta:
         self.eSpinDate = []
         self.bCalibDate = []
         self.eCalibDate = []
+        self.bCalibEvalDate = []
         self.bValidDate = []
         self.eValidDate = []
+        self.bValidEvalDate = []
         self.gSQL = []
         self.gList = []
         self.dynVegOpt = []
@@ -106,7 +109,8 @@ class jobMeta:
         self.jobName = str(parser.get('logistics','jobName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
-        self.nCores = int(parser.get('logistics','nCores'))
+        self.nCoresMod = int(parser.get('logistics','nCoresModel'))
+        self.nCoresR = int(parser.get('logistics','nCoresR'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
         self.ddsR = str(parser.get('logistics','ddsR'))
@@ -142,10 +146,14 @@ class jobMeta:
         self.bCalibDate = datetime.datetime.strptime(self.bCalibDate,'%Y-%m-%d')
         self.eCalibDate = parser.get('logistics','eCalibDate')
         self.eCalibDate = datetime.datetime.strptime(self.eCalibDate,'%Y-%m-%d')
+        self.bCalibEvalDate = parser.get('logistics','bCalibEvalDate')
+        self.bCalibEvalDate = datetime.datetime.strptime(self.bCalibEvalDate,'%Y-%m-%d')
         self.bValidDate = parser.get('logistics','bValidDate')
         self.bValidDate = datetime.datetime.strptime(self.bValidDate,'%Y-%m-%d')
         self.eValidDate = parser.get('logistics','eValidDate')
         self.eValidDate = datetime.datetime.strptime(self.eValidDate,'%Y-%m-%d')
+        self.bValidEvalDate = parser.get('logistics','bValidEvalDate')
+        self.bValidEvalDate = datetime.datetime.strptime(self.eValidEvalDate,'%Y-%m-%d')
         self.gSQL = parser.get('gageInfo','gageListSQL')
         self.gList = str(parser.get('gageInfo','gageListFile'))
         self.dynVegOpt = int(parser.get('lsmPhysics','dynVegOption'))
@@ -330,17 +338,26 @@ def checkConfig(parser):
         print "ERROR: You must enter a Slack user name."
         raise Exception()
 
-    check = int(parser.get('logistics','nCores'))
+    check = int(parser.get('logistics','nCoresModel'))
     if not check:
-        print "ERROR: Number of cores to use not specified."
+        print "ERROR: Number of model cores to use not specified."
         raise Exception()
     if check <= 0:
-        print "ERROR: Invalid number of cores to use."
+        print "ERROR: Invalid number of model cores to use."
         raise Exception()
-    # Check to make sure nCores is an even division of 16 (16 cores/node)
-    check = float(parser.get('logistics','nCores'))/16.0 - int(float(parser.get('logistics','nCores'))/16.0)
+    # Check to make sure nCoresMod is an even division of 16 (16 cores/node)
+    check = float(parser.get('logistics','nCoresModel'))/16.0 - int(float(parser.get('logistics','nCoresModel'))/16.0)
     if check != 0.0:
-        print "ERROR: Number of cores chosen must be multiple of 16"
+        print "ERROR: Number of model cores chosen must be multiple of 16"
+        raise Exception()
+        
+    check = int(parser.get('logistics','nCoresR'))
+    if not check:
+        print "ERROR: Number of R Cores to use not specified."
+        raise Exception()
+    # R code will be restricted to one node.
+    if check <= 0 or check > 16:
+        print "ERROR: Number of R cores must be either greater than 0 or less than 17."
         raise Exception()
         
     # Check to make sure calibration method is DDS
@@ -352,6 +369,10 @@ def checkConfig(parser):
     check = str(parser.get('logistics','objectiveFunction'))
     if len(check) == 0:
         print "ERROR: Zero length calibration objective function provided."
+        raise Exception()
+    # For now, restrict the user to a set of pre-defined objective functions.
+    if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge":
+        print "ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, and Kge"
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))
@@ -454,18 +475,38 @@ def checkConfig(parser):
         
     bDate = parser.get('logistics','bCalibDate')
     eDate = parser.get('logistics','eCalibDate')
+    bEDate = parser.get('logistics','bCalibEvalDate')
     bDate = datetime.datetime.strptime(str(bDate),'%Y-%m-%d')
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
+    bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
     if bDate >= eDate:
         print "ERROR: Must specify ending spinup date greater than beginning spinup date."
+        raise Exception()
+    if bEDate <= bDate:
+        print "ERROR: Must specify the beginning date for calibration evaluation date " + \
+              " that is after the beginning date for calibration simulations."
+        raise Exception()
+    if bEDate >= eDate:
+        print "ERROR: Must specify the beginning date for calibration evaluation date " + \
+              " that is before the ending date for calibration simulations."
         raise Exception()
         
     bDate = parser.get('logistics','bValidDate')
     eDate = parser.get('logistics','eValidDate')
+    bEDate = parser.get('logistics','bValidEvalDate')
     bDate = datetime.datetime.strptime(str(bDate),'%Y-%m-%d')
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
+    bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
     if bDate >= eDate:
         print "ERROR: Must specify ending spinup date greater than beginning spinup date."
+        raise Exception()
+    if bEDate <= bDate:
+        print "ERROR: Must specify the beginning date for validation evaluation date " + \
+              " that is after the beginning date for validation simulations."
+        raise Exception()
+    if bEDate >= eDate:
+        print "ERROR: Must specify the beginning date for validation evaluation date " + \
+              " that is before the ending date for validation simulations."
         raise Exception()
     
     # Check gauge information

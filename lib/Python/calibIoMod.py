@@ -11,7 +11,7 @@ import namelistMod
 import subprocess
 import pwd
 import shutil
-import runMod
+import calibMod
 
 class gageMeta:
     def __init__(self):
@@ -156,6 +156,14 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create directory: " + spinupDir
             raise
             
+        outDir = gageDir + "/RUN.SPINUP/OUTPUT"
+        try:
+            os.mkdir(outDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + outDir
+            raise
+            
         calibDir = gageDir + "/RUN.CALIB"
         try:
             os.mkdir(calibDir)
@@ -164,12 +172,28 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create directory: " + calibDir
             raise
             
+        outDir = gageDir + "/RUN.CALIB/OUTPUT"
+        try:
+            os.mkdir(outDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + outDir
+            raise
+            
         validDir = gageDir + "/RUN.VALID"
         try:
             os.mkdir(validDir)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + validDir
+            raise
+            
+        outDir = gageDir + "/RUN.VALID/OUTPUT"
+        try:
+            os.mkdir(outDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + outDir
             raise
             
         # Create subdirectory that will hold the original parameter files. These
@@ -206,9 +230,9 @@ def setupModels(jobData,db,args):
             raise
             
         # Create symbolic links necessary for model runs.
-        link1 = gageDir + "/RUN.SPINUP/wrf_hydro.exe"
-        link2 = gageDir + "/RUN.CALIB/wrf_hydro.exe"
-        link3 = gageDir + "/RUN.VALID/wrf_hydro.exe"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro.exe"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro.exe"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/wrf_hydro.exe"
         try:
             os.symlink(str(jobData.exe),link1)
             os.symlink(str(jobData.exe),link2)
@@ -218,9 +242,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/CHANPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/CHANPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/CHANPARM.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CHANPARM.TBL"
         try:
             os.symlink(str(jobData.chanParmTbl),link1)
             os.symlink(str(jobData.chanParmTbl),link2)
@@ -230,9 +254,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to channel parameter table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/GENPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/GENPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/GENPARM.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/GENPARM.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/GENPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/GENPARM.TBL"
         try:
             os.symlink(str(jobData.genParmTbl),link1)
             os.symlink(str(jobData.genParmTbl),link2)
@@ -242,9 +266,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to general parameter table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/HYDRO.TBL"
-        #link2 = gageDir + "/RUN.CALIB/HYDRO.TBL"
-        link3 = gageDir + "/RUN.VALID/HYDRO.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/HYDRO.TBL"
+        #link2 = gageDir + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/HYDRO.TBL"
         try:
             os.symlink(str(jobData.hydroTbl),link1)
             #os.symlink(str(jobData.hydroTbl),link2)
@@ -254,9 +278,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to hydro table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/LAKEPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/LAKEPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/LAKEPARM.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/LAKEPARM.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/LAKEPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/LAKEPARM.TBL"
         try:
             os.symlink(str(jobData.lakeParmTbl),link1)
             os.symlink(str(jobData.lakeParmTbl),link2)
@@ -266,9 +290,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to lake parameter table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/MPTABLE.TBL"
-        link2 = gageDir + "/RUN.CALIB/MPTABLE.TBL"
-        link3 = gageDir + "/RUN.VALID/MPTABLE.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/MPTABLE.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/MPTABLE.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/MPTABLE.TBL"
         try:
             os.symlink(str(jobData.mpParmTbl),link1)
             os.symlink(str(jobData.mpParmTbl),link2)
@@ -278,9 +302,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to MP parameter table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/SOILPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/SOILPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/SOILPARM.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/SOILPARM.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/SOILPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/SOILPARM.TBL"
         try:
             os.symlink(str(jobData.soilParmTbl),link1)
             os.symlink(str(jobData.soilParmTbl),link2)
@@ -290,9 +314,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to soil parameter table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/URBPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/URBPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/URBPARM.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/URBPARM.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/URBPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/URBPARM.TBL"
         try:
             os.symlink(str(jobData.urbParmTbl),link1)
             os.symlink(str(jobData.urbParmTbl),link2)
@@ -302,9 +326,9 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Unable to create symbolic link to urban parameter table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/VEGPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/VEGPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/VEGPARM.TBL"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/VEGPARM.TBL"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/VEGPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/VEGPARM.TBL"
         try:
             os.symlink(str(jobData.vegParmTbl),link1)
             os.symlink(str(jobData.vegParmTbl),link2)
@@ -360,7 +384,7 @@ def setupModels(jobData,db,args):
             raise
             
         # Create symbolic link to the observations file.
-        obsLink = gageDir + "/OBS/obsData.Rdata"
+        obsLink = gageDir + "/OBS/obsStrData.Rdata"
         try:
             os.symlink(str(gageData.obsFile),obsLink)
         except:
@@ -368,9 +392,26 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
             raise
             
+        # Create symbolic link to OBS directory in both the calibration and validation directories.
+        obsLink = gageDir + "/RUN.CALIB/OBS"
+        obsDir = gageDir + "/OBS"
+        try:
+            os.symlink(obsDir,obsLink)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create OBS link in RUN.CALIB to: " + obsDir
+            raise
+        obsLink = gageDir + "/RUN.VALID/OBS"
+        try:
+            os.symlink(obsDir,obsLink)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create OBS link in RUN.VALID to: " + obsDir
+            raise
+            
         # Create Rscript file that will be sourced by R for calibration
         try:
-            runMod.generateRScript(jobData,gageData,gage)
+            calibMod.generateRScript(jobData,gageData,gage)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to write calibration R script."
@@ -379,7 +420,8 @@ def setupModels(jobData,db,args):
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
         calibPyProgram = os.getcwd() + '/lib/Python/adjust_parameters.py'
-        #calibRProgram = os.getcwd() + '/lib/R/calibrate.R'
+        #calibRProgram = os.getcwd() + '/lib/R/calib_workflow.R'
+        #calibRUtils = os.getcwd() + "/lib/R/calib_utils.R"
         try:
             link = gageDir + "/RUN.CALIB/adjust_parameters.py"
             os.symlink(calibPyProgram,link)
@@ -389,9 +431,27 @@ def setupModels(jobData,db,args):
             raise
             
         #try:
-        #    link = gageDir + '/RUN.CALIB/calibrate.R'
+        #    link = gageDir + '/RUN.CALIB/calib_workflow.R'
         #    os.symlink(calibRProgram,link)
         #except:
         #    wipeJobDir(jobData)
         #    jobData.errMsg = "ERROR: Failure to link: " + calibRProgram
+        #    raise
+
+        #try:
+        #    link = gageDir + "/RUN.CALIB/calib_utils.R"
+        #    os.symlink(calibRUtils,link)
+        #except:
+        #    wipeJobDir(jobData)
+        #    jobData.errMsg = "ERROR: Failure to link: " calibRUtils
+        #    raise
+
+        # Copy R program necessary to run validation evaluation.
+        #validationRProgram = os.getcwd() + '/lib/R/validation.R'
+        #try:
+        #    link = gageDir + "/RUN.VALID/validation.R"
+        #    os.symlink(validationRProgram,link)
+        #except:
+        #    wipeJobDir(jobData)
+        #    jobData.errMsg = "ERROR: Failure to link: " + validationRProgram
         #    raise

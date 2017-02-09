@@ -139,15 +139,15 @@ def removeOutput(jobData,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/hydro.namelist"
             raise
             
-def cleanCalib(jobData,runDir):
+def cleanCalib(jobData,workDir,runDir):
     """
     Generic function to cleanup calibration-related output, such as text files,
     COMPLETE flags, etc in preparation for the next iteration.
     """
     
-    calibCompleteFlag = runDir + "/CALIB.COMPLETE"
-    calibTbl = runDir + "/CALIB_PARAMS.txt"
-    statsTbl = runDir + "/CALIB_STATS.txt"
+    calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
+    calibTbl = workDir + "/params_new.txt"
+    statsTbl = workDir + "/params_stats.txt"
     fullDomFile = runDir + "/Fulldom.nc"
     hydroTbl = runDir + "/HYDRO.TBL"
     soilFile = runDir + "/soil_properties.nc"

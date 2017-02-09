@@ -29,14 +29,18 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             return
             
     # Determine which run sub-directory based on COMPLETE flag presence.
-    runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
+    runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/OUTPUT"
+    workDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
+    if not os.path.isdir(workDir):
+        statusData.errMsg = "ERROR: " + workDir + " not found."
+        raise Exception()
     if not os.path.isdir(runDir):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
         
     # Check to make sure symbolic link to spinup state exists.
-    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     if not os.path.isfile(check1):
         statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
         raise Exception()
@@ -44,8 +48,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
         raise Exception()
     # Create links if they don't exist
-    link1 = runDir + "/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    link2 = runDir + "/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     if not os.path.islink(link1):
         os.symlink(check1,link1)
     if not os.path.islink(link2):
@@ -53,7 +57,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # Generate BSUB file necessary for running R calibration/analysis
     # code.
     try:
-        generateCalibScript(statusData,int(gageID),runDir)
+        generateCalibScript(statusData,int(gageID),workDir)
     except:
         raise
         
@@ -94,11 +98,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     print "BASIN STATUS = " + str(basinStatus)
     print "CALIB STATUS = " + str(calibStatus)
     # Create path to LOCK file if neeced
-    lockPath = runDir + "/RUN.LOCK"
-    calibLockPath = runDir + "/CALIB.LOCK"
-    calibCompleteFlag = runDir + "/CALIB_ITER.COMPLETE"
-    calibTbl = runDir + "/CALIB_PARAMS.txt"
-    statsTbl = runDir + "/CALIB_STATS.txt"
+    lockPath = workDir + "/RUN.LOCK"
+    calibLockPath = workDir + "/CALIB.LOCK"
+    calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
+    calibTbl = workDir + "/params_new.txt"
+    statsTbl = workDir + "/params_stats.txt"
     
     iteration = iteration + 1
     
@@ -585,7 +589,7 @@ def generateRunScript(jobData,gageID,runDir):
         inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
-        inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
+        inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
@@ -620,7 +624,7 @@ def generateRScript(jobData,gageMeta,gageNum):
     try:
         fileObj = open(outPath,'w')
         fileObj.write('#### Model Parameters ####\n')
-        inStr = "objFunc <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "objFn <- " + str(jobData.objFunc) + "\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of calibration iterations.\n')
         inStr = "m <- " + str(jobData.nIter) + '\n'
@@ -630,23 +634,30 @@ def generateRScript(jobData,gageMeta,gageNum):
         fileObj.write(inStr)
         fileObj.write("# Specify run directory containing calibration simulations.\n")
         inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
-                str(jobData.gages[gageNum]) + "/RUN.CALIB'\n"
+                str(jobData.gages[gageNum]) + "/RUN.CALIB/OUTPUT'\n"
         fileObj.write(inStr)
-        fileObj.write('# Parameter bounds\n')
-        fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
-        fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
-        inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
+        #fileObj.write('# Parameter bounds\n')
+        #fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
+        #fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
+        #inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
         fileObj.write('# Basin-Specific Metadata\n')
         inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
         fileObj.write(inStr)
-        inStr = "comId <- '" + str(gageMeta.comID) + "'\n"
+        inStr = "linkId <- '" + str(gageMeta.comID) + "'\n"
+        fileObj.write(inStr)
+        fileObj.write('# Start date for evaluation period (e.g., after spinup period)\n')
+        inStr = "startDate <- as.POSIXct(\"" + jobData.bCalibEvalDate('%Y-%m-%d') + "\", " + \
+                 "\"%Y-%m-%d\", tz=\"UTC\")"
+        fileObj.write(inStr)
+        fileObj.write('# Specify number of cores to use\n')
+        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
         fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outPath
         raise        
         
-def generateCalibScript(jobData,gageID,runDir):
+def generateCalibScript(jobData,gageID,workDir):
     """
     Generic Function function to create BSUB script for running R
     calibration routines. These jobs will be shorter than 
@@ -655,7 +666,7 @@ def generateCalibScript(jobData,gageID,runDir):
     will execute R and Python to modify parameters.
     """
     
-    outFile1 = runDir + "/run_NWM_CALIB.sh"
+    outFile1 = workDir + "/run_NWM_CALIB.sh"
     
     if not os.path.isfile(outFile1):
         try:
@@ -667,21 +678,20 @@ def generateCalibScript(jobData,gageID,runDir):
             inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
             #fileObj.write('#BSUB -x\n')
-            #inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
-            #fileObj.write(inStr)
-            fileObj.write("#BSUB -n 1\n")
+            inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
+            fileObj.write(inStr)
+            #fileObj.write("#BSUB -n 1\n")
             fileObj.write('#BSUB -R "span[ptile=1]"\n')
-            #fileObj.write('#BSUB -R "span[ptile=16]"\n')
             inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#BSUB -o ' + runDir + '/%J.out\n'
+            inStr = '#BSUB -o ' + workDir + '/%J.out\n'
             fileObj.write(inStr)
-            inStr = '#BSUB -e ' + runDir + '/%J.err\n'
+            inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
             fileObj.write('#BSUB -W 3:00\n')
             fileObj.write('#BSUB -q premium\n')
             fileObj.write('\n')
-            inStr = 'cd ' + runDir + '\n'
+            inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             fileObj.write('mpirun.lsf ./calibCmd.sh\n')
             fileObj.close
@@ -689,9 +699,9 @@ def generateCalibScript(jobData,gageID,runDir):
             jobData.errMsg = "ERROR: Failure to create: " + outFile1
             raise    
             
-    outFile2 = runDir + "/calibCmd.sh"
+    outFile2 = workDir + "/calibCmd.sh"
     
-    srcScript = runDir + "/calibScript.R"
+    srcScript = workDir + "/calibScript.R"
     if not os.path.isfile(srcScript):
         jobData.errMsg = "ERROR: Necessary R script file: " + srcScript + " not found."
         raise
@@ -701,7 +711,7 @@ def generateCalibScript(jobData,gageID,runDir):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + srcScript + '\n')
-            fileObj.write('python ' + runDir + '/adjust_parameters.py\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py\n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2

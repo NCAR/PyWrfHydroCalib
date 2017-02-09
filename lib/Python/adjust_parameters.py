@@ -26,24 +26,28 @@ def main(argv):
     # Parse arguments. Only input necessary is the run directory.
     parser = argparse.ArgumentParser(description='Main program to adjust input ' + \
              'parameters for the National Water Model')
+    parser.add_argument('workDir',metavar='workDir',type=str,nargs='+',
+                        help='Directory containing inputs necessary for adjustments.')
     parser.add_argument('runDir',metavar='runDir',type=str,nargs='+',
-                        help='Run directory containing inputs necessary for adjustments.')
+                        help='Directory containing model output where final parameter' + \
+                             ' files will reside')
                         
     args = parser.parse_args()
-    runDir = str(args.runDir[0])
+    workDir = str(args.workDir[0])
+    runDir = str(args.runDir[1])
     
     # Compose input file paths.
-    fullDomOrig = runDir + "/BASELINE_PARAMETERS/Fulldom.nc"
-    hydroOrig = runDir + "/BASELINE_PARAMETERS/HYDRO.TBL"
-    soilOrig = runDir + "/BASELINE_PARAMETERS/soil_properties.nc"
-    rCompletePath = runDir + "/R_COMPLETE.R"
-    adjTbl = runDir + "/PARAMS_ADJUST.TBL"
+    fullDomOrig = workDir + "/BASELINE_PARAMETERS/Fulldom.nc"
+    hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO.TBL"
+    soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
+    rCompletePath = workDir + "/R_COMPLETE"
+    adjTbl = workDir + "/params_new.txt"
     
     # Compose output file paths.
     fullDomOut = runDir + "/Fulldom.nc"
     hydroOut = runDir + "/HYDRO.TBL"
     soilOut = runDir + "/soil_properties.nc"
-    outFlag = runDir + "/CALIB_ITER.COMPLETE"
+    outFlag = workDir + "/CALIB_ITER.COMPLETE"
     
     # If R COMPLETE flag not present, this implies the R code didn't run
     # to completion.

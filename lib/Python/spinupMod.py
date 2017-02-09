@@ -23,7 +23,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     the LSM and hydro restart files must be present in order for the
     model to restart. 
     """
-    runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
+    runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT"
+    workDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
+    if not os.path.isdir(workDir):
+        statusData.errMsg = "ERROR: " + workDir + " not found."
+        raise Exception()
     if not os.path.isdir(runDir):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
@@ -57,7 +61,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         
     print "BASIN STATUS = " + str(basinStatus)
     # Create path to LOCK file if neeced
-    lockPath = runDir + "/RUN.LOCK"
+    lockPath = workDir + "/RUN.LOCK"
     
     if keyStatus == 1.0:
         # Model has already completed
@@ -270,7 +274,7 @@ def generateRunScript(jobData,gageID,runDir):
         inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
-        inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
+        inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
