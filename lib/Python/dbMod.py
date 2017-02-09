@@ -141,7 +141,7 @@ class Database(object):
         jobDir = jobData.outDir + "/" + jobData.jobName
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
-                 "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval" + \
+                 "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
                  "valid_complete,acct_key,num_cores_model,num_cores_R,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
