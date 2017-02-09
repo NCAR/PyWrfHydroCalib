@@ -634,7 +634,7 @@ def generateRScript(jobData,gageMeta,gageNum):
         fileObj.write(inStr)
         fileObj.write("# Specify run directory containing calibration simulations.\n")
         inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
-                str(jobData.gages[gageNum]) + "/RUN.CALIB/OUTPUT'\n"
+                str(jobData.gages[gageNum]) + "/RUN.CALIB'\n"
         fileObj.write(inStr)
         #fileObj.write('# Parameter bounds\n')
         #fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
@@ -643,11 +643,11 @@ def generateRScript(jobData,gageMeta,gageNum):
         fileObj.write('# Basin-Specific Metadata\n')
         inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
         fileObj.write(inStr)
-        inStr = "linkId <- '" + str(gageMeta.comID) + "'\n"
+        inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
         fileObj.write('# Start date for evaluation period (e.g., after spinup period)\n')
         inStr = "startDate <- as.POSIXct(\"" + jobData.bCalibEvalDate.strftime('%Y-%m-%d') + "\", " + \
-                 "format=\"%Y-%m-%d\", tz=\"UTC\")"
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of cores to use\n')
         inStr = "ncores <- " + str(jobData.nCoresR) + "\n"

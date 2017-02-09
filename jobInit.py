@@ -86,17 +86,17 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Create necessary run directories to hold output, analysis, etc.
-    calibIoMod.setupModels(jobData,db,args)
-    #try:
-    #    calibIoMod.setupModels(jobData,db,args)
-    #except:
-    #    errMod.errOut(jobData)
-       
-    # Create DB entries for job name
     try:
-        db.enterJobID(jobData)
+        calibIoMod.setupModels(jobData,db,args)
     except:
         errMod.errOut(jobData)
+       
+    # Create DB entries for job name
+    db.enterJobID(jobData)
+    #try:
+    #    db.enterJobID(jobData)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Pull Job ID from newly created job. Will be used for calibration 
     # parameter DB entries
