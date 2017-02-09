@@ -153,7 +153,7 @@ class jobMeta:
         self.eValidDate = parser.get('logistics','eValidDate')
         self.eValidDate = datetime.datetime.strptime(self.eValidDate,'%Y-%m-%d')
         self.bValidEvalDate = parser.get('logistics','bValidEvalDate')
-        self.bValidEvalDate = datetime.datetime.strptime(self.eValidEvalDate,'%Y-%m-%d')
+        self.bValidEvalDate = datetime.datetime.strptime(self.bValidEvalDate,'%Y-%m-%d')
         self.gSQL = parser.get('gageInfo','gageListSQL')
         self.gList = str(parser.get('gageInfo','gageListFile'))
         self.dynVegOpt = int(parser.get('lsmPhysics','dynVegOption'))
