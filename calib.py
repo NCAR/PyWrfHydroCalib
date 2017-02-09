@@ -240,7 +240,7 @@ def main(argv):
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
                 calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                time.sleep(20)
+                time.sleep(30)
     #        #try:
     #        #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
     #        #except:

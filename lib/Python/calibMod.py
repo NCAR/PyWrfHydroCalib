@@ -267,7 +267,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 print keyStatus
             else:
                 if basinStatus:
-                    print "MODEL IS RUNNING
+                    print "MODEL IS RUNNING"
                     # This means that we are rebooting the program. Parameters were 
                     # adjusted already and the simulation for iteration 0 is underway
                     # still from a previous crash.
