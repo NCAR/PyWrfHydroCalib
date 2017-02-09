@@ -32,12 +32,11 @@ def main(argv):
     args = parser.parse_args()
     
     # Initialize job using setup.parm and calibration DB.
-    jobData = configMod.queryJob(args)
-    #try:
-    #    jobData = configMod.queryJob(args)
-    #except:
-    #    print "ERROR: Failure to read in configuration file."
-    #    sys.exit(1)
+    try:
+        jobData = configMod.queryJob(args)
+    except:
+        print "ERROR: Failure to read in configuration file."
+        sys.exit(1)
         
     # Lookup database username/login credentials based on username
     # running program.
