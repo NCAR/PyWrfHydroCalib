@@ -654,8 +654,8 @@ def generateCalibScript(jobData,gageID,runDir):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
-            fileObj.write('Rscript calibrate.R ' + srcScript + '\n')
-            fileObj.write('python adjust_parameters.py ' + runDir + '\n')
+            fileObj.write('Rscript ' + srcScript + '\n')
+            fileObj.write('python ' + runDir + '/adjust_parameters.py\n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
