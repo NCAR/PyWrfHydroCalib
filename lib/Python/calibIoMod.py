@@ -381,7 +381,9 @@ def setupModels(jobData,db,args):
         calibPyProgram = './lib/Python/adjust_parameters.py'
         #calibRProgram = './lib/R/calibrate.R'
         try:
+            print calibPyProgram
             link = gageDir + "/adjust_parameters.py"
+            print link
             os.symlink(calibPyProgram,link)
         except:
             wipeJobDir(jobData)
