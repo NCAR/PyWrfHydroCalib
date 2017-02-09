@@ -518,7 +518,6 @@ class Database(object):
                                  "values (" + str(jobID) + "," + str(domainID) + "," + \
                                  str(iteration) + ",'" + parmName + "',-9999);"
                         try:
-                            print sqlCmd
                             self.conn.execute(sqlCmd)
                             self.db.commit()
                         except:
@@ -593,7 +592,7 @@ class Database(object):
             
         return float(results[0])
         
-    def logCalibIter(jobData,jobID,gageID,gage,calibTbl,statsTbl):
+    def logCalibIter(self,jobData,jobID,gageID,gage,calibTbl,statsTbl):
         """
         Generic function for logging a succesful calibration iteration into the
         database. Information logged includes:
@@ -603,3 +602,8 @@ class Database(object):
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
+            
+        # Update parameter values in Calib_Params
+            
+        # Enter evaluation stats into the Calib_Stats table. This includes flipping
+        # the status to 1.0, which means this iteration is now fully complete.

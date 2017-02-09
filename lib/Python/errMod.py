@@ -148,6 +148,9 @@ def cleanCalib(jobData,runDir):
     calibCompleteFlag = runDir + "/CALIB.COMPLETE"
     calibTbl = runDir + "/CALIB_PARAMS.txt"
     statsTbl = runDir + "/CALIB_STATS.txt"
+    fullDomFile = runDir + "/Fulldom.nc"
+    hydroTbl = runDir + "/HYDRO.TBL"
+    soilFile = runDir + "/soil_properties.nc"
     
     if os.path.isfile(calibCompleteFlag):
         try:
@@ -168,6 +171,29 @@ def cleanCalib(jobData,runDir):
             os.remove(statsTbl)
         except:
             jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
+            raise
+            
+    # Remove parameter files that were created after calibration R code
+    # ran.
+    if os.path.isfile(fullDomFile):
+        try:
+            os.remove(fullDomFile)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + fullDomFile
+            raise
+    
+    if os.path.isfile(hydroTbl):
+        try:
+            os.remove(hydroTbl)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + hydroTbl
+            raise
+            
+    if os.path.isfile(soilFile):
+        try:
+            os.remove(soilFile)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + soilFile
             raise
 
 def cleanRunDir(jobData,runDir):

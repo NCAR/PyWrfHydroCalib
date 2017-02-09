@@ -96,7 +96,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
     calibLockPath = runDir + "/CALIB.LOCK"
-    calibCompleteFlag = runDir + "/CALIB.COMPLETE"
+    calibCompleteFlag = runDir + "/CALIB_ITER.COMPLETE"
     calibTbl = runDir + "/CALIB_PARAMS.txt"
     statsTbl = runDir + "/CALIB_STATS.txt"
     
@@ -150,10 +150,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # If calibration COMPLETE flag listed, upgrade status to 1.0, and make entry into
             # database as this iteration being completed.
             if os.path.isfile(calibCompleteFlag):
-                # PLACEHOLDER FOR CLEANING UP MODEL AND CALIBRATION OUTPUT.
-                # PLACEHOLDER FOR UPDATING STATUS TO 1.0 IN DB
                 try:
-                    db.logCalibIter(jobData,int(jobData.jobID),int(gageID),gage,calibTbl,statsTbl)
+                    errMod.removeOutput(statusData,runDir)
+                    errMod.cleanCalib(statusData.runDir)
+                    db.logCalibIter(statusData,int(statusData.jobID),int(gageID),gage,calibTbl,statsTbl)
                 except:
                     raise
                 keySlot[basinNum,iteration] = 1.0
@@ -506,6 +506,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # Unique situation where we are on iteration 1, and we need to run
         # a calibration script and adjust parameters once before beginning
         # the model.
+        
+        # First cleanup any old model output or calibration output that 
+        # is from previous iterations.
+        try:
+            errMod.removeOutput(statusData,runDir)
+            errMod.cleanCalib(statusData.runDir)
+        except:
+            raise
     
                 
 def generateRunScript(jobData,gageID,runDir):
@@ -595,14 +603,15 @@ def generateCalibScript(jobData,gageID,runDir):
     Generic Function function to create BSUB script for running R
     calibration routines. These jobs will be shorter than 
     the model runs, but still need to be ran through Yellowstone
-    compute nodes.
+    compute nodes. This function also creates the shell script that
+    will execute R and Python to modify parameters.
     """
     
-    outFile = runDir + "/run_NWM_CALIB.sh"
+    outFile1 = runDir + "/run_NWM_CALIB.sh"
     
-    if not os.path.isfile(outFile):
+    if not os.path.isfile(outFile1):
         try:
-            fileObj = open(outFile,'w')
+            fileObj = open(outFile1,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('#\n')
             fileObj.write('# LSF Batch Script to Run NWM Calibration R Code\n')
@@ -630,5 +639,31 @@ def generateCalibScript(jobData,gageID,runDir):
             #fileObj.write('mpirun.lsf ./???\n')
             fileObj.close
         except:
-            jobData.errMsg = "ERROR: Failure to create: " + outFile
+            jobData.errMsg = "ERROR: Failure to create: " + outFile1
             raise    
+            
+    outFile2 = runDir + "/calibCmd.sh"
+    
+    srcScript = runDir + "/calibScript.R"
+    if not os.path.isfile(srcScript):
+        jobData.errMsg = "ERROR: Necessary R script file: " + srcScript + " not found."
+        raise
+        
+    if not os.path.isfile(outFile2):
+        try:
+            fileObj = open(outFile2,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('Rscript calibrate.R ' + srcScript + '\n')
+            fileObj.write('python adjust_parameters.py ' + runDir + '\n')
+            fileObj.write('exit\n')
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile2
+            raise
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile2
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
+        raise

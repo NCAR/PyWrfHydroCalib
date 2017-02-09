@@ -376,3 +376,22 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to write calibration R script."
             raise
             
+        # Copy Python and R program necessary to run calibration and parameter 
+        # adjustments into the calibration run directory.
+        #calibPyProgram = './lib/Python/adjust_parameters.py'
+        #calibRProgram = './lib/R/calibrate.R'
+        #try:
+        #    link = gageDir + "/adjust_parameters.py"
+        #    os.symlink(calibPyProgram,link)
+        #except:
+        #    wipeJobDir(jobData)
+        #    jobData.errMsg = "ERROR: Failure to link: " + calibPyProgram
+        #    raise
+            
+        #try:
+        #    link = gageDir + '/calibrate.R'
+        #    os.symlink(calibRProgram,link)
+        #except:
+        #    wipeJobDir(jobData)
+        #    jobData.errMsg = "ERROR: Failure to link: " + calibRProgram
+        #    raise
