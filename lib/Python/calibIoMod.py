@@ -410,12 +410,13 @@ def setupModels(jobData,db,args):
             raise
             
         # Create Rscript file that will be sourced by R for calibration
-        try:
-            calibMod.generateRScript(jobData,gageData,gage)
-        except:
-            wipeJobDir(jobData)
-            jobData.errMsg = "ERROR: Failure to write calibration R script."
-            raise
+        calibMod.generateRScript(jobData,gageData,gage)
+        #try:
+        #    calibMod.generateRScript(jobData,gageData,gage)
+        #except:
+        #    wipeJobDir(jobData)
+        #    jobData.errMsg = "ERROR: Failure to write calibration R script."
+        #    raise
             
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
