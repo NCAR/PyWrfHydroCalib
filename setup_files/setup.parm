@@ -41,7 +41,7 @@ ddsR = 0.2
 # Specify email to send updates/error messages to.
 # Please fill out either email or Slack information. 
 # You must choose one.
-email = karsten@ucar.edu
+email = adugger@ucar.edu
 slackChannel =
 slackToken =
 slackUser =

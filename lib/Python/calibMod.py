@@ -624,7 +624,7 @@ def generateRScript(jobData,gageMeta,gageNum):
     try:
         fileObj = open(outPath,'w')
         fileObj.write('#### Model Parameters ####\n')
-        inStr = "objFn <- " + str(jobData.objFunc) + "\n"
+        inStr = "objFn <- \"" + str(jobData.objFunc) + "\"\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of calibration iterations.\n')
         inStr = "m <- " + str(jobData.nIter) + '\n'
