@@ -378,11 +378,11 @@ def setupModels(jobData,db,args):
             
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
-        calibPyProgram = './lib/Python/adjust_parameters.py'
-        #calibRProgram = './lib/R/calibrate.R'
+        calibPyProgram = os.getcwd() + '/lib/Python/adjust_parameters.py'
+        #calibRProgram = os.getcwd() + '/lib/R/calibrate.R'
         try:
             print calibPyProgram
-            link = gageDir + "/adjust_parameters.py"
+            link = gageDir + "/RUN.CALIB/adjust_parameters.py"
             print link
             os.symlink(calibPyProgram,link)
         except:
@@ -391,7 +391,7 @@ def setupModels(jobData,db,args):
             raise
             
         #try:
-        #    link = gageDir + '/calibrate.R'
+        #    link = gageDir + '/RUN.CALIB/calibrate.R'
         #    os.symlink(calibRProgram,link)
         #except:
         #    wipeJobDir(jobData)
