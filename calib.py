@@ -212,7 +212,7 @@ def main(argv):
             except:
                 errMod.errOut(jobData)
 
-    #while not completeStatus:
+    while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
         # namelist files appropriately. Then, restart the model. Once all
@@ -237,11 +237,10 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
     
-        #for basin in range(0,len(jobData.gages)):
-        #    for iteration in range(0,int(jobData.nIter)):
-        #        print keySlot
-        #        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-        #        time.sleep(20)
+        for basin in range(0,len(jobData.gages)):
+            for iteration in range(0,int(jobData.nIter)):
+                calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                time.sleep(20)
     #        #try:
     #        #    runMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
     #        #except:

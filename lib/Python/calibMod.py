@@ -100,6 +100,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     calibTbl = runDir + "/CALIB_PARAMS.txt"
     statsTbl = runDir + "/CALIB_STATS.txt"
     
+    raise Exception()
+    
     if keyStatus == 1.0:
         # Calibration and simulation for this iteration has completed
         runFlag = False
@@ -635,8 +637,7 @@ def generateCalibScript(jobData,gageID,runDir):
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
             fileObj.write(inStr)
-            #PLACEHOLDER FOR FIGURING OUT RUN SCRIPT
-            #fileObj.write('mpirun.lsf ./???\n')
+            fileObj.write('mpirun.lsf ./calibCmd.sh\n')
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile1
