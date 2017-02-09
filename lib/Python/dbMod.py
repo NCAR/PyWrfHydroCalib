@@ -144,8 +144,7 @@ class Database(object):
                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval" + \
                  "valid_complete,acct_key,num_cores_model,num_cores_R,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," + \
-                 "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
