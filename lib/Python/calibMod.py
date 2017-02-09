@@ -646,7 +646,7 @@ def generateRScript(jobData,gageMeta,gageNum):
         inStr = "linkId <- '" + str(gageMeta.comID) + "'\n"
         fileObj.write(inStr)
         fileObj.write('# Start date for evaluation period (e.g., after spinup period)\n')
-        inStr = "startDate <- as.POSIXct(\"" + jobData.bCalibEvalDate('%Y-%m-%d') + "\", " + \
+        inStr = "startDate <- as.POSIXct(\"" + jobData.bCalibEvalDate.strftime('%Y-%m-%d') + "\", " + \
                  "\"%Y-%m-%d\", tz=\"UTC\")"
         fileObj.write(inStr)
         fileObj.write('# Specify number of cores to use\n')
