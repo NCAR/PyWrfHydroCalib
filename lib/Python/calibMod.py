@@ -404,6 +404,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                 runFlag = False
                                 runCalib = True
                                 print keyStatus
+                    if not runFlag:
+                        # Both the first calibration and model simulation completed. Ready for
+                        # second (main) calibration.
+                        print "1ST CALIB AND MODEL FINISEHD. READY FOR MAIN CALIB."
+                        try:
+                            errMod.cleanCalib(statusData,workDir,runDir)
+                            errMod.scrubParams(statusMod,runDir)
+                        except:
+                            raise
+                        keySlot[basinNum,iteration] = 0.75
+                        keyStatus = 0.75
+                        runFlag = False
+                        runCalib = True
+                        print keyStatus
                 
     # For when the model failed TWICE and is locked.
     if keyStatus == -1.0:
