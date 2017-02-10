@@ -35,7 +35,7 @@ def main(argv):
                         
     args = parser.parse_args()
     workDir = str(args.workDir[0])
-    runDir = str(args.runDir[1])
+    runDir = str(args.runDir[0])
     
     # Compose input file paths.
     fullDomOrig = workDir + "/BASELINE_PARAMETERS/Fulldom.nc"
