@@ -152,7 +152,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 try:
                     errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    db.logCalibIter(statusData,int(statusData.jobID),int(gageID),gage,calibTbl,statsTbl)
+                    db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
                 except:
                     raise
                 keySlot[basinNum,iteration] = 1.0
@@ -196,9 +196,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # Enter in parameters for iteration update.
                 try:
                     db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
-                    raise Exception()
-                    # Cleanup calib-related files (minus new parameters)
-                    errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
                 keySlot[basinNum,iteration] = 0.0
@@ -335,10 +332,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                 print "FIRST CALIBRATION FOR ITERATION 0 HAS OCCURRED. READY TO RUN MODEL"
                                 # First calibration completed. Ready to run the model.
                                 # Cleanup any previou calib-related parameters (minus new parameter files)
-                                try:
-                                    errMod.cleanCalib(statusData,workDir,runDir)
-                                except:
-                                    raise
                                 keySlot[basinNum,iteration] = 0.0
                                 keyStatus = 0.0
                                 runFlag = True
