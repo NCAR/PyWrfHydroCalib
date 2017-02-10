@@ -565,7 +565,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         # Fire off calibration programs.
-        cmd = "bsub < " + workDir + "/run_CALIB.sh"
+        cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
         print cmd
         try:
             subprocess.call(cmd,shell=True)
