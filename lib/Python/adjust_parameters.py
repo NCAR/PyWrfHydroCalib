@@ -97,7 +97,7 @@ def main(argv):
                 dksatValue = float(lineSplit[1])*float(newParams.dksat[0])
             else:
                 dksatValue = float(lineSplit[1])
-            outStr = str(smcValue) + ",  " + dksatValue + ",    " + lineSplit[2] + "," + \
+            outStr = str(smcValue) + ",  " + str(dksatValue) + ",    " + lineSplit[2] + "," + \
                      lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
             hydroOutObj.write(outStr)
         countTmp = countTmp + 1
