@@ -259,7 +259,8 @@ def createJob(argsUser):
         raise
         
     # Assign ownership to this job
-    jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
+    jobObj.owner = "adugger"
+    #jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
     
     return jobObj
     

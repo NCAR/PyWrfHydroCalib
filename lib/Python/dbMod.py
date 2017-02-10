@@ -153,7 +153,6 @@ class Database(object):
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
         
         try:
-            print sqlCmd
             self.conn.execute(sqlCmd)
             self.db.commit()
         except:
