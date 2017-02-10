@@ -88,6 +88,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
     
+    # Initialize flags to False
+    runFlag = False
+    runCalib = False
     if keyStatus == 1.0:
         # Calibration and simulation for this iteration has completed
         runFlag = False
@@ -208,7 +211,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 print statusData.genMsg
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
-                    errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusData,runDir)
                 except:
                     raise

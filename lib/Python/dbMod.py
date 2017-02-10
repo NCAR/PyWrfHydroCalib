@@ -600,6 +600,9 @@ class Database(object):
         Generic function for logging newly created parameter values created
         by R into the database Calib_Params table.
         """
+        # Iterations start as 0 in the workflow
+        iteration = int(iteration) + 1
+        
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -620,27 +623,31 @@ class Database(object):
         
         # Update parameter values in Calib_Params
         for paramName in paramNames:
-            print paramNames
-            sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
-                     "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
-                     "' and iteration='" + str(iteration) + "' and paramName='" + \
-                     str(paramName) + "';"
-            print sqlCmd
-            try:
-                self.conn.execute(sqlCmd)
-                self.db.commit()
-            except:
-                jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
-                                 " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
-                                 " iteration: " + str(iteration)
-                print jobData.errMsg
-                raise
+            if paramName != "iter":
+                print paramNames
+                sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
+                         "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
+                         "' and iteration='" + str(iteration) + "' and paramName='" + \
+                         str(paramName) + "';"
+                print sqlCmd
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
+                                     " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                     " iteration: " + str(iteration)
+                    print jobData.errMsg
+                    raise
                 
     def logCalibStats(self,jobData,jobID,domainID,iteration,statsTbl):
         """
         Generic function for entering calibration statistics into Calib_Stats to
         keep track of performance statistics for each calibration iteration.
         """
+        # Iterations start as 0 in the workflow
+        iteration = int(iteration) + 1
+        
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
