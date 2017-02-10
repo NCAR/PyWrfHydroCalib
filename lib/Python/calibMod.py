@@ -688,9 +688,9 @@ def generateCalibScript(jobData,gageID,workDir):
             inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
             #fileObj.write('#BSUB -x\n')
-            inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
-            fileObj.write(inStr)
-            #fileObj.write("#BSUB -n 1\n")
+            #inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
+            #fileObj.write(inStr)
+            fileObj.write("#BSUB -n 1\n")
             fileObj.write('#BSUB -R "span[ptile=1]"\n')
             inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
