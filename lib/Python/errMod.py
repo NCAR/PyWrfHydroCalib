@@ -148,10 +148,6 @@ def cleanCalib(jobData,workDir,runDir):
     calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
-    fullDomFile = runDir + "/Fulldom.nc"
-    hydroTbl = runDir + "/HYDRO.TBL"
-    soilFile = runDir + "/soil_properties.nc"
-    gwFile = runDir + '/GWBUCKPARM.nc'
     
     if os.path.isfile(calibCompleteFlag):
         try:
@@ -174,8 +170,18 @@ def cleanCalib(jobData,workDir,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
             raise
             
-    # Remove parameter files that were created after calibration R code
-    # ran.
+def scrubParams(jobData,runDir):
+    """
+    Generic function to remove parameter files generated after calibration.
+    This is done to remove the risk of a model being ran with the improper
+    file. It also allows the workflow to remove model output prior to a 
+    simulation but not the new parameter files needed.
+    """
+    fullDomFile = runDir + "/Fulldom.nc"
+    hydroTbl = runDir + "/HYDRO.TBL"
+    soilFile = runDir + "/soil_properties.nc"
+    gwFile = runDir + '/GWBUCKPARM.nc'
+
     if os.path.isfile(fullDomFile):
         try:
             os.remove(fullDomFile)

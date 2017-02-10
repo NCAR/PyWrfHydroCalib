@@ -10,6 +10,7 @@ import datetime
 from slacker import Slacker
 import sys
 import pandas as pd
+import os
 
 class Database(object):
     def __init__(self,jobData):
@@ -594,18 +595,107 @@ class Database(object):
             
         return float(results[0])
         
-    def logCalibIter(self,jobData,jobID,gageID,gage,calibTbl,statsTbl):
+    def logCalibParams(self,jobData,jobID,domainID,calibTbl,iteration):
         """
-        Generic function for logging a succesful calibration iteration into the
-        database. Information logged includes:
-        1.) Updated parameter values for a given iteration
-        2.) Statistics for this given iteration.
+        Generic function for logging newly created parameter values created
+        by R into the database Calib_Params table.
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
             
-        # Update parameter values in Calib_Params
+        if not os.path.isfile(calibTbl):
+            jobData.errMsg = "ERROR: Expected calibration table: " + calibTbl + " not found."
+            raise
             
-        # Enter evaluation stats into the Calib_Stats table. This includes flipping
-        # the status to 1.0, which means this iteration is now fully complete.
+        # Read in parameter table.
+        try:
+            tblData = pd.read_csv(calibTbl,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + calibTbl
+            raise
+            
+        paramNames = list(tblData.columns.values)
+        
+        # Update parameter values in Calib_Params
+        for paramName in paramNames:
+            sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
+                     "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
+                     "' and iteration='" + str(iteration) + "' and paramName='" + \
+                     str(paramName) + "';"
+            try:
+                self.conn.execute(sqlCmd)
+                self.db.commit()
+            except:
+                jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
+                                 " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                 " iteration: " + str(iteration)
+                raise
+                
+    def logCalibStats(self,jobData,jobID,domainID,iteration,statsTbl):
+        """
+        Generic function for entering calibration statistics into Calib_Stats to
+        keep track of performance statistics for each calibration iteration.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        if not os.path.isfile(statsTbl):
+            jobData.errMsg = "ERROR: Expected calibration table: " + statsTbl + " not found."
+            raise
+            
+        # Read in table.
+        try:
+            tblData = pd.read_csv(statsTbl,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + statsTbl
+            raise
+            
+        # Update Calib_Stats table.
+        # PLACEHOLDER TO UPDATE AS CALIB STATS GETS FINALIZED
+        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + str(9) + "', " + \
+                 "Calib_Stats.bias='" + str(9) + "', Calib_Stats.rmse='" + \
+                 str(9) + "', Calib_Stats.cor='" + str(9) + "', Calib.Stats.nse='" + \
+                 str(9) + "', Calib_Stats.nselog='" + str(9) + "', Calib.Stats.kge='" + \
+                 str(9) + "', Calib_Stats.fdcerr='" + str(9) + \
+                 "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
+                 "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
+                 "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
+                             str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
+                             str(iteration)
+            raise
+        
+        if int(tblData.best[0]) == 1:
+            # First reset iteration where best currently is to 0
+            sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1';"
+            
+            try:
+                self.conn.execute(sqlCmd)
+                self.db.commit()
+            except:
+                jobData.errMsg = "ERROR: Failure to downgrade 'best' status of previous " + \
+                                 "calibration iteration for jobID: " + str(jobID) + \
+                                 " domainID: " + str(domainID) + " iteration: " + \
+                                 str(iteration)
+                raise
+                
+            # Now update this iteration to be the "best"
+            sqlCmd = "update Calib_Stats set Calib_Stats.best='1' where jobID='" + \
+                     str(jobID) + "' and domainID='" + str(domainID) + "' and " + \
+                     "iteration='" + str(iteration) + "';"
+            try:
+                self.conn.execute(sqlCmd)
+                self.db.commit()
+            except:
+                jobData.errMsg = "ERROR: Failure to upgrade 'best' status for jobID: " + \
+                                 str(jobID) + " domainID: " + str(domainID) + \
+                                 " iteration: " + str(iteration)
+                raise
+        
