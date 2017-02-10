@@ -196,6 +196,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # Enter in parameters for iteration update.
                 try:
                     db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
+                    raise Exception()
                     # Cleanup calib-related files (minus new parameters)
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:
