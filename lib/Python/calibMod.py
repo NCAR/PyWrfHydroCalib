@@ -57,7 +57,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # Generate BSUB file necessary for running R calibration/analysis
     # code.
     try:
-        generateCalibScript(statusData,int(gageID),workDir)
+        generateCalibScript(statusData,int(gageID),runDir,workDir)
     except:
         raise
         
@@ -667,7 +667,7 @@ def generateRScript(jobData,gageMeta,gageNum):
         jobData.errMsg = "ERROR: Failure to create: " + outPath
         raise        
         
-def generateCalibScript(jobData,gageID,workDir):
+def generateCalibScript(jobData,gageID,runDir,workDir):
     """
     Generic Function function to create BSUB script for running R
     calibration routines. These jobs will be shorter than 
@@ -722,7 +722,7 @@ def generateCalibScript(jobData,gageID,workDir):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('#python ' + workDir + '/adjust_parameters.py\n')
+            fileObj.write('#python ' + workDir + '/adjust_parameters.py + ' + workDir + ' ' + runDir + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
