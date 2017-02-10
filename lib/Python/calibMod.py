@@ -124,6 +124,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # Model has completed. Set to 0.75, which indicates calibration code
                 # needs to be ran.
                 # Clean up any previous iteration calib files if they are around.
+                print "MODEL COMPLETED READY FOR MAIN CALIBRATION"
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusData,workDir)
@@ -133,6 +134,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = 0.75
                 runFlag = False
                 runCalib = True
+                print keyStatus
                 
     # For when the model simulation has completed, but the calibration is still 
     # listed as running.
@@ -149,6 +151,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # for model simualation that will take place beginning with the next iteration.
             # Also scrub calib-related files (minus new parameters).
             if os.path.isfile(calibCompleteFlag):
+                print "MAIN CALIBRATION COMPLETE! ENTERING DB INFO."
                 try:
                     errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
@@ -159,6 +162,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = 1.0
                 runFlag = False
                 runCalib = False
+                raise Exception()
             else:
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
@@ -261,6 +265,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         # Model simulation completed before workflow was restarted. Ready to 
                         # move onto calibration R code.
                         # Cleanup any previous calib-related files that may be sitting around.
+                        print "MODEL COMPLETE, READY FOR MAIN CALIBRATION"
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
                             errMod.scrubParams(statusData,workDir)
@@ -281,6 +286,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         # to be started or re-started.
                         # To be safe, cleanup any calib-related files (minus parameters) that
                         # may be lying around.
+                        print "STARTING OR RESTARTING MODEL"
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
                         except:
@@ -634,7 +640,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         keyStatus = 0.5
         keySlot[basinNum,iteration] = 0.5
         print keyStatus 
-        raise Exception()
         
     if keyStatus == 0.0 and runCalib:
         print "WE ARE ON ITERATION 0. NEED TO RUN FIRST SET OF CALIB PROGRAMS."
