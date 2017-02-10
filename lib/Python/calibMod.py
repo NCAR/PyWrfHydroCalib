@@ -167,8 +167,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             else:
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
-                                    " Iteration: " + str(iteration) + " Failed."
+                                    " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + calibLockPath
                 print statusData.genMsg
+                open(calibLockPath,'a').close()
                 errMod.sendMsg(statusData)
                 keySlot[basinNum,iteration] = -0.75
                 keyStatus = -0.75
@@ -198,8 +199,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             else:
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: 1st Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
-                                    " Iteration: " + str(iteration) + " Failed."
+                                    " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
                 print statusData.genMsg
+                open(calibLockPath,'a').close()
                 errMod.sendMsg(statusData)
                 keySlot[basinNum,iteration] = -0.1
                 keyStatus = -0.1
