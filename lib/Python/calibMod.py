@@ -269,7 +269,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         print "MODEL COMPLETE, READY FOR MAIN CALIBRATION"
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
-                            errMod.scrubParams(statusData,workDir)
+                            errMod.scrubParams(statusData,runDir)
                         except:
                             raise
                         keySlot[basinNum,iteration] = 0.75
