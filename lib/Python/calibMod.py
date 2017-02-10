@@ -179,6 +179,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     if keyStatus == 0.25:
         # If calibration is still running, keep status as 0.10.
         if calibStatus:
+            print "WE ARE DOING THE FIRST CALIBRATION FOR ITERATION 0."
             keySlot[basinNum,iteration] = 0.25
             keyStatus = 0.25
             runFlag = False
@@ -187,6 +188,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # If calibration COMPLETE flag listed, upgrade status to 0.0 with runFlag on, signalling 
             # to proceed with model simulation. 
             if os.path.isfile(calibCompleteFlag):
+                print "1ST CALIBRATION FOR ITERATION 0 COMPLETE"
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
                 runFlag = True
@@ -509,7 +511,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         print keyStatus
         
     if keyStatus == 0.0 and runFlag:
-        print "WE ARE NOT ON ITERATION 0. READY TO RUN MODEL."
+        print "WE ARE READY TO RUN MODEL."
         raise Exception()
         # Model needs to be either ran, or restarted
         # First delete namelist files if they exist.
@@ -575,7 +577,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         keyStatus = 0.25
         keySlot[basinNum] = 0.25
-        raise Exception()
     
                 
 def generateRunScript(jobData,gageID,runDir):
