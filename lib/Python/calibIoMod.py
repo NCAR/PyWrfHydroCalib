@@ -374,6 +374,15 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
             raise
             
+        origPath = str(gageData.gwFile)
+        newPath = baseParmDir + "/GWBUCKPARM.nc"
+        try:
+            shutil.copy(origPath,newPath)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+            raise
+            
         # Create symbolic link to forcing directory.
         fLink = gageDir + "/FORCING"
         try:

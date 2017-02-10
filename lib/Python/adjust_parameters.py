@@ -21,6 +21,7 @@ import sys
 from netCDF4 import Dataset
 import os
 import shutil
+import pandas as pd
 
 def main(argv):
     # Parse arguments. Only input necessary is the run directory.
@@ -40,6 +41,7 @@ def main(argv):
     fullDomOrig = workDir + "/BASELINE_PARAMETERS/Fulldom.nc"
     hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO.TBL"
     soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
+    gwOrig = workDir + "/BASELINE_PARAMETERS/GWBUCKPARM.nc"
     rCompletePath = workDir + "/R_COMPLETE"
     adjTbl = workDir + "/params_new.txt"
     
@@ -47,6 +49,7 @@ def main(argv):
     fullDomOut = runDir + "/Fulldom.nc"
     hydroOut = runDir + "/HYDRO.TBL"
     soilOut = runDir + "/soil_properties.nc"
+    gwOut = runDir + '/GWBUCKPARM.nc'
     outFlag = workDir + "/CALIB_ITER.COMPLETE"
     
     # If R COMPLETE flag not present, this implies the R code didn't run
@@ -60,21 +63,98 @@ def main(argv):
         shutil.copy(fullDomOrig,fullDomOut)
         shutil.copy(hydroOrig,hydroOut)
         shutil.copy(soilOrig,soilOut)
+        shutil.copy(gwOrig,gwOut)
     except:
         sys.exit(1)
         
-    # Adjust HYDRO.TBL
+    # Read in new parameters table.
+    newParams = pd.read_csv(adjTbl,sep=' ')
+    paramNames = list(newParams.columns.values)
     
-    # Adjust Fulldom.nc
-    idAdj = Dataset(fullDomOut,'a')
+    # Open NetCDF parameter files for adjustment.
+    idFullDom = Dataset(fullDomOut,'a')
+    idSoil2D = Dataset(soilOut,'a')
+    idGw = Dataset(gwOut,'a')
     
-    idAdj.close()
+    # Open original HYDRO.TBL.
+    hydroTblDataOrig = file(hydroOrig)
     
-    # Adjust soil_properties.nc
-    idAdj = Dataset(soilOut,'a')
+    # Open new HYDRO.TBL file for writing.
+    hydroOutObj = open(hydroOut,'w')
+    countTmp = 1
+    for line in hydroTblDataOrig:
+        if countTmp < 33:
+            hydroOutObj.write(line)
+        else:
+            # Modify SATDK and MAXSMC as needed.
+            lineTmp = line
+            lineSplit = lineTmp.split(',')
+            if 'smcmax' in paramNames:
+                smcValue = float(lineSplit[0])*float(newParams.smcmax[0])
+            else:
+                smcValue = float(lineSplit[0])
+            if 'dksat' in paramNames:
+                dksatValue = float(lineSplit[1])*float(newParams.dksat[0])
+            else:
+                dksatValue = float(lineSplit[1])
+            outStr = str(smcValue) + ",  " + dksatValue + ",    " + lineSplit[2] + "," + \
+                     lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
+            hydroOutObj.write(outStr)
+        countTmp = countTmp + 1
+    hydroOutObj.close()
     
-    idAdj.close()
-        
+    # Loop through and adjust each parameter accordingly.
+    for param in paramNames:
+        if param == "bexp":
+            idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0])
+            
+        if param == "smcmax":
+            idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(newParams.smcmax[0])
+            
+        if param == "slope":
+            idSoil2D.variables['slope'][:,:,:] = float(newParams.slope[0])
+            
+        if param == "lksatfac":
+            idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[0])
+            
+        if param == "zmax":
+            idGw.variables['Zmax'][:] = float(newParams.zmax[0])
+            
+        if param == "expon":
+            idGw.variables['Expon'][:] = float(newParams.expon[0])
+            
+        if param == "cwpvt":
+            idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0])
+            
+        if param == "vcmx25":
+            idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(newParams.vcmx25[0])
+            
+        if param == "mp":
+            idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(newParams.mp[0])
+            
+        if param == "hvt":
+            idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(newParams.hvt[0])
+            
+        if param == "mfsno":
+            idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(newParams.mfsno[0])
+            
+        if param == "refkdt":
+            idSoil2D.variables['refkdt'][:,:,:] = float(newParams.refkdt[0])
+            
+        if param == "dksat":
+            idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(newParams.dksat[0])
+            
+        if param == "retdeprtfac":
+            idFullDom.variables['RETDEPRTFAC'][:,:] = float(newParams.retdeprtfac[0])
+            
+        if param == "ovroughrtfac":
+            idFullDom.variables['OVROUGHRTFAC'][:,:] = float(newParams.ovroughrtfac[0])
+            
+    # Close NetCDF files
+    idFullDom.close()
+    idSoil2D.close()
+    idGw.close()
+    
     # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating
     # calibration iteration is complete.
     try:

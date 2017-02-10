@@ -151,6 +151,7 @@ def cleanCalib(jobData,workDir,runDir):
     fullDomFile = runDir + "/Fulldom.nc"
     hydroTbl = runDir + "/HYDRO.TBL"
     soilFile = runDir + "/soil_properties.nc"
+    gwFile = runDir + '/GWBUCKPARM.nc'
     
     if os.path.isfile(calibCompleteFlag):
         try:
@@ -194,6 +195,13 @@ def cleanCalib(jobData,workDir,runDir):
             os.remove(soilFile)
         except:
             jobData.errMsg = "ERROR: Failure to remove: " + soilFile
+            raise
+            
+    if os.path.isfile(gwFile):
+        try:
+            os.remove(gwFile)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + gwFile
             raise
 
 def cleanRunDir(jobData,runDir):
