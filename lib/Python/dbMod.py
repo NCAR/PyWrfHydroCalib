@@ -276,7 +276,7 @@ class Database(object):
         jobData.spinComplete = int(results[4])
         jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d')
         jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d')
-        jobData.bCalibDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d')
+        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d')
         jobData.nIter = int(results[8])
         jobData.calibIter = int(results[9])
         jobData.calibComplete = int(results[10])
