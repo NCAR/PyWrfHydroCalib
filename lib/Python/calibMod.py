@@ -142,6 +142,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     if keyStatus == 0.90:
         # If the calibration is still running, keep status as 0.90.
         if calibStatus:
+            print "RUNNING MAIN CALIBRATION"
             keySlot[basinNum,iteration] = 0.90
             keyStatus = 0.90
             runFlag = False
@@ -686,6 +687,31 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         keyStatus = 0.25
         keySlot[basinNum] = 0.25
+        print keyStatus
+        
+    if keyStatus == 0.75 and runCalib:
+        print "RUNNING MAIN CALIBRATION."
+        # Fire off calibration for simulation.
+        
+        # First cleanup any old calibration related files. This should have 
+        # already been done per workflow, but this is a fail safe.
+        try:
+            errMod.cleanCalib(statusData,workDir,runDir)
+            errMod.scrubParams(statusMod,runDir)
+        except:
+            raise
+            
+        # Fire off calibration program.
+        cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
+        print cmd
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+            
+        keyStatus = 0.90
+        keySlot[basinNum] = 0.90
         print keyStatus
     
                 
