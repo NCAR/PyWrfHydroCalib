@@ -420,8 +420,8 @@ def setupModels(jobData,db,args):
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
         calibPyProgram = os.getcwd() + '/lib/Python/adjust_parameters.py'
-        #calibRProgram = os.getcwd() + '/lib/R/calib_workflow.R'
-        #calibRUtils = os.getcwd() + "/lib/R/calib_utils.R"
+        calibRProgram = os.getcwd() + '/lib/R/calib_workflow.R'
+        calibRUtils = os.getcwd() + "/lib/R/calib_utils.R"
         try:
             link = gageDir + "/RUN.CALIB/adjust_parameters.py"
             os.symlink(calibPyProgram,link)
@@ -430,21 +430,25 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to link: " + calibPyProgram
             raise
             
-        #try:
-        #    link = gageDir + '/RUN.CALIB/calib_workflow.R'
-        #    os.symlink(calibRProgram,link)
-        #except:
-        #    wipeJobDir(jobData)
-        #    jobData.errMsg = "ERROR: Failure to link: " + calibRProgram
-        #    raise
+        try:
+            print calibRProgram
+            link = gageDir + '/RUN.CALIB/calib_workflow.R'
+            print link
+            os.symlink(calibRProgram,link)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to link: " + calibRProgram
+            raise
 
-        #try:
-        #    link = gageDir + "/RUN.CALIB/calib_utils.R"
-        #    os.symlink(calibRUtils,link)
-        #except:
-        #    wipeJobDir(jobData)
-        #    jobData.errMsg = "ERROR: Failure to link: " calibRUtils
-        #    raise
+        try:
+            print calibRUtils
+            link = gageDir + "/RUN.CALIB/calib_utils.R"
+            print link
+            os.symlink(calibRUtils,link)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to link: " + calibRUtils
+            raise
 
         # Copy R program necessary to run validation evaluation.
         #validationRProgram = os.getcwd() + '/lib/R/validation.R'
