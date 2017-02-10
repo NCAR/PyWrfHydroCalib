@@ -615,14 +615,17 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to read in table: " + calibTbl
             raise
             
+        print tblData
         paramNames = list(tblData.columns.values)
         
         # Update parameter values in Calib_Params
         for paramName in paramNames:
+            print paramNames
             sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
                      "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
                      "' and iteration='" + str(iteration) + "' and paramName='" + \
                      str(paramName) + "';"
+            print sqlCmd
             try:
                 self.conn.execute(sqlCmd)
                 self.db.commit()
@@ -630,6 +633,7 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
                                  " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
                                  " iteration: " + str(iteration)
+                print jobData.errMsg
                 raise
                 
     def logCalibStats(self,jobData,jobID,domainID,iteration,statsTbl):
