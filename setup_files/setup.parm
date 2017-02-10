@@ -41,13 +41,13 @@ ddsR = 0.2
 # Specify email to send updates/error messages to.
 # Please fill out either email or Slack information. 
 # You must choose one.
-email = adugger@ucar.edu
+email = karsten@ucar.edu
 slackChannel =
 slackToken =
 slackUser =
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /glade/u/home/adugger/WRF_Hydro/binaries/wrf_hydro_NoahMP_NWM_V1.0_170202_Debug_SpSoils_Realtime_NoNdg.exe
+wrfExe = /glade/u/home/adugger/WRF_Hydro/binaries/wrf_hydro_NoahMP_NWM_V1.1_161128_Realtime_SpSoil_NoNudg_NoDebug.exe
 
 # Specify parameter tables to use for Noah-MP
 genParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/GENPARM.TBL

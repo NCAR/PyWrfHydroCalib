@@ -209,8 +209,8 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate):
         fileObj.write(inStr)
         inStr = ' CHRTOUT_GRID = ' + str(jobData.chrtoutGrid) + ' ! Netcdf grid of channel streamflow values' + '\n'
         fileObj.write(inStr)
-        inStr = ' LSMOUT_DOMAN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
-        #inStr = ' LSMOUT_DOMAIN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
+        #inStr = ' LSMOUT_DOMAN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
+        inStr = ' LSMOUT_DOMAIN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
         fileObj.write(inStr)
         inStr = ' RTOUT_DOMAIN = ' + str(jobData.rtoutDomain) + ' ! Netcdf grid of terrain routing variables on routing grid\n'
         fileObj.write(inStr)

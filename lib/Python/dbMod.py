@@ -235,19 +235,17 @@ class Database(object):
             raise Exception()
             
         tmpMeta['gageID'] = results[0]
-        tmpMeta['geoFile'] = results[12]
-        tmpMeta['wrfInput'] = results[13]
-        tmpMeta['soilFile'] = results[14]
-        tmpMeta['fullDomFile'] = results[15]
-        tmpMeta['rtLnk'] = results[16]
-        tmpMeta['udMap'] = results[17]
-        tmpMeta['gwFile'] = results[18]
-        tmpMeta['lkFile'] = results[19]
-        tmpMeta['forceDir'] = results[20]
-        tmpMeta['obsFile'] = results[21]
-        # PLACEHOLDER
-        #tmpMeta['comID'] = results[22]
-        tmpMeta['comID'] = -9999
+        tmpMeta['comID'] = results[2]
+        tmpMeta['geoFile'] = results[13]
+        tmpMeta['wrfInput'] = results[14]
+        tmpMeta['soilFile'] = results[15]
+        tmpMeta['fullDomFile'] = results[16]
+        tmpMeta['rtLnk'] = results[17]
+        tmpMeta['udMap'] = results[18]
+        tmpMeta['gwFile'] = results[19]
+        tmpMeta['lkFile'] = results[20]
+        tmpMeta['forceDir'] = results[21]
+        tmpMeta['obsFile'] = results[22]
         
     def jobStatus(self,jobData):
         """
