@@ -202,6 +202,10 @@ def scrubParams(jobData,runDir):
     soilFile = runDir + "/soil_properties.nc"
     gwFile = runDir + '/GWBUCKPARM.nc'
 
+    print fullDomFile
+    print hydroTbl
+    print soilFile
+    print gwFile
     if os.path.isfile(fullDomFile):
         try:
             os.remove(fullDomFile)

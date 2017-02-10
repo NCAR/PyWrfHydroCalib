@@ -87,6 +87,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
+    rDataFile = workDir + "/proj_data.Rdata"
     
     # Initialize flags to False
     runFlag = False
@@ -347,6 +348,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                 # Check for LOCK file, meaning the first calibration failed.
                                 if os.path.isfile(calibLockPath):
                                     print "FIRST CALIBRATION LOCKED"
+                                    if os.path.isfile(rDataFile):
+                                        os.remove(rDataFile)
                                     keySlot[basinNum,iteration] = -0.10
                                     keyStatus = -0.10
                                     runFlag = False
@@ -478,6 +481,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # If LOCK file exists, no calibrations can take place. File must
         # be removed manually by user.
         if os.path.isfile(calibLockPath):
+            if os.path.isfile(rDataFile):
+                os.remove(rDataFile)
             keySlot[basinNum,iteration] = -0.10
             keyStatus = -0.10
             runFlag = False
