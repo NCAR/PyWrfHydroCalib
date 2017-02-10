@@ -104,8 +104,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
     
-    iteration = iteration + 1
-    
     if keyStatus == 1.0:
         # Calibration and simulation for this iteration has completed
         runFlag = False
@@ -158,7 +156,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             if os.path.isfile(calibCompleteFlag):
                 try:
                     errMod.removeOutput(statusData,runDir)
-                    errMod.cleanCalib(statusData.runDir)
+                    errMod.cleanCalib(statusData.workDir,runDir)
                     db.logCalibIter(statusData,int(statusData.jobID),int(gageID),gage,calibTbl,statsTbl)
                 except:
                     raise
@@ -554,7 +552,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         
     if keyStatus == 0.0 and runCalib:
         print "WE ARE ON ITERATION 0. NEED TO RUN FIRST SET OF CALIB PROGRAMS."
-        raise Exception()
         # Unique situation where we are on iteration 1, and we need to run
         # a calibration script and adjust parameters once before beginning
         # the model.
@@ -563,9 +560,22 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # is from previous iterations.
         try:
             errMod.removeOutput(statusData,runDir)
-            errMod.cleanCalib(statusData.runDir)
+            errMod.cleanCalib(statusData,workDir,runDir)
         except:
             raise
+            
+        # Fire off calibration programs.
+        cmd = "bsub < " + workDir + "/run_CALIB.sh"
+        print cmd
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+            
+        keyStatus = 0.25
+        keySlot[basinNum] = 0.25
+        raise Exception()
     
                 
 def generateRunScript(jobData,gageID,runDir):
@@ -711,7 +721,7 @@ def generateCalibScript(jobData,gageID,workDir):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py\n')
+            fileObj.write('#python ' + workDir + '/adjust_parameters.py\n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
