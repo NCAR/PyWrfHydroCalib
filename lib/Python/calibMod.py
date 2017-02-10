@@ -282,7 +282,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         # To be safe, cleanup any calib-related files (minus parameters) that
                         # may be lying around.
                         try:
-                            errMod.cleanCalib(statusData.workDir,runDir)
+                            errMod.cleanCalib(statusData,workDir,runDir)
                         except:
                             raise
                         runFlag = True
@@ -333,7 +333,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                 # First calibration completed. Ready to run the model.
                                 # Cleanup any previou calib-related parameters (minus new parameter files)
                                 try:
-                                    errMod.cleanCalib(statusData.workDir,runDir)
+                                    errMod.cleanCalib(statusData,workDir,runDir)
                                 except:
                                     raise
                                 keySlot[basinNum,iteration] = 0.0
@@ -355,7 +355,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                     # Run first calibration and parameter adjustment.
                                     # Clean all previous calib files that may be laying around.
                                     try:
-                                        errMod.cleanCalib(statusData.workDir,runDir)
+                                        errMod.cleanCalib(statusData,workDir,runDir)
                                         errMod.scrubParams(statusMod,runDir)
                                     except:
                                         raise
@@ -390,7 +390,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                 # needs to be ran.
                                 # Clean any previou calib files that may be laying around.
                                 try:
-                                    errMod.cleanCalib(statusData.workDir,runDir)
+                                    errMod.cleanCalib(statusData,workDir,runDir)
                                     errMod.scrubParams(statusMod,runDir)
                                 except:
                                     raise
@@ -428,7 +428,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # Model sucessfully completed. Ready to move onto calibration R code
                 # Remove any previous calibration files.
                 try:
-                    errMod.cleanCalib(statusData.workDir,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusMod,runDir)
                 except:
                     raise
@@ -446,7 +446,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if os.path.isfile(calibLockPath):
             # Cleanup any calibration related files.
             try:
-                errMod.cleanCalib(statusData.workDir,runDir)
+                errMod.cleanCalib(statusData,workDir,runDir)
                 errMod.scrubParams(statusMod,runDir)
             except:
                 raise
@@ -459,7 +459,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             print "CALIB LOCK FILE REMOVED, READY TO RESTART REGULAR CALIBRATION."
             # Cleanup any previous calib files that may be laying around.
             try:
-                errMod.cleanCalib(statusData.workDir,runDir)
+                errMod.cleanCalib(statusData,workDir,runDir)
                 errMod.scrubParams(statusMod,runDir)
             except:
                 raise
@@ -485,7 +485,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             print "FIRST CALIB LOCK FILE REMOVED, READY TO RESTART 1ST CALIB FOR ITERATION 0"
             # Cleanup any previous calibration files
             try:
-                errMod.cleanCalib(statusData.workDir,runDir)
+                errMod.cleanCalib(statusData,workDir,runDir)
                 errMod.scrubParams(statusMod,runDir)
             except:
                 raise
@@ -530,7 +530,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # calibration R code.
                 # Cleanup any previous calib files.
                 try:
-                    errMod.cleanCalib(statusData.workDir,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusMod,runDir)
                 except:
                     raise
