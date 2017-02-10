@@ -711,6 +711,7 @@ def generateCalibScript(jobData,gageID,workDir):
             
     outFile2 = workDir + "/calibCmd.sh"
     
+    runRProgram = workDir + "/calib_workflow.R"
     srcScript = workDir + "/calibScript.R"
     if not os.path.isfile(srcScript):
         jobData.errMsg = "ERROR: Necessary R script file: " + srcScript + " not found."
@@ -720,7 +721,7 @@ def generateCalibScript(jobData,gageID,workDir):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
-            fileObj.write('Rscript ' + srcScript + '\n')
+            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('#python ' + workDir + '/adjust_parameters.py\n')
             fileObj.write('exit\n')
         except:
