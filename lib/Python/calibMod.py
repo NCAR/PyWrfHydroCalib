@@ -560,8 +560,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 raise
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
         except:
             raise
             
@@ -589,7 +589,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         
     if keyStatus == 0.0 and runFlag:
         print "WE ARE READY TO RUN MODEL."
-        raise Exception()
         # Model needs to be either ran, or restarted
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
@@ -605,8 +604,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             startType = 2
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
         except:
             raise
             
@@ -634,6 +633,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         keyStatus = 0.5
         keySlot[basinNum,iteration] = 0.5
+        print keyStatus 
+        raise Exception()
         
     if keyStatus == 0.0 and runCalib:
         print "WE ARE ON ITERATION 0. NEED TO RUN FIRST SET OF CALIB PROGRAMS."
