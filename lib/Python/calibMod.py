@@ -187,6 +187,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         else:
             # If calibration COMPLETE flag listed, upgrade status to 0.0 with runFlag on, signalling 
             # to proceed with model simulation. 
+            print "CHECK FOR 1ST CALIB COMPLETENESS"
+            print calibCompleteFlag
             if os.path.isfile(calibCompleteFlag):
                 print "1ST CALIBRATION FOR ITERATION 0 COMPLETE"
                 keySlot[basinNum,iteration] = 0.0
