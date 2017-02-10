@@ -40,7 +40,7 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    dir.create(writePlotDir)
 
    # Load obs so we have them for next iteration
-   load(paste0(runDir, "/obsStrData.Rdata"))
+   load(paste0(runDir, "/OBS/obsStrData.Rdata"))
    if ("q_cms" %in% names(obsStrData)) obsStrData$q_cms <- NULL
 
    # Setup value lists from paramBnds
