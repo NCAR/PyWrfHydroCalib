@@ -579,6 +579,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         keyStatus = 0.25
         keySlot[basinNum] = 0.25
+        print keyStatus
     
                 
 def generateRunScript(jobData,gageID,runDir):
