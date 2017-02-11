@@ -154,12 +154,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # Also scrub calib-related files (minus new parameters).
             if os.path.isfile(calibCompleteFlag):
                 print "MAIN CALIBRATION COMPLETE! ENTERING DB INFO."
-                try:
-                    errMod.removeOutput(statusData,runDir)
-                    errMod.cleanCalib(statusData,workDir,runDir)
-                    db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
-                except:
-                    raise
+                #try:
+                #    errMod.removeOutput(statusData,runDir)
+                #    errMod.cleanCalib(statusData,workDir,runDir)
+                #    db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
+                #except:
+                #    raise
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
