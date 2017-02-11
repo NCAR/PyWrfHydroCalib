@@ -24,8 +24,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     model to restart. 
     """
     # First check to make sure previous iteration's status is 1.0 (unless iteration 0).
-    if iteration > 0.0:
-        if keySlot[basinNum,iteration-1] != 1.0:
+    if iteration > 0:
+        if keySlot[basinNum,iteration-1] < 1.0:
             return
             
     # Determine which run sub-directory based on COMPLETE flag presence.
@@ -159,7 +159,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),int(iteration),statsTbl)
                     errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    raise Exception()
                 except:
                     raise
                 print 'BLAH'
