@@ -59,6 +59,18 @@ def main(argv):
         
     os.remove(rCompletePath)
     
+    # If the params_new file is not present, but the R Complete path was,
+    # we are going to assume this was the last iteration and no parameters
+    # need to be produced.
+    if not os.path.isfile(adjTbl):
+        # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating
+        # calibration iteration is complete.
+        try:
+            open(outFlag,'a').close()
+            sys.exit(0)
+        except:
+            sys.exit(1)
+    
     try:
         shutil.copy(fullDomOrig,fullDomOut)
         shutil.copy(hydroOrig,hydroOut)
