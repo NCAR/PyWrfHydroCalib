@@ -698,7 +698,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         keyStatus = 0.25
-        keySlot[basinNum] = 0.25
+        keySlot[basinNum,iteration] = 0.25
         print keyStatus
         
     if keyStatus == 0.75 and runCalib:
@@ -723,7 +723,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         keyStatus = 0.90
-        keySlot[basinNum] = 0.90
+        keySlot[basinNum,iteration] = 0.90
         print keyStatus
     
                 
