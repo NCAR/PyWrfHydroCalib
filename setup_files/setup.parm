@@ -22,7 +22,7 @@
 outDir = /glade/scratch/karsten/NWM_CALIB_TESTING
 jobName = TEST
 acctKey = NRAL0017
-nCoresModel = 256
+nCoresModel = 16
 nCoresR     = 8
 
 # Specify number of model iterations to calibrate over
@@ -138,9 +138,9 @@ forceType = 1
 forceDt = 3600
 # NoahMP model timestep
 lsmDt = 3600
-# Output frequency of NoahMP LDASOUT files
-lsmOutDt = 3600
-# Output frequency of NoahMP restart files
+# Output frequency of NoahMP LDASOUT files in seconds
+lsmOutDt = 8640000
+# Output frequency of NoahMP restart files in seconds
 lsmRstFreq = 3600
 
 # Hydro specific time options
