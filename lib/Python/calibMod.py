@@ -194,6 +194,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if calibStatus:
             print "WE ARE DOING THE FIRST CALIBRATION FOR ITERATION 0."
             keySlot[basinNum,iteration] = 0.25
+            print keySlot
             keyStatus = 0.25
             runFlag = False
             runCalib = False
@@ -341,6 +342,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                             # First calibration taking place to prepare parameters for
                             # first iteration.
                             keySlot[basinNum,iteration] = 0.25
+                            print keySlot
                             keyStatus = 0.25
                             runFlag = False
                             runCalib = False
