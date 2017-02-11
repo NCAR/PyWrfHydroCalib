@@ -43,11 +43,6 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    load(paste0(runDir, "/OBS/obsStrData.Rdata"))
    if ("q_cms" %in% names(obsStrData)) obsStrData$q_cms <- NULL
 
-   # Find the index of the gage
-   rtLink <- ReadRouteLink(rtlinkFile)
-   gageIndx <- which(rtLink$link == linkId)
-   rm(rtLink)
-
    # Setup value lists from paramBnds
    xnames <- paramBnds$parameter
    x0 <- paramBnds$ini
@@ -102,7 +97,7 @@ if (cyclecount > 0) {
    whFiles <- which(filesListDate >= startDate)
    filesList <- filesList[whFiles]
    if (length(filesList) == 0) stop("No matching files in specified directory.")
-   chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
+   chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, linkId, .parallel = parallelFlag))
    })
 
    # Convert to daily
