@@ -668,8 +668,8 @@ class Database(object):
         # PLACEHOLDER TO UPDATE AS CALIB STATS GETS FINALIZED
         sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + str(9) + "', " + \
                  "Calib_Stats.bias='" + str(9) + "', Calib_Stats.rmse='" + \
-                 str(9) + "', Calib_Stats.cor='" + str(9) + "', Calib.Stats.nse='" + \
-                 str(9) + "', Calib_Stats.nselog='" + str(9) + "', Calib.Stats.kge='" + \
+                 str(9) + "', Calib_Stats.cor='" + str(9) + "', Calib_Stats.nse='" + \
+                 str(9) + "', Calib_Stats.nselog='" + str(9) + "', Calib_Stats.kge='" + \
                  str(9) + "', Calib_Stats.fdcerr='" + str(9) + \
                  "', Calib_Stats.msof='" + str(9) + \
                  "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
