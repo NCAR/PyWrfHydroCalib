@@ -301,13 +301,18 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # Run calibration procedure to generate initial table of values to adjust
             # parameters with.
             if os.path.isfile(lockPath):
-                print "MODEL LOCKED"
                 # Simulation was locked up. Set status to -1.0.
                 keySlot[basinNum,iteration] = -1.0
                 keyStatus = -1.0
                 runFlag = False
                 runCalib = False
                 print keyStatus
+            elif os.path.isfile(calibLockPath):
+                # Calibration failed and locked directory up.
+                keySlot[basinNum,iteration] = -0.75
+                keyStatus = -0.75
+                runFlag = False
+                runCalib = False
             else:
                 if basinStatus:
                     print "MODEL IS RUNNING"
