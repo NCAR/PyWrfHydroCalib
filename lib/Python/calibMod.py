@@ -25,7 +25,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
     # First check to make sure previous iteration's status is 1.0 (unless iteration 0).
     if iteration > 0:
+        print 'ON ITERTION TEST: ' + str(iteration)
+        print "KEY TEST: " + str(keySlot[basinNum,iteration-1])
         if keySlot[basinNum,iteration-1] < 1.0:
+            print "MET"
             return
             
     # Determine which run sub-directory based on COMPLETE flag presence.
