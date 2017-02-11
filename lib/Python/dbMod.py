@@ -663,6 +663,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to read in table: " + statsTbl
             raise
             
+        print tblData
         # Update Calib_Stats table.
         # PLACEHOLDER TO UPDATE AS CALIB STATS GETS FINALIZED
         sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + str(9) + "', " + \
@@ -674,7 +675,8 @@ class Database(object):
                  "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
                  "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
-                 
+            
+        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             self.db.commit()
@@ -688,6 +690,7 @@ class Database(object):
             # First reset iteration where best currently is to 0
             sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1';"
             
+            print sqlCmd
             try:
                 self.conn.execute(sqlCmd)
                 self.db.commit()
@@ -702,6 +705,7 @@ class Database(object):
             sqlCmd = "update Calib_Stats set Calib_Stats.best='1' where jobID='" + \
                      str(jobID) + "' and domainID='" + str(domainID) + "' and " + \
                      "iteration='" + str(iteration) + "';"
+            print sqlCmd
             try:
                 self.conn.execute(sqlCmd)
                 self.db.commit()
