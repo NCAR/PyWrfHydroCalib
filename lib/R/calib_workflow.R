@@ -180,8 +180,8 @@ if (cyclecount > 0) {
 
    # Update the Objective function versus the parameter variable
    message("Obj function vs. params...")
-   DT.m1 = melt(x_archive[, 2:length(x_archive)], id.vars = c("obj"), measure.vars =names(x_archive)[2:(length(x_archive)-1)])
-
+   DT.m1 = melt(x_archive[, 1:length(x_archive)], id.vars = c("obj"), measure.vars =names(x_archive)[2:(length(x_archive))])
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
    gg <- gg + ggplot2::ggtitle(paste0("Scatter Plot of Obj. function versus parameters: ", siteId))
@@ -192,7 +192,7 @@ if (cyclecount > 0) {
    # Plot the variables as a function of calibration runs
    message("Params over runs...")
    DT.m1 = melt(x_archive, id.vars = c("iter"), measure.vars =names(x_archive)[2:length(x_archive)])
-
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::ggtitle(paste0("Parameter change with iteration: ", siteId))
@@ -204,7 +204,7 @@ if (cyclecount > 0) {
    message("Metrics plot...")
    DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
                iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
-
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId))
@@ -224,17 +224,18 @@ if (cyclecount > 0) {
    bestRun <- get(paste0("chrt.d.", iter_best))
    bestRun [ , run := "Best Run"]
 
-   obsStrDataplot <- copy(obsStrData)
-   setnames(obsStrDataplot, "obs", "q_cms")
-   obsStrDataplot$agency_cd <- NULL
-   obsStrDataplot[ , run := "Observation"]
+   obsStrDataPlot <- copy(obsStrData)
+   setnames(obsStrDataPlot, "obs", "q_cms")
+   obsStrDataPlot <- obsStrDataPlot[, c("Date", "q_cms", "POSIXct", "site_no"), with=FALSE]
+   obsStrDataPlot <- obsStrDataPlot[as.integer(POSIXct) >= min(as.integer(controlRun$POSIXct)) & as.integer(POSIXct) <= max(as.integer(controlRun$POSIXct)),]
+   obsStrDataPlot[ , run := "Observation"]
 
-   chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataplot), use.names = TRUE)
+   chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
 
    gg <- ggplot2::ggplot(chrt.d_plot, ggplot2::aes(POSIXct, q_cms, color = run))
    gg <- gg + ggplot2::geom_line(size = 0.2, alpha = 0.7)
    gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", siteId))
-   gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
+   #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
    gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 15) + ylab ("Streamflow (cms)")
    gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "red"),
                                  limits=c('Observation','Control Run', "Best Run", "Last Run"),
