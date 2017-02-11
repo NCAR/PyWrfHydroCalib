@@ -155,8 +155,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             if os.path.isfile(calibCompleteFlag):
                 print "MAIN CALIBRATION COMPLETE! ENTERING DB INFO."
                 try:
-                #    errMod.removeOutput(statusData,runDir)
-                #    errMod.cleanCalib(statusData,workDir,runDir)
+                    errMod.removeOutput(statusData,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
                     db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),int(iteration),statsTbl)
                 except:
@@ -165,7 +165,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = 1.0
                 runFlag = False
                 runCalib = False
-                raise Exception()
+                #raise Exception()
             else:
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \

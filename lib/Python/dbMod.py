@@ -673,7 +673,6 @@ class Database(object):
         fdc = str(-9999)
         msof = str(tblData.msof[0])
         # Update Calib_Stats table.
-        # PLACEHOLDER TO UPDATE AS CALIB STATS GETS FINALIZED
         sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + objF + "', " + \
                  "Calib_Stats.bias='" + bias + "', Calib_Stats.rmse='" + \
                  rmse + "', Calib_Stats.cor='" + cor + "', Calib_Stats.nse='" + \
