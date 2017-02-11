@@ -558,9 +558,9 @@ class Database(object):
             if not results:
                 # Create "empty" entry into table.
                 sqlCmd = "insert into Calib_Stats (jobID,domainID,iteration,objfnVal,bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,0,0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
@@ -670,6 +670,7 @@ class Database(object):
                  str(9) + "', Calib_Stats.cor='" + str(9) + "', Calib.Stats.nse='" + \
                  str(9) + "', Calib_Stats.nselog='" + str(9) + "', Calib.Stats.kge='" + \
                  str(9) + "', Calib_Stats.fdcerr='" + str(9) + \
+                 "', Calib_Stats.msof='" + str(9) + \
                  "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
                  "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"

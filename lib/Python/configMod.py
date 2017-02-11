@@ -371,7 +371,7 @@ def checkConfig(parser):
         print "ERROR: Zero length calibration objective function provided."
         raise Exception()
     # For now, restrict the user to a set of pre-defined objective functions.
-    if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge":
+    if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof":
         print "ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, and Kge"
         raise Exception()
         
