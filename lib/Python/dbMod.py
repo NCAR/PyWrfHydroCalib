@@ -645,7 +645,6 @@ class Database(object):
         Generic function for entering calibration statistics into Calib_Stats to
         keep track of performance statistics for each calibration iteration.
         """
-        # Iterations start as 0 in the workflow
         iteration = int(iteration) + 1
         
         if not self.connected:
@@ -664,14 +663,23 @@ class Database(object):
             raise
             
         print tblData
+        objF = str(tblData.obj[0])
+        bias = str(tblData.bias[0])
+        rmse = str(tblData.rmse[0])
+        cor = str(tblData.cor[0])
+        nse = str(tblData.nse[0])
+        nselog = str(tblData.nselog[0])
+        kge = str(tblData.kge[0])
+        fdc = str(-9999)
+        msof = str(tblData.msof[0])
         # Update Calib_Stats table.
         # PLACEHOLDER TO UPDATE AS CALIB STATS GETS FINALIZED
-        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + str(9) + "', " + \
-                 "Calib_Stats.bias='" + str(9) + "', Calib_Stats.rmse='" + \
-                 str(9) + "', Calib_Stats.cor='" + str(9) + "', Calib_Stats.nse='" + \
-                 str(9) + "', Calib_Stats.nselog='" + str(9) + "', Calib_Stats.kge='" + \
-                 str(9) + "', Calib_Stats.fdcerr='" + str(9) + \
-                 "', Calib_Stats.msof='" + str(9) + \
+        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + objF + "', " + \
+                 "Calib_Stats.bias='" + bias + "', Calib_Stats.rmse='" + \
+                 rmse + "', Calib_Stats.cor='" + cor + "', Calib_Stats.nse='" + \
+                 nse + "', Calib_Stats.nselog='" + nselog + "', Calib_Stats.kge='" + \
+                 kge + "', Calib_Stats.fdcerr='" + fdc + \
+                 "', Calib_Stats.msof='" + msof + \
                  "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
                  "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
