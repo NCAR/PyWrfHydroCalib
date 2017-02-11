@@ -405,7 +405,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                 runFlag = False
                                 runCalib = True
                                 print keyStatus
-                    if not runFlag:
+                    if begDate == statusData.eCalibDate and not runFlag:
                         # Both the first calibration and model simulation completed. Ready for
                         # second (main) calibration.
                         print "1ST CALIB AND MODEL FINISEHD. READY FOR MAIN CALIB."
