@@ -790,6 +790,8 @@ def generateRScript(jobData,gageMeta,gageNum):
         fileObj.write('# Basin-Specific Metadata\n')
         inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
         fileObj.write(inStr)
+        inStr = "rtlinkFile <- '" + str(gageMeta.rtLnk) + "'\n"
+        fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
         fileObj.write('# Start date for evaluation period (e.g., after spinup period)\n')
