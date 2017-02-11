@@ -92,10 +92,11 @@ def main(argv):
         errMod.errOut(jobData)
        
     # Create DB entries for job name
-    try:
-        db.enterJobID(jobData)
-    except:
-        errMod.errOut(jobData)
+    db.enterJobID(jobData)
+    #try:
+    #    db.enterJobID(jobData)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Pull Job ID from newly created job. Will be used for calibration 
     # parameter DB entries
@@ -112,11 +113,10 @@ def main(argv):
         
     # Create empty table to hold calibrated parameter values that will be 
     # calculated during calibration.
-    db.populateParmTable(jobData,str(args.parmTbl[0]))   
-    #try:
-    #    db.populateParmTable(jobData,str(args.parmTbl[0]))
-    #except:
-    #    errMod.errOut(jobData)
+    try:
+        db.populateParmTable(jobData,str(args.parmTbl[0]))
+    except:
+        errMod.errOut(jobData)
     
     # Disconnect from the calibration database.
     try:

@@ -24,13 +24,16 @@ class statusMeta:
         self.spinComplete = []
         self.bCalibDate = []
         self.eCalibDate = []
+        self.bCalibEvalDate = []
         self.calibIter = []
         self.calibComplete = []
         self.bValidDate = []
         self.eValidDate = []
+        self.bValidEvalDate = []
         self.validComplete = []
         self.nIter = []
-        self.nCores = []
+        self.nCoresMod = []
+        self.nCoresR = []
         self.acctKey = []
         self.exe = []
         self.errMsg = []
@@ -227,7 +230,6 @@ def walkMod(bDate,eDate,runDir):
     nHours = int((dt.days*24*3600 + dt.seconds)/3600.0)
     
     bDateOrig = bDate
-    bDateRstChck = bDate + datetime.timedelta(seconds=3600.0)
     
     # Initialize flag returned to user as True. Assume model needs to ran.
     runFlag = True

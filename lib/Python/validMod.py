@@ -12,7 +12,7 @@ import statusMod
 import errMod
 import subprocess
 
-def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
+def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -23,48 +23,12 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     the LSM and hydro restart files must be present in order for the
     model to restart. 
     """
-    # typeFlag = 1: Spinup
-    # typeFlag = 2: Calibration
-    # typeFlag = 3: Validation
-    
-    # Initialize iteration count. This is mostly used in the calibration looping, 
-    # but is 0.0 by default. 
-    iteration = 0
-    if typeFlag == 1:
-        runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
-        iteration = 0
-    elif typeFlag == 2:
-        # Determine which run sub-directory based on COMPLETE flag presence.
-        runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
-        # Check to make sure symbolic link to spinup state exists.
-        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-        check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-        if not os.path.isfile(check1):
-            statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
-            raise Exception()
-        if not os.path.isfile(check2):
-            statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
-            raise Exception()
-        # Create links if they don't exist
-        link1 = runDir + "/" + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-        link2 = runDir + "/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-        if not os.path.islink(link1):
-            os.symlink(check1,link1)
-        if not os.path.islink(link2):
-            os.symlink(check2,link2)
-        # Generate BSUB file necessary for running R calibration/analysis
-        # code.
-        try:
-            generateCalibScript(statusData,int(gageID),runDir)
-        except:
-            raise
-    elif typeFlag == 3:
-        runDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
-        
+    runDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
     if not os.path.isdir(runDir):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
         
+    # PLACEHOLDER FOR MAKING SYMBOLIC LINKS TO RESTART FILES.
     # If BSUB run script doesn't exist, create it here.
     bsubFile = runDir + "/run_NWM.sh"
     if not os.path.isfile(bsubFile):
@@ -74,18 +38,9 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
             raise
     
     # Calculate datetime objects
-    if typeFlag == 1:
-        begDate = statusData.bSpinDate
-        endDate = statusData.eSpinDate
-    elif typeFlag == 2:
-        begDate = statusData.bCalibDate
-        endDate = statusData.eCalibDate
-    elif typeFlag == 3:
-        begDate = statusData.bValidDate
-        endDate = statusData.eValidDate
+    begDate = statusData.bValidDate
+    endDate = statusData.eValidDate
         
-    runFlag = 0
-    
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
@@ -94,7 +49,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
         raise
         
     # Initialize status
-    keyStatus = keySlot[basinNum,iteration]
+    keyStatus = keySlot[basinNum]
     
     try:
         basinStatus = statusMod.checkBasJob(statusData,basinNum)
@@ -108,12 +63,13 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     if keyStatus == 1.0:
         # Model has already completed
         runFlag = False
+        return
         
     # For uncompleted simulations that are still listed as running.
     if keyStatus == 0.5:
         # If a model is running for this basin, continue and set keyStatus to 0.5
         if basinStatus:
-            keySlot[basinNum,iteration] = 0.5
+            keySlot[basinNum] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -132,7 +88,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
                 keyStatus = -0.25
             else:
                 # Model has completed!
-                keySlot[basinNum,iteration] = 1.0
+                keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
            
@@ -141,7 +97,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
     if keyStatus == 0.0:
         if basinStatus:
             # Model is still running from previous instance of workflow. Allow it to continue.
-            keySlot[basinNum,iteration] = 0.5
+            keySlot[basinNum] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -157,7 +113,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
             print endDate
             if not runFlag:
                 # Model simulation completed before workflow was restarted
-                keySlot[basinNum,iteration] = 1.0
+                keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
                 
@@ -250,7 +206,7 @@ def runModel(statusData,staticData,db,gageID,gage,typeFlag,keySlot,basinNum):
             statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
             raise
             
-        # Compile 
+        # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
         keySlot[basinNum] = -0.5
         
@@ -315,7 +271,7 @@ def generateRunScript(jobData,gageID,runDir):
         inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
-        inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
+        inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
@@ -334,87 +290,3 @@ def generateRunScript(jobData,gageID,runDir):
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
-        
-def generateRScript(jobData,gageMeta,gageNum):
-    """
-    Generic function to create R script that will be sourced by R during
-    calibration.
-    """
-    outPath = jobData.outDir + "/" + jobData.jobName + "/" + str(jobData.gages[gageNum]) + \
-              "/RUN.CALIB/calibScript.R"
-    
-    if os.path.isfile(outPath):
-        jobData.errMsg = "ERROR: Calibration R script: " + outPath + " aleady exists."
-        raise Exception()
-
-    try:
-        fileObj = open(outPath,'w')
-        fileObj.write('#### Model Parameters ####\n')
-        inStr = "objFunc <- '" + str(jobData.objFunc) + "'\n"
-        fileObj.write(inStr)
-        fileObj.write('# Specify number of calibration iterations.\n')
-        inStr = "m <- " + str(jobData.nIter) + '\n'
-        fileObj.write(inStr)
-        fileObj.write('# Specify DDS parameter (if used).\n')
-        inStr = "r <- " + str(jobData.ddsR) + "\n"
-        fileObj.write(inStr)
-        fileObj.write("# Specify run directory containing calibration simulations.\n")
-        inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
-                str(jobData.gages[gageNum]) + "/RUN.CALIB'\n"
-        fileObj.write(inStr)
-        fileObj.write('# Parameter bounds\n')
-        fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
-        fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
-        inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
-        fileObj.write('# Basin-Specific Metadata\n')
-        inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
-        fileObj.write(inStr)
-        inStr = "comId <- '" + str(gageMeta.comID) + "'\n"
-        fileObj.write(inStr)
-        fileObj.close
-    except:
-        jobData.errMsg = "ERROR: Failure to create: " + outPath
-        raise        
-        
-def generateCalibScript(jobData,gageID,runDir):
-    """
-    Generic Function function to create BSUB script for running R
-    calibration routines. These jobs will be shorter than 
-    the model runs, but still need to be ran through Yellowstone
-    compute nodes.
-    """
-    
-    outFile = runDir + "/run_NWM_CALIB.sh"
-    
-    if not os.path.isfile(outFile):
-        try:
-            fileObj = open(outFile,'w')
-            fileObj.write('#!/bin/bash\n')
-            fileObj.write('#\n')
-            fileObj.write('# LSF Batch Script to Run NWM Calibration R Code\n')
-            fileObj.write('#\n')
-            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-            fileObj.write(inStr)
-            #fileObj.write('#BSUB -x\n')
-            #inStr = "#BSUB -n " + str(jobData.nCores) + '\n'
-            #fileObj.write(inStr)
-            fileObj.write("#BSUB -n 1\n")
-            fileObj.write('#BSUB -R "span[ptile=1]"\n')
-            #fileObj.write('#BSUB -R "span[ptile=16]"\n')
-            inStr = "#BSUB -J NWM_CALIB" + str(jobData.jobID) + "_" + str(gageID) + '\n'
-            fileObj.write(inStr)
-            inStr = '#BSUB -o ' + runDir + '/%J.out\n'
-            fileObj.write(inStr)
-            inStr = '#BSUB -e ' + runDir + '/%J.err\n'
-            fileObj.write(inStr)
-            fileObj.write('#BSUB -W 3:00\n')
-            fileObj.write('#BSUB -q premium\n')
-            fileObj.write('\n')
-            inStr = 'cd ' + runDir + '\n'
-            fileObj.write(inStr)
-            #PLACEHOLDER FOR FIGURING OUT RUN SCRIPT
-            #fileObj.write('mpirun.lsf ./???\n')
-            fileObj.close
-        except:
-            jobData.errMsg = "ERROR: Failure to create: " + outFile
-        raise    

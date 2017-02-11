@@ -10,6 +10,7 @@ import datetime
 from slacker import Slacker
 import sys
 import pandas as pd
+import os
 
 class Database(object):
     def __init__(self,jobData):
@@ -140,16 +141,17 @@ class Database(object):
             
         jobDir = jobData.outDir + "/" + jobData.jobName
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
-                 "su_complete,date_calib_start,date_calib_end,num_iter," + \
-                 "iter_complete,calib_complete,valid_start_date,valid_end_date," + \
-                 "valid_complete,acct_key,num_cores,exe,num_gages,owner,email," + \
+                 "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
+                 "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
+                 "valid_complete,acct_key,num_cores_model,num_cores_R,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
-                 jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.nIter,0,0,\
-                 jobData.bValidDate.strftime('%Y-%m-%d'),jobData.eValidDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCores,jobData.exe,len(jobData.gages),jobData.owner,\
-                 emailStr,slStr1,slStr2,slStr3)
+                 jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
+                 jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
+                 jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
+                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.exe,len(jobData.gages),\
+                 jobData.owner,emailStr,slStr1,slStr2,slStr3)
         
         try:
             self.conn.execute(sqlCmd)
@@ -234,19 +236,17 @@ class Database(object):
             raise Exception()
             
         tmpMeta['gageID'] = results[0]
-        tmpMeta['geoFile'] = results[12]
-        tmpMeta['wrfInput'] = results[13]
-        tmpMeta['soilFile'] = results[14]
-        tmpMeta['fullDomFile'] = results[15]
-        tmpMeta['rtLnk'] = results[16]
-        tmpMeta['udMap'] = results[17]
-        tmpMeta['gwFile'] = results[18]
-        tmpMeta['lkFile'] = results[19]
-        tmpMeta['forceDir'] = results[20]
-        tmpMeta['obsFile'] = results[21]
-        # PLACEHOLDER
-        #tmpMeta['comID'] = results[22]
-        tmpMeta['comID'] = -9999
+        tmpMeta['comID'] = results[2]
+        tmpMeta['geoFile'] = results[13]
+        tmpMeta['wrfInput'] = results[14]
+        tmpMeta['soilFile'] = results[15]
+        tmpMeta['fullDomFile'] = results[16]
+        tmpMeta['rtLnk'] = results[17]
+        tmpMeta['udMap'] = results[18]
+        tmpMeta['gwFile'] = results[19]
+        tmpMeta['lkFile'] = results[20]
+        tmpMeta['forceDir'] = results[21]
+        tmpMeta['obsFile'] = results[22]
         
     def jobStatus(self,jobData):
         """
@@ -277,21 +277,24 @@ class Database(object):
         jobData.spinComplete = int(results[4])
         jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d')
         jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d')
-        jobData.nIter = int(results[7])
-        jobData.calibIter = int(results[8])
-        jobData.calibComplete = int(results[9])
-        jobData.bValidDate = datetime.datetime.strptime(str(results[10]),'%Y-%m-%d')
-        jobData.eValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
-        jobData.validComplete = int(results[12])
-        jobData.acctKey = results[13]
-        jobData.nCores = int(results[14])
-        jobData.exe = results[15]
-        jobData.nGages = int(results[16])
-        jobData.owner = results[17]
-        jobData.email = results[18]
-        jobData.slChan = results[19]
-        jobData.slToken = results[20]
-        jobData.slUser = results[21]
+        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d')
+        jobData.nIter = int(results[8])
+        jobData.calibIter = int(results[9])
+        jobData.calibComplete = int(results[10])
+        jobData.bValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d')
+        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d')
+        jobData.validComplete = int(results[14])
+        jobData.acctKey = results[15]
+        jobData.nCoresMod = int(results[16])
+        jobData.nCoresR = int(results[17])
+        jobData.exe = results[18]
+        jobData.nGages = int(results[19])
+        jobData.owner = results[20]
+        jobData.email = results[21]
+        jobData.slChan = results[22]
+        jobData.slToken = results[23]
+        jobData.slUser = results[24]
         
         # Initiate Slack if fields are not MISSING
         if jobData.slChan != "MISSING":
@@ -492,15 +495,11 @@ class Database(object):
         baseParms = baseParms.reset_index()
         nParms = len(baseParms)
         
-        print baseParms
-        print nParms
         for iteration in range(1,numIter+1):
             for basin in range(0,nBas):
                 for parm in range(0,nParms):
-                    print parm
                     domainID = int(jobData.gageIDs[basin])
                     parmName = str(baseParms.parameter[parm])
-                    print parmName
                     itStr = str(iteration)
                     gageStr = str(jobData.gages[basin])
                     # First determine if table row has already been created.
@@ -508,7 +507,6 @@ class Database(object):
                              " and domainID='" + str(domainID) + "'" + " and iteration='" + \
                              itStr + "'" + " and paramName='" + parmName + "';"
                     try:
-                        print sqlCmd
                         self.conn.execute(sqlCmd)
                         results = self.conn.fetchone()
                     except:
@@ -523,7 +521,6 @@ class Database(object):
                                  "values (" + str(jobID) + "," + str(domainID) + "," + \
                                  str(iteration) + ",'" + parmName + "',-9999);"
                         try:
-                            print sqlCmd
                             self.conn.execute(sqlCmd)
                             self.db.commit()
                         except:
@@ -561,9 +558,9 @@ class Database(object):
             if not results:
                 # Create "empty" entry into table.
                 sqlCmd = "insert into Calib_Stats (jobID,domainID,iteration,objfnVal,bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,0,0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
@@ -598,13 +595,123 @@ class Database(object):
             
         return float(results[0])
         
-    def logCalibIter(jobData,jobID,gageID,gage,calibTbl,statsTbl):
+    def logCalibParams(self,jobData,jobID,domainID,calibTbl,iteration):
         """
-        Generic function for logging a succesful calibration iteration into the
-        database. Information logged includes:
-        1.) Updated parameter values for a given iteration
-        2.) Statistics for this given iteration.
+        Generic function for logging newly created parameter values created
+        by R into the database Calib_Params table.
         """
+        # Iterations start as 0 in the workflow
+        iteration = int(iteration) + 1
+        
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
+            
+        if not os.path.isfile(calibTbl):
+            jobData.errMsg = "ERROR: Expected calibration table: " + calibTbl + " not found."
+            raise
+            
+        # Read in parameter table.
+        try:
+            tblData = pd.read_csv(calibTbl,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + calibTbl
+            raise
+            
+        print tblData
+        paramNames = list(tblData.columns.values)
+        
+        # Update parameter values in Calib_Params
+        for paramName in paramNames:
+            if paramName != "iter":
+                print paramNames
+                sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
+                         "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
+                         "' and iteration='" + str(iteration) + "' and paramName='" + \
+                         str(paramName) + "';"
+                print sqlCmd
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
+                                     " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                     " iteration: " + str(iteration)
+                    print jobData.errMsg
+                    raise
+                
+    def logCalibStats(self,jobData,jobID,domainID,iteration,statsTbl):
+        """
+        Generic function for entering calibration statistics into Calib_Stats to
+        keep track of performance statistics for each calibration iteration.
+        """
+        # Iterations start as 0 in the workflow
+        iteration = int(iteration) + 1
+        
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        if not os.path.isfile(statsTbl):
+            jobData.errMsg = "ERROR: Expected calibration table: " + statsTbl + " not found."
+            raise
+            
+        # Read in table.
+        try:
+            tblData = pd.read_csv(statsTbl,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + statsTbl
+            raise
+            
+        print tblData
+        # Update Calib_Stats table.
+        # PLACEHOLDER TO UPDATE AS CALIB STATS GETS FINALIZED
+        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + str(9) + "', " + \
+                 "Calib_Stats.bias='" + str(9) + "', Calib_Stats.rmse='" + \
+                 str(9) + "', Calib_Stats.cor='" + str(9) + "', Calib.Stats.nse='" + \
+                 str(9) + "', Calib_Stats.nselog='" + str(9) + "', Calib.Stats.kge='" + \
+                 str(9) + "', Calib_Stats.fdcerr='" + str(9) + \
+                 "', Calib_Stats.msof='" + str(9) + \
+                 "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
+                 "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
+                 "';"
+            
+        print sqlCmd
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
+                             str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
+                             str(iteration)
+            raise
+        
+        if int(tblData.best[0]) == 1:
+            # First reset iteration where best currently is to 0
+            sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1';"
+            
+            print sqlCmd
+            try:
+                self.conn.execute(sqlCmd)
+                self.db.commit()
+            except:
+                jobData.errMsg = "ERROR: Failure to downgrade 'best' status of previous " + \
+                                 "calibration iteration for jobID: " + str(jobID) + \
+                                 " domainID: " + str(domainID) + " iteration: " + \
+                                 str(iteration)
+                raise
+                
+            # Now update this iteration to be the "best"
+            sqlCmd = "update Calib_Stats set Calib_Stats.best='1' where jobID='" + \
+                     str(jobID) + "' and domainID='" + str(domainID) + "' and " + \
+                     "iteration='" + str(iteration) + "';"
+            print sqlCmd
+            try:
+                self.conn.execute(sqlCmd)
+                self.db.commit()
+            except:
+                jobData.errMsg = "ERROR: Failure to upgrade 'best' status for jobID: " + \
+                                 str(jobID) + " domainID: " + str(domainID) + \
+                                 " iteration: " + str(iteration)
+                raise
+        

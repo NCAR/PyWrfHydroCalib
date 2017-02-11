@@ -139,15 +139,15 @@ def removeOutput(jobData,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/hydro.namelist"
             raise
             
-def cleanCalib(jobData,runDir):
+def cleanCalib(jobData,workDir,runDir):
     """
     Generic function to cleanup calibration-related output, such as text files,
     COMPLETE flags, etc in preparation for the next iteration.
     """
     
-    calibCompleteFlag = runDir + "/CALIB.COMPLETE"
-    calibTbl = runDir + "/CALIB_PARAMS.txt"
-    statsTbl = runDir + "/CALIB_STATS.txt"
+    calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
+    calibTbl = workDir + "/params_new.txt"
+    statsTbl = workDir + "/params_stats.txt"
     
     if os.path.isfile(calibCompleteFlag):
         try:
@@ -168,6 +168,70 @@ def cleanCalib(jobData,runDir):
             os.remove(statsTbl)
         except:
             jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
+            raise
+            
+    filesCheck = glob.glob(workDir + "/*.err")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + workDir + "/*.err"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove error diagnostic files from: " + workDir
+            raise
+            
+    filesCheck = glob.glob(workDir + "/*.out")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + workDir + "/*.out"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove misc diagnostic files from: " + workDir
+            raise
+            
+def scrubParams(jobData,runDir):
+    """
+    Generic function to remove parameter files generated after calibration.
+    This is done to remove the risk of a model being ran with the improper
+    file. It also allows the workflow to remove model output prior to a 
+    simulation but not the new parameter files needed.
+    """
+    fullDomFile = runDir + "/Fulldom.nc"
+    hydroTbl = runDir + "/HYDRO.TBL"
+    soilFile = runDir + "/soil_properties.nc"
+    gwFile = runDir + '/GWBUCKPARM.nc'
+
+    print fullDomFile
+    print hydroTbl
+    print soilFile
+    print gwFile
+    if os.path.isfile(fullDomFile):
+        try:
+            os.remove(fullDomFile)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + fullDomFile
+            raise
+    
+    if os.path.isfile(hydroTbl):
+        try:
+            os.remove(hydroTbl)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + hydroTbl
+            raise
+            
+    if os.path.isfile(soilFile):
+        try:
+            os.remove(soilFile)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + soilFile
+            raise
+            
+    if os.path.isfile(gwFile):
+        try:
+            os.remove(gwFile)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + gwFile
             raise
 
 def cleanRunDir(jobData,runDir):
