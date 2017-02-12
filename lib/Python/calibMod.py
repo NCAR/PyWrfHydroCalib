@@ -786,9 +786,7 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
     Generic function to create R script that will be sourced by R during
     calibration.
     """
-    print jobData.jobName
-    print jobData.gages
-    outPath = jobData.outDir + "/" + jobData.jobName + "/" + str(jobData.gages[gageNum]) + \
+    outPath = jobData.outDir + "/" + jobData.jobName + "/" + str(gageMeta.gage) + \
               "/RUN.CALIB/calibScript.R"
               
     if os.path.isfile(outPath):
@@ -814,14 +812,14 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         fileObj.write(inStr)
         fileObj.write("# Specify run directory containing calibration simulations.\n")
         inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
-                str(jobData.gages[gageNum]) + "/RUN.CALIB'\n"
+                str(gageMeta.gage) + "/RUN.CALIB'\n"
         fileObj.write(inStr)
         #fileObj.write('# Parameter bounds\n')
         #fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
         #fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
         #inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
         fileObj.write('# Basin-Specific Metadata\n')
-        inStr = "siteId <- '" + str(jobData.gages[gageNum]) + "'\n"
+        inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
         inStr = "rtlinkFile <- '" + str(gageMeta.rtLnk) + "'\n"
         fileObj.write(inStr)
