@@ -315,10 +315,25 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 print keyStatus
             elif os.path.isfile(calibLockPath):
                 # Calibration failed and locked directory up.
-                keySlot[basinNum,iteration] = -0.75
-                keyStatus = -0.75
-                runFlag = False
-                runCalib = False
+                # Double check to make sure this is not the first calib that 
+                # failed.
+                if not basinStatus:
+                    runStatus = statusMod.walkMod(begDate,endDate,runDir)
+                    begDate = runStatus[0]
+                    endDate = runStatus[1]
+                    runFlag = runStatus[2]
+                    if begDate == statusData.bCalibDate and runFlag:
+                        # The first calib for iteration 1 failed.
+                        keySlot[basinNum,iteration] = -0.10
+                        keyStatus = -0.10
+                        runFlag = False
+                        runCalib = False
+                    else:
+                        # The main calib failed.
+                        keySlot[basinNum,iteration] = -0.75
+                        keyStatus = -0.75
+                        runFlag = False
+                        runCalib = False
             else:
                 if basinStatus:
                     print "MODEL IS RUNNING"
