@@ -689,6 +689,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
+        try:
+            generateRScript(staticData,gageMeta,gage,int(iteration))
+        except:
+            statusData.errMsg = "ERROR: Failure to write calibration R script."
+            raise
+            
         # Fire off calibration programs.
         cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
         print cmd
@@ -712,6 +718,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             errMod.cleanCalib(statusData,workDir,runDir)
             errMod.scrubParams(statusMod,runDir)
         except:
+            raise
+            
+        try:
+            generateRScript(staticData,gageMeta,gage,int(iteration)+1)
+        except:
+            statusData.errMsg = "ERROR: Failure to write calibration R script."
             raise
             
         # Fire off calibration program.
@@ -769,13 +781,17 @@ def generateRunScript(jobData,gageID,runDir):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateRScript(jobData,gageMeta,gageNum):
+def generateRScript(jobData,gageMeta,gageNum,iteration):
     """
     Generic function to create R script that will be sourced by R during
     calibration.
     """
     outPath = jobData.outDir + "/" + jobData.jobName + "/" + str(jobData.gages[gageNum]) + \
               "/RUN.CALIB/calibScript.R"
+              
+    if os.path.isfile(outPath):
+        # Over-write to update mCurrent to reflect current iteration
+        os.remove(outPath)
     
     if os.path.isfile(outPath):
         jobData.errMsg = "ERROR: Calibration R script: " + outPath + " aleady exists."
@@ -788,6 +804,8 @@ def generateRScript(jobData,gageMeta,gageNum):
         fileObj.write(inStr)
         fileObj.write('# Specify number of calibration iterations.\n')
         inStr = "m <- " + str(jobData.nIter) + '\n'
+        fileObj.write(inStr)
+        inStr = "mCurrent <- " + iteration
         fileObj.write(inStr)
         fileObj.write('# Specify DDS parameter (if used).\n')
         inStr = "r <- " + str(jobData.ddsR) + "\n"

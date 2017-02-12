@@ -22,6 +22,7 @@ from netCDF4 import Dataset
 import os
 import shutil
 import pandas as pd
+import time
 
 def main(argv):
     # Parse arguments. Only input necessary is the run directory.
@@ -57,6 +58,10 @@ def main(argv):
     if not os.path.isfile(rCompletePath):
         sys.exit(1)
         
+    # Sleep for a few seconds in case R is still touching R_COMPLETE, or
+    # from lingering parallel processes.
+    time.sleep(10)
+    
     os.remove(rCompletePath)
     
     # If the params_new file is not present, but the R Complete path was,

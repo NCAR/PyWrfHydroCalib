@@ -257,15 +257,15 @@ def main(argv):
     #        #    errMod.errOut(jobData)
     #    
         # Check to see if program requirements have been met.
-        #if keySlot.sum() == entryValue:
-        #    jobData.calibComplete = 1
-        #    try:
-        #        db.updateCalibStatus(jobData)
-        #    except:
-        #        errMod.errout(jobData)
-        #    jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
-        #    errMod.sendMsg(jobData)
-        #    completeStatus = True
+        if keySlot.sum() == entryValue:
+            jobData.calibComplete = 1
+            try:
+                db.updateCalibStatus(jobData)
+            except:
+                errMod.errout(jobData)
+            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
+            completeStatus = True
         
 if __name__ == "__main__":
     main(sys.argv[1:])
