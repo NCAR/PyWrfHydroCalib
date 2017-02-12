@@ -595,6 +595,29 @@ class Database(object):
             
         return float(results[0])
         
+    def updateIterationStatus(self,jobData,domainID,iteration,gageName,newStatus):
+        """
+        Generic function to update the status of each basin as things progress.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        iterTmp = iteration + 1
+            
+        sqlCmd = "update Calib_Stats set Calib_Status.complete='" + str(newStatus) + "' " + \
+                 "where jobID='" + str(jobID) + "'" + " and domainID='" + str(domainID) + \
+                 "'" + " and iteration='" + str(iterTmp) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
+                             " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
+            raise
+        
     def logCalibParams(self,jobData,jobID,domainID,calibTbl,iteration):
         """
         Generic function for logging newly created parameter values created
@@ -672,26 +695,6 @@ class Database(object):
         kge = str(tblData.kge[0])
         fdc = str(-9999)
         msof = str(tblData.msof[0])
-        # Update Calib_Stats table.
-        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + objF + "', " + \
-                 "Calib_Stats.bias='" + bias + "', Calib_Stats.rmse='" + \
-                 rmse + "', Calib_Stats.cor='" + cor + "', Calib_Stats.nse='" + \
-                 nse + "', Calib_Stats.nselog='" + nselog + "', Calib_Stats.kge='" + \
-                 kge + "', Calib_Stats.fdcerr='" + fdc + \
-                 "', Calib_Stats.msof='" + msof + \
-                 "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
-                 "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
-                 "';"
-            
-        print sqlCmd
-        try:
-            self.conn.execute(sqlCmd)
-            self.db.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
-                             str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
-                             str(iteration)
-            raise
         
         if int(tblData.best[0]) == 1:
             # First reset iteration where best currently is to 0
@@ -721,4 +724,25 @@ class Database(object):
                                  str(jobID) + " domainID: " + str(domainID) + \
                                  " iteration: " + str(iteration)
                 raise
+                
+        # Update Calib_Stats table.
+        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + objF + "', " + \
+                 "Calib_Stats.bias='" + bias + "', Calib_Stats.rmse='" + \
+                 rmse + "', Calib_Stats.cor='" + cor + "', Calib_Stats.nse='" + \
+                 nse + "', Calib_Stats.nselog='" + nselog + "', Calib_Stats.kge='" + \
+                 kge + "', Calib_Stats.fdcerr='" + fdc + \
+                 "', Calib_Stats.msof='" + msof + \
+                 "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
+                 "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
+                 "';"
+            
+        print sqlCmd
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
+                             str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
+                             str(iteration)
+            raise
         

@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- args[1]
+#mCurrent <- args[2]
 
 .libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
 library(rwrfhydro)
@@ -71,12 +72,32 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    # Save and exit
+   #rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
-   system(paste0("touch ", runDir, "/R_COMPLETE"))
+
+   #system(paste0("touch ", runDir, "/R_COMPLETE"))
+   fileConn <- file(paste0(runDir, "/R_COMPLETE"))
+   writeLines('', fileConn)
+   close(fileConn)
+
    quit("no")
 }
 
 if (cyclecount > 0) {
+
+ if (mCurrent < cyclecount) {
+   # Extra check for python workflow. If the counts get off due to a crash, just spit out previous params_new and params_stats.
+   message(paste0("Cycle counts off so repeating last export. mCurrent=", mCurrent, " cyclecount=", cyclecount))
+   if (exists("paramStats")) write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
+   write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+
+   fileConn <- file(paste0(runDir, "/R_COMPLETE"))
+   writeLines('', fileConn)
+   close(fileConn)
+
+   quit("no")
+
+ } else {
 
    # Setup parallel
    if (ncores>1) {
@@ -265,10 +286,17 @@ if (cyclecount > 0) {
 #########################################################
 
    # Save and exit
+   #rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
-   system(paste0("touch ", runDir, "/R_COMPLETE"))
+
+   #system(paste0("touch ", runDir, "/R_COMPLETE"))
+   fileConn <- file(paste0(runDir, "/R_COMPLETE"))
+   writeLines('', fileConn)
+   close(fileConn)
 
    quit("no")
+
+ }
 
 }
 

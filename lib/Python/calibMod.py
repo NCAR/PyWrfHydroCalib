@@ -738,6 +738,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         keyStatus = 0.90
         keySlot[basinNum,iteration] = 0.90
         print keyStatus
+        
+    # Update job status in the Database table.
+    try:
+        db.updateIterationStatus(statusData,int(gageMeta.gageID),iteration,str(gageMeta.gage),keyStatus)
+    except:
+        raise
     
                 
 def generateRunScript(jobData,gageID,runDir):
@@ -805,7 +811,7 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         fileObj.write('# Specify number of calibration iterations.\n')
         inStr = "m <- " + str(jobData.nIter) + '\n'
         fileObj.write(inStr)
-        inStr = "mCurrent <- " + str(iteration)
+        inStr = "mCurrent <- " + str(iteration) + "\n"
         fileObj.write(inStr)
         fileObj.write('# Specify DDS parameter (if used).\n')
         inStr = "r <- " + str(jobData.ddsR) + "\n"
