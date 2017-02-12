@@ -99,6 +99,10 @@ if (cyclecount > 0) {
 
  } else {
 
+   # Read model out and calculate performance metric
+   outPath <- paste0(runDir, "/OUTPUT")
+   print(outPath)
+
    # Setup parallel
    if (ncores>1) {
         parallelFlag <- TRUE
@@ -108,10 +112,6 @@ if (cyclecount > 0) {
    } else {
         parallelFlag <- FALSE
    }
-
-   # Read model out and calculate performance metric
-   outPath <- paste0(runDir, "/OUTPUT")
-   print(outPath)
 
    # Read files
    message("Reading model out files.")
@@ -125,6 +125,9 @@ if (cyclecount > 0) {
    if (length(filesList) == 0) stop("No matching files in specified directory.")
    chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
    })
+
+   # Stop cluster
+   if (parallelFlag) stopCluster(cl)
 
    # Convert to daily
    chrt.d <- Convert2Daily(chrt)
@@ -180,12 +183,8 @@ if (cyclecount > 0) {
       # Output next parameter set
       x_new_out <- c(cyclecount, x_new)
       names(x_new_out)[1] <- "iter"
-      print(x_new_out)
       write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
    }
-
-   # Stop cluster
-   if (parallelFlag) stopCluster(cl)
 
 
 #########################################################
