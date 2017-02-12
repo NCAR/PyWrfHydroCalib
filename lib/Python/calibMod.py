@@ -786,6 +786,8 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
     Generic function to create R script that will be sourced by R during
     calibration.
     """
+    print jobData.jobName
+    print jobData.gages
     outPath = jobData.outDir + "/" + jobData.jobName + "/" + str(jobData.gages[gageNum]) + \
               "/RUN.CALIB/calibScript.R"
               
