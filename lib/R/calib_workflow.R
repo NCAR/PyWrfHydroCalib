@@ -69,11 +69,14 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
 
    x_new_out <- c(cyclecount, x_new)
    names(x_new_out)[1] <- "iter"
-   write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+   # MOVE TO END: write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    # Save and exit
    rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
+   
+   # Write param files
+   write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    #system(paste0("touch ", runDir, "/R_COMPLETE"))
    fileConn <- file(paste0(runDir, "/R_COMPLETE"))
@@ -89,7 +92,7 @@ if (cyclecount > 0) {
    # Extra check for python workflow. If the counts get off due to a crash, just spit out previous params_new and params_stats.
    message(paste0("Cycle counts off so repeating last export. mCurrent=", mCurrent, " cyclecount=", cyclecount))
    if (exists("paramStats")) write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
-   write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+   if (exists("x_new_out")) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    fileConn <- file(paste0(runDir, "/R_COMPLETE"))
    writeLines('', fileConn)
@@ -173,7 +176,7 @@ if (cyclecount > 0) {
 
    # Add best flag and output
    paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics)], data.frame(best=bestFlag))
-   write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
+   #MOVE WRITE TO END: write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
 
    if (cyclecount < m) {
       # Select next parameter set
@@ -183,7 +186,7 @@ if (cyclecount > 0) {
       # Output next parameter set
       x_new_out <- c(cyclecount, x_new)
       names(x_new_out)[1] <- "iter"
-      write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+      #MOVE WRITE TO END: write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
    }
 
 
@@ -288,6 +291,10 @@ if (cyclecount > 0) {
    # Save and exit
    rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
+
+   # Write param files
+   write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
+   if (cyclecount < m) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    #system(paste0("touch ", runDir, "/R_COMPLETE"))
    fileConn <- file(paste0(runDir, "/R_COMPLETE"))

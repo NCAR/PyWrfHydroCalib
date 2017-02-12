@@ -158,6 +158,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             if os.path.isfile(calibCompleteFlag):
                 print "MAIN CALIBRATION COMPLETE! ENTERING DB INFO."
                 try:
+                    # If we are on the last iteration, no new parameters are created.
                     if int(iteration+1) < int(statusData.nIter):
                         db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),int(iteration),statsTbl)
@@ -624,6 +625,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             linkToRst(statusData,gage,runDir)
         except:
             raise
+            
+        # Double check to make sure all old calibration files have been cleaned up, except for newly
+        # created parameter files.
+        try:
+            errMod.cleanCalib(statusData,workDir,runDir)
+        except:
+            raise
         # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
         print begDate
@@ -676,7 +684,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
                 
-         # Fire off model.
+        # clean up old calibration related files, except for new parameter files.
+        try:
+            errMod.cleanCalib(statusData,workDir,runDir)
+        except:
+            raise
+            
+        # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
         print cmd
         try:
