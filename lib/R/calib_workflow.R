@@ -72,7 +72,7 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    # Save and exit
-   #rm(mCurrent)
+   rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
 
    #system(paste0("touch ", runDir, "/R_COMPLETE"))
@@ -286,7 +286,7 @@ if (cyclecount > 0) {
 #########################################################
 
    # Save and exit
-   #rm(mCurrent)
+   rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
 
    #system(paste0("touch ", runDir, "/R_COMPLETE"))
