@@ -180,6 +180,7 @@ if (cyclecount > 0) {
       # Output next parameter set
       x_new_out <- c(cyclecount, x_new)
       names(x_new_out)[1] <- "iter"
+      print(x_new_out)
       write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
    }
 
