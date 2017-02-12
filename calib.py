@@ -248,12 +248,14 @@ def main(argv):
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
                 print keySlot
+                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                #time.sleep(7)
                 print "MOVING ALONG"
                 try:
-                    calibMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
+                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                    time.sleep(7)
                 except:
                     errMod.errOut(jobData)
-                time.sleep(7)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
