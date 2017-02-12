@@ -805,7 +805,7 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         fileObj.write('# Specify number of calibration iterations.\n')
         inStr = "m <- " + str(jobData.nIter) + '\n'
         fileObj.write(inStr)
-        inStr = "mCurrent <- " + iteration
+        inStr = "mCurrent <- " + str(iteration)
         fileObj.write(inStr)
         fileObj.write('# Specify DDS parameter (if used).\n')
         inStr = "r <- " + str(jobData.ddsR) + "\n"
