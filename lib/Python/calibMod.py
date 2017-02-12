@@ -883,9 +883,6 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
     
     runRProgram = workDir + "/calib_workflow.R"
     srcScript = workDir + "/calibScript.R"
-    if not os.path.isfile(srcScript):
-        jobData.errMsg = "ERROR: Necessary R script file: " + srcScript + " not found."
-        raise
         
     if not os.path.isfile(outFile2):
         try:
