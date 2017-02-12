@@ -606,7 +606,7 @@ class Database(object):
         jobID = int(jobData.jobID)
         iterTmp = iteration + 1
             
-        sqlCmd = "update Calib_Stats set Calib_Status.complete='" + str(newStatus) + "' " + \
+        sqlCmd = "update Calib_Stats set Calib_Stats.complete='" + str(newStatus) + "' " + \
                  "where jobID='" + str(jobID) + "'" + " and domainID='" + str(domainID) + \
                  "'" + " and iteration='" + str(iterTmp) + "';"
                  
