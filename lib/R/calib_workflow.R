@@ -294,7 +294,7 @@ if (cyclecount > 0) {
 
    # Write param files
    write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
-   if (cyclecount < m) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+   if (cyclecount < (m+1)) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    #system(paste0("touch ", runDir, "/R_COMPLETE"))
    fileConn <- file(paste0(runDir, "/R_COMPLETE"))
