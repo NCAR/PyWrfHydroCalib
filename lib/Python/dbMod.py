@@ -8,7 +8,6 @@
 import MySQLdb
 import datetime
 from slacker import Slacker
-import sys
 import pandas as pd
 import os
 import shutil
@@ -642,18 +641,15 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to read in table: " + calibTbl
             raise
             
-        print tblData
         paramNames = list(tblData.columns.values)
         
         # Update parameter values in Calib_Params
         for paramName in paramNames:
             if paramName != "iter":
-                print paramNames
                 sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
                          "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
                          "' and iteration='" + str(iteration) + "' and paramName='" + \
                          str(paramName) + "';"
-                print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
@@ -686,7 +682,6 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to read in table: " + statsTbl
             raise
             
-        print tblData
         objF = str(tblData.obj[0])
         bias = str(tblData.bias[0])
         rmse = str(tblData.rmse[0])
@@ -786,7 +781,6 @@ class Database(object):
                      "jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
                      "';"
             
-            print sqlCmd
             try:
                 self.conn.execute(sqlCmd)
                 self.db.commit()
@@ -801,7 +795,6 @@ class Database(object):
             sqlCmd = "update Calib_Stats set Calib_Stats.best='1' where jobID='" + \
                      str(jobID) + "' and domainID='" + str(domainID) + "' and " + \
                      "iteration='" + str(iteration) + "';"
-            print sqlCmd
             try:
                 self.conn.execute(sqlCmd)
                 self.db.commit()
@@ -822,7 +815,6 @@ class Database(object):
                  "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
             
-        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             self.db.commit()

@@ -440,9 +440,7 @@ def setupModels(jobData,db,args):
             raise
             
         try:
-            print calibRProgram
             link = gageDir + '/RUN.CALIB/calib_workflow.R'
-            print link
             os.symlink(calibRProgram,link)
         except:
             wipeJobDir(jobData)
@@ -450,9 +448,7 @@ def setupModels(jobData,db,args):
             raise
 
         try:
-            print calibRUtils
             link = gageDir + "/RUN.CALIB/calib_utils.R"
-            print link
             os.symlink(calibRUtils,link)
         except:
             wipeJobDir(jobData)

@@ -197,7 +197,6 @@ def main(argv):
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
         #for basin in range(0,1):
-            print keySlot
             try:
                 spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
             except:

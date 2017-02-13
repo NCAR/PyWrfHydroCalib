@@ -59,7 +59,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     except:
         raise
         
-    print "BASIN STATUS = " + str(basinStatus)
     # Create path to LOCK file if neeced
     lockPath = workDir + "/RUN.LOCK"
     
@@ -95,7 +94,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = 1.0
                 runFlag = False
            
-    print keyStatus
     # For simulations that are fresh
     if keyStatus == 0.0:
         if basinStatus:
@@ -104,16 +102,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             keyStatus = 0.5
             runFlag = False
         else:
-            print begDate
-            print endDate
-            print "XXXXXX"
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
             endDate = runStatus[1]
             runFlag = runStatus[2]
-            print runFlag
-            print begDate
-            print endDate
             if not runFlag:
                 # Model simulation completed before workflow was restarted
                 keySlot[basinNum] = 1.0
@@ -171,7 +163,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = 1.0
                 
     if keyStatus == -0.25 and runFlag:
-        print keyStatus
         # Restarting model from one crash
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
@@ -201,8 +192,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 
         # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
-        print begDate
-        print endDate
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -243,7 +232,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 
         # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
-        print cmd
         try:
             subprocess.call(cmd,shell=True)
         except:
