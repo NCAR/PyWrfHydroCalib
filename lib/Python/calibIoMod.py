@@ -419,12 +419,12 @@ def setupModels(jobData,db,args):
             raise
             
         # Create Rscript file that will be sourced by R for calibration
-        try:
-            calibMod.generateRScript(jobData,gageData,gage)
-        except:
-            wipeJobDir(jobData)
-            jobData.errMsg = "ERROR: Failure to write calibration R script."
-            raise
+        #try:
+        #    calibMod.generateRScript(jobData,gageData,gage)
+        #except:
+        #    wipeJobDir(jobData)
+        #    jobData.errMsg = "ERROR: Failure to write calibration R script."
+        #    raise
             
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
@@ -440,9 +440,7 @@ def setupModels(jobData,db,args):
             raise
             
         try:
-            print calibRProgram
             link = gageDir + '/RUN.CALIB/calib_workflow.R'
-            print link
             os.symlink(calibRProgram,link)
         except:
             wipeJobDir(jobData)
@@ -450,9 +448,7 @@ def setupModels(jobData,db,args):
             raise
 
         try:
-            print calibRUtils
             link = gageDir + "/RUN.CALIB/calib_utils.R"
-            print link
             os.symlink(calibRUtils,link)
         except:
             wipeJobDir(jobData)

@@ -8,9 +8,9 @@
 import MySQLdb
 import datetime
 from slacker import Slacker
-import sys
 import pandas as pd
 import os
+import shutil
 
 class Database(object):
     def __init__(self,jobData):
@@ -595,6 +595,29 @@ class Database(object):
             
         return float(results[0])
         
+    def updateIterationStatus(self,jobData,domainID,iteration,gageName,newStatus):
+        """
+        Generic function to update the status of each basin as things progress.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        iterTmp = iteration + 1
+            
+        sqlCmd = "update Calib_Stats set Calib_Stats.complete='" + str(newStatus) + "' " + \
+                 "where jobID='" + str(jobID) + "'" + " and domainID='" + str(domainID) + \
+                 "'" + " and iteration='" + str(iterTmp) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
+                             " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
+            raise
+        
     def logCalibParams(self,jobData,jobID,domainID,calibTbl,iteration):
         """
         Generic function for logging newly created parameter values created
@@ -618,18 +641,15 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to read in table: " + calibTbl
             raise
             
-        print tblData
         paramNames = list(tblData.columns.values)
         
         # Update parameter values in Calib_Params
         for paramName in paramNames:
             if paramName != "iter":
-                print paramNames
                 sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
                          "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
                          "' and iteration='" + str(iteration) + "' and paramName='" + \
                          str(paramName) + "';"
-                print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
@@ -640,12 +660,11 @@ class Database(object):
                     print jobData.errMsg
                     raise
                 
-    def logCalibStats(self,jobData,jobID,domainID,iteration,statsTbl):
+    def logCalibStats(self,jobData,jobID,domainID,gage,iteration,statsTbl):
         """
         Generic function for entering calibration statistics into Calib_Stats to
         keep track of performance statistics for each calibration iteration.
         """
-        # Iterations start as 0 in the workflow
         iteration = int(iteration) + 1
         
         if not self.connected:
@@ -663,34 +682,105 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to read in table: " + statsTbl
             raise
             
-        print tblData
-        # Update Calib_Stats table.
-        # PLACEHOLDER TO UPDATE AS CALIB STATS GETS FINALIZED
-        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + str(9) + "', " + \
-                 "Calib_Stats.bias='" + str(9) + "', Calib_Stats.rmse='" + \
-                 str(9) + "', Calib_Stats.cor='" + str(9) + "', Calib.Stats.nse='" + \
-                 str(9) + "', Calib_Stats.nselog='" + str(9) + "', Calib.Stats.kge='" + \
-                 str(9) + "', Calib_Stats.fdcerr='" + str(9) + \
-                 "', Calib_Stats.msof='" + str(9) + \
-                 "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
-                 "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
-                 "';"
-            
-        print sqlCmd
-        try:
-            self.conn.execute(sqlCmd)
-            self.db.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
-                             str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
-                             str(iteration)
-            raise
+        objF = str(tblData.obj[0])
+        bias = str(tblData.bias[0])
+        rmse = str(tblData.rmse[0])
+        cor = str(tblData.cor[0])
+        nse = str(tblData.nse[0])
+        nselog = str(tblData.nselog[0])
+        kge = str(tblData.kge[0])
+        fdc = str(-9999)
+        msof = str(tblData.msof[0])
         
         if int(tblData.best[0]) == 1:
-            # First reset iteration where best currently is to 0
-            sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1';"
+            # This means we need to copy the parameter files that were created over
+            # to the FINAL_PARAMS directory. These will be linked to for the validation
+            # simulation.
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/Fulldom.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/Fulldom.nc"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+                
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+                
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO.TBL"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+                
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/soil_properties.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
             
-            print sqlCmd
+            # First reset iteration where best currently is to 0
+            sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1' and " + \
+                     "jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
+                     "';"
+            
             try:
                 self.conn.execute(sqlCmd)
                 self.db.commit()
@@ -705,7 +795,6 @@ class Database(object):
             sqlCmd = "update Calib_Stats set Calib_Stats.best='1' where jobID='" + \
                      str(jobID) + "' and domainID='" + str(domainID) + "' and " + \
                      "iteration='" + str(iteration) + "';"
-            print sqlCmd
             try:
                 self.conn.execute(sqlCmd)
                 self.db.commit()
@@ -714,4 +803,24 @@ class Database(object):
                                  str(jobID) + " domainID: " + str(domainID) + \
                                  " iteration: " + str(iteration)
                 raise
+                
+        # Update Calib_Stats table.
+        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + objF + "', " + \
+                 "Calib_Stats.bias='" + bias + "', Calib_Stats.rmse='" + \
+                 rmse + "', Calib_Stats.cor='" + cor + "', Calib_Stats.nse='" + \
+                 nse + "', Calib_Stats.nselog='" + nselog + "', Calib_Stats.kge='" + \
+                 kge + "', Calib_Stats.fdcerr='" + fdc + \
+                 "', Calib_Stats.msof='" + msof + \
+                 "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
+                 "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
+                 "';"
+            
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
+                             str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
+                             str(iteration)
+            raise
         

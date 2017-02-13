@@ -149,12 +149,22 @@ def checkYsJobs(jobData):
     if len(jobs) != 0:
         for gageCheck in range(0,len(jobData.gageIDs)):
             jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
+            jobNameCheck2 = "NWM_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
             testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
             if len(testDF) != 0:
                 jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobID) + \
                                  " is already being ran under owner: " + \
                                  str(jobData.owner) + ". User: " + \
-                                 str(userTmp) + " is attempting to initiate a spinup."
+                                 str(userTmp) + " is attempting to initiate the workflow."
+                print "ERROR: You are attempting to initiate a job that is already being " + \
+                      "ran by user: " + str(jobData.owner)
+                raise Exception()
+            testDF = jobs.query("JOB_NAME == '" + jobNameCheck2 + "'")
+            if len(testDF) != 0:
+                jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobID) + \
+                                 " is already being ran under owner: " + \
+                                 str(jobData.owner) + ". User: " + \
+                                 str(userTmp) + " is attempting to initiate the workflow."
                 print "ERROR: You are attempting to initiate a job that is already being " + \
                       "ran by user: " + str(jobData.owner)
                 raise Exception()

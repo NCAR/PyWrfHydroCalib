@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- args[1]
+#mCurrent <- args[2]
 
 .libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
 library(rwrfhydro)
@@ -68,15 +69,42 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
 
    x_new_out <- c(cyclecount, x_new)
    names(x_new_out)[1] <- "iter"
-   write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+   # MOVE TO END: write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    # Save and exit
+   rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
-   system(paste0("touch ", runDir, "/R_COMPLETE"))
+   
+   # Write param files
+   write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+
+   #system(paste0("touch ", runDir, "/R_COMPLETE"))
+   fileConn <- file(paste0(runDir, "/R_COMPLETE"))
+   writeLines('', fileConn)
+   close(fileConn)
+
    quit("no")
 }
 
 if (cyclecount > 0) {
+
+ if (mCurrent < cyclecount) {
+   # Extra check for python workflow. If the counts get off due to a crash, just spit out previous params_new and params_stats.
+   message(paste0("Cycle counts off so repeating last export. mCurrent=", mCurrent, " cyclecount=", cyclecount))
+   if (exists("paramStats")) write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
+   if (exists("x_new_out")) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+
+   fileConn <- file(paste0(runDir, "/R_COMPLETE"))
+   writeLines('', fileConn)
+   close(fileConn)
+
+   quit("no")
+
+ } else {
+
+   # Read model out and calculate performance metric
+   outPath <- paste0(runDir, "/OUTPUT")
+   print(outPath)
 
    # Setup parallel
    if (ncores>1) {
@@ -87,10 +115,6 @@ if (cyclecount > 0) {
    } else {
         parallelFlag <- FALSE
    }
-
-   # Read model out and calculate performance metric
-   outPath <- paste0(runDir, "/OUTPUT")
-   print(outPath)
 
    # Read files
    message("Reading model out files.")
@@ -104,6 +128,9 @@ if (cyclecount > 0) {
    if (length(filesList) == 0) stop("No matching files in specified directory.")
    chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
    })
+
+   # Stop cluster
+   if (parallelFlag) stopCluster(cl)
 
    # Convert to daily
    chrt.d <- Convert2Daily(chrt)
@@ -149,7 +176,7 @@ if (cyclecount > 0) {
 
    # Add best flag and output
    paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics)], data.frame(best=bestFlag))
-   write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
+   #MOVE WRITE TO END: write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
 
    if (cyclecount < m) {
       # Select next parameter set
@@ -159,11 +186,8 @@ if (cyclecount > 0) {
       # Output next parameter set
       x_new_out <- c(cyclecount, x_new)
       names(x_new_out)[1] <- "iter"
-      write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+      #MOVE WRITE TO END: write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
    }
-
-   # Stop cluster
-   if (parallelFlag) stopCluster(cl)
 
 
 #########################################################
@@ -180,8 +204,8 @@ if (cyclecount > 0) {
 
    # Update the Objective function versus the parameter variable
    message("Obj function vs. params...")
-   DT.m1 = melt(x_archive[, 2:length(x_archive)], id.vars = c("obj"), measure.vars =names(x_archive)[2:(length(x_archive)-1)])
-
+   DT.m1 = melt(x_archive[, 1:length(x_archive)], id.vars = c("obj"), measure.vars =names(x_archive)[2:(length(x_archive))])
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
    gg <- gg + ggplot2::ggtitle(paste0("Scatter Plot of Obj. function versus parameters: ", siteId))
@@ -192,7 +216,7 @@ if (cyclecount > 0) {
    # Plot the variables as a function of calibration runs
    message("Params over runs...")
    DT.m1 = melt(x_archive, id.vars = c("iter"), measure.vars =names(x_archive)[2:length(x_archive)])
-
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::ggtitle(paste0("Parameter change with iteration: ", siteId))
@@ -204,7 +228,7 @@ if (cyclecount > 0) {
    message("Metrics plot...")
    DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
                iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
-
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId))
@@ -224,17 +248,18 @@ if (cyclecount > 0) {
    bestRun <- get(paste0("chrt.d.", iter_best))
    bestRun [ , run := "Best Run"]
 
-   obsStrDataplot <- copy(obsStrData)
-   setnames(obsStrDataplot, "obs", "q_cms")
-   obsStrDataplot$agency_cd <- NULL
-   obsStrDataplot[ , run := "Observation"]
+   obsStrDataPlot <- copy(obsStrData)
+   setnames(obsStrDataPlot, "obs", "q_cms")
+   obsStrDataPlot <- obsStrDataPlot[, c("Date", "q_cms", "POSIXct", "site_no"), with=FALSE]
+   obsStrDataPlot <- obsStrDataPlot[as.integer(POSIXct) >= min(as.integer(controlRun$POSIXct)) & as.integer(POSIXct) <= max(as.integer(controlRun$POSIXct)),]
+   obsStrDataPlot[ , run := "Observation"]
 
-   chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataplot), use.names = TRUE)
+   chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
 
    gg <- ggplot2::ggplot(chrt.d_plot, ggplot2::aes(POSIXct, q_cms, color = run))
    gg <- gg + ggplot2::geom_line(size = 0.2, alpha = 0.7)
    gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", siteId))
-   gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
+   #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
    gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 15) + ylab ("Streamflow (cms)")
    gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "red"),
                                  limits=c('Observation','Control Run', "Best Run", "Last Run"),
@@ -264,10 +289,21 @@ if (cyclecount > 0) {
 #########################################################
 
    # Save and exit
+   rm(mCurrent)
    save.image(paste0(runDir, "/proj_data.Rdata"))
-   system(paste0("touch ", runDir, "/R_COMPLETE"))
+
+   # Write param files
+   write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
+   if (cyclecount < (m+1)) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+
+   #system(paste0("touch ", runDir, "/R_COMPLETE"))
+   fileConn <- file(paste0(runDir, "/R_COMPLETE"))
+   writeLines('', fileConn)
+   close(fileConn)
 
    quit("no")
+
+ }
 
 }
 

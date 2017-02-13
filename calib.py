@@ -107,7 +107,7 @@ def main(argv):
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
     if int(jobData.spinComplete) != 1:
-        jobData.errMsg = "ERROR: Validation for job ID: " + str(jobData.jobID) + \
+        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
                          " is NOT complete. You must complete the spinup in order" + \
                          " to run calibration."
         errMod.errOut(jobData)
@@ -216,7 +216,6 @@ def main(argv):
         for iteration in range(0,int(jobData.nIter)):
             try:
                 keySlot[basin,iteration] = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
-                print keySlot[basin,iteration]
             except:
                 errMod.errOut(jobData)
 
@@ -247,24 +246,24 @@ def main(argv):
     
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
-                calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                time.sleep(7)
-                print "MOVING ALONG"
-    #        #try:
-    #        #    calibMod.runModel(jobData,staticData,db,jobData.gages[basin],keySlot,basin)
-    #        #except:
-    #        #    errMod.errOut(jobData)
-    #    
+                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                #time.sleep(7)
+                try:
+                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                    time.sleep(7)
+                except:
+                    errMod.errOut(jobData)
+        
         # Check to see if program requirements have been met.
-        #if keySlot.sum() == entryValue:
-        #    jobData.calibComplete = 1
-        #    try:
-        #        db.updateCalibStatus(jobData)
-        #    except:
-        #        errMod.errout(jobData)
-        #    jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
-        #    errMod.sendMsg(jobData)
-        #    completeStatus = True
+        if keySlot.sum() == entryValue:
+            jobData.calibComplete = 1
+            try:
+                db.updateCalibStatus(jobData)
+            except:
+                errMod.errout(jobData)
+            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
+            completeStatus = True
         
 if __name__ == "__main__":
     main(sys.argv[1:])

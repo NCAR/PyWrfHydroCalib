@@ -22,6 +22,7 @@ from netCDF4 import Dataset
 import os
 import shutil
 import pandas as pd
+import time
 
 def main(argv):
     # Parse arguments. Only input necessary is the run directory.
@@ -57,7 +58,23 @@ def main(argv):
     if not os.path.isfile(rCompletePath):
         sys.exit(1)
         
+    # Sleep for a few seconds in case R is still touching R_COMPLETE, or
+    # from lingering parallel processes.
+    time.sleep(10)
+    
     os.remove(rCompletePath)
+    
+    # If the params_new file is not present, but the R Complete path was,
+    # we are going to assume this was the last iteration and no parameters
+    # need to be produced.
+    if not os.path.isfile(adjTbl):
+        # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating
+        # calibration iteration is complete.
+        try:
+            open(outFlag,'a').close()
+            sys.exit(0)
+        except:
+            sys.exit(1)
     
     try:
         shutil.copy(fullDomOrig,fullDomOut)
