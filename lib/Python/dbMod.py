@@ -701,8 +701,8 @@ class Database(object):
             # This means we need to copy the parameter files that were created over
             # to the FINAL_PARAMS directory. These will be linked to for the validation
             # simulation.
-            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/Fulldom.nc"
-            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/Fulldom.nc"
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/Fulldom.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/Fulldom.nc"
             # Remove existing "best" file.
             if os.path.isfile(outFile):
                 try:
@@ -721,8 +721,8 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
-            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
             # Remove existing "best" file.
             if os.path.isfile(outFile):
                 try:
@@ -741,8 +741,8 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
-            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO.TBL"
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO.TBL"
             # Remove existing "best" file.
             if os.path.isfile(outFile):
                 try:
@@ -761,8 +761,8 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/soil_properties.nc"
-            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/soil_properties.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
             # Remove existing "best" file.
             if os.path.isfile(outFile):
                 try:
