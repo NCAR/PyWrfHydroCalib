@@ -782,7 +782,9 @@ class Database(object):
                 raise
             
             # First reset iteration where best currently is to 0
-            sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1';"
+            sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1' and " + \
+                     "jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
+                     "';"
             
             print sqlCmd
             try:
