@@ -161,7 +161,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     # If we are on the last iteration, no new parameters are created.
                     if int(iteration+1) < int(statusData.nIter):
                         db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
-                    db.logCalibStats(statusData,int(statusData.jobID),int(gageID),int(iteration),statsTbl)
+                    db.logCalibStats(statusData,int(statusData.jobID),int(gageID),str(gage),int(iteration),statsTbl)
                     errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:

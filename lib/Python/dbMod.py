@@ -11,6 +11,7 @@ from slacker import Slacker
 import sys
 import pandas as pd
 import os
+import shutil
 
 class Database(object):
     def __init__(self,jobData):
@@ -663,7 +664,7 @@ class Database(object):
                     print jobData.errMsg
                     raise
                 
-    def logCalibStats(self,jobData,jobID,domainID,iteration,statsTbl):
+    def logCalibStats(self,jobData,jobID,domainID,gage,iteration,statsTbl):
         """
         Generic function for entering calibration statistics into Calib_Stats to
         keep track of performance statistics for each calibration iteration.
@@ -697,6 +698,89 @@ class Database(object):
         msof = str(tblData.msof[0])
         
         if int(tblData.best[0]) == 1:
+            # This means we need to copy the parameter files that were created over
+            # to the FINAL_PARAMS directory. These will be linked to for the validation
+            # simulation.
+            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/Fulldom.nc"
+            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/Fulldom.nc"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+                
+            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
+            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+                
+            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
+            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO.TBL"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+                
+            inFile = str(jobData) + "/" + gage + "/RUN.CALIB/OUTPUT/soil_properties.nc"
+            outFile = str(jobData) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+            
             # First reset iteration where best currently is to 0
             sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1';"
             
