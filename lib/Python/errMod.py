@@ -288,6 +288,6 @@ def sendMsg(jobData):
     elif jobData.slackObj:
         msg1 = "MESSAGE for Job: " + str(jobData.jobID)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
-        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
+        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
     else:
         print msgContent

@@ -252,6 +252,7 @@ def main(argv):
                     calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 except:
                     errMod.errOut(jobData)
+                time.sleep(3)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
