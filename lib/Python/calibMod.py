@@ -153,8 +153,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     if int(iteration+1) < int(statusData.nIter):
                         db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),str(gage),int(iteration),statsTbl)
-                    errMod.removeOutput(statusData,runDir)
-                    errMod.cleanCalib(statusData,workDir,runDir)
+                    #errMod.removeOutput(statusData,runDir)
+                    #errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
                 keySlot[basinNum,iteration] = 1.0
@@ -263,6 +263,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         runFlag = False
                         runCalib = True
                         if calibStatus:
+                            print calibStatus
+                            print basinStatus
+                            print runFlag
                             # Model has completed, and calibration routines are currently being ran.
                             keySlot[basinNum,iteration] = 0.90
                             keyStatus = 0.90
