@@ -19,7 +19,7 @@
 # Top level directory where output from model runs, etc
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
-outDir = /glade/p/nwc/nwmv12_calib
+outDir = /glade/p/nwc/nwmv12_calib/OHRFC
 jobName = TEST_OHRFC_KARSTEN
 acctKey = NRAL0017
 nCoresModel = 16
@@ -42,9 +42,9 @@ ddsR = 0.2
 # Please fill out either email or Slack information. 
 # You must choose one.
 email = karsten@ucar.edu
-slackChannel = 
-slackToken = 
-slackUser =
+slackChannel = #v1_2-calibration
+slackToken = xoxp-114537782628-114473312674-126285613296-134edd3735df24afd2a639610d4622c3
+slackUser = Logan Karsten
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
 wrfExe = /glade/u/home/adugger/WRF_Hydro/binaries/wrf_hydro_NoahMP_NWM_V1.1_161128_Realtime_SpSoil_NoNudg_NoDebug.exe
