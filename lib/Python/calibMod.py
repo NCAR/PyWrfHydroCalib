@@ -83,6 +83,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     lockPath = workDir + "/RUN.LOCK"
     calibLockPath = workDir + "/CALIB.LOCK"
     calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
+    missingFlag = workDir + "/CALIB_STATS_MISSING"
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
     rDataFile = workDir + "/proj_data.Rdata"
@@ -151,7 +152,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 try:
                     # If we are on the last iteration, no new parameters are created.
                     if int(iteration+1) < int(statusData.nIter):
-                        db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
+                        try:
+                            db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
+                        except:
+                            raise
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),str(gage),int(iteration),statsTbl)
                     #errMod.removeOutput(statusData,runDir)
                     #errMod.cleanCalib(statusData,workDir,runDir)
@@ -161,7 +165,30 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = 1.0
                 runFlag = False
                 runCalib = False
-                #raise Exception()
+            elif os.path.isfile(missingFlag):
+                # This is a unique situation where either an improper COMID (linkID) was passed to 
+                # the R program, pulling NA from the model. Or, the observations file contains 
+                # all missing values. For this, convey this to the user through a message, set the
+                # status for all iterations to 1.
+                statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                    "observations for the evaluation period."
+                print statusData.genMsg
+                # set the status for all iterations to 1.
+                try:
+                    db.fillMisingBasin(statusData,int(statusData.jobID),int(gageID))
+                except:
+                    raise
+                # Clean everything up.
+                try:
+                    errMod.removeOutput(statusData,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
+                    errMod.scrubParams(statusData,runDir)
+                except:
+                    raise
+                keySlot[basinNum,:] = 1.0
+                keyStatus = 1.0
+                runFlag = False
+                runCalib = False
             else:
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
@@ -200,6 +227,30 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
                 runFlag = True
+                runCalib = False
+            elif os.path.isfile(missingFlag):
+                # This is a unique situation where either an improper COMID (linkID) was passed to 
+                # the R program, pulling NA from the model. Or, the observations file contains 
+                # all missing values. For this, convey this to the user through a message, set the
+                # status for all iterations to 1.
+                statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                    "observations for the evaluation period."
+                print statusData.genMsg
+                # set the status for all iterations to 1.
+                try:
+                    db.fillMisingBasin(statusData,int(statusData.jobID),int(gageID))
+                except:
+                    raise
+                # Clean everything up.
+                try:
+                    errMod.removeOutput(statusData,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
+                    errMod.scrubParams(statusData,runDir)
+                except:
+                    raise
+                keySlot[basinNum,:] = 1.0
+                keyStatus = 1.0
+                runFlag = False
                 runCalib = False
             else:
                 # This means the calibration failed. Demote status and send message to user.
@@ -263,9 +314,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         runFlag = False
                         runCalib = True
                         if calibStatus:
-                            print calibStatus
-                            print basinStatus
-                            print runFlag
                             # Model has completed, and calibration routines are currently being ran.
                             keySlot[basinNum,iteration] = 0.90
                             keyStatus = 0.90
@@ -832,7 +880,7 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             #inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
             #fileObj.write(inStr)
             fileObj.write("#BSUB -n 1\n")
-            fileObj.write('#BSUB -R "span[ptile=1]"\n')
+            fileObj.write('#BSUB -R "span[ptile=16]"\n')
             inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#BSUB -o ' + workDir + '/%J.out\n'
