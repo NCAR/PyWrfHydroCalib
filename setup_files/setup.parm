@@ -19,7 +19,7 @@
 # Top level directory where output from model runs, etc
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
-outDir = /glade/p/nwc/nwmv12_calib/OHRFC
+outDir = /glade/p/nwc/nwmv12_calib
 jobName = TEST_OHRFC_KARSTEN
 acctKey = NRAL0017
 nCoresModel = 16

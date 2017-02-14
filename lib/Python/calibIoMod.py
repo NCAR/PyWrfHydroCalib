@@ -107,7 +107,6 @@ def setupModels(jobData,db,args):
     try:
         os.mkdir(parentDir)
     except:
-        wipeJobDir(jobData)
         jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
         raise
         
@@ -130,7 +129,6 @@ def setupModels(jobData,db,args):
     # Loop through each basin and setup appropriate directories.
     for gage in range(0,len(jobData.gages)):
         gageDir = parentDir + "/" + str(jobData.gages[gage])
-        print gageDir
         
         try:
             os.mkdir(gageDir)
