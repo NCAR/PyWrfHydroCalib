@@ -246,13 +246,20 @@ def main(argv):
     
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
+                keyStatusCheck1 = keySlot[basin,iteration]
                 #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #time.sleep(7)
                 try:
                     calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 except:
                     errMod.errOut(jobData)
-                time.sleep(3)
+                keyStatusCheck2 = keySlot[basin,iteration]
+                if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
+                    # Put some spacing between launching model simulations to slow down que geting 
+                    # overloaded.
+                    time.sleep(3)
+                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
+                    time.sleep(3)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
