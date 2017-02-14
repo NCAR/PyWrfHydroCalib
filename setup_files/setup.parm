@@ -41,7 +41,7 @@ ddsR = 0.2
 # Specify email to send updates/error messages to.
 # Please fill out either email or Slack information. 
 # You must choose one.
-email = karsten@ucar.edu
+email =
 slackChannel = #v1_2-calibration
 slackToken = xoxp-114537782628-114473312674-126285613296-134edd3735df24afd2a639610d4622c3
 slackUser = Logan Karsten
