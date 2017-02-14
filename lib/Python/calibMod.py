@@ -652,12 +652,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         # If any proj_data.Rdata exists, remove it as it might have been from a failed first attempt.
-        #if os.path.isfile(workDir + '/proj_data.Rdata'):
-        #    try:
-        #        os.remove(workDir + '/proj_data.Rdata')
-        #    except:
-        #        statusData.errMsg = "ERROR: Failure to remove: " + workDir + "/proj_data.Rdata"
-        #        raise
+        if os.path.isfile(workDir + '/proj_data.Rdata'):
+            try:
+                os.remove(workDir + '/proj_data.Rdata')
+            except:
+                statusData.errMsg = "ERROR: Failure to remove: " + workDir + "/proj_data.Rdata"
+                raise
             
         try:
             generateRScript(staticData,gageMeta,gage,int(iteration))
