@@ -82,7 +82,8 @@ def checkYsJobs(jobData):
     pidUnique = os.getpid()
     userTmp = pwd.getpwuid(os.getuid()).pw_name
     
-    csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
     cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
     try:
         subprocess.call(cmd,shell=True)
@@ -188,7 +189,8 @@ def checkBasJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
     cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
     try:
         subprocess.call(cmd,shell=True)
@@ -301,7 +303,8 @@ def checkCalibJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    csvPath = jobData.jobDir + "/BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
+    #csvPath = jobData.jobDir + "/BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
+    csvPath = "./BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
     cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
     try:
         subprocess.call(cmd,shell=True)

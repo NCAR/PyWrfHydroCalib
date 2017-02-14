@@ -250,7 +250,6 @@ def main(argv):
                 #time.sleep(7)
                 try:
                     calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                    time.sleep(7)
                 except:
                     errMod.errOut(jobData)
         
