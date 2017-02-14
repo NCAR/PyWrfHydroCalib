@@ -130,6 +130,7 @@ def setupModels(jobData,db,args):
     # Loop through each basin and setup appropriate directories.
     for gage in range(0,len(jobData.gages)):
         gageDir = parentDir + "/" + str(jobData.gages[gage])
+        print gageDir
         
         try:
             os.mkdir(gageDir)
