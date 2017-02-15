@@ -118,7 +118,7 @@ def main(argv):
     if int(args.contactFlag[0]) == 0:
         print jobData.genMsg
     else:
-        jobData.sendMsg(jobData)
+        errMod.sendMsg(jobData)
                 
                 
 if __name__ == "__main__":
