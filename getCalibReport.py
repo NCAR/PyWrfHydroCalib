@@ -104,6 +104,8 @@ def main(argv):
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " ITERATION: " + str(iteration) + " COMPLETED READY FOR NEXT ITERATION.\n " 
             else:
+                print keyStatusPrev 
+                print iteration
                 if keyStatusPrev == 0.0 and iteration == 1:
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                              " ITERATION: " + str(iteration+1) + ": " + \
