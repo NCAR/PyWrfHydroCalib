@@ -102,7 +102,7 @@ def main(argv):
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " ITERATION: " + str(iteration) + " COMPLETE. READY TO BEGIN NEXT " + \
                          "ITERATION.\n"
-            elif keyStatus == 1.0 and iterComplete == int(jobData.nIter):
+            elif keyStatus == 1.0 and iterComplete == int(jobData.nIter)+1:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " HAS COMPLETED CALIBRATION.\n"
             else:
