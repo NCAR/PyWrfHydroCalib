@@ -95,14 +95,14 @@ def main(argv):
             if keyStatus == 1.0:
                 iterComplete = iterComplete + 1
             elif keyStatus == 0.0:
-                jobData.genMsg = jobData.genMsg + "BASIN: " + str(jobData.gages[basin]) + \
+                jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
                                  " ITERATION: " + str(iteration) + " COMPLETE. READY TO BEGIN NEXT " + \
                                  "ITERATION.\n"
             elif keyStatus == 1.0 and iterComplete == int(jobData.nIter):
-                jobData.genMsg = jobData.genMsg + "BASIN: " + str(jobData.gages[basin]) + \
+                jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
                                  " HAS COMPLETED CALIBRATION.\n"
             else:
-                jobData.genMsg = jobData.genMsg + "BASIN: " + str(jobData.gages[basin]) + \
+                jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
                                  " ITERATION: " + str(iteration) + ": " + \
                                  "\n"
                                  #str(msgDict[str(keyStatus)]) + "\n"
