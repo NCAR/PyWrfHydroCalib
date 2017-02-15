@@ -102,6 +102,7 @@ def main(argv):
                 jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
                                  " HAS COMPLETED CALIBRATION.\n"
             else:
+                print iteration
                 jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
                                  " ITERATION: " + str(iteration) + ": " + \
                                  "\n"
