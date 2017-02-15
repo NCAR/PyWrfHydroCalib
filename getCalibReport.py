@@ -82,16 +82,16 @@ def main(argv):
         
     # Loop through each basin. Determine if which iteration we are on, then report the status
     # of the job for this basin.
-    keyStatus = 0.0
     msgOut = ''
     for basin in range(0,len(jobData.gages)):
+        keyStatus = 0.0
+        keyStatusPrev = 0.0
         # First pull the unique ID for the basin. 
         try:
             domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
         except:
             errMod.errOut(jobData)
         iterComplete = 1 
-        print str(jobData.gages[basin])
         for iteration in range(0,int(jobData.nIter)):
             keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
             if keyStatus == 1.0:
@@ -100,13 +100,14 @@ def main(argv):
                              " HAS COMPLETED CALIBRATION.\n"
                 else:
                     iterComplete = iterComplete + 1
-            elif keyStatus == 0.0:
+            elif keyStatus == 0.0 and keyStatusPrev == 1.0:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
-                         " ITERATION: " + str(iteration) + " READY FOR WORKFLOW.\n " 
+                         " ITERATION: " + str(iteration) + " COMPLETED READY FOR NEXT ITERATION.\n " 
             else:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
-                         " ITERATION: " + str(iteration) + ": " + \
+                         " ITERATION: " + str(iteration+1) + ": " + \
                          str(msgDict[str(keyStatus)]) + "\n"
+            keyStatusPrev = keyStatus
                          
     jobData.genMsg = msgOut
     if int(args.contactFlag[0]) == 0:
