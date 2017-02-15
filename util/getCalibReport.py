@@ -12,7 +12,9 @@
 import argparse
 #import pwd
 import sys
+import os
 
+print os.path.realpath(__file__)
 # Set the Python path to include package specific functions.
 sys.path.insert(0,'../lib/Python')
 
