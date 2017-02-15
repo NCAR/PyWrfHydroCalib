@@ -104,7 +104,8 @@ def main(argv):
             else:
                 jobData.genMsg = jobData.genMsg + "BASIN: " + str(jobData.gages[basin]) + \
                                  " ITERATION: " + str(iteration) + ": " + \
-                                 str(msgDict[str(keyStatus)]) + "\n"
+                                 "\n"
+                                 #str(msgDict[str(keyStatus)]) + "\n"
     if int(args.cdFlag[0]) == 0:
         print jobData.genMsg
     else:
