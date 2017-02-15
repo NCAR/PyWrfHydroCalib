@@ -83,7 +83,7 @@ def main(argv):
     # Loop through each basin. Determine if which iteration we are on, then report the status
     # of the job for this basin.
     keyStatus = 0.0
-    jobData.genMsg = ''
+    msgOut = ''
     for basin in range(0,len(jobData.gages)):
         # First pull the unique ID for the basin. 
         try:
@@ -97,18 +97,20 @@ def main(argv):
             if keyStatus == 1.0:
                 iterComplete = iterComplete + 1
             elif keyStatus == 0.0:
-                jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
-                                 " ITERATION: " + str(iteration) + " COMPLETE. READY TO BEGIN NEXT " + \
-                                 "ITERATION.\n"
+                msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
+                         " ITERATION: " + str(iteration) + " COMPLETE. READY TO BEGIN NEXT " + \
+                         "ITERATION.\n"
             elif keyStatus == 1.0 and iterComplete == int(jobData.nIter):
-                jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
-                                 " HAS COMPLETED CALIBRATION.\n"
+                msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
+                         " HAS COMPLETED CALIBRATION.\n"
             else:
                 print iteration
-                jobData.genMsg = jobData.genMsg[0] + "BASIN: " + str(jobData.gages[basin]) + \
-                                 " ITERATION: " + str(iteration) + ": " + \
-                                 "\n"
-                                 #str(msgDict[str(keyStatus)]) + "\n"
+                print 
+                msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
+                         " ITERATION: " + str(iteration) + ": " + \
+                         "\n"
+                         #str(msgDict[str(keyStatus)]) + "\n"
+    jobData.genMsg = msgOut
     if int(args.cdFlag[0]) == 0:
         print jobData.genMsg
     else:
