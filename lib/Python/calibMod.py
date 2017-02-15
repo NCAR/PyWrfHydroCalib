@@ -157,8 +157,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         except:
                             raise
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),str(gage),int(iteration),statsTbl)
-                    #errMod.removeOutput(statusData,runDir)
-                    #errMod.cleanCalib(statusData,workDir,runDir)
+                    errMod.removeOutput(statusData,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
                 keySlot[basinNum,iteration] = 1.0
@@ -302,17 +302,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     runFlag = runStatus[2]
                     if not runFlag:
                         # Model simulation completed before workflow was restarted. Ready to 
-                        # move onto calibration R code.
+                        # move onto calibration R code. However.... to be safe, we are going
+                        # to re-run the model. There are a couple cracks that occur when we assume
+                        # this is the current model. If a previous model completed, but wasn't 
+                        # completely wiped clean, this will screw up calibration statistics. 
                         # Cleanup any previous calib-related files that may be sitting around.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
                             errMod.scrubParams(statusData,runDir)
                         except:
                             raise
-                        keySlot[basinNum,iteration] = 0.75
-                        keyStatus = 0.75
-                        runFlag = False
-                        runCalib = True
+                        keySlot[basinNum,iteration] = 0.0
+                        keyStatus = 0.0
+                        runFlag = True
+                        runCalib = False
                         if calibStatus:
                             # Model has completed, and calibration routines are currently being ran.
                             keySlot[basinNum,iteration] = 0.90
@@ -328,6 +331,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                             errMod.cleanCalib(statusData,workDir,runDir)
                         except:
                             raise
+                        keySlot[basinNum,iteration] = 0.0
+                        keyStatus = 0.0
                         runFlag = True
                         runCalib = False
         else:
