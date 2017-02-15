@@ -81,7 +81,6 @@ def checkYsJobs(jobData):
     # Get unique PID.
     pidUnique = os.getpid()
     userTmp = pwd.getpwuid(os.getuid()).pw_name
-    userCheck = pwd.getpwuid(os.getuid()).pw_name
     
     #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
     csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
@@ -139,12 +138,9 @@ def checkYsJobs(jobData):
             jobs.SUBMIT_DAY[job] = dayHold
             jobs.SUBMIT_HHMM[job] = hourHold
             
-    # Delete temporary CSV file
-    try:
-        os.remove(csvPath)
-    except:
-        jobData.errMsg = "ERROR: Failure to remove: " + csvPath
-        raise
+    # Delete temporary CSV files
+    cmdTmp = 'rm -rf ./BJOBS_*.csv'
+    subprocess.call(cmdTmp,shell=True)
 
     # Loop through and check to make sure no existing jobs are being ran for any 
     # of the gages.
@@ -208,12 +204,9 @@ def checkBasJob(jobData,gageNum):
         jobData.errMsg = "ERROR: Failure to read in: " + csvPath
         raise
         
-    # Delete temporary CSV file
-    try:
-        os.remove(csvPath)
-    except:
-        jobData.errMsg = "ERROR: Failure to remove: " + csvPath
-        raise
+    # Delete temporary CSV files
+    cmdTmp = 'rm -rf ./BJOBS_*.csv'
+    subprocess.call(cmdTmp,shell=True)
         
     # Compile expected job name that the job should occupy.
     expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])

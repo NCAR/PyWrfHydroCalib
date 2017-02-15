@@ -888,7 +888,7 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
             fileObj.write('#BSUB -W 0:20\n')
-            fileObj.write('#BSUB -q caldera\n')
+            fileObj.write('#BSUB -q geyser\n')
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
