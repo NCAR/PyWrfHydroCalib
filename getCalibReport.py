@@ -100,9 +100,8 @@ def main(argv):
                 iterComplete = iterComplete + 1
             elif keyStatus == 0.0:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
-                         " ITERATION: " + str(iteration) + " COMPLETE. READY TO BEGIN NEXT " + \
-                         "ITERATION.\n"
-            elif keyStatus == 1.0 and iterComplete == int(jobData.nIter)+1:
+                         " ITERATION: " + str(iteration) + " READY FOR WORKFLOW.\n " 
+            elif keyStatus == 1.0 and iterComplete == int(jobData.nIter)-1:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " HAS COMPLETED CALIBRATION.\n"
             else:
