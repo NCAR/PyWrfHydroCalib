@@ -59,7 +59,7 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    names(x_max) <- xnames
 
    # Initialize parameter archive DF
-   message("Initialize parameter archive")
+   write("Initialize parameter archive", stdout())
    x_archive <- as.data.frame(matrix(, nrow=1, ncol=length(xnames)+2+length(metrics)))
    names(x_archive) <- c("iter", xnames, "obj", metrics)
 
@@ -90,7 +90,7 @@ if (cyclecount > 0) {
 
  if (mCurrent < cyclecount) {
    # Extra check for python workflow. If the counts get off due to a crash, just spit out previous params_new and params_stats.
-   message(paste0("Cycle counts off so repeating last export. mCurrent=", mCurrent, " cyclecount=", cyclecount))
+   write(paste0("Cycle counts off so repeating last export. mCurrent=", mCurrent, " cyclecount=", cyclecount), stdout())
    if (exists("paramStats")) write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
    if (exists("x_new_out")) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
@@ -104,7 +104,7 @@ if (cyclecount > 0) {
 
    # Read model out and calculate performance metric
    outPath <- paste0(runDir, "/OUTPUT")
-   print(outPath)
+   write(paste0("Output dir: ", outPath), stdout())
 
    # Setup parallel
    if (ncores>1) {
@@ -117,7 +117,7 @@ if (cyclecount > 0) {
    }
 
    # Read files
-   message("Reading model out files.")
+   write("Reading model out files.", stdout())
    system.time({
    filesList <- list.files(path = outPath,
                           pattern = glob2rx("*.CHRTOUT_DOMAIN*"),
@@ -132,6 +132,15 @@ if (cyclecount > 0) {
    # Stop cluster
    if (parallelFlag) stopCluster(cl)
 
+   # Check for empty output
+   if (nrow(chrt) < 1) {
+       write(paste0("No data found in model output for link ", linkId, " after start date ", startDate), stdout())
+       fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
+       writeLines('', fileConn)
+       close(fileConn)
+       quit("no")
+   }
+
    # Convert to daily
    chrt.d <- Convert2Daily(chrt)
    chrt.d[, site_no := siteId]
@@ -141,6 +150,15 @@ if (cyclecount > 0) {
    setkey(chrt.d, "site_no", "POSIXct")
    setkey(obsStrData, "site_no", "POSIXct")
    chrt.d <- merge(chrt.d, obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+
+   # Check for empty output
+   if (nrow(chrt.d) < 1) {
+       write(paste0("No data found in obs for gage ", gageId, " after start date ", startDate), stdout())
+       fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
+       writeLines('', fileConn)
+       close(fileConn)
+       quit("no")
+   }
 
    # Calc objective function
    F_new <- objFunc(chrt.d$q_cms, chrt.d$obs)
@@ -195,7 +213,7 @@ if (cyclecount > 0) {
 #########################################################
 
    # Update basic objective function plot
-   message("Basin objective function plot...")
+   write("Basin objective function plot...", stdout())
    gg <- ggplot(data=x_archive, aes(x=iter, y=obj)) + 
               geom_point() + theme_bw() + 
               labs(x="run", y="objective function")
@@ -203,7 +221,7 @@ if (cyclecount > 0) {
               plot=gg, units="in", width=6, height=5, dpi=300)
 
    # Update the Objective function versus the parameter variable
-   message("Obj function vs. params...")
+   write("Obj function vs. params...", stdout())
    DT.m1 = melt(x_archive[, 1:length(x_archive)], id.vars = c("obj"), measure.vars =names(x_archive)[2:(length(x_archive))])
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
@@ -214,7 +232,7 @@ if (cyclecount > 0) {
          plot=gg, units="in", width=8, height=6, dpi=300)
 
    # Plot the variables as a function of calibration runs
-   message("Params over runs...")
+   write("Params over runs...", stdout())
    DT.m1 = melt(x_archive, id.vars = c("iter"), measure.vars =names(x_archive)[2:length(x_archive)])
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
@@ -225,7 +243,7 @@ if (cyclecount > 0) {
          plot=gg, units="in", width=8, height=6, dpi=300)
 
    # Plot all the stats
-   message("Metrics plot...")
+   write("Metrics plot...", stdout())
    DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
                iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
@@ -237,7 +255,7 @@ if (cyclecount > 0) {
          plot=gg, units="in", width=8, height=6, dpi=300)
 
    # Plot the time series of the observed, control, best calibration result and last calibration iteration 
-   message("Hydrograph...")
+   write("Hydrograph...", stdout())
    # The first iteration is the control run  called chrt.d.1
    controlRun <- chrt.d.1
    controlRun [, run := "Control Run"]
@@ -269,7 +287,7 @@ if (cyclecount > 0) {
            plot=gg, units="in", width=8, height=4, dpi=300)
 
    # Plot the scatter plot of the best, last and control run.
-   message("Scatterplot...")
+   write("Scatterplot...", stdout())
    maxval <- max(chrt.d_plot$q_cms, rm.na = TRUE)
    gg <- ggplot()+ geom_point(data = merge(chrt.d_plot [run %in% c("Control Run", "Last Run", "Best Run")], obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
                               aes (obs, q_cms, color = run), alpha = 0.5)
@@ -294,7 +312,7 @@ if (cyclecount > 0) {
 
    # Write param files
    write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
-   if (cyclecount < (m+1)) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+   if (cyclecount <= m) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    #system(paste0("touch ", runDir, "/R_COMPLETE"))
    fileConn <- file(paste0(runDir, "/R_COMPLETE"))

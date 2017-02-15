@@ -83,7 +83,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     lockPath = workDir + "/RUN.LOCK"
     calibLockPath = workDir + "/CALIB.LOCK"
     calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
-    missingFlag = workDir + "/CALIB_STATS_MISSING"
+    missingFlag = workDir + "/CALC_STATS_MISSING"
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
     rDataFile = workDir + "/proj_data.Rdata"
