@@ -10,6 +10,9 @@
 # 303-497-2693
 # karsten@ucare.edu
 
+# Set the Python path to include package specific functions.
+sys.path.insert(0,'./lib/Python')
+
 import argparse
 import pwd
 import os
@@ -18,9 +21,6 @@ import sys
 import dbMod
 import errMod
 import time
-
-# Set the Python path to include package specific functions.
-sys.path.insert(0,'./lib/Python')
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
