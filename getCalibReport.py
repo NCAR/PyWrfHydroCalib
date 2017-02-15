@@ -97,15 +97,14 @@ def main(argv):
             print keyStatus
             print iteration
             if keyStatus == 1.0:
-                iterComplete = iterComplete + 1
-                print "TMP COMPLETE = " + str(iterComplete)
-                print "NITER = " + str(jobData.nIter)
+                if iterComplete == int(jobData.nIter):
+                    msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
+                             " HAS COMPLETED CALIBRATION.\n"
+                else:
+                    iterComplete = iterComplete + 1
             elif keyStatus == 0.0:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " ITERATION: " + str(iteration) + " READY FOR WORKFLOW.\n " 
-            elif keyStatus == 1.0 and iterComplete == int(jobData.nIter)-1:
-                msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
-                         " HAS COMPLETED CALIBRATION.\n"
             else:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " ITERATION: " + str(iteration) + ": " + \
