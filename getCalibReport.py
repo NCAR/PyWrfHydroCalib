@@ -98,6 +98,8 @@ def main(argv):
             print iteration
             if keyStatus == 1.0:
                 iterComplete = iterComplete + 1
+                print "TMP COMPLETE = " + iterComplete
+                print "NITER = " + str(jobData.nIter)
             elif keyStatus == 0.0:
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " ITERATION: " + str(iteration) + " READY FOR WORKFLOW.\n " 
@@ -108,6 +110,7 @@ def main(argv):
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " ITERATION: " + str(iteration) + ": " + \
                          str(msgDict[str(keyStatus)]) + "\n"
+                         
         print msgOut
                     
     jobData.genMsg = msgOut
