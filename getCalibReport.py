@@ -93,7 +93,6 @@ def main(argv):
         iterComplete = 1
         for iteration in range(0,int(jobData.nIter)):
             keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
-            print keyStatus
             if keyStatus == 1.0:
                 iterComplete = iterComplete + 1
             elif keyStatus == 0.0:
@@ -104,17 +103,16 @@ def main(argv):
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " HAS COMPLETED CALIBRATION.\n"
             else:
-                print iteration
-                print 
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " ITERATION: " + str(iteration) + ": " + \
-                         "\n"
-                         #str(msgDict[str(keyStatus)]) + "\n"
+                         str(msgDict[str(keyStatus)]) + "\n"
+        print msgOut
+                    
     jobData.genMsg = msgOut
-    if int(args.contactFlag[0]) == 0:
-        print jobData.genMsg
-    else:
-        jobData.sendMsg(jobData)
+    #if int(args.contactFlag[0]) == 0:
+    #    print jobData.genMsg
+    #else:
+    #    jobData.sendMsg(jobData)
                 
                 
 if __name__ == "__main__":
