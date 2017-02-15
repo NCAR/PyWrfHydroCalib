@@ -94,6 +94,8 @@ def main(argv):
         print str(jobData.gages[basin])
         for iteration in range(0,int(jobData.nIter)):
             keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
+            print keyStatus
+            print iteration
             if keyStatus == 1.0:
                 iterComplete = iterComplete + 1
             elif keyStatus == 0.0:
