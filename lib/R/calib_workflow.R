@@ -153,7 +153,7 @@ if (cyclecount > 0) {
 
    # Check for empty output
    if (nrow(chrt.d) < 1) {
-       write(paste0("No data found in obs for gage ", gageId, " after start date ", startDate), stdout())
+       write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())
        fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
        writeLines('', fileConn)
        close(fileConn)
