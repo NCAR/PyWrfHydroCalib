@@ -111,7 +111,7 @@ def main(argv):
                          "\n"
                          #str(msgDict[str(keyStatus)]) + "\n"
     jobData.genMsg = msgOut
-    if int(args.cdFlag[0]) == 0:
+    if int(args.ctFlag[0]) == 0:
         print jobData.genMsg
     else:
         jobData.sendMsg(jobData)
