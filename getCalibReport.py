@@ -94,8 +94,6 @@ def main(argv):
         print str(jobData.gages[basin])
         for iteration in range(0,int(jobData.nIter)):
             keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
-            print keyStatus
-            print iteration
             if keyStatus == 1.0:
                 if iterComplete == int(jobData.nIter):
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
@@ -110,13 +108,11 @@ def main(argv):
                          " ITERATION: " + str(iteration) + ": " + \
                          str(msgDict[str(keyStatus)]) + "\n"
                          
-        print msgOut
-                    
     jobData.genMsg = msgOut
-    #if int(args.contactFlag[0]) == 0:
-    #    print jobData.genMsg
-    #else:
-    #    jobData.sendMsg(jobData)
+    if int(args.contactFlag[0]) == 0:
+        print jobData.genMsg
+    else:
+        jobData.sendMsg(jobData)
                 
                 
 if __name__ == "__main__":
