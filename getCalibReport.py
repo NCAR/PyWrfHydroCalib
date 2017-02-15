@@ -83,6 +83,7 @@ def main(argv):
     # Loop through each basin. Determine if which iteration we are on, then report the status
     # of the job for this basin.
     keyStatus = 0.0
+    jobData.genMsg = ''
     for basin in range(0,len(jobData.gages)):
         # First pull the unique ID for the basin. 
         try:
