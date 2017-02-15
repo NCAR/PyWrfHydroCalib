@@ -20,7 +20,7 @@ import errMod
 import time
 
 # Set the Python path to include package specific functions.
-sys.path.insert(0,'../lib/Python')
+sys.path.insert(0,'./lib/Python')
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
