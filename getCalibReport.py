@@ -106,7 +106,7 @@ def main(argv):
             else:
                 if keyStatusPrev == 0.0 and iteration == 0:
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
-                             " - HAS NOT BEGIN CALIBRATION."
+                             " - HAS NOT BEGUN CALIBRATION.\n"
                 if keyStatusPrev == 1.0 and iteration > 0:
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                              ": " + str(msgDict[str(keyStatus)]) + \
