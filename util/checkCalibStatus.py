@@ -11,8 +11,7 @@
 # karsten@ucare.edu
 
 import argparse
-import pwd
-import os
+#import pwd
 import sys
 import time
 
@@ -31,9 +30,6 @@ def main(argv):
                         help='Job ID specific to calibration spinup.')
     
     args = parser.parse_args()
-    
-    # Get current user who is running this program.
-    userTmp = pwd.getpwuid(os.getuid()).pw_name
     
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
@@ -89,44 +85,53 @@ def main(argv):
         except:
             errMod.errOut(jobData)
         for iteration in range(0,int(jobData.nIter)):
+            # Pull job status for this iteration
             keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
-            print "DOMAIN ID: " + str(domainID)
-            print "STATUS: " + str(keyStatus)
             # if calibration job is running....
             if keyStatus == 0.25 or keyStatus == 0.90:
+                count = 1
                 # Check for calibration job running.
                 for checkTick in range(1,6):
                     calibStatus = statusMod.checkCalibJob(jobData,basin)
                     if not calibStatus:
                         print "CHECK " + str(checkTick) + " SHOWS NO CALIBRATION RUNNING."
                         print "GAGE: " + str(jobData.gages[basin])
-                        if checkTick == 5:
-                            # We have reached the limit of testing, and we are assuming the workflow 
-                            # has crashed. 
-                            jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
-                                             " Appears to Have Crashed for user: " + str(jobData.owner)
-                            errMod.errOut(jobData)
-                        time.sleep(60)
-                    else:
-                        print "FOUND RUNNING JOBID: " + str(jobData.jobID)
-                        sys.exit(0)
+                        # Ping DB again to see if things have updated....
+                        keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
+                        if keyStatus == 0.25 or keyStatus == 0.90:
+                            # Status remains unchanged.
+                            if count == 5:
+                                # We have reached the limit of testing, and we are assuming the workflow 
+                                # has crashed. 
+                                jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
+                                                 " Appears to Have Crashed for user: " + str(jobData.owner)
+                                errMod.errOut(jobData)
+                                time.sleep(60)
+                                count = count + 1
+                            else:
+                                sys.exit(0)
             if keyStatus == 0.5:
+                count = 1
                 # Check for model running
                 for checkTick in range(1.6):
                     modelStatus = statusMod.checkBasJob(jobData,basin)
                     if not modelStatus:
                         print "CHECK " + str(checkTick) + " SHOWS NO MODEL RUNNING."
                         print "GAGE: " + str(jobData.gages[basin])
-                        if checkTick == 5:
-                            # We have reached the limit of testing, and we are assuming the workflow 
-                            # has crashed. 
-                            jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
-                                             " Appears to Have Crashed for user: " + str(jobData.owner)
-                            errMod.errOut(jobData)
-                        time.sleep(60)
-                    else:
-                        print "FOUND RUNNING JOBID: " + str(jobData.jobID)
-                        sys.exit(0)
+                        # Ping DB again to see if things have updated....
+                        keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
+                        if keyStatus == 0.5:
+                            if count == 5:
+                                # We have reached the limit of testing, and we are assuming the workflow 
+                                # has crashed. 
+                                jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
+                                                 " Appears to Have Crashed for user: " + str(jobData.owner)
+                                errMod.errOut(jobData)
+                                time.sleep(60)
+                                count = count + 1
+                            else:
+                                print "FOUND RUNNING JOBID: " + str(jobData.jobID)
+                                sys.exit(0)
                         
 if __name__ == "__main__":
     main(sys.argv[1:])

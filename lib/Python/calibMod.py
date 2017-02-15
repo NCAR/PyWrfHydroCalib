@@ -11,6 +11,8 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
+# TEMPORARY
+import shutil
 
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
@@ -161,6 +163,25 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
+                # TEMPORARY TO MAKE ARCHIVE OF PARAMETER FILES
+                # Make a copy of files, named based on iteration.
+                inPath = runDir + "/Fulldom.nc"
+                outPath = runDir + "/Fulldom_" + str(iteration+2) + ".nc"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                inPath = runDir + "/HYDRO.TBL"
+                outPath = runDir + "/HYDRO_" + str(iteration+2) + ".TBL"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                inPath = runDir + "/soil_properties.nc"
+                outPath = runDir + "/soil_properties_" + str(iteration+2) + ".nc"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                inPath = runDir + "/GWBUCKPARM.nc"
+                outPath = runDir + "/GWBUCKPARM_" + str(iteration+2) + ".nc"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                # END TEMPORARY
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -173,6 +194,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
                                     "observations for the evaluation period."
                 print statusData.genMsg
+                errMod.sendMsg(statusData)
                 # set the status for all iterations to 1.
                 try:
                     db.fillMisingBasin(statusData,int(statusData.jobID),int(gageID))
@@ -194,6 +216,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + calibLockPath
                 print statusData.genMsg
+                errMod.sendMsg(statusData)
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
@@ -219,6 +242,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # If calibration COMPLETE flag listed, upgrade status to 0.0 with runFlag on, signalling 
             # to proceed with model simulation. 
             if os.path.isfile(calibCompleteFlag):
+                # Copy parameter files to the DEFAULT directory
+                try:
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage)
+                except:
+                    raise
                 # Enter in parameters for iteration update.
                 try:
                     db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
@@ -236,6 +264,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
                                     "observations for the evaluation period."
                 print statusData.genMsg
+                # Copy parameter files to the DEFAULT directory
+                try:
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage)
+                except:
+                    raise
                 # set the status for all iterations to 1.
                 try:
                     db.fillMisingBasin(statusData,int(statusData.jobID),int(gageID))

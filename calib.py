@@ -13,8 +13,6 @@ import sys
 import argparse
 #import getpass
 import os
-#import subprocess
-#import pandas as pd
 import time
 import pwd
 import numpy as np
@@ -28,7 +26,6 @@ warnings.filterwarnings("ignore")
 import statusMod
 import dbMod
 import errMod
-import calibIoMod
 import configMod
 import calibMod
 
@@ -218,7 +215,7 @@ def main(argv):
                 keySlot[basin,iteration] = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
             except:
                 errMod.errOut(jobData)
-
+                
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
