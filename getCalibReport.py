@@ -90,7 +90,8 @@ def main(argv):
             domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
         except:
             errMod.errOut(jobData)
-        iterComplete = 1
+        iterComplete = 1 
+        print str(jobData.gages[basin])
         for iteration in range(0,int(jobData.nIter)):
             keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
             if keyStatus == 1.0:
