@@ -206,7 +206,7 @@ def main(argv):
                 spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
             except:
                 errMod.errOut(jobData)
-            time.sleep(30)
+            time.sleep(15)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
