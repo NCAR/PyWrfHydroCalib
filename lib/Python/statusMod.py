@@ -98,6 +98,7 @@ def checkYsJobs(jobData):
         jobData.errMsg = "ERROR: Failure to read in: " + csvPath
         raise
         
+    print jobs
     lenJobs = len(jobs.JOBID)
     
     # Loop through data frame. For jobs across multiple cores, the data frame
@@ -143,6 +144,8 @@ def checkYsJobs(jobData):
 
     # Loop through and check to make sure no existing jobs are being ran for any 
     # of the gages.
+    print str(jobData.owner)
+    print str(userTmp)
     if str(jobData.owner) != str(userTmp):
         if len(jobs) != 0:
             for gageCheck in range(0,len(jobData.gageIDs)):
