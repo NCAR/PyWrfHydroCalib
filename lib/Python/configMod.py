@@ -340,6 +340,7 @@ def checkConfig(parser):
         print "ERROR: You must enter a Slack user name."
         raise Exception()
 
+    print 'a2'
     check = int(parser.get('logistics','nCoresModel'))
     if not check:
         print "ERROR: Number of model cores to use not specified."
