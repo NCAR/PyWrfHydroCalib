@@ -103,6 +103,7 @@ def main(argv):
     # Extract active jobs for job owner
     try:
         statusMod.checkYsJobs(jobData)
+        print statusMod
     except:
         errMod.errOut(jobData)
     
