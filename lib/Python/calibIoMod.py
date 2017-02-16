@@ -7,11 +7,7 @@
 import os
 import pandas as pd
 from errMod import wipeJobDir
-import namelistMod
-import subprocess
-import pwd
 import shutil
-import calibMod
 
 class gageMeta:
     def __init__(self):
@@ -238,7 +234,15 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create directory: " + validDir
             raise
             
-        outDir = gageDir + "/RUN.VALID/OUTPUT"
+        outDir = gageDir + "/RUN.VALID/OUTPUT/CTRL"
+        try:
+            os.mkdir(outDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + outDir
+            raise
+            
+        outDir = gageDir + "/RUN.VALID/OUTPUT/BEST"
         try:
             os.mkdir(outDir)
         except:
@@ -294,11 +298,13 @@ def setupModels(jobData,db,args):
         # Create symbolic links necessary for model runs.
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro.exe"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro.exe"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/wrf_hydro.exe"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro.exe"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/wrf_hydro.exe"
         try:
             os.symlink(str(jobData.exe),link1)
             os.symlink(str(jobData.exe),link2)
             os.symlink(str(jobData.exe),link3)
+            os.symlink(str(jobData.exe),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
@@ -306,11 +312,13 @@ def setupModels(jobData,db,args):
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/CHANPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/CHANPARM.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/CHANPARM.TBL"
         try:
             os.symlink(str(jobData.chanParmTbl),link1)
             os.symlink(str(jobData.chanParmTbl),link2)
             os.symlink(str(jobData.chanParmTbl),link3)
+            os.symlink(str(jobData.chanParmTbl),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to channel parameter table."
@@ -318,21 +326,21 @@ def setupModels(jobData,db,args):
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/GENPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/GENPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/GENPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/GENPARM.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/GENPARM.TBL"
         try:
             os.symlink(str(jobData.genParmTbl),link1)
             os.symlink(str(jobData.genParmTbl),link2)
             os.symlink(str(jobData.genParmTbl),link3)
+            os.symlink(str(jobData.genParmTbl),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to general parameter table."
             raise
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/HYDRO.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/HYDRO.TBL"
         try:
             os.symlink(str(jobData.hydroTbl),link1)
-            os.symlink(str(jobData.hydroTbl),link3)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to hydro table."
@@ -340,11 +348,13 @@ def setupModels(jobData,db,args):
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/LAKEPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/LAKEPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/LAKEPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/LAKEPARM.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/LAKEPARM.TBL"
         try:
             os.symlink(str(jobData.lakeParmTbl),link1)
             os.symlink(str(jobData.lakeParmTbl),link2)
             os.symlink(str(jobData.lakeParmTbl),link3)
+            os.symlink(str(jobData.lakeParmTbl),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to lake parameter table."
@@ -352,11 +362,13 @@ def setupModels(jobData,db,args):
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/MPTABLE.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/MPTABLE.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/MPTABLE.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/MPTABLE.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/MPTABLE.TBL"
         try:
             os.symlink(str(jobData.mpParmTbl),link1)
             os.symlink(str(jobData.mpParmTbl),link2)
             os.symlink(str(jobData.mpParmTbl),link3)
+            os.symlink(str(jobData.mpParmTbl),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to MP parameter table."
@@ -364,11 +376,13 @@ def setupModels(jobData,db,args):
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/SOILPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/SOILPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/SOILPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/SOILPARM.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/SOILPARM.TBL"
         try:
             os.symlink(str(jobData.soilParmTbl),link1)
             os.symlink(str(jobData.soilParmTbl),link2)
             os.symlink(str(jobData.soilParmTbl),link3)
+            os.symlink(str(jobData.soilParmTbl),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to soil parameter table."
@@ -376,11 +390,13 @@ def setupModels(jobData,db,args):
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/URBPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/URBPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/URBPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/URBPARM.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/URBPARM.TBL"
         try:
             os.symlink(str(jobData.urbParmTbl),link1)
             os.symlink(str(jobData.urbParmTbl),link2)
             os.symlink(str(jobData.urbParmTbl),link3)
+            os.symlink(str(jobData.urbParmTbl),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to urban parameter table."
@@ -388,11 +404,13 @@ def setupModels(jobData,db,args):
             
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/VEGPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/VEGPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/VEGPARM.TBL"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/VEGPARM.TBL"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/VEGPARM.TBL"
         try:
             os.symlink(str(jobData.vegParmTbl),link1)
             os.symlink(str(jobData.vegParmTbl),link2)
             os.symlink(str(jobData.vegParmTbl),link3)
+            os.symlink(str(jobData.vegParmTbl),link4)
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Unable to create symbolic link to vegetation parameter table."

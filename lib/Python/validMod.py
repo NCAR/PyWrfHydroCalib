@@ -12,7 +12,7 @@ import statusMod
 import errMod
 import subprocess
 
-def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
+def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -23,12 +23,29 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     the LSM and hydro restart files must be present in order for the
     model to restart. 
     """
-    runDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
+    # First check to make sure control simulation stats is 1.0.
+    if run == 1:
+        if keySlot[basinNum,0] < 1.0:
+            return
+            
+    if run == 0:
+        # Control run
+        runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/CTRL/OUTPUT"
+    else:
+        # Run with best calibrated parameters
+        runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/BEST/OUTPUT"
     if not os.path.isdir(runDir):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
         
-    # PLACEHOLDER FOR MAKING SYMBOLIC LINKS TO RESTART FILES.
+    workDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
+    
+    # Make symbolic links as necssary.
+    try:
+        linkToRst(statusData,gage,runDir)
+    except:
+        raise
+        
     # If BSUB run script doesn't exist, create it here.
     bsubFile = runDir + "/run_NWM.sh"
     if not os.path.isfile(bsubFile):
@@ -49,7 +66,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         raise
         
     # Initialize status
-    keyStatus = keySlot[basinNum]
+    keyStatus = keySlot[basinNum,run]
     
     try:
         basinStatus = statusMod.checkBasJob(statusData,basinNum)
@@ -69,7 +86,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     if keyStatus == 0.5:
         # If a model is running for this basin, continue and set keyStatus to 0.5
         if basinStatus:
-            keySlot[basinNum] = 0.5
+            keySlot[basinNum,run] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -84,11 +101,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                                     " Failed. Attempting to restart."
                 print statusData.genMsg
                 errMod.sendMsg(statusData)
-                keySlot[basinNum] = -0.25
+                keySlot[basinNum,run] = -0.25
                 keyStatus = -0.25
             else:
                 # Model has completed!
-                keySlot[basinNum] = 1.0
+                keySlot[basinNum,run] = 1.0
                 keyStatus = 1.0
                 runFlag = False
            
@@ -97,7 +114,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     if keyStatus == 0.0:
         if basinStatus:
             # Model is still running from previous instance of workflow. Allow it to continue.
-            keySlot[basinNum] = 0.5
+            keySlot[basinNum,run] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -113,7 +130,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             print endDate
             if not runFlag:
                 # Model simulation completed before workflow was restarted
-                keySlot[basinNum] = 1.0
+                keySlot[basinNum,run] = 1.0
                 keyStatus = 1.0
                 runFlag = False
                 
@@ -130,11 +147,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                keySlot[basinNum] = 0.0
+                keySlot[basinNum,run] = 0.0
                 keyStatus = 0.0
             else:
                 # Model sucessfully completed.
-                keySlot[basinNum] = 1.0
+                keySlot[basinNum,run] = 1.0
                 keyStatus = 1.0
                 runFlag = False
                 
@@ -143,7 +160,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if basinStatus:
             # Model is running again, upgrade status
             # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
-            keySlot[basinNum] = 0.5
+            keySlot[basinNum,run] = 0.5
             keyStatus = 0.5
             runFlag = False
         else:
@@ -159,12 +176,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 errMod.sendMsg(statusData)
                 print statusData.genMsg
                 open(lockPath,'a').close()
-                keySlot[basinNum] = -1.0
+                keySlot[basinNum,run] = -1.0
                 keyStatus = -1.0
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt.
-                keySlot[basinNum] = 1.0
+                keySlot[basinNum,run] = 1.0
                 keyStatus = 1.0
                 
     if keyStatus == -0.25 and runFlag:
@@ -178,14 +195,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if os.path.isfile(check2):
             os.remove(check2)
         
-        if begDate == staticData.bSpinDate:
+        if begDate == staticData.bValidDate:
             startType = 1
         else:
             startType = 2
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,run+2)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,run+2)
         except:
             raise
             
@@ -208,7 +225,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
-        keySlot[basinNum] = -0.5
+        keySlot[basinNum,run] = -0.5
         
     if keyStatus == 0.0 and runFlag:
         # Model needs to be either ran, or restarted
@@ -220,14 +237,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if os.path.isfile(check2):
             os.remove(check2)
         
-        if begDate == staticData.bSpinDate:
+        if begDate == staticData.bValidDate:
             startType = 1
         else:
             startType = 2
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate)
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,run+2)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,run+2)
         except:
             raise
             
@@ -248,7 +265,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             raise
             
         keyStatus = 0.5
-        keySlot[basinNum] = 0.5
+        keySlot[basinNum,run] = 0.5
                 
 def generateRunScript(jobData,gageID,runDir):
     """
@@ -290,3 +307,24 @@ def generateRunScript(jobData,gageID,runDir):
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
+        
+def linkToRst(statusData,gage,runDir):
+    """
+    Generic function to link to necessary restart files from the spinup.
+    """
+    # Check to make sure symbolic link to spinup state exists.
+    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    if not os.path.isfile(check1):
+        statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+        raise Exception()
+    if not os.path.isfile(check2):
+        statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+        raise Exception()
+    # Create links if they don't exist
+    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    if not os.path.islink(link1):
+        os.symlink(check1,link1)
+    if not os.path.islink(link2):
+        os.symlink(check2,link2)

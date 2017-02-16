@@ -14,8 +14,6 @@ import argparse
 import sys
 import os
 
-# Compose path 
-print os.path.realpath(__file__)
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
 pathSplit = prPath.split('/')
@@ -23,8 +21,7 @@ libPath = '/'
 for j in range(1,len(pathSplit)-2):
     libPath = libPath + pathSplit[j] + '/'
 libPath = libPath + 'lib/Python'
-print libPath
-sys.path.insert(0,'../lib/Python')
+sys.path.insert(0,libPath)
 
 import statusMod
 import dbMod

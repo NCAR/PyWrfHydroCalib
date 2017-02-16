@@ -10,16 +10,21 @@
 
 import sys
 import argparse
+import os
 
 # Set the Python path to include package specific functions.
-sys.path.insert(0,'./lib/Python')
+prPath = os.path.realpath(__file__)
+pathSplit = prPath.split('/')
+libPath = '/'
+for j in range(1,len(pathSplit)-1):
+    libPath = libPath + pathSplit[j] + '/'
+libPath = libPath + 'lib/Python'
+sys.path.insert(0,libPath)
 
 import warnings
 warnings.filterwarnings("ignore")
 
 import configMod
-import calibIoMod
-import errMod
 import dbMod
 
 def main(argv):

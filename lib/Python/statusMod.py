@@ -82,7 +82,6 @@ def checkYsJobs(jobData):
     pidUnique = os.getpid()
     userTmp = pwd.getpwuid(os.getuid()).pw_name
     
-    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
     csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
     cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
     try:
@@ -139,7 +138,7 @@ def checkYsJobs(jobData):
             jobs.SUBMIT_HHMM[job] = hourHold
             
     # Delete temporary CSV files
-    cmdTmp = 'rm -rf ./BJOBS_*.csv'
+    cmdTmp = 'rm -rf ' + csvPath
     subprocess.call(cmdTmp,shell=True)
 
     # Loop through and check to make sure no existing jobs are being ran for any 
@@ -205,7 +204,7 @@ def checkBasJob(jobData,gageNum):
         raise
         
     # Delete temporary CSV files
-    cmdTmp = 'rm -rf ./BJOBS_*.csv'
+    cmdTmp = 'rm -rf ' + csvPath
     subprocess.call(cmdTmp,shell=True)
         
     # Compile expected job name that the job should occupy.
@@ -269,8 +268,6 @@ def walkMod(bDate,eDate,runDir):
             #    if checkLsm == lsmSize and checkHydro == hydroSize:
             #        bDate = dCurrent
             
-    #print bDate
-    #print eDate
     # If the bDate has reached the eDate, this means the model completed as expected.
     if bDate == eDate:
         runFlag = False
@@ -298,7 +295,6 @@ def checkCalibJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    #csvPath = jobData.jobDir + "/BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
     csvPath = "./BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
     cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
     try:
