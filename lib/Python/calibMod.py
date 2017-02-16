@@ -782,7 +782,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # Fire off calibration program.
         cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
         try:
-            subprocess.call(cmd,shell=True)
+            if iteration == 0:
+                subprocess.call(cmd,shell=True)
         except:
             statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
@@ -915,9 +916,9 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
             #fileObj.write('#BSUB -x\n')
-            #inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
-            #fileObj.write(inStr)
-            fileObj.write("#BSUB -n 1\n")
+            inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
+            fileObj.write(inStr)
+            #fileObj.write("#BSUB -n 1\n")
             #fileObj.write('#BSUB -R "span[ptile=16]"\n')
             inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
