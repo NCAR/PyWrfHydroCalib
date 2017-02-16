@@ -201,7 +201,6 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            print jobData.gages[basin]
             try:
                 spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
             except:
