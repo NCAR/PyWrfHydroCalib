@@ -105,6 +105,7 @@ def main(argv):
                         print "GAGE: " + str(jobData.gages[basin])
                         # Ping DB again to see if things have updated....
                         keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
+                        print keyStatus
                         if keyStatus == 0.25 or keyStatus == 0.90:
                             # Status remains unchanged.
                             if count == 5:
