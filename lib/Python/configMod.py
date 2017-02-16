@@ -320,6 +320,7 @@ def checkConfig(parser):
         print "ERROR: Invalid account key for calibration workflow."
         raise Exception()
         
+    print 'a'
     # Either email or Slack must be chosen. If Slack is chosen, user
     # must provide both channel and API token.
     check1 = str(parser.get('logistics','email'))
@@ -352,6 +353,7 @@ def checkConfig(parser):
         print "ERROR: Number of model cores chosen must be multiple of 16"
         raise Exception()
         
+    print 'b'
     check = int(parser.get('logistics','nCoresR'))
     if not check:
         print "ERROR: Number of R Cores to use not specified."
@@ -401,6 +403,7 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise Exception()
         
+    print 'c'
     #check = str(parser.get('logistics','gwParmTbl'))
     #if len(check) == 0:
     #    print "ERROR: Zero length groundwater parameter table provided."
