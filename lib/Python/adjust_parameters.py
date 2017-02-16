@@ -23,7 +23,6 @@ import os
 import shutil
 import pandas as pd
 import time
-#from mpi4py import MPI
 
 def main(argv):
     # Parse arguments. Only input necessary is the run directory.
@@ -54,20 +53,8 @@ def main(argv):
     gwOut = runDir + '/GWBUCKPARM.nc'
     outFlag = workDir + "/CALIB_ITER.COMPLETE"
     
-    # It's possible this job was submitted in a parallel enviroment on either
-    # Yellowstone, Geyser, or Caldera. This would have been done to speed
-    # up R reads, but for this program, we only need to run things from one
-    # processor. 
-    # Establish MPI objects
-    #comm = MPI.COMM_WORLD
-    #rank = comm.Get_rank()
-    
-    print "TEST TEST TEST"
-    #print "RANK TEST = " + str(rank)
-    #if rank == 0:
     # If R COMPLETE flag not present, this implies the R code didn't run
     # to completion.
-    #print "RANK = " + str(rank)
     if not os.path.isfile(rCompletePath):
         sys.exit(1)
         
@@ -193,8 +180,5 @@ def main(argv):
     except:
         sys.exit(1)
             
-    # Shutdown MPI
-    #comm.Disconnect()
-        
 if __name__ == "__main__":
     main(sys.argv[1:])

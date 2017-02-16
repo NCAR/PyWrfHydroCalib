@@ -782,8 +782,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # Fire off calibration program.
         cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
         try:
-            if iteration == 0:
-                subprocess.call(cmd,shell=True)
+            subprocess.call(cmd,shell=True)
         except:
             statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
@@ -872,10 +871,6 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
                 str(gageMeta.gage) + "/RUN.CALIB'\n"
         fileObj.write(inStr)
-        #fileObj.write('# Parameter bounds\n')
-        #fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
-        #fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
-        #inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
         fileObj.write('# Basin-Specific Metadata\n')
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
