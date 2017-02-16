@@ -98,7 +98,6 @@ def checkYsJobs(jobData):
         jobData.errMsg = "ERROR: Failure to read in: " + csvPath
         raise
         
-    print jobs
     lenJobs = len(jobs.JOBID)
     
     # Loop through data frame. For jobs across multiple cores, the data frame
