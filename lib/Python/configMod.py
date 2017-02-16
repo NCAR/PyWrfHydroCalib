@@ -472,6 +472,10 @@ def checkConfig(parser):
     if bDate >= eDate:
         print "ERROR: Must specify ending spinup date greater than beginning spinup date."
         raise Exception()
+    # Impose a restriction here that the beg/end day must fall on the 1st of the month.
+    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+        print "ERROR: You must specify beg/end spinup day to be on the 1st of the month."
+        raise Exception()
         
     bDate = parser.get('logistics','bCalibDate')
     eDate = parser.get('logistics','eCalibDate')
@@ -490,6 +494,10 @@ def checkConfig(parser):
         print "ERROR: Must specify the beginning date for calibration evaluation date " + \
               " that is before the ending date for calibration simulations."
         raise Exception()
+    # Impose a restriction here that the beg/end day must fall on the 1st of the month.
+    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+        print "ERROR: You must specify beg/end calib day to be on the 1st of the month."
+        raise Exception()
         
     bDate = parser.get('logistics','bValidDate')
     eDate = parser.get('logistics','eValidDate')
@@ -507,6 +515,10 @@ def checkConfig(parser):
     if bEDate >= eDate:
         print "ERROR: Must specify the beginning date for validation evaluation date " + \
               " that is before the ending date for validation simulations."
+        raise Exception()
+    # Impose a restriction here that the beg/end day must fall on the 1st of the month.
+    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+        print "ERROR: You must specify beg/end validation day to be on the 1st of the month."
         raise Exception()
     
     # Check gauge information
