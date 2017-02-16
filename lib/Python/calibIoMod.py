@@ -234,6 +234,14 @@ def setupModels(jobData,db,args):
             jobData.errMsg = "ERROR: Failure to create directory: " + validDir
             raise
             
+        outDir = gageDir + "/RUN.VALID/OUTPUT"
+        try:
+            os.mkdir(outDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + outDir
+            raise
+            
         outDir = gageDir + "/RUN.VALID/OUTPUT/CTRL"
         try:
             os.mkdir(outDir)

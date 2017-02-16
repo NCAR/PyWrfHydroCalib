@@ -242,12 +242,11 @@ def createJob(argsUser):
         raise Exception()
         
     # Check entries into the config file to make sure they make sense.
-    checkConfig(parser)
-    #try:
-    #    checkConfig(parser)
-    #except:
-    #    print "ERROR: Improper Entries Into Config File."
-    #    raise
+    try:
+        checkConfig(parser)
+    except:
+        print "ERROR: Improper Entries Into Config File."
+        raise
         
     # Initialize job object
     jobObj = jobMeta()
@@ -320,14 +319,12 @@ def checkConfig(parser):
         print "ERROR: Invalid account key for calibration workflow."
         raise Exception()
         
-    print 'a'
     # Either email or Slack must be chosen. If Slack is chosen, user
     # must provide both channel and API token.
     check1 = str(parser.get('logistics','email'))
     check2 = str(parser.get('logistics','slackChannel'))
     check3 = str(parser.get('logistics','slackToken'))
     check4 = str(parser.get('logistics','slackUser'))
-    print 'ba'
     if len(check1) > 0 and len(check2) > 0:
         print "ERROR: You must choose either email or Slack for error reporting."
         raise Exception()
@@ -341,7 +338,6 @@ def checkConfig(parser):
         print "ERROR: You must enter a Slack user name."
         raise Exception()
 
-    print 'a2'
     check = int(parser.get('logistics','nCoresModel'))
     if not check:
         print "ERROR: Number of model cores to use not specified."
@@ -355,7 +351,6 @@ def checkConfig(parser):
         print "ERROR: Number of model cores chosen must be multiple of 16"
         raise Exception()
         
-    print 'b'
     check = int(parser.get('logistics','nCoresR'))
     if not check:
         print "ERROR: Number of R Cores to use not specified."
@@ -405,7 +400,6 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise Exception()
         
-    print 'c'
     #check = str(parser.get('logistics','gwParmTbl'))
     #if len(check) == 0:
     #    print "ERROR: Zero length groundwater parameter table provided."

@@ -46,7 +46,6 @@ def main(argv):
     args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
-    #jobData = configMod.createJob(args)
     try:
          jobData = configMod.createJob(args)
     except:
