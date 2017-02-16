@@ -72,7 +72,7 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    # MOVE TO END: write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
    # Save and exit
-   rm(mCurrent)
+   rm(objFn, mCurrent, r, siteId, rtlinkFile, linkId, startDate, ncores)
    save.image(paste0(runDir, "/proj_data.Rdata"))
    
    # Write param files
@@ -110,14 +110,15 @@ if (cyclecount > 0) {
    if (ncores>1) {
         parallelFlag <- TRUE
         library(doParallel)
-        cl <- makeForkCluster(ncores)
+        #cl <- makeForkCluster(ncores)
+        cl <- makePSOCKcluster(ncores)
         registerDoParallel(cl)
    } else {
         parallelFlag <- FALSE
    }
 
    # Read files
-   write("Reading model out files.", stdout())
+   write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
    system.time({
    filesList <- list.files(path = outPath,
                           pattern = glob2rx("*.CHRTOUT_DOMAIN*"),
@@ -205,6 +206,7 @@ if (cyclecount > 0) {
       x_new_out <- c(cyclecount, x_new)
       names(x_new_out)[1] <- "iter"
       #MOVE WRITE TO END: write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+      write(x_new_out, stdout())
    }
 
 
@@ -308,7 +310,7 @@ if (cyclecount > 0) {
 #########################################################
 
    # Save and exit
-   rm(mCurrent)
+   rm(objFn, mCurrent, r, siteId, rtlinkFile, linkId, startDate, ncores)
    save.image(paste0(runDir, "/proj_data.Rdata"))
 
    # Write param files
@@ -319,6 +321,8 @@ if (cyclecount > 0) {
    fileConn <- file(paste0(runDir, "/R_COMPLETE"))
    writeLines('', fileConn)
    close(fileConn)
+
+   write(summary(proc.time()), stdout())
 
    quit("no")
 

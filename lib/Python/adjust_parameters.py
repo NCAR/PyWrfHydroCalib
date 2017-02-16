@@ -133,6 +133,7 @@ def main(argv):
     
         # Loop through and adjust each parameter accordingly.
         for param in paramNames:
+            print param
             if param == "bexp":
                 idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0])
             

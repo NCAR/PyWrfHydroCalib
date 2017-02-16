@@ -112,11 +112,11 @@ def main(argv):
                                 jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
                                                  " Appears to Have Crashed for user: " + str(jobData.owner)
                                 errMod.errOut(jobData)
-                                time.sleep(60)
                         if keyStatus == 0.50 or keyStatus == 1.00:
                             # Calibration program completed, and job has moed on.
                             print "FOUND RUNNING CALIBRATION: " + str(jobData.jobID)
                             sys.exit(0)
+                    time.sleep(60)
             if keyStatus == 0.5:
                 # Check for model running
                 for checkTick in range(1,6):
@@ -133,11 +133,10 @@ def main(argv):
                                 jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
                                                  " Appears to Have Crashed for user: " + str(jobData.owner)
                                 errMod.errOut(jobData)
-                                time.sleep(60)
                         if keyStatus == 0.75 or keyStatus == 0.90:
                             # Model simulation has completed and moved on.
                             print "FOUND RUNNING JOBID: " + str(jobData.jobID)
                             sys.exit(0)
-                        
+                    time.sleep(60)
 if __name__ == "__main__":
     main(sys.argv[1:])
