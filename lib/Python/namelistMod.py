@@ -16,7 +16,9 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     #                   gageData
     #       genFlag = 1 indicartes a calibration - pull HYDRO.TBL, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from the run directory.
-    #       genFlag = 2 Indicates validation - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 2 Indicates validation CTRL - pull HYDRO.TBL, Fulldom.nc,
+    #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #       genFlag = 3 Indicates validation BEST - pull HYDRO.TBL, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
     # Create path for the namelist file
     pathOut = outDir + "/namelist.hrldas"
@@ -44,7 +46,14 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/OUTPUT/soil_properties.nc"
+                     str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/soil_properties.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise
+            inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
+        if genFlag == 3:
+            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                     str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise
@@ -168,7 +177,9 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     #                   gageData
     #       genFlag = 1 indicartes a calibration - pull HYDRO.TBL, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from the run directory.
-    #       genFlag = 2 Indicates validation - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 2 Indicates validation CTRL - pull HYDRO.TBL, Fulldom.nc,
+    #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #       genFlag = 3 Indicates validation BEST - pull HYDRO.TBL, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
     # Create path for the namelist file.
     pathOut = outDir + "/hydro.namelist"
@@ -202,6 +213,13 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                 raise
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 2:
+            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                     str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/Fulldom.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise
+            inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
+        if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/Fulldom.nc"
             if not os.path.isfile(pthTmp):
@@ -250,7 +268,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         inStr = ' CHRTOUT_GRID = ' + str(jobData.chrtoutGrid) + ' ! Netcdf grid of channel streamflow values' + '\n'
         fileObj.write(inStr)
-        #inStr = ' LSMOUT_DOMAN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
         inStr = ' LSMOUT_DOMAIN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
         fileObj.write(inStr)
         inStr = ' RTOUT_DOMAIN = ' + str(jobData.rtoutDomain) + ' ! Netcdf grid of terrain routing variables on routing grid\n'
@@ -296,7 +313,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' ZSOIL8(4) = ' + str((0.0 - jobData.soilThick[0] - jobData.soilThick[1] - jobData.soilThick[2] - jobData.soilThick[3])) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        # PLACEHOLDER FOR DXRT and AGGFACRT
         fileObj.write('!Specify the grid spacing of the terrain routing grid...(meters)\n')
         fileObj.write(' DXRT = 250.0\n')
         fileObj.write('\n')
@@ -351,6 +367,13 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                 raise
             inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
         if genFlag == 2:
+            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                     str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise
+            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+        if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
             if not os.path.isfile(pthTmp):

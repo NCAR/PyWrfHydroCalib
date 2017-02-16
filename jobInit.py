@@ -14,10 +14,17 @@
 
 import sys
 import argparse
+import os
 #import getpass
 
 # Set the Python path to include package specific functions.
-sys.path.insert(0,'./lib/Python')
+prPath = os.path.realpath(__file__)
+pathSplit = prPath.split('/')
+libPath = '/'
+for j in range(1,len(pathSplit)-1):
+    libPath = libPath + pathSplit[j] + '/'
+libPath = libPath + 'lib/Python'
+sys.path.insert(0,libPath)
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -92,11 +99,10 @@ def main(argv):
         errMod.errOut(jobData)
        
     # Create DB entries for job name
-    db.enterJobID(jobData)
-    #try:
-    #    db.enterJobID(jobData)
-    #except:
-    #    errMod.errOut(jobData)
+    try:
+        db.enterJobID(jobData)
+    except:
+        errMod.errOut(jobData)
         
     # Pull Job ID from newly created job. Will be used for calibration 
     # parameter DB entries

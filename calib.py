@@ -13,14 +13,18 @@ import sys
 import argparse
 #import getpass
 import os
-#import subprocess
-#import pandas as pd
 import time
 import pwd
 import numpy as np
 
 # Set the Python path to include package specific functions.
-sys.path.insert(0,'./lib/Python')
+prPath = os.path.realpath(__file__)
+pathSplit = prPath.split('/')
+libPath = '/'
+for j in range(1,len(pathSplit)-1):
+    libPath = libPath + pathSplit[j] + '/'
+libPath = libPath + 'lib/Python'
+sys.path.insert(0,libPath)
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -28,7 +32,6 @@ warnings.filterwarnings("ignore")
 import statusMod
 import dbMod
 import errMod
-import calibIoMod
 import configMod
 import calibMod
 
@@ -218,7 +221,7 @@ def main(argv):
                 keySlot[basin,iteration] = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
             except:
                 errMod.errOut(jobData)
-
+                
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
@@ -246,13 +249,21 @@ def main(argv):
     
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
+                keyStatusCheck1 = keySlot[basin,iteration]
                 #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #time.sleep(7)
+                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 try:
                     calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                    time.sleep(7)
                 except:
                     errMod.errOut(jobData)
+                keyStatusCheck2 = keySlot[basin,iteration]
+                if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
+                    # Put some spacing between launching model simulations to slow down que geting 
+                    # overloaded.
+                    time.sleep(3)
+                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
+                    time.sleep(3)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:

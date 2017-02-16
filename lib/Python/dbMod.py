@@ -824,3 +824,24 @@ class Database(object):
                              str(iteration)
             raise
         
+    def fillMisingBasin(self,jobData,jobID,domainID):
+        """
+        Generic function to fill out all iterations of a basin to a status of 1
+        if missing model or observations was found by R. This is a unique
+        situation that will be extremely rare. All parameter values and statistics
+        will stay at -9999.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+    
+        sqlCmd = "update Calib_Stats set Calib_Stats.complete='1' where jobID='" + \
+                 str(jobID) + "' and domainID='" + str(domainID) + "';"
+        
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to fill basin status to 1 for missing data " + \
+                             "for jobID: " + str(jobID) + " for domainID: " + str(domainID)
+            raise

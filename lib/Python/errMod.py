@@ -170,25 +170,25 @@ def cleanCalib(jobData,workDir,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
             raise
             
-    filesCheck = glob.glob(workDir + "/*.err")
+    #filesCheck = glob.glob(workDir + "/*.err")
     
-    if len(filesCheck) > 0:
-        cmd = "rm " + workDir + "/*.err"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            jobData.errMsg = "ERROR: Unable to remove error diagnostic files from: " + workDir
-            raise
+    #if len(filesCheck) > 0:
+    #    cmd = "rm " + workDir + "/*.err"
+    #    try:
+    #        subprocess.call(cmd,shell=True)
+    #    except:
+    #        jobData.errMsg = "ERROR: Unable to remove error diagnostic files from: " + workDir
+    #        raise
             
-    filesCheck = glob.glob(workDir + "/*.out")
+    #filesCheck = glob.glob(workDir + "/*.out")
     
-    if len(filesCheck) > 0:
-        cmd = "rm " + workDir + "/*.out"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            jobData.errMsg = "ERROR: Unable to remove misc diagnostic files from: " + workDir
-            raise
+    #if len(filesCheck) > 0:
+    #    cmd = "rm " + workDir + "/*.out"
+    #    try:
+    #        subprocess.call(cmd,shell=True)
+    #    except:
+    #        jobData.errMsg = "ERROR: Unable to remove misc diagnostic files from: " + workDir
+    #        raise
             
 def scrubParams(jobData,runDir):
     """
@@ -202,10 +202,6 @@ def scrubParams(jobData,runDir):
     soilFile = runDir + "/soil_properties.nc"
     gwFile = runDir + '/GWBUCKPARM.nc'
 
-    print fullDomFile
-    print hydroTbl
-    print soilFile
-    print gwFile
     if os.path.isfile(fullDomFile):
         try:
             os.remove(fullDomFile)
@@ -288,6 +284,6 @@ def sendMsg(jobData):
     elif jobData.slackObj:
         msg1 = "MESSAGE for Job: " + str(jobData.jobID)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
-        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
+        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
     else:
         print msgContent

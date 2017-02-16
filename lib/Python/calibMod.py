@@ -11,6 +11,8 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
+# TEMPORARY
+import shutil
 
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
@@ -83,6 +85,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     lockPath = workDir + "/RUN.LOCK"
     calibLockPath = workDir + "/CALIB.LOCK"
     calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
+    missingFlag = workDir + "/CALC_STATS_MISSING"
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
     rDataFile = workDir + "/proj_data.Rdata"
@@ -151,22 +154,69 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 try:
                     # If we are on the last iteration, no new parameters are created.
                     if int(iteration+1) < int(statusData.nIter):
-                        db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
+                        try:
+                            db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
+                        except:
+                            raise
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),str(gage),int(iteration),statsTbl)
                     errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
+                # TEMPORARY TO MAKE ARCHIVE OF PARAMETER FILES
+                # Make a copy of files, named based on iteration.
+                inPath = runDir + "/Fulldom.nc"
+                outPath = runDir + "/Fulldom_" + str(iteration+2) + ".nc"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                inPath = runDir + "/HYDRO.TBL"
+                outPath = runDir + "/HYDRO_" + str(iteration+2) + ".TBL"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                inPath = runDir + "/soil_properties.nc"
+                outPath = runDir + "/soil_properties_" + str(iteration+2) + ".nc"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                inPath = runDir + "/GWBUCKPARM.nc"
+                outPath = runDir + "/GWBUCKPARM_" + str(iteration+2) + ".nc"
+                if os.path.isfile:
+                    shutil.copy(inPath,outPath)
+                # END TEMPORARY
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
                 runCalib = False
-                #raise Exception()
+            elif os.path.isfile(missingFlag):
+                # This is a unique situation where either an improper COMID (linkID) was passed to 
+                # the R program, pulling NA from the model. Or, the observations file contains 
+                # all missing values. For this, convey this to the user through a message, set the
+                # status for all iterations to 1.
+                statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                    "observations for the evaluation period."
+                print statusData.genMsg
+                errMod.sendMsg(statusData)
+                # set the status for all iterations to 1.
+                try:
+                    db.fillMisingBasin(statusData,int(statusData.jobID),int(gageID))
+                except:
+                    raise
+                # Clean everything up.
+                try:
+                    errMod.removeOutput(statusData,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
+                    errMod.scrubParams(statusData,runDir)
+                except:
+                    raise
+                keySlot[basinNum,:] = 1.0
+                keyStatus = 1.0
+                runFlag = False
+                runCalib = False
             else:
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + calibLockPath
                 print statusData.genMsg
+                errMod.sendMsg(statusData)
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
@@ -192,6 +242,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # If calibration COMPLETE flag listed, upgrade status to 0.0 with runFlag on, signalling 
             # to proceed with model simulation. 
             if os.path.isfile(calibCompleteFlag):
+                # Copy parameter files to the DEFAULT directory
+                try:
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage)
+                except:
+                    raise
                 # Enter in parameters for iteration update.
                 try:
                     db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
@@ -200,6 +255,35 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
                 runFlag = True
+                runCalib = False
+            elif os.path.isfile(missingFlag):
+                # This is a unique situation where either an improper COMID (linkID) was passed to 
+                # the R program, pulling NA from the model. Or, the observations file contains 
+                # all missing values. For this, convey this to the user through a message, set the
+                # status for all iterations to 1.
+                statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                    "observations for the evaluation period."
+                print statusData.genMsg
+                # Copy parameter files to the DEFAULT directory
+                try:
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage)
+                except:
+                    raise
+                # set the status for all iterations to 1.
+                try:
+                    db.fillMisingBasin(statusData,int(statusData.jobID),int(gageID))
+                except:
+                    raise
+                # Clean everything up.
+                try:
+                    errMod.removeOutput(statusData,runDir)
+                    errMod.cleanCalib(statusData,workDir,runDir)
+                    errMod.scrubParams(statusData,runDir)
+                except:
+                    raise
+                keySlot[basinNum,:] = 1.0
+                keyStatus = 1.0
+                runFlag = False
                 runCalib = False
             else:
                 # This means the calibration failed. Demote status and send message to user.
@@ -251,17 +335,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     runFlag = runStatus[2]
                     if not runFlag:
                         # Model simulation completed before workflow was restarted. Ready to 
-                        # move onto calibration R code.
+                        # move onto calibration R code. However.... to be safe, we are going
+                        # to re-run the model. There are a couple cracks that occur when we assume
+                        # this is the current model. If a previous model completed, but wasn't 
+                        # completely wiped clean, this will screw up calibration statistics. 
                         # Cleanup any previous calib-related files that may be sitting around.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
                             errMod.scrubParams(statusData,runDir)
                         except:
                             raise
-                        keySlot[basinNum,iteration] = 0.75
-                        keyStatus = 0.75
-                        runFlag = False
-                        runCalib = True
+                        keySlot[basinNum,iteration] = 0.0
+                        keyStatus = 0.0
+                        runFlag = True
+                        runCalib = False
                         if calibStatus:
                             # Model has completed, and calibration routines are currently being ran.
                             keySlot[basinNum,iteration] = 0.90
@@ -277,6 +364,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                             errMod.cleanCalib(statusData,workDir,runDir)
                         except:
                             raise
+                        keySlot[basinNum,iteration] = 0.0
+                        keyStatus = 0.0
                         runFlag = True
                         runCalib = False
         else:
@@ -648,6 +737,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
+        # If any proj_data.Rdata exists, remove it as it might have been from a failed first attempt.
+        if os.path.isfile(workDir + '/proj_data.Rdata'):
+            try:
+                os.remove(workDir + '/proj_data.Rdata')
+            except:
+                statusData.errMsg = "ERROR: Failure to remove: " + workDir + "/proj_data.Rdata"
+                raise
+            
         try:
             generateRScript(staticData,gageMeta,gage,int(iteration))
         except:
@@ -821,15 +918,15 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             #inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
             #fileObj.write(inStr)
             fileObj.write("#BSUB -n 1\n")
-            fileObj.write('#BSUB -R "span[ptile=1]"\n')
+            #fileObj.write('#BSUB -R "span[ptile=16]"\n')
             inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#BSUB -o ' + workDir + '/%J.out\n'
             fileObj.write(inStr)
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
-            fileObj.write('#BSUB -W 3:00\n')
-            fileObj.write('#BSUB -q premium\n')
+            fileObj.write('#BSUB -W 0:20\n')
+            fileObj.write('#BSUB -q geyser\n')
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)

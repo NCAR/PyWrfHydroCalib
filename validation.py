@@ -21,7 +21,13 @@ import pwd
 import numpy as np
 
 # Set the Python path to include package specific functions.
-sys.path.insert(0,'./lib/Python')
+prPath = os.path.realpath(__file__)
+pathSplit = prPath.split('/')
+libPath = '/'
+for j in range(1,len(pathSplit)-1):
+    libPath = libPath + pathSplit[j] + '/'
+libPath = libPath + 'lib/Python'
+sys.path.insert(0,libPath)
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -29,7 +35,6 @@ warnings.filterwarnings("ignore")
 import statusMod
 import dbMod
 import errMod
-import calibIoMod
 import validMod
 import configMod
 import time
@@ -184,9 +189,9 @@ def main(argv):
     # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
-    keySlot = np.empty(len(jobData.gages))
+    keySlot = np.empty(len(jobData.gages),2)
     keySlot[:] = 0.0
-    entryValue = float(len(jobData.gages))
+    entryValue = float(len(jobData.gages))*2.0
     
     while not completeStatus:
         # Walk through spinup directory for each basin. Determine the status of
@@ -210,13 +215,16 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-        #for basin in range(0,1):
-            print keySlot
-            try:
-                validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            except:
-                errMod.errOut(jobData)
-            time.sleep(20)
+            for run in range(0,2):
+                # First simulation will be the control simulation with default
+                # parameters specified by the user at the beginning of the calibration
+                # process.
+                print keySlot
+                try:
+                    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run)
+                except:
+                    errMod.errOut(jobData)
+                time.sleep(30)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
