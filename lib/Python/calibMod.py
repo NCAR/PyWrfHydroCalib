@@ -932,7 +932,8 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            fileObj.write('mpirun.lsf ./calibCmd.sh\n')
+            fileObj.write('./calibCmd.sh\n')
+            #fileObj.write('mpirun.lsf ./calibCmd.sh\n')
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile1

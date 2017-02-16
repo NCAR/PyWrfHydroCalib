@@ -62,6 +62,7 @@ def main(argv):
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     
+    print "RANK TEST = " + str(rank)
     if rank == 0:
         # If R COMPLETE flag not present, this implies the R code didn't run
         # to completion.

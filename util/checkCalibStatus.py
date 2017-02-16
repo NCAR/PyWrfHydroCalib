@@ -116,7 +116,7 @@ def main(argv):
                             # Calibration program completed, and job has moed on.
                             print "FOUND RUNNING CALIBRATION: " + str(jobData.jobID)
                             sys.exit(0)
-                    time.sleep(60)
+                    time.sleep(20)
             if keyStatus == 0.5:
                 # Check for model running
                 for checkTick in range(1,6):
@@ -137,6 +137,6 @@ def main(argv):
                             # Model simulation has completed and moved on.
                             print "FOUND RUNNING JOBID: " + str(jobData.jobID)
                             sys.exit(0)
-                    time.sleep(60)
+                    time.sleep(20)
 if __name__ == "__main__":
     main(sys.argv[1:])
