@@ -222,7 +222,7 @@ if (cyclecount > 0) {
 
    # Update the Objective function versus the parameter variable
    write("Obj function vs. params...", stdout())
-   DT.m1 = melt(x_archive[, 1:length(x_archive)], id.vars = c("obj"), measure.vars =names(x_archive)[2:(length(x_archive))])
+   DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive), c(metrics, "iter", "obj")))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
@@ -231,9 +231,10 @@ if (cyclecount > 0) {
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
 
+
    # Plot the variables as a function of calibration runs
    write("Params over runs...", stdout())
-   DT.m1 = melt(x_archive, id.vars = c("iter"), measure.vars =names(x_archive)[2:length(x_archive)])
+   DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive), c("iter", metrics)))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
@@ -254,7 +255,7 @@ if (cyclecount > 0) {
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
 
-   # Plot the time series of the observed, control, best calibration result and last calibration iteration 
+   # Plot the time series of the observed, control, best calibration result and last calibration iteration
    write("Hydrograph...", stdout())
    # The first iteration is the control run  called chrt.d.1
    controlRun <- chrt.d.1
@@ -275,23 +276,23 @@ if (cyclecount > 0) {
    chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
 
    gg <- ggplot2::ggplot(chrt.d_plot, ggplot2::aes(POSIXct, q_cms, color = run))
-   gg <- gg + ggplot2::geom_line(size = 0.2, alpha = 0.7)
+   gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
    gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", siteId))
    #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
    gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 15) + ylab ("Streamflow (cms)")
-   gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "red"),
+   gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "dark green"),
                                  limits=c('Observation','Control Run', "Best Run", "Last Run"),
                                   label=c('Observation','Control Run', "Best Run", "Last Run"))
 
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_hydrograph.png"),
            plot=gg, units="in", width=8, height=4, dpi=300)
 
-   # Plot the scatter plot of the best, last and control run.
+  # Plot the scatter plot of the best, last and control run.
    write("Scatterplot...", stdout())
    maxval <- max(chrt.d_plot$q_cms, rm.na = TRUE)
    gg <- ggplot()+ geom_point(data = merge(chrt.d_plot [run %in% c("Control Run", "Last Run", "Best Run")], obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
                               aes (obs, q_cms, color = run), alpha = 0.5)
-   gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "red"),
+   gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
                                  limits=c('Control Run', "Best Run", "Last Run"),
                                  label=c('Control Run', "Best Run", "Last Run"))
    gg <- gg + ggtitle(paste0("Simulated vs observed flow : ", siteId )) + theme_bw( base_size = 15)
