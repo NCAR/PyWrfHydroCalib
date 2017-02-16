@@ -67,7 +67,7 @@ def main(argv):
     #if rank == 0:
     # If R COMPLETE flag not present, this implies the R code didn't run
     # to completion.
-    print "RANK = " + str(rank)
+    #print "RANK = " + str(rank)
     if not os.path.isfile(rCompletePath):
         sys.exit(1)
         
