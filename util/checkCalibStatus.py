@@ -119,7 +119,7 @@ def main(argv):
                             sys.exit(0)
             if keyStatus == 0.5:
                 # Check for model running
-                for checkTick in range(1.6):
+                for checkTick in range(1,6):
                     modelStatus = statusMod.checkBasJob(jobData,basin)
                     if not modelStatus:
                         print "CHECK " + str(checkTick) + " SHOWS NO MODEL RUNNING."
