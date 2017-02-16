@@ -327,6 +327,7 @@ def checkConfig(parser):
     check2 = str(parser.get('logistics','slackChannel'))
     check3 = str(parser.get('logistics','slackToken'))
     check4 = str(parser.get('logistics','slackUser'))
+    print 'ba'
     if len(check1) > 0 and len(check2) > 0:
         print "ERROR: You must choose either email or Slack for error reporting."
         raise Exception()
