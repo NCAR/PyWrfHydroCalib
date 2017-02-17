@@ -136,7 +136,7 @@ def main(argv):
             keyStatusPrev = keyStatus
                          
     jobData.genMsg = msgOut
-    if int(args.contactFlag[0]) == 0:
+    if int(args.contactFlag) == 0:
         print jobData.genMsg
     else:
         errMod.sendMsg(jobData)
