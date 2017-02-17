@@ -129,5 +129,8 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
+    # Print the newly created job ID to the user
+    print "JOB INITIALIZATION COMPLETE. JOB ID = " + str(jobData.jobID)
+        
 if __name__ == "__main__":
     main(sys.argv[1:])

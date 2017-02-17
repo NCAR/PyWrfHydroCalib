@@ -298,7 +298,7 @@ class Database(object):
         
         # Initiate Slack if fields are not MISSING
         if jobData.slChan != "MISSING":
-            jobData.email = None
+            #jobData.email = None
             try:
                 jobData.slackObj = Slacker(str(jobData.slToken))
             except:
@@ -354,20 +354,19 @@ class Database(object):
                 try:
                     self.conn.execute(sqlCmd2)
                     self.db.commit()
-                    self.conn.execute(sqlCmd7)
-                    self.db.commit()
-                    self.conn.execute(sqlCmd8)
-                    self.db.commit()
-                    self.conn.execute(sqlCmd9)
-                    self.db.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner)
                     raise
                 jobData.email = str(newEmail)
-                jobData.slChan = None
-                jobData.slToken = None
-                jobData.slUser = None
-                jobData.slackObj = None
+            else:
+                # Enter in MISSING for email
+                try:
+                    self.conn.execute(sqlCmd6)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner) + " to MISSING"
+                    raise
+                jobData.email = None
                 
             if len(newSlackChannel) != 0:
                 try:
@@ -377,16 +376,29 @@ class Database(object):
                     self.db.commit()
                     self.conn.execute(sqlCmd5)
                     self.db.commit()
-                    self.conn.execute(sqlCmd6)
-                    self.db.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to update Slack information for: " + str(newOwner)
                     raise
-                jobData.email = None
                 jobData.slChan = str(newSlackChannel)
                 jobData.slToken = str(newSlackToken)
                 jobData.slUser = str(newSlackUName)
                 jobData.slackObj = Slacker(str(jobData.slToken))
+            else:
+                # Enter in Slack info as MISSING
+                try:
+                    self.conn.execute(sqlCmd7)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd8)
+                    self.db.commit()
+                    self.conn.execute(sqlCmd9)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to update Slack information for: " + str(newOwner) + " to MISSING"
+                    raise
+                jobData.slChan = None
+                jobData.slToken = None
+                jobData.slUser = None
+                jobData.slackObj = None
                 
     def updateSpinupStatus(self,jobData):
         """

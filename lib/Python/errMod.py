@@ -26,22 +26,24 @@ def errOut(jobData):
     if jobData.email:
         # Send error email out
         msg = MIMEText(msgContent)
-        emailTitle = "Errors in NWM Calibration for Job: " + str(jobData.jobID)
+        emailTitle = "Errors in NWM Calibration for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
         s = smtplib.SMTP('localhost')
         s.sendmail(jobData.email,[jobData.email],msg.as_string())
         s.quit()
-        sys.exit(1)
-    elif jobData.slackObj:
-        msg1 = "ERROR in Job: " + str(jobData.jobID)
+        #sys.exit(1)
+    #elif jobData.slackObj:
+    if jobData.slackObj:
+        msg1 = "ERROR in Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
         jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
-        sys.exit(1)
+        #sys.exit(1)
     else:
         print msgContent
-        sys.exit(1)
+        #sys.exit(1)
+    sys.exit(1)
         
 def wipeJobDir(jobData):
     # Generic function to remove job directory that was not successfully 
@@ -274,15 +276,16 @@ def sendMsg(jobData):
     if jobData.email:
         # Send error email out
         msg = MIMEText(msgContent)
-        emailTitle = "General Message For Job: " + str(jobData.jobID)
+        emailTitle = "General Message For Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
         s = smtplib.SMTP('localhost')
         s.sendmail(jobData.email,[jobData.email],msg.as_string())
         s.quit()
-    elif jobData.slackObj:
-        msg1 = "MESSAGE for Job: " + str(jobData.jobID)
+    if jobData.slackObj:
+    #elif jobData.slackObj:
+        msg1 = "MESSAGE for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
         jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
     else:

@@ -121,50 +121,68 @@ def main(argv):
         errMod.errOut(jobData)
         
     if userTmp != jobData.owner:
-        print "User: " + userTmp + " is requesting to takeover jobID: " + \
-              str(jobData.jobID) + " from owner: " + str(jobData.owner)
-        strTmp = "Please enter new email address. Leave blank if no email " + \
-                 "change is desired. NOTE if you leave both email and Slack " + \
-                 "information blank, no change in contact will occur. Only " + \
-                 "the owner will be modified:"
-        newEmail = raw_input(strTmp)
-        strTmp = "Please enter Slack channel:"
-        newSlackChannel = raw_input(strTmp)
-        strTmp = "Please enter Slack token:"
-        newSlackToken = raw_input(strTmp)
-        strTmp = "Please enter Slack user name:"
-        newSlackUName = raw_input(strTmp)
+        #print "User: " + userTmp + " is requesting to takeover jobID: " + \
+        #      str(jobData.jobID) + " from owner: " + str(jobData.owner)
+        #strTmp = "Please enter new email address. Leave blank if no email " + \
+        #         "change is desired. NOTE if you leave both email and Slack " + \
+        #         "information blank, no change in contact will occur. Only " + \
+        #         "the owner will be modified:"
+        #newEmail = raw_input(strTmp)
+        #strTmp = "Please enter Slack channel:"
+        #newSlackChannel = raw_input(strTmp)
+        #strTmp = "Please enter Slack token:"
+        #newSlackToken = raw_input(strTmp)
+        #strTmp = "Please enter Slack user name:"
+        #newSlackUName = raw_input(strTmp)
         changeFlag = 1
-        if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
-            print "ERROR: You must specify an associated Slacker API token."
-            sys.exit(1)
-        if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
-            print "ERROR: You must specify an associated Slacker user name."
-            sys.exit(1)
-        if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
-            print "ERROR: You must specify an associated Slacker channel name."
-            sys.exit(1)
-        if len(newSlackToken) != 0 and len(newSlackUName) == 0:
-            print "ERROR: You must specify an associated Slacker user name."
-            sys.exit(1)
-        if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
-            print "ERROR: You must specify an associated Slacker channel name."
-            sys.exit(1)
-        if len(newSlackUName) != 0 and len(newSlackToken) == 0:
-            print "ERROR: You must specify an associated Slacker API token."
-            sys.exit(1)
-        if len(newSlackChannel) != 0 and len(newEmail) != 0:
-            print "ERROR: You cannot specify both email and Slack for notifications."
-            sys.exit(1)
-        if len(newSlackChannel) == 0 and len(newEmail) == 0:
-            changeFlag = 0
+        #if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
+        #    print "ERROR: You must specify an associated Slacker API token."
+        #    sys.exit(1)
+        #if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
+        #    print "ERROR: You must specify an associated Slacker user name."
+        #    sys.exit(1)
+        #if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
+        #    print "ERROR: You must specify an associated Slacker channel name."
+        #    sys.exit(1)
+        #if len(newSlackToken) != 0 and len(newSlackUName) == 0:
+        #    print "ERROR: You must specify an associated Slacker user name."
+        #    sys.exit(1)
+        #if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
+        #    print "ERROR: You must specify an associated Slacker channel name."
+        #    sys.exit(1)
+        #if len(newSlackUName) != 0 and len(newSlackToken) == 0:
+        #    print "ERROR: You must specify an associated Slacker API token."
+        #    sys.exit(1)
+        #if len(newSlackChannel) != 0 and len(newEmail) != 0:
+        #    print "ERROR: You cannot specify both email and Slack for notifications."
+        #    sys.exit(1)
+        #if len(newSlackChannel) == 0 and len(newEmail) == 0:
+        #    changeFlag = 0
             
         # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
+            
+        # TEMPORARY FOR VERSION 1.2 NWM CALIBRATION!!!!
+        # If a new owner takes over, simply change the owner, but keep all 
+        # other contact information the same.
+        newEmail = jobData.email
+        newSlackChannel = jobData.slChan
+        newSlackToken = jobData.slToken
+        newSlackUName = jobData.slUser
+        if not newEmail:
+            newEmail = ''
+        if not newSlackChannel:
+            newSlackChannel = ''
+            newSlackToken = ''
+            newSlackUName = ''
             
         try:
             db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
         except:
             errMod.errOut(jobData)
+            
+        jobData.genMsg = "MSG: User: " + userTmp + " Is Taking Over JobID: " + str(jobData.jobID) + \
+                         " From Owner: " + str(jobData.owner)
+        errMod.sendMsg(jobData)
             
     # Create empty table entries into the Calib_Stats table to be filled in as the workflow progresses.
     # If table entries have already been entered, continue on.

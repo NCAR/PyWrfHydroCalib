@@ -35,6 +35,7 @@ def main(argv):
                         help='Job ID specific to calibration spinup.')
     parser.add_argument('contactFlag',metavar='ctFlag',type=int,nargs='+',
                         help='1 = send to job contact, 0 = print to screen.')
+    parser.add_argument('--email',nargs='?',help='Optional email to pipe output to.')
                         
     args = parser.parse_args()
     
@@ -84,6 +85,12 @@ def main(argv):
         jobData.checkGages(db)
     except:
         errMod.errOut(jobData)
+        
+    # If an optional email was passed to the program, update the job object to 
+    # reflect this for information dissemination.
+    if args.email:
+        jobData.slackObj = None
+        jobData.email = str(args.email[0])
         
     # Loop through each basin. Determine if which iteration we are on, then report the status
     # of the job for this basin.
