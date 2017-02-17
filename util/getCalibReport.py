@@ -88,12 +88,10 @@ def main(argv):
         
     # If an optional email was passed to the program, update the job object to 
     # reflect this for information dissemination.
-    print "OLD EMAIL: " + str(jobData.email)
     if args.email:
         jobData.slackObj = None
         jobData.email = str(args.email)
 
-    print "NEW EMAIL: " + str(jobData.email)        
     # Loop through each basin. Determine if which iteration we are on, then report the status
     # of the job for this basin.
     msgOut = ''
@@ -118,10 +116,6 @@ def main(argv):
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " - IS READY TO BEGIN ITERATION: " + str(iteration+1) + "\n " 
             else:
-                #print '------------------'
-                #print keyStatusPrev
-                #print iteration
-                #print keyStatus
                 if keyStatusPrev == 0.0 and iteration == 0 and keyStatus == 0.0:
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                              " - HAS NOT BEGUN CALIBRATION.\n"
@@ -136,9 +130,7 @@ def main(argv):
             keyStatusPrev = keyStatus
                          
     jobData.genMsg = msgOut
-    print "FLAG = " + str(args.contactFlag)
     if int(args.contactFlag[0]) == 0:
-        print "LKJALGKFJAKLFJ"
         print jobData.genMsg
     else:
         errMod.sendMsg(jobData)
