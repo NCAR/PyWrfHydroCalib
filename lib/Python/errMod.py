@@ -33,16 +33,14 @@ def errOut(jobData):
         s = smtplib.SMTP('localhost')
         s.sendmail(jobData.email,[jobData.email],msg.as_string())
         s.quit()
-        #sys.exit(1)
     #elif jobData.slackObj:
     if jobData.slackObj:
         msg1 = "ERROR in Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
         jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
         #sys.exit(1)
-    else:
+    if not jobData.email and not jobData.slackObj:
         print msgContent
-        #sys.exit(1)
     sys.exit(1)
         
 def wipeJobDir(jobData):
@@ -284,9 +282,8 @@ def sendMsg(jobData):
         s.sendmail(jobData.email,[jobData.email],msg.as_string())
         s.quit()
     if jobData.slackObj:
-    #elif jobData.slackObj:
         msg1 = "MESSAGE for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
         jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
-    else:
+    if not jobData.email and not jobData.slackObj:
         print msgContent
