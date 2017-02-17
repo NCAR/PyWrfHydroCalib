@@ -71,6 +71,15 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
         
+    # Check to see if spinup or calibration logged as complete in the DB.
+    if int(jobData.spinComplete) != 1:
+        jobData.errMsg = "ERROR: You must complete the spinup in order to run statuses on calibration."
+        errMod.errOut(jobData)
+        
+    if int(jobData.calibComplete) == 1:
+        # calibration complete, exit gracefully.
+        sys.exit(0)
+        
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages(db)

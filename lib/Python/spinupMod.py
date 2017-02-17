@@ -82,10 +82,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
-                statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                                    " Failed. Attempting to restart."
+                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                #                    " Failed. Attempting to restart."
                 print statusData.genMsg
-                errMod.sendMsg(statusData)
+                #errMod.sendMsg(statusData)
                 keySlot[basinNum] = -0.25
                 keyStatus = -0.25
             else:
@@ -271,7 +271,7 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -W 4:00\n')
+        fileObj.write('#BSUB -W 8:00\n')
         fileObj.write('#BSUB -q premium\n')
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
