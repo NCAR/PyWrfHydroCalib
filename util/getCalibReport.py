@@ -136,6 +136,7 @@ def main(argv):
             keyStatusPrev = keyStatus
                          
     jobData.genMsg = msgOut
+    print "FLAG = " + args.contactFlag
     if int(args.contactFlag) == 0:
         print jobData.genMsg
     else:
