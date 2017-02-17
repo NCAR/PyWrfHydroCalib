@@ -88,10 +88,12 @@ def main(argv):
         
     # If an optional email was passed to the program, update the job object to 
     # reflect this for information dissemination.
+    print "OLD EMAIL: " + str(jobData.email)
     if args.email:
         jobData.slackObj = None
         jobData.email = str(args.email[0])
-        
+
+    print "NEW EMAIL: " + str(jobData.email)        
     # Loop through each basin. Determine if which iteration we are on, then report the status
     # of the job for this basin.
     msgOut = ''
