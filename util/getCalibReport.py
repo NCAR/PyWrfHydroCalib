@@ -137,7 +137,7 @@ def main(argv):
                          
     jobData.genMsg = msgOut
     print "FLAG = " + str(args.contactFlag)
-    if int(args.contactFlag) == 0:
+    if int(args.contactFlag[0]) == 0:
         print jobData.genMsg
     else:
         errMod.sendMsg(jobData)
