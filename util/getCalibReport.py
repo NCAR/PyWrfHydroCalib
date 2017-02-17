@@ -138,6 +138,7 @@ def main(argv):
     jobData.genMsg = msgOut
     print "FLAG = " + str(args.contactFlag)
     if int(args.contactFlag[0]) == 0:
+        print "LKJALGKFJAKLFJ"
         print jobData.genMsg
     else:
         errMod.sendMsg(jobData)
