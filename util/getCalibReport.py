@@ -91,7 +91,7 @@ def main(argv):
     print "OLD EMAIL: " + str(jobData.email)
     if args.email:
         jobData.slackObj = None
-        jobData.email = str(args.email[0])
+        jobData.email = str(args.email)
 
     print "NEW EMAIL: " + str(jobData.email)        
     # Loop through each basin. Determine if which iteration we are on, then report the status
