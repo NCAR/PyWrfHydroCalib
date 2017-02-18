@@ -51,7 +51,6 @@ def main(argv):
     
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
-    print "ID = " + args.jobID[0]
     jobData.jobID = int(args.jobID[0])
     
     # Lookup database username/login credentials based on username
