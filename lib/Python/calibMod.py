@@ -342,7 +342,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         # Cleanup any previous calib-related files that may be sitting around.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
-                            errMod.scrubParams(statusData,runDir)
+                            errMod.removeOutput(statusData,runDir)
                         except:
                             raise
                         keySlot[basinNum,iteration] = 0.0
