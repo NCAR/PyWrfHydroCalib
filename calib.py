@@ -270,6 +270,7 @@ def main(argv):
                 #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #time.sleep(7)
                 #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                print str(jobData.gageIDs[basin])
                 try:
                     calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 except:
