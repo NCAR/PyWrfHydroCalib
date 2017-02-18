@@ -99,10 +99,10 @@ def main(argv):
         errMod.errOut(jobData)
     
     # Extract active jobs for job owner
-    try:
-        statusMod.checkYsJobs(jobData)
-    except:
-        errMod.errOut(jobData)
+    #try:
+    #    statusMod.checkYsJobs(jobData)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Some house keeping here. If the calibration is already complete, throw an error. 
     # Also ensure the spinup has been entered as complete. This is necessary for the 
