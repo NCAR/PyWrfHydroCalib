@@ -114,7 +114,7 @@ def main(argv):
                 smcValue = float(lineSplit[1])*float(newParams.smcmax[0])
             else:
                 smcValue = float(lineSplit[1])
-            outStr = str(smcValue) + ",  " + str(dksatValue) + ",    " + lineSplit[2] + "," + \
+            outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
             lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
             hydroOutObj.write(outStr)
         countTmp = countTmp + 1
