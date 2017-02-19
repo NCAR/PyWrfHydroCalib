@@ -130,7 +130,10 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Print the newly created job ID to the user
-    print "JOB INITIALIZATION COMPLETE. JOB ID = " + str(jobData.jobID)
+    jobData.genMsg = "JOB INITIALIZATION FOR OWNER: " + str(jobData.owner) + \
+                     " JOB ID = " + str(jobData.jobID)
+    print jobData.genMsg
+    errMod.sendMsg(jobData)
         
 if __name__ == "__main__":
     main(sys.argv[1:])
