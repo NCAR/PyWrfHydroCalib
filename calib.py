@@ -269,12 +269,12 @@ def main(argv):
                 keyStatusCheck1 = keySlot[basin,iteration]
                 #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #time.sleep(7)
-                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #print str(jobData.gageIDs[basin])
-                try:
-                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                except:
-                    errMod.errOut(jobData)
+                #try:
+                #    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                #except:
+                #    errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
                     # Put some spacing between launching model simulations to slow down que geting 
