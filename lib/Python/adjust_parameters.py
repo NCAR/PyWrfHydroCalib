@@ -106,14 +106,14 @@ def main(argv):
             # Modify SATDK and MAXSMC as needed.
             lineTmp = line
             lineSplit = lineTmp.split(',')
-            if 'smcmax' in paramNames:
-                smcValue = float(lineSplit[0])*float(newParams.smcmax[0])
-            else:
-                smcValue = float(lineSplit[0])
             if 'dksat' in paramNames:
-                dksatValue = float(lineSplit[1])*float(newParams.dksat[0])
+                dksatValue = float(lineSplit[0])*float(newParams.dksat[0])
             else:
-                dksatValue = float(lineSplit[1])
+                dksatValue = float(lineSplit[0])
+            if 'smcmax' in paramNames:
+                smcValue = float(lineSplit[1])*float(newParams.smcmax[0])
+            else:
+                smcValue = float(lineSplit[1])
             outStr = str(smcValue) + ",  " + str(dksatValue) + ",    " + lineSplit[2] + "," + \
             lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
             hydroOutObj.write(outStr)

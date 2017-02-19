@@ -20,13 +20,13 @@
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
 outDir = /glade/p/nwc/nwmv12_calib
-jobName = TEST_OHRFC_KARSTEN
+jobName = TEST_SERFC_KARSTEN
 acctKey = NRAL0017
 nCoresModel = 16
-nCoresR     = 1
+nCoresR     = 16
 
 # Specify number of model iterations to calibrate over
-numIter = 3
+numIter = 10
 
 # Specify calibration method (DDS, SCE, etc)
 calibMethod = DDS
@@ -41,10 +41,10 @@ ddsR = 0.2
 # Specify email to send updates/error messages to.
 # Please fill out either email or Slack information. 
 # You must choose one.
-email =
-slackChannel = #v1_2-calibration
-slackToken = xoxp-114537782628-114473312674-126285613296-134edd3735df24afd2a639610d4622c3
-slackUser = Logan Karsten
+email = karsten@ucar.edu
+slackChannel = 
+slackToken = 
+slackUser = 
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
 wrfExe = /glade/u/home/adugger/WRF_Hydro/binaries/wrf_hydro_NoahMP_NWM_V1.1_161128_Realtime_SpSoil_NoNudg_NoDebug.exe
@@ -63,12 +63,12 @@ soilParmTbl = /glade/p/nwc/adugger/NWM_V11/NWMV11_FINALS/PARAM_TBLS/SOILPARM.TBL
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
 bSpinDate = 2007-10-01
-eSpinDate = 2008-02-01
+eSpinDate = 2016-10-01
 
 # Specify date range for calibration period
-bCalibDate = 2008-02-01
-eCalibDate = 2008-06-01
-bCalibEvalDate = 2008-03-01
+bCalibDate = 2007-10-01
+eCalibDate = 2013-10-01
+bCalibEvalDate = 2008-10-01
 
 # Specify date range for validation period
 bValidDate = 2008-10-01
@@ -79,7 +79,7 @@ bValidEvalDate = 2008-12-01
 # Specify USGS GAGES II basins to calibrate on.
 # If SQL command desired, leave gageListFile blank.
 # If file listing gages desired, leave gageListSQL blank.
-gageListSQL = select * from Domain_Meta where rfc='7';
+gageListSQL = select * from Domain_Meta where rfc='SERFC';
 gageListFile =
 
 [lsmPhysics]
@@ -204,9 +204,9 @@ streamOrderOut = 1
 # Option for TERADJ_SOLAR
 solarAdj = 0
 # Channel routing timestep in seconds
-dtChSec = 6
+dtChSec = 300
 # Surface and subsurface routing timestep in seconds
-dtTerSec = 6
+dtTerSec = 10
 # Switch for subsurface routing (0:Off,1:On)
 subRouting = 1
 # Switch for surface routing (0:Off,1:On)
