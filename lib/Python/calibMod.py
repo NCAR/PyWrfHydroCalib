@@ -628,10 +628,16 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if os.path.isfile(check2):
             os.remove(check2)
             
-        if begDate == staticData.bCalibDate:
-            startType = 1
-        else:
-            startType = 2
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir)
+        except:
+            raise
+            
+        # Since these are calibration simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
             
         if startType == 2:
             # Clean run directory of any old diagnostics files
@@ -643,12 +649,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
             namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
-        except:
-            raise
-            
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
         except:
             raise
             
@@ -681,11 +681,17 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             os.remove(check)
         if os.path.isfile(check2):
             os.remove(check2)
+            
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir)
+        except:
+            raise
         
-        if begDate == staticData.bCalibDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are calibration simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
@@ -699,12 +705,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 errMod.cleanRunDir(statusData,runDir)
             except:
                 raise
-                
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
-        except:
-            raise
                 
         # clean up old calibration related files, except for new parameter files.
         try:
