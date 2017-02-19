@@ -388,7 +388,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             # For all other runs that are not cold-start spinups. 
             inStr = "GW_RESTART = 1\n"
         fileObj.write(inStr)
-        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! User defined mapping, such NHDPlus\n')
         fileObj.write('!0: default none. 1: yes\n')
