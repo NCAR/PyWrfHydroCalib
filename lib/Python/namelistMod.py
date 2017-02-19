@@ -386,7 +386,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = "GW_RESTART = 0\n"
         else:
             # For all other runs that are not cold-start spinups. 
-            inStr = "GW_RESTART + 1\n"
+            inStr = "GW_RESTART = 1\n"
         fileObj.write(inStr)
         fileObj.write(inStr)
         fileObj.write('\n')
