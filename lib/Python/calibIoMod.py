@@ -92,7 +92,7 @@ def copyDefaultParms(jobData,runDir,gage):
     These files will be used by the validation control simulation.
     """
     inPath = runDir + "/Fulldom.nc"
-    outPath = str(jobData.jobDir) + "/" + gage + "/DEFAULT_PARAMETERS/Fulldom.nc"
+    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/Fulldom.nc"
     if not os.path.isfile(inPath):
         jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
         raise Exception()
@@ -103,7 +103,7 @@ def copyDefaultParms(jobData,runDir,gage):
         raise
     
     inPath = runDir + "/GWBUCKPARM.nc"
-    outPath = str(jobData.jobDir) + "/" + gage + "/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
+    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
     if not os.path.isfile(inPath):
         jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
         raise Exception()
@@ -114,7 +114,7 @@ def copyDefaultParms(jobData,runDir,gage):
         raise
     
     inPath = runDir + "/HYDRO.TBL"
-    outPath = str(jobData.jobDir) + "/" + gage + "/DEFAULT_PARAMETERS/HYDRO.TBL"
+    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/HYDRO.TBL"
     if not os.path.isfile(inPath):
         jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
         raise Exception()
@@ -125,7 +125,7 @@ def copyDefaultParms(jobData,runDir,gage):
         raise
     
     inPath = runDir + "/soil_properties.nc"
-    outPath = str(jobData.jobDir) + "/" + gage + "/DEFAULT_PARAMETERS/soil_properties.nc"
+    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/soil_properties.nc"
     if not os.path.isfile(inPath):
         jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
         raise Exception()
@@ -232,6 +232,14 @@ def setupModels(jobData,db,args):
         except:
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to create directory: " + validDir
+            raise
+            
+        outDir = gageDir + "/RUN.VALID/OUTPUT"
+        try:
+            os.mkdir(outDir)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to create directory: " + outDir
             raise
             
         outDir = gageDir + "/RUN.VALID/OUTPUT/CTRL"

@@ -7,6 +7,9 @@
 
 import os
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     # General function for creation of a namelist.hrldas file.
     
@@ -42,21 +45,21 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                      str(gageData.gage) + "/RUN.CALIB/OUTPUT/soil_properties.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/soil_properties.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
         inStr = ' OUTDIR = "' + outDir + '"' + '\n'
@@ -121,8 +124,8 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         # Manually over-writing the restart frequency for now.
-        inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(dt.days*24+dt.seconds/3600.0)) + '\n'
-        #inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
+        #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(dt.days*24+dt.seconds/3600.0)) + '\n'
+        inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
         #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write(' ! Split output after split_output_count output times\n')
@@ -210,21 +213,21 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                      str(gageData.gage) + "/RUN.CALIB/OUTPUT/Fulldom.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/Fulldom.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/Fulldom.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
@@ -244,8 +247,8 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('\n')
         fileObj.write('!Specify the restart file write frequency...(minutes)\n')
         # Manually over-writing for now.
-        inStr = ' rst_dt = ' + str(int(dt.days*24*60.0 + dt.seconds/60.0)) + '\n'
-        #inStr = ' rst_dt = -9999\n'
+        #inStr = ' rst_dt = ' + str(int(dt.days*24*60.0 + dt.seconds/60.0)) + '\n'
+        inStr = ' rst_dt = -9999\n'
         #inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
@@ -364,22 +367,29 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                      str(gageData.gage) + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise
+                raise Exception()
             inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+        fileObj.write(inStr)
+        if genFlag == 0:
+            # For cold-start spinups
+            inStr = "GW_RESTART = 0\n"
+        else:
+            # For all other runs that are not cold-start spinups. 
+            inStr = "GW_RESTART = 1\n"
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! User defined mapping, such NHDPlus\n')

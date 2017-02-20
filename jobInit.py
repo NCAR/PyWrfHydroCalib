@@ -46,7 +46,6 @@ def main(argv):
     args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
-    #jobData = configMod.createJob(args)
     try:
          jobData = configMod.createJob(args)
     except:
@@ -129,6 +128,12 @@ def main(argv):
         db.disconnect(jobData)
     except:
         errMod.errOut(jobData)
+        
+    # Print the newly created job ID to the user
+    jobData.genMsg = "WORKFLOW HAS BEEN SETUP FOR OWNER: " + str(jobData.owner) + \
+                     " JOB ID = " + str(jobData.jobID)
+    print jobData.genMsg
+    errMod.sendMsg(jobData)
         
 if __name__ == "__main__":
     main(sys.argv[1:])

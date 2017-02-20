@@ -14,6 +14,9 @@ import subprocess
 # TEMPORARY
 import shutil
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
     Generic function for running the model. Some basic information about
@@ -114,10 +117,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
-                statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                                    " Failed. Attempting to restart."
-                print statusData.genMsg
-                errMod.sendMsg(statusData)
+                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                #                    " Failed. Attempting to restart."
+                #print statusData.genMsg
+                #errMod.sendMsg(statusData)
                 keySlot[basinNum,iteration] = -0.25
                 keyStatus = -0.25
                 runFlag = True
@@ -342,7 +345,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         # Cleanup any previous calib-related files that may be sitting around.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
-                            errMod.scrubParams(statusData,runDir)
+                            errMod.removeOutput(statusData,runDir)
                         except:
                             raise
                         keySlot[basinNum,iteration] = 0.0
@@ -628,10 +631,16 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if os.path.isfile(check2):
             os.remove(check2)
             
-        if begDate == staticData.bCalibDate:
-            startType = 1
-        else:
-            startType = 2
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir)
+        except:
+            raise
+            
+        # Since these are calibration simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
             
         if startType == 2:
             # Clean run directory of any old diagnostics files
@@ -643,12 +652,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
             namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
-        except:
-            raise
-            
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
         except:
             raise
             
@@ -681,11 +684,17 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             os.remove(check)
         if os.path.isfile(check2):
             os.remove(check2)
+            
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir)
+        except:
+            raise
         
-        if begDate == staticData.bCalibDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are calibration simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
@@ -699,12 +708,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 errMod.cleanRunDir(statusData,runDir)
             except:
                 raise
-                
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
-        except:
-            raise
                 
         # clean up old calibration related files, except for new parameter files.
         try:
@@ -827,7 +830,7 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -W 3:00\n')
+        fileObj.write('#BSUB -W 6:00\n')
         fileObj.write('#BSUB -q premium\n')
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
@@ -871,10 +874,6 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         inStr = "runDir <- '" + jobData.outDir + "/" + jobData.jobName + "/" + \
                 str(gageMeta.gage) + "/RUN.CALIB'\n"
         fileObj.write(inStr)
-        #fileObj.write('# Parameter bounds\n')
-        #fileObj.write('# Must create a data table called paramBnds with one row per parameter and columns labeled: \n')
-        #fileObj.write('# "param" for parameter name, "ini" for initial value, "minValue" for minimum value, "maxValue" for maximum value\n')
-        #inStr = "paramBnds <- read.table(paste0(runDir, '/calib_parms.tbl'), header=TRUE, sep=" ", stringsAsFactors=FALSE)\n"
         fileObj.write('# Basin-Specific Metadata\n')
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
@@ -915,9 +914,9 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
             #fileObj.write('#BSUB -x\n')
-            #inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
-            #fileObj.write(inStr)
-            fileObj.write("#BSUB -n 1\n")
+            inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
+            fileObj.write(inStr)
+            #fileObj.write("#BSUB -n 1\n")
             #fileObj.write('#BSUB -R "span[ptile=16]"\n')
             inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
@@ -926,11 +925,13 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
             fileObj.write('#BSUB -W 0:20\n')
-            fileObj.write('#BSUB -q geyser\n')
+            fileObj.write('#BSUB -q premium\n')
+            #fileObj.write('#BSUB -q geyser\n')
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            fileObj.write('mpirun.lsf ./calibCmd.sh\n')
+            fileObj.write('./calibCmd.sh\n')
+            #fileObj.write('mpirun.lsf ./calibCmd.sh\n')
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile1

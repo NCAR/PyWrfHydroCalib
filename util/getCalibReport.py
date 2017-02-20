@@ -14,6 +14,9 @@ import argparse
 import sys
 import os
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
 pathSplit = prPath.split('/')
@@ -35,6 +38,7 @@ def main(argv):
                         help='Job ID specific to calibration spinup.')
     parser.add_argument('contactFlag',metavar='ctFlag',type=int,nargs='+',
                         help='1 = send to job contact, 0 = print to screen.')
+    parser.add_argument('--email',nargs='?',help='Optional email to pipe output to.')
                         
     args = parser.parse_args()
     
@@ -85,6 +89,12 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
+    # If an optional email was passed to the program, update the job object to 
+    # reflect this for information dissemination.
+    if args.email:
+        jobData.slackObj = None
+        jobData.email = str(args.email)
+
     # Loop through each basin. Determine if which iteration we are on, then report the status
     # of the job for this basin.
     msgOut = ''
@@ -109,10 +119,6 @@ def main(argv):
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " - IS READY TO BEGIN ITERATION: " + str(iteration+1) + "\n " 
             else:
-                #print '------------------'
-                #print keyStatusPrev
-                #print iteration
-                #print keyStatus
                 if keyStatusPrev == 0.0 and iteration == 0 and keyStatus == 0.0:
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                              " - HAS NOT BEGUN CALIBRATION.\n"
