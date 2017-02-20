@@ -130,7 +130,7 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Print the newly created job ID to the user
-    jobData.genMsg = "JOB INITIALIZATION FOR OWNER: " + str(jobData.owner) + \
+    jobData.genMsg = "WORKFLOW HAS BEEN SETUP FOR OWNER: " + str(jobData.owner) + \
                      " JOB ID = " + str(jobData.jobID)
     print jobData.genMsg
     errMod.sendMsg(jobData)

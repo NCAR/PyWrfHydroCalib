@@ -13,6 +13,9 @@ import os
 import glob
 import subprocess
 
+import warnings
+warnings.filterwarnings("ignore")
+
 uid = pwd.getpwuid(os.getuid()).pw_name
 
 def errOut(jobData):

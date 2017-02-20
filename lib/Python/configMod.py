@@ -14,6 +14,9 @@ import ast
 import pwd
 from slacker import Slacker
 
+import warnings
+warnings.filterwarnings("ignore")
+
 class jobMeta:
     def __init__(self):
         # Initialize empty Python object. 

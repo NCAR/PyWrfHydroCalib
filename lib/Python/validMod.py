@@ -12,6 +12,9 @@ import statusMod
 import errMod
 import subprocess
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
     """
     Generic function for running the model. Some basic information about

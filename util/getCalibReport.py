@@ -14,6 +14,9 @@ import argparse
 import sys
 import os
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
 pathSplit = prPath.split('/')

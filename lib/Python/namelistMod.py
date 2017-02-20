@@ -7,6 +7,9 @@
 
 import os
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     # General function for creation of a namelist.hrldas file.
     

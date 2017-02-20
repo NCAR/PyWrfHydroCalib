@@ -14,6 +14,9 @@ import subprocess
 # TEMPORARY
 import shutil
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
     Generic function for running the model. Some basic information about

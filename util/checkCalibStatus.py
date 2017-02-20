@@ -16,6 +16,9 @@ import sys
 import time
 import os
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
 pathSplit = prPath.split('/')
@@ -96,10 +99,10 @@ def main(argv):
         calibStatus = statusMod.checkCalibJob(jobData,basin)
         modelStatus = statusMod.checkBasJob(jobData,basin)
         if calibStatus or modelStatus:
-            print "BASIN: " + str(jobData.gages[basin])
-            print "MODEL STATUS: " + str(modelStatus)
-            print "CALIB STATUS: " + str(calibStatus)
-            print "WORKFLOW IS RUNNING."
+            #print "BASIN: " + str(jobData.gages[basin])
+            #print "MODEL STATUS: " + str(modelStatus)
+            #print "CALIB STATUS: " + str(calibStatus)
+            #print "WORKFLOW IS RUNNING."
             sys.exit(0)
             
     # If this loop exited without finding something running, this implies the 

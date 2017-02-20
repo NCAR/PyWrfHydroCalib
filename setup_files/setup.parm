@@ -195,7 +195,7 @@ gwOut = 0
 lakeOut = 0
 
 # Reset restart accumulation variables in hydro files? (0:Off,1:On)
-resetHydroAcc = 0
+resetHydroAcc = 1
 
 # Specify order of streamflow to output (0-?)
 streamOrderOut = 1

@@ -11,6 +11,9 @@ import subprocess
 import pandas as pd
 import datetime
 
+import warnings
+warnings.filterwarnings("ignore")
+
 class statusMeta:
     def __init__(self):
         # Initialize empty object containing variables.

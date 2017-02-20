@@ -12,6 +12,9 @@ import pandas as pd
 import os
 import shutil
 
+import warnings
+warnings.filterwarnings("ignore")
+
 class Database(object):
     def __init__(self,jobData):
         """
