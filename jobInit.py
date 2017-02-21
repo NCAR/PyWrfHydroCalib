@@ -23,8 +23,8 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
-libPath = libPath + 'lib/Python'
 libPathTop = libPath + 'lib'
+libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
 
 import warnings
