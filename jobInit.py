@@ -24,6 +24,7 @@ libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
 libPath = libPath + 'lib/Python'
+libPathTop = libPath + 'lib'
 sys.path.insert(0,libPath)
 
 import warnings
@@ -93,7 +94,7 @@ def main(argv):
         
     # Create necessary run directories to hold output, analysis, etc.
     try:
-        calibIoMod.setupModels(jobData,db,args)
+        calibIoMod.setupModels(jobData,db,args,libPathTop)
     except:
         errMod.errOut(jobData)
        

@@ -136,7 +136,7 @@ def copyDefaultParms(jobData,runDir,gage):
         raise
     
         
-def setupModels(jobData,db,args):
+def setupModels(jobData,db,args,libPathTop):
     # Function for setting up all model directories,
     # links to forcings, namelist files, etc. 
     # Function will loop through each basin to calibrate,
@@ -506,9 +506,9 @@ def setupModels(jobData,db,args):
             
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
-        calibPyProgram = os.getcwd() + '/lib/Python/adjust_parameters.py'
-        calibRProgram = os.getcwd() + '/lib/R/calib_workflow.R'
-        calibRUtils = os.getcwd() + "/lib/R/calib_utils.R"
+        calibPyProgram = libPathTop + '/Python/adjust_parameters.py'
+        calibRProgram = libPathTop + '/R/calib_workflow.R'
+        calibRUtils = libPathTop + '/R/calib_utils.R'
         try:
             link = gageDir + "/RUN.CALIB/adjust_parameters.py"
             os.symlink(calibPyProgram,link)
