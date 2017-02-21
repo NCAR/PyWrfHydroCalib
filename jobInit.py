@@ -112,10 +112,10 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Create DB entries to log the parameters being calibrated.
-    try:
-        db.enterCalibParms(jobData,str(args.parmTbl[0]))
-    except:
-        errMod.errOut(jobData)
+    #try:
+    #    db.enterCalibParms(jobData,str(args.parmTbl[0]))
+    #except:
+    #    errMod.errOut(jobData)
         
     # Create empty table to hold calibrated parameter values that will be 
     # calculated during calibration.
