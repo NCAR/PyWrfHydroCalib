@@ -168,22 +168,22 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     raise
                 # TEMPORARY TO MAKE ARCHIVE OF PARAMETER FILES
                 # Make a copy of files, named based on iteration.
-                inPath = runDir + "/Fulldom.nc"
-                outPath = runDir + "/Fulldom_" + str(iteration+2) + ".nc"
-                if os.path.isfile:
-                    shutil.copy(inPath,outPath)
-                inPath = runDir + "/HYDRO.TBL"
-                outPath = runDir + "/HYDRO_" + str(iteration+2) + ".TBL"
-                if os.path.isfile:
-                    shutil.copy(inPath,outPath)
-                inPath = runDir + "/soil_properties.nc"
-                outPath = runDir + "/soil_properties_" + str(iteration+2) + ".nc"
-                if os.path.isfile:
-                    shutil.copy(inPath,outPath)
-                inPath = runDir + "/GWBUCKPARM.nc"
-                outPath = runDir + "/GWBUCKPARM_" + str(iteration+2) + ".nc"
-                if os.path.isfile:
-                    shutil.copy(inPath,outPath)
+                #inPath = runDir + "/Fulldom.nc"
+                #outPath = runDir + "/Fulldom_" + str(iteration+2) + ".nc"
+                #if os.path.isfile:
+                #    shutil.copy(inPath,outPath)
+                #inPath = runDir + "/HYDRO.TBL"
+                #outPath = runDir + "/HYDRO_" + str(iteration+2) + ".TBL"
+                #if os.path.isfile:
+                #    shutil.copy(inPath,outPath)
+                #inPath = runDir + "/soil_properties.nc"
+                #outPath = runDir + "/soil_properties_" + str(iteration+2) + ".nc"
+                #if os.path.isfile:
+                #    shutil.copy(inPath,outPath)
+                #inPath = runDir + "/GWBUCKPARM.nc"
+                #outPath = runDir + "/GWBUCKPARM_" + str(iteration+2) + ".nc"
+                #if os.path.isfile:
+                #    shutil.copy(inPath,outPath)
                 # END TEMPORARY
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
