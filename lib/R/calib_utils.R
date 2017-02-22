@@ -147,14 +147,15 @@ Msof <- function(m,o, scales=c(1,10,30))  {
         m2<-m1; o2<-o1
      } else {
         # compute model and observation at the prescribed scales
-        m2 <- colMeans(matrix(m1,nrow=scales[i]))
-        o2 <- colMeans(matrix(o1,nrow=scales[i]))
+        m2 <- colMeans(matrix(m1,nrow=scales[i]),na.rm=FALSE)
+        o2 <- colMeans(matrix(o1,nrow=scales[i]),na.rm=FALSE)
      }
 
-     # remove missing values in the aggregated time series
+     # remove missing values in the averaged time series
      # before computing objevtive function
-     m2 <- m2[!is.na(m2) & !is.na(o2)]
-     o2 <- o2[!is.na(m2) & !is.na(o2)]
+     idx <- !is.na(m2) & !is.na(o2)
+     m2 <- m2[idx]; o2 <- o2[idx]
+
      sum0 <- sum0 + sum((m2-o2)^2)*var(o)/var(o2)
    }
    obj <- sqrt(sum0)
