@@ -173,26 +173,6 @@ def cleanCalib(jobData,workDir,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
             raise
             
-    #filesCheck = glob.glob(workDir + "/*.err")
-    
-    #if len(filesCheck) > 0:
-    #    cmd = "rm " + workDir + "/*.err"
-    #    try:
-    #        subprocess.call(cmd,shell=True)
-    #    except:
-    #        jobData.errMsg = "ERROR: Unable to remove error diagnostic files from: " + workDir
-    #        raise
-            
-    #filesCheck = glob.glob(workDir + "/*.out")
-    
-    #if len(filesCheck) > 0:
-    #    cmd = "rm " + workDir + "/*.out"
-    #    try:
-    #        subprocess.call(cmd,shell=True)
-    #    except:
-    #        jobData.errMsg = "ERROR: Unable to remove misc diagnostic files from: " + workDir
-    #        raise
-            
 def scrubParams(jobData,runDir):
     """
     Generic function to remove parameter files generated after calibration.
@@ -245,26 +225,6 @@ def cleanRunDir(jobData,runDir):
             subprocess.call(cmd,shell=True)
         except:
             jobData.errMsg = "ERROR: Unable to remove hydro diagnostic files from: " + runDir
-            raise
-            
-    filesCheck = glob.glob(runDir + "/*.err")
-    
-    if len(filesCheck) > 0:
-        cmd = "rm " + runDir + "/*.err"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            jobData.errMsg = "ERROR: Unable to remove error diagnostic files from: " + runDir
-            raise
-            
-    filesCheck = glob.glob(runDir + "/*.out")
-    
-    if len(filesCheck) > 0:
-        cmd = "rm " + runDir + "/*.out"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            jobData.errMsg = "ERROR: Unable to remove misc diagnostic files from: " + runDir
             raise
             
 def sendMsg(jobData):

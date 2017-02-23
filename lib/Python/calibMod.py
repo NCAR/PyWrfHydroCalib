@@ -170,25 +170,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
-                # TEMPORARY TO MAKE ARCHIVE OF PARAMETER FILES
-                # Make a copy of files, named based on iteration.
-                #inPath = runDir + "/Fulldom.nc"
-                #outPath = runDir + "/Fulldom_" + str(iteration+2) + ".nc"
-                #if os.path.isfile:
-                #    shutil.copy(inPath,outPath)
-                #inPath = runDir + "/HYDRO.TBL"
-                #outPath = runDir + "/HYDRO_" + str(iteration+2) + ".TBL"
-                #if os.path.isfile:
-                #    shutil.copy(inPath,outPath)
-                #inPath = runDir + "/soil_properties.nc"
-                #outPath = runDir + "/soil_properties_" + str(iteration+2) + ".nc"
-                #if os.path.isfile:
-                #    shutil.copy(inPath,outPath)
-                #inPath = runDir + "/GWBUCKPARM.nc"
-                #outPath = runDir + "/GWBUCKPARM_" + str(iteration+2) + ".nc"
-                #if os.path.isfile:
-                #    shutil.copy(inPath,outPath)
-                # END TEMPORARY
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -846,7 +827,7 @@ def generateRestartRunScript(jobData,gageID,runDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateRunScript(jobData,gageID,runDir,gageMeta):
+def generateRunScript(jobData,gageID,runDir,gageMeta,iteration):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model. For this particular BSUB script, we clean out
@@ -884,10 +865,6 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = 'rm -rf diag_hydro.*\n'
         fileObj.write(inStr)
-        inStr = 'rm -rf *.err\n'
-        fileObj.write(inStr)
-        inStr = 'rm -rf *.out\n'
-        fileObj.write(inStr)
         inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
@@ -895,10 +872,6 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
         inStr = 'rm -rf HYDRO_RST.*\n'
         fileObj.write(inStr)
         inStr = 'rm -rf RESTART.*_DOMAIN1\n'
-        fileObj.write(inStr)
-        inStr = 'rm -rf namelist.hrldas\n'
-        fileObj.write(inStr)
-        inStr = 'rm -rf hydro.namelist\n'
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
         fileObj.close

@@ -35,7 +35,7 @@ class statusMeta:
         self.bValidEvalDate = []
         self.validComplete = []
         self.nIter = []
-        #self.nCoresMod = []
+        self.nCoresMod = []
         self.nCoresR = []
         self.acctKey = []
         self.exe = []
