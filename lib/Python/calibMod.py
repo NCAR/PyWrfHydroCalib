@@ -811,7 +811,7 @@ def generateRestartRunScript(jobData,gageID,runDir,gageMeta):
     the model instead of removing all output prior to running the model.
     """
     
-    outFile = runDir + "/run_NWM.sh"
+    outFile = runDir + "/run_NWM_Restart.sh"
     
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
