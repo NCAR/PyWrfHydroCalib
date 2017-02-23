@@ -60,12 +60,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     bsubFileRst = runDir + "/run_NWM_Restart.sh"
     if not os.path.isfile(bsubFile):
         try:
-            generateRunScript(statusData,int(gageID),runDir,gageMeta)
+            generateRunScript(statusData,int(gageID),runDir)
         except:
             raise
     if not os.path.isfile(bsubFileRst):
         try:
-            generateRestartRunScript(statusData,int(gageID),runDir,gageMeta)
+            generateRestartRunScript(statusData,int(gageID),runDir)
         except:
             raise
     
@@ -785,7 +785,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         raise
     
                 
-def generateRestartRunScript(jobData,gageID,runDir,gageMeta):
+def generateRestartRunScript(jobData,gageID,runDir):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model. This run script is used specifically to restart
@@ -827,7 +827,7 @@ def generateRestartRunScript(jobData,gageID,runDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateRunScript(jobData,gageID,runDir,gageMeta,iteration):
+def generateRunScript(jobData,gageID,runDir):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model. For this particular BSUB script, we clean out
