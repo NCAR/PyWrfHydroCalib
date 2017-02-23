@@ -49,24 +49,24 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
     except:
         raise
         
-    # If BSUB run script doesn't exist, create it here.
-    bsubFile = runDir + "/run_NWM.sh"
-    if not os.path.isfile(bsubFile):
-        try:
-            generateRunScript(statusData,int(gageID),runDir)
-        except:
-            raise
-    
-    # Calculate datetime objects
-    begDate = statusData.bValidDate
-    endDate = statusData.eValidDate
-        
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
         gageMeta.pullGageMeta(staticData,db,gage)
     except:
         raise
+        
+    # If BSUB run script doesn't exist, create it here.
+    bsubFile = runDir + "/run_NWM.sh"
+    if not os.path.isfile(bsubFile):
+        try:
+            generateRunScript(statusData,int(gageID),runDir,gageMeta)
+        except:
+            raise
+    
+    # Calculate datetime objects
+    begDate = statusData.bValidDate
+    endDate = statusData.eValidDate
         
     # Initialize status
     keyStatus = keySlot[basinNum,run]
@@ -270,7 +270,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
         keyStatus = 0.5
         keySlot[basinNum,run] = 0.5
                 
-def generateRunScript(jobData,gageID,runDir):
+def generateRunScript(jobData,gageID,runDir,gageMeta):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model.
@@ -293,7 +293,7 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -R "span[ptile=16]"\n')
+        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'

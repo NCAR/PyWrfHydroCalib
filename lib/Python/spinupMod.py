@@ -35,24 +35,24 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
         
-    # If BSUB run script doesn't exist, create it here.
-    bsubFile = runDir + "/run_NWM.sh"
-    if not os.path.isfile(bsubFile):
-        try:
-            generateRunScript(statusData,int(gageID),runDir)
-        except:
-            raise
-    
-    # Calculate datetime objects
-    begDate = statusData.bSpinDate
-    endDate = statusData.eSpinDate
-        
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
         gageMeta.pullGageMeta(staticData,db,gage)
     except:
         raise
+        
+    # If BSUB run script doesn't exist, create it here.
+    bsubFile = runDir + "/run_NWM.sh"
+    if not os.path.isfile(bsubFile):
+        try:
+            generateRunScript(statusData,int(gageID),runDir,gageMeta)
+        except:
+            raise
+    
+    # Calculate datetime objects
+    begDate = statusData.bSpinDate
+    endDate = statusData.eSpinDate
         
     # Initialize status
     keyStatus = keySlot[basinNum]
@@ -93,6 +93,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = -0.25
             else:
                 # Model has completed!
+                # Clean the directory up to only hold restart files.
+                try:
+                    errMod.CleanSpinup(statusData,runDir)
+                except:
+                    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -111,6 +116,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             runFlag = runStatus[2]
             if not runFlag:
                 # Model simulation completed before workflow was restarted
+                # Clean the directory up to only hold restart files.
+                try:
+                    errMod.CleanSpinup(statusData,runDir)
+                except:
+                    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -132,6 +142,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = 0.0
             else:
                 # Model sucessfully completed.
+                # Clean the directory up to only hold restart files.
+                try:
+                    errMod.CleanSpinup(statusData,runDir)
+                except:
+                    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -162,6 +177,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt.
+                # Clean the directory up to only hold restart files.
+                try:
+                    errMod.CleanSpinup(statusData,runDir)
+                except:
+                    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 
@@ -244,7 +264,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keyStatus = 0.5
         keySlot[basinNum] = 0.5
                 
-def generateRunScript(jobData,gageID,runDir):
+def generateRunScript(jobData,gageID,runDir,gageMeta):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model.
@@ -267,7 +287,7 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -R "span[ptile=16]"\n')
+        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
