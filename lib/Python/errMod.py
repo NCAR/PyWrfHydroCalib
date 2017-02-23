@@ -290,3 +290,71 @@ def sendMsg(jobData):
         jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
     if not jobData.email and not jobData.slackObj:
         print msgContent
+        
+def CleanSpinup(jobData,runDir):
+    """
+    Generic function to clean up NWM output from the spinup. This will not
+    remove RESTART files as those are needed by the calibrations.
+    """
+    filesCheck = glob.glob(runDir + "/diag_hydro.*")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/diag_hydro.*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove hydro diagnostic files from: " + runDir
+            raise
+            
+    filesCheck = glob.glob(runDir + "/*.err")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.err"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove error diagnostic files from: " + runDir
+            raise
+            
+    filesCheck = glob.glob(runDir + "/*.out")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.out"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove misc diagnostic files from: " + runDir
+            raise
+            
+    filesCheck = glob.glob(runDir + "/*.LDASOUT_DOMAIN1")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.LDASOUT_DOMAIN1"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove LDASOUT files from: " + runDir
+            raise
+    
+    filesCheck = glob.glob(runDir + "/*.CHRTOUT_DOMAIN1")
+    
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/*.CHRTOUT_DOMAIN1"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove CHRTOUT files from: " + runDir
+            
+    if os.path.isfile(runDir + "/namelist.hrldas"):
+        try:
+            os.remove(runDir + "/namelist.hrldas")
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/namelist.hrldas"
+            raise
+            
+    if os.path.isfile(runDir + "/hydro.namelist"):
+        try:
+            os.remove(runDir + "/hydro.namelist")
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/hydro.namelist"
+            raise

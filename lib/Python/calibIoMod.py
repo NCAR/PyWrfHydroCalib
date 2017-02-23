@@ -34,7 +34,7 @@ class gageMeta:
         tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','forceDir':'',\
-                   'obsFile':'','gageID':'','comID':''}
+                   'obsFile':'','gageID':'','comID':'','nCoresMod':''}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:

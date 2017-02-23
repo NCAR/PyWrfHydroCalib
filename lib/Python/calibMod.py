@@ -11,8 +11,6 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
-# TEMPORARY
-import shutil
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -43,6 +41,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
         
+    # Pull gage metadata
+    gageMeta = calibIoMod.gageMeta()
+    try:
+        gageMeta.pullGageMeta(staticData,db,gage)
+    except:
+        raise
+        
     # Generate BSUB file necessary for running R calibration/analysis
     # code.
     try:
@@ -52,9 +57,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         
     # If BSUB run script doesn't exist, create it here.
     bsubFile = runDir + "/run_NWM.sh"
+    bsubFileRst = runDir + "/run_NWM_Restart.sh"
     if not os.path.isfile(bsubFile):
         try:
-            generateRunScript(statusData,int(gageID),runDir)
+            generateRunScript(statusData,int(gageID),runDir,gageMeta)
+        except:
+            raise
+    if not os.path.isfile(bsubFileRst):
+        try:
+            generateRestartRunScript(statusData,int(gageID),runDir,gageMeta)
         except:
             raise
     
@@ -62,13 +73,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     begDate = statusData.bCalibDate
     endDate = statusData.eCalibDate
         
-    # Pull gage metadata
-    gageMeta = calibIoMod.gageMeta()
-    try:
-        gageMeta.pullGageMeta(staticData,db,gage)
-    except:
-        raise
-     
     # Initialize status
     keyStatus = keySlot[basinNum,iteration]
     
@@ -162,7 +166,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         except:
                             raise
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),str(gage),int(iteration),statsTbl)
-                    errMod.removeOutput(statusData,runDir)
+                    #errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
@@ -205,7 +209,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     raise
                 # Clean everything up.
                 try:
-                    errMod.removeOutput(statusData,runDir)
+                    #errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusData,runDir)
                 except:
@@ -279,7 +283,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     raise
                 # Clean everything up.
                 try:
-                    errMod.removeOutput(statusData,runDir)
+                    #errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusData,runDir)
                 except:
@@ -345,7 +349,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         # Cleanup any previous calib-related files that may be sitting around.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
-                            errMod.removeOutput(statusData,runDir)
+                            #errMod.removeOutput(statusData,runDir)
                         except:
                             raise
                         keySlot[basinNum,iteration] = 0.0
@@ -662,7 +666,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        cmd = "bsub < " + runDir + "/run_NWM_Restart.sh"
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -676,7 +680,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         runCalib = False
         
     if keyStatus == 0.0 and runFlag:
-        # Model needs to be either ran, or restarted
+        # Model needs to be either ran from the beginning of the calibration period.
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
         check2 = runDir + "/hydro.namelist"
@@ -800,10 +804,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         raise
     
                 
-def generateRunScript(jobData,gageID,runDir):
+def generateRestartRunScript(jobData,gageID,runDir,gageMeta):
     """
     Generic function to create a run script that will be called by bsub
-    to execute the model.
+    to execute the model. This run script is used specifically to restart
+    the model instead of removing all output prior to running the model.
     """
     
     outFile = runDir + "/run_NWM.sh"
@@ -820,10 +825,11 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -x\n')
-        inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
+        #fileObj.write('#BSUB -x\n')
+        #inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
+        inStr = "#BSUB -n " + str(gageMeta.nCoresMod) + '\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -R "span[ptile=16]"\n')
+        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
@@ -834,6 +840,67 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('#BSUB -q premium\n')
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateRunScript(jobData,gageID,runDir,gageMeta):
+    """
+    Generic function to create a run script that will be called by bsub
+    to execute the model. For this particular BSUB script, we clean out
+    all prior model output in preparation for the next iteration. 
+    """
+    
+    outFile = runDir + "/run_NWM.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# LSF Batch Script to Run NWM Calibration Simulations\n')
+        fileObj.write('#\n')
+        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        #fileObj.write('#BSUB -x\n')
+        #inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
+        inStr = "#BSUB -n " + str(gageMeta.nCoresMod) + '\n'
+        fileObj.write(inStr)
+        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
+        inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = '#BSUB -o ' + runDir + '/%J.out\n'
+        fileObj.write(inStr)
+        inStr = '#BSUB -e ' + runDir + '/%J.err\n'
+        fileObj.write(inStr)
+        fileObj.write('#BSUB -W 6:00\n')
+        fileObj.write('#BSUB -q premium\n')
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf diag_hydro.*\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.err\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.out\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf HYDRO_RST.*\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf RESTART.*_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf namelist.hrldas\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf hydro.namelist\n'
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
         fileObj.close

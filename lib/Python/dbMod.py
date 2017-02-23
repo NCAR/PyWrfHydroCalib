@@ -155,7 +155,6 @@ class Database(object):
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
                  0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
-        
         try:
             self.conn.execute(sqlCmd)
             self.db.commit()
