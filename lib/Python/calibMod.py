@@ -869,9 +869,9 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         fileObj.write(inStr)
-        inStr = 'rm -rf HYDRO_RST.*\n'
+        inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = 'rm -rf RESTART.*_DOMAIN1\n'
+        inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
         fileObj.close
