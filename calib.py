@@ -225,8 +225,10 @@ def main(argv):
     # ONE job running for a given basin. If any jobs are found, exit gracefully.
     for basin in range(0,len(jobData.gages)):
         # First pull the unique ID for the basin. 
+        print basin
         calibStatus = statusMod.checkCalibJob(jobData,basin)
         modelStatus = statusMod.checkBasJob(jobData,basin)
+        print "FOUND BASIN"
         if calibStatus or modelStatus:
             sys.exit(0)
     
