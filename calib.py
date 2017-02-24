@@ -221,6 +221,15 @@ def main(argv):
     keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages)*int(jobData.nIter))
     
+    # Loop through each basin in the calibration job. There should always be at least 
+    # ONE job running for a given basin. If any jobs are found, exit gracefully.
+    for basin in range(0,len(jobData.gages)):
+        # First pull the unique ID for the basin. 
+        calibStatus = statusMod.checkCalibJob(jobData,basin)
+        modelStatus = statusMod.checkBasJob(jobData,basin)
+        if calibStatus or modelStatus:
+            sys.exit(0)
+    
     # If this is a reboot of the program, loop through each basin, iteration and ping
     # the DB to see which iterations have been completed.
     for basin in range(0,len(jobData.gages)):
@@ -269,12 +278,12 @@ def main(argv):
                 keyStatusCheck1 = keySlot[basin,iteration]
                 #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #time.sleep(7)
-                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #print str(jobData.gageIDs[basin])
-                try:
-                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                except:
-                    errMod.errOut(jobData)
+                #try:
+                #    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                #except:
+                #    errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
                     # Put some spacing between launching model simulations to slow down que geting 

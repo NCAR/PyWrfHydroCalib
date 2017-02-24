@@ -94,10 +94,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             else:
                 # Model has completed!
                 # Clean the directory up to only hold restart files.
-                try:
-                    errMod.CleanSpinup(statusData,runDir)
-                except:
-                    raise
+                #try:
+                #    errMod.CleanSpinup(statusData,runDir)
+                #except:
+                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -117,10 +117,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             if not runFlag:
                 # Model simulation completed before workflow was restarted
                 # Clean the directory up to only hold restart files.
-                try:
-                    errMod.CleanSpinup(statusData,runDir)
-                except:
-                    raise
+                #try:
+                #    errMod.CleanSpinup(statusData,runDir)
+                #except:
+                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -143,10 +143,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             else:
                 # Model sucessfully completed.
                 # Clean the directory up to only hold restart files.
-                try:
-                    errMod.CleanSpinup(statusData,runDir)
-                except:
-                    raise
+                #try:
+                #    errMod.CleanSpinup(statusData,runDir)
+                #except:
+                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -178,10 +178,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             else:
                 # Model sucessfully completed from first failed attempt.
                 # Clean the directory up to only hold restart files.
-                try:
-                    errMod.CleanSpinup(statusData,runDir)
-                except:
-                    raise
+                #try:
+                #    errMod.CleanSpinup(statusData,runDir)
+                #except:
+                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 
