@@ -31,6 +31,7 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    # First run so need to initialize
    #ReadNamelist(paste0(runDir, "/calibScript.R"))
    cyclecount <- 0
+   lastcycle <- FALSE
 
    # Read parameter bounds 
    paramBnds <- read.table(paste0(runDir, "/calib_parms.tbl"), header=TRUE, sep=",", stringsAsFactors=FALSE)
@@ -207,6 +208,8 @@ if (cyclecount > 0) {
       names(x_new_out)[1] <- "iter"
       #MOVE WRITE TO END: write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
       write(x_new_out, stdout())
+   } else {
+      lastcycle <- TRUE
    }
 
 
@@ -260,13 +263,13 @@ if (cyclecount > 0) {
    # Plot the time series of the observed, control, best calibration result and last calibration iteration
    write("Hydrograph...", stdout())
    # The first iteration is the control run  called chrt.d.1
-   controlRun <- chrt.d.1
+   controlRun <- copy(chrt.d.1)
    controlRun [, run := "Control Run"]
    # We have already advanced the cyclescount, so subtract 1 to get last complete
-   lastRun <- get(paste0("chrt.d.", cyclecount-1))
+   lastRun <- copy(get(paste0("chrt.d.", ifelse(lastcycle, cyclecount, cyclecount-1))))
    lastRun [ , run := "Last Run"]
    # the best iteration should be find
-   bestRun <- get(paste0("chrt.d.", iter_best))
+   bestRun <- copy(get(paste0("chrt.d.", iter_best)))
    bestRun [ , run := "Best Run"]
 
    obsStrDataPlot <- copy(obsStrData)
@@ -276,6 +279,9 @@ if (cyclecount > 0) {
    obsStrDataPlot[ , run := "Observation"]
 
    chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
+   # Cleanup
+   rm(controlRun, lastRun, bestRun, obsStrDataPlot)
+   
 
    gg <- ggplot2::ggplot(chrt.d_plot, ggplot2::aes(POSIXct, q_cms, color = run))
    gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
