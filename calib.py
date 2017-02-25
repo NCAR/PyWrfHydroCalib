@@ -34,6 +34,7 @@ import dbMod
 import errMod
 import configMod
 import calibMod
+import pandas as pd
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -50,6 +51,38 @@ def main(argv):
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
+    
+    # Establish LOCK file to secure this Python program to make sure
+    # no other instances over-step here.
+    lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    if os.path.isfile(lockPath):
+        # Either a job is still running, or was running
+        # and was killed.
+
+        print 'LOCK FILE FOUND.'
+        # Read in to get PID number
+        pidObj = pd.read_csv(lockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(lockPath)
+                fileObj = open(lockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
+    else:
+        print 'LOCK FILE NOT FOUND.'
+        # Write a LOCK file for this program.
+        fileObj = open(lockPath,'w')
+        fileObj.write('\"PID\"\n')
+        fileObj.write(str(os.getpid()))
+        fileObj.close()
     
     # Lookup database username/login credentials based on username
     # running program.
@@ -190,6 +223,8 @@ def main(argv):
         calibStatus = statusMod.checkCalibJob(jobData,basin)
         modelStatus = statusMod.checkBasJob(jobData,basin)
         if calibStatus or modelStatus:
+            # Remove LOCK file
+            os.remove(lockPath)
             sys.exit(0)
             
     # Create empty table entries into the Calib_Stats table to be filled in as the workflow progresses.
@@ -303,5 +338,8 @@ def main(argv):
             errMod.sendMsg(jobData)
             completeStatus = True
         
+    # Remove LOCK file
+    os.remove(lockPath)
+    
 if __name__ == "__main__":
     main(sys.argv[1:])

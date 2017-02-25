@@ -318,3 +318,12 @@ def CleanSpinup(jobData,runDir):
         except:
             jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/hydro.namelist"
             raise
+            
+def check_pid(pid):
+     """ Check For the existence of a unix pid. """
+     try:
+         os.kill(pid, 0)
+     except OSError:
+         return False
+     else:
+         return True
