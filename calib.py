@@ -84,6 +84,7 @@ def main(argv):
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here.
     lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    print lockPath
     if os.path.isfile(lockPath):
         # Either a job is still running, or was running
         # and was killed.
