@@ -52,6 +52,35 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
     
+    # Lookup database username/login credentials based on username
+    # running program.
+    #try:
+    #    uNameTmp = raw_input('Enter Database Username: ')
+    #    pwdTmp = getpass.getpass('Enter Database Password: ')
+    #    jobData.dbUName= str(uNameTmp)
+    #    jobData.dbPwd = str(pwdTmp)
+    #except:
+    #    print "ERROR: Unable to authenticate credentials for database."
+    #    sys.exit(1)
+    
+    jobData.dbUName = 'NWM_Calib_rw'
+    jobData.dbPwd = 'IJustWannaCalibrate'    
+    
+    # Establish database connection.
+    db = dbMod.Database(jobData)
+    try:
+        db.connect(jobData)
+    except:
+        print jobData.errMsg
+        sys.exit(1)
+        
+    # Extract job data from database
+    try:
+        db.jobStatus(jobData)
+    except:
+        print jobData.errMsg
+        sys.exit(1)
+        
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here.
     lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
@@ -83,35 +112,6 @@ def main(argv):
         fileObj.write('\"PID\"\n')
         fileObj.write(str(os.getpid()))
         fileObj.close()
-    
-    # Lookup database username/login credentials based on username
-    # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
-    
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
-    
-    # Establish database connection.
-    db = dbMod.Database(jobData)
-    try:
-        db.connect(jobData)
-    except:
-        print jobData.errMsg
-        sys.exit(1)
-        
-    # Extract job data from database
-    try:
-        db.jobStatus(jobData)
-    except:
-        print jobData.errMsg
-        sys.exit(1)
         
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
