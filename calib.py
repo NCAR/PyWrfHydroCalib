@@ -182,6 +182,15 @@ def main(argv):
         jobData.genMsg = "MSG: User: " + userTmp + " Is Taking Over JobID: " + str(jobData.jobID) + \
                          " From Owner: " + str(jobData.owner)
         errMod.sendMsg(jobData)
+        
+    # Loop through each basin in the calibration job. There should always be at least 
+    # ONE job running for a given basin. If any jobs are found, exit gracefully.
+    for basin in range(0,len(jobData.gages)):
+        # First pull the unique ID for the basin. 
+        calibStatus = statusMod.checkCalibJob(jobData,basin)
+        modelStatus = statusMod.checkBasJob(jobData,basin)
+        if calibStatus or modelStatus:
+            sys.exit(0)
             
     # Create empty table entries into the Calib_Stats table to be filled in as the workflow progresses.
     # If table entries have already been entered, continue on.
