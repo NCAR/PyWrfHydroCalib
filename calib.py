@@ -187,10 +187,8 @@ def main(argv):
     # ONE job running for a given basin. If any jobs are found, exit gracefully.
     for basin in range(0,len(jobData.gages)):
         # First pull the unique ID for the basin. 
-        print basin
         calibStatus = statusMod.checkCalibJob(jobData,basin)
         modelStatus = statusMod.checkBasJob(jobData,basin)
-        print "FOUND BASIN"
         if calibStatus or modelStatus:
             sys.exit(0)
             
@@ -280,12 +278,12 @@ def main(argv):
                 keyStatusCheck1 = keySlot[basin,iteration]
                 #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #time.sleep(7)
-                calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 #print str(jobData.gageIDs[basin])
-                #try:
-                #    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                #except:
-                #    errMod.errOut(jobData)
+                try:
+                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                except:
+                    errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
                     # Put some spacing between launching model simulations to slow down que geting 
