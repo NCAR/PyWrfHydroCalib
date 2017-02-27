@@ -93,11 +93,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = -0.25
             else:
                 # Model has completed!
-                # Clean the directory up to only hold restart files.
-                #try:
-                #    errMod.CleanSpinup(statusData,runDir)
-                #except:
-                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -116,11 +111,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             runFlag = runStatus[2]
             if not runFlag:
                 # Model simulation completed before workflow was restarted
-                # Clean the directory up to only hold restart files.
-                #try:
-                #    errMod.CleanSpinup(statusData,runDir)
-                #except:
-                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -142,11 +132,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = 0.0
             else:
                 # Model sucessfully completed.
-                # Clean the directory up to only hold restart files.
-                #try:
-                #    errMod.CleanSpinup(statusData,runDir)
-                #except:
-                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -177,11 +162,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt.
-                # Clean the directory up to only hold restart files.
-                #try:
-                #    errMod.CleanSpinup(statusData,runDir)
-                #except:
-                #    raise
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 
@@ -300,6 +280,13 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
