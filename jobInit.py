@@ -1,7 +1,9 @@
 # Main calling program to initiate a job for calibration.
 # The user will need to correctly fill out the setup.parm
 # file before running this program. Options will be read in
-# along with the list of gages to calibtrate. Directories
+# along with the list of gages to calibtrate. Additionally,
+# the user will need to provide a table of parameters being
+# calibrated, and their value ragnes. Directories
 # for running the calibration will be setup, along with 
 # entries into the calibration database to initialize 
 # the workflow.
@@ -17,7 +19,8 @@ import argparse
 import os
 #import getpass
 
-# Set the Python path to include package specific functions.
+# Set the Python path to include package specific functions included with this 
+# package.
 prPath = os.path.realpath(__file__)
 pathSplit = prPath.split('/')
 libPath = '/'
