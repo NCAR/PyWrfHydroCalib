@@ -278,11 +278,9 @@ def main(argv):
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
             errMod.errOut(jobData)
             
+        statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         for iteration in range(0,int(jobData.nIter)):
-            try:
-                keySlot[basin,iteration] = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
-            except:
-                errMod.errOut(jobData)
+            keySlot[basin,iteration] = float(statusData[iteration][0])
                 
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of

@@ -584,30 +584,27 @@ class Database(object):
                                      " iteration: " + str(iteration)
                     raise
                     
-    def iterationStatus(self,jobData,domainID,iteration,gageName):
+    def iterationStatus(self,jobData,domainID,gageName):
         """
-        Generic function to extract the complete status for a given iteration of 
-        a calibration in a given basin for a given job.
+        Generic function to extract the complete status for a given job/basin. 
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
             
         jobID = int(jobData.jobID)
-        iterCheck = iteration + 1
         
         sqlCmd = "select complete from Calib_Stats where jobID='" + str(jobID) + "'" + \
-                 " and domainID='" + str(domainID) + "'" + " and iteration='" + \
-                 str(iterCheck) + "';"
+                 " and domainID='" + str(domainID) + "';"
         try:
             self.conn.execute(sqlCmd)
-            results = self.conn.fetchone()
+            results = self.conn.fetchall()
         except:
             jobData.errMsg = "ERROR: Unable to extract calibration status for job ID: " + str(jobID) + \
-                             " domainID: " + str(domainID) + " Iteration: " + str(iteration)
+                             " domainID: " + str(domainID)
             raise
             
-        return float(results[0])
+        return results
         
     def updateIterationStatus(self,jobData,domainID,iteration,gageName,newStatus):
         """
