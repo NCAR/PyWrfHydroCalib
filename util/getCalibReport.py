@@ -107,8 +107,9 @@ def main(argv):
         except:
             errMod.errOut(jobData)
         iterComplete = 1 
+        statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         for iteration in range(0,int(jobData.nIter)):
-            keyStatus = db.iterationStatus(jobData,domainID,iteration,str(jobData.gages[basin]))
+            keyStatus = float(statusData[iteration][0])
             if keyStatus == 1.0:
                 if iterComplete == int(jobData.nIter):
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \

@@ -858,7 +858,7 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -W 6:00\n')
+        fileObj.write('#BSUB -W 3:00\n')
         fileObj.write('#BSUB -q premium\n')
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
@@ -962,7 +962,7 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write(inStr)
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
-            fileObj.write('#BSUB -W 0:20\n')
+            fileObj.write('#BSUB -W 0:30\n')
             fileObj.write('#BSUB -q premium\n')
             #fileObj.write('#BSUB -q geyser\n')
             fileObj.write('\n')
