@@ -1,4 +1,4 @@
-# Module file for containing functions for executing WRF-Hydro model runs.
+# Module file for containing functions for iterations of the workflow. 
 
 # Logan Karsten
 # National Center for Atmospheric Research
@@ -19,19 +19,21 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
-    number of cores to use, etc will be used to compose a BSUB
-    submision script. This function will walk the run directory 
+    number of cores to use, etc will be used to compose BSUB
+    submision scripts. This function will walk the run directory 
     to determine where the model left off. If no restart files exist,
     then the function will assume the model has not ran at all. Both
     the LSM and hydro restart files must be present in order for the
-    model to restart. 
+    model to restart. This function will also check to see if parameter estimation
+    /generation code needs to executed on Yellowstone compute nodes. 
     """
     # First check to make sure previous iteration's status is 1.0 (unless iteration 0).
+    # This is to prevent the program from doing unecessary work. 
     if iteration > 0:
         if keySlot[basinNum,iteration-1] < 1.0:
             return
             
-    # Determine which run sub-directory based on COMPLETE flag presence.
+    # Compose directory paths for calibration/model simulations.
     runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/OUTPUT"
     workDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
     if not os.path.isdir(workDir):
@@ -41,7 +43,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         statusData.errMsg = "ERROR: " + runDir + " not found."
         raise Exception()
         
-    # Pull gage metadata
+    # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
     try:
         gageMeta.pullGageMeta(staticData,db,gage)
@@ -59,12 +61,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     bsubFile = runDir + "/run_NWM.sh"
     bsubFileRst = runDir + "/run_NWM_Restart.sh"
     if os.path.isfile(bsubFile):
+        # Going to override for now. 
         os.remove(bsubFile)
         try:
             generateRunScript(statusData,int(gageID),runDir)
         except:
             raise
     if os.path.isfile(bsubFileRst):
+        # Going to override for now. 
         os.remove(bsubFileRst)
         try:
             generateRestartRunScript(statusData,int(gageID),runDir)
@@ -90,7 +94,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     except:
         raise
      
-    # Create path to LOCK file if neeced
+    # Establish paths to LOCK files,etc
     lockPath = workDir + "/RUN.LOCK"
     calibLockPath = workDir + "/CALIB.LOCK"
     calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
@@ -99,7 +103,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     statsTbl = workDir + "/params_stats.txt"
     rDataFile = workDir + "/proj_data.Rdata"
     
-    # Initialize flags to False
+    # Initialize flags to False. These flags will help guide the workflow 
+    # in decision making. 
     runFlag = False
     runCalib = False
     if keyStatus == 1.0:
@@ -116,13 +121,16 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             runFlag = False
             runCalib = False
         else:
-            # Either simulation has completed, or potentially crashed.
+            # Either simulation has completed, or potentially crashed. Walk the run
+            # run directory and see where the model is at based on RESTART files. 
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
+                # Decided to comment this out for now. Not necessary, but may be nice for other
+                # experiments. 
                 #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
                 #                    " Failed. Attempting to restart."
                 #print statusData.genMsg
@@ -156,19 +164,19 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             runCalib = False
         else:
             # If calibration COMPLETE flag listed, upgrade status to 1.0, and make entry into
-            # database as this iteration being completed. Also remove model output in preparation
-            # for model simualation that will take place beginning with the next iteration.
+            # database as this iteration being completed.
             # Also scrub calib-related files (minus new parameters).
             if os.path.isfile(calibCompleteFlag):
                 try:
                     # If we are on the last iteration, no new parameters are created.
                     if int(iteration+1) < int(statusData.nIter):
+                        # The if statment is to handle the last iteration where no 
+                        # new parameters are generated at the end. 
                         try:
                             db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration)+1)
                         except:
                             raise
                     db.logCalibStats(statusData,int(statusData.jobID),int(gageID),str(gage),int(iteration),statsTbl)
-                    #errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
@@ -183,16 +191,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # status for all iterations to 1.
                 statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
                                     "observations for the evaluation period."
-                print statusData.genMsg
                 errMod.sendMsg(statusData)
-                # set the status for all iterations to 1.
+                # set the status for all iterations to 1. This will force the workflow to skip
+                # over this basin in the future. 
                 try:
                     db.fillMisingBasin(statusData,int(statusData.jobID),int(gageID))
                 except:
                     raise
                 # Clean everything up.
                 try:
-                    #errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusData,runDir)
                 except:
@@ -205,8 +212,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + calibLockPath
-                print statusData.genMsg
-                errMod.sendMsg(statusData)
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
@@ -253,7 +258,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # status for all iterations to 1.
                 statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
                                     "observations for the evaluation period."
-                print statusData.genMsg
+                errMod.sendMsg(statusData)
                 # Copy parameter files to the DEFAULT directory
                 try:
                     calibIoMod.copyDefaultParms(statusData,runDir,gage)
@@ -266,7 +271,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     raise
                 # Clean everything up.
                 try:
-                    #errMod.removeOutput(statusData,runDir)
                     errMod.cleanCalib(statusData,workDir,runDir)
                     errMod.scrubParams(statusData,runDir)
                 except:
@@ -279,7 +283,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 # This means the calibration failed. Demote status and send message to user.
                 statusData.genMsg = "ERROR: 1st Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
-                print statusData.genMsg
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
                     errMod.scrubParams(statusData,runDir)
@@ -318,7 +321,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     runFlag = False
                     runCalib = False
                 else:
-                    # Model is not running.
+                    # Model is not running. Walk the model run directory and determine where
+                    # it's at based on RESTART files. 
                     runStatus = statusMod.walkMod(begDate,endDate,runDir)
                     begDate = runStatus[0]
                     endDate = runStatus[1]
@@ -332,7 +336,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         # Cleanup any previous calib-related files that may be sitting around.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
-                            #errMod.removeOutput(statusData,runDir)
                         except:
                             raise
                         keySlot[basinNum,iteration] = 0.0
@@ -392,7 +395,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 if basinStatus:
                     # This means that we are rebooting the program. Parameters were 
                     # adjusted already and the simulation for iteration 0 is underway
-                    # still from a previous crash.
+                    # still from a previous crash. This is a rare situation as statuses
+                    # are updated in the DB dynamically. 
                     keySlot[basinNum,iteration] = 0.5
                     keyStatus = 0.5
                     runFlag = False
@@ -572,7 +576,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     if keyStatus == -0.5:
         if basinStatus:
             # Model is running again, upgrade status
-            # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
@@ -588,7 +591,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                     " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
                                     "MANUALLY REMOVE LOCK FILE: " + lockPath
                 errMod.sendMsg(statusData)
-                print statusData.genMsg
                 open(lockPath,'a').close()
                 keySlot[basinNum,iteration] = -1.0
                 keyStatus = -1.0
@@ -636,6 +638,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             except:
                 raise
         
+        # Create new namelist files. 
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
             namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
@@ -683,6 +686,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # when we have cold starts. 
         startType = 2
         
+        # Create namelist files. 
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
             namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
@@ -716,7 +720,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     if keyStatus == 0.0 and runCalib:
         # Unique situation where we are on iteration 1, and we need to run
         # a calibration script and adjust parameters once before beginning
-        # the model.
+        # the model. This generates default parameters. 
         
         # First cleanup any old model output or calibration output that 
         # is from previous iterations.
@@ -811,7 +815,6 @@ def generateRestartRunScript(jobData,gageID,runDir):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
@@ -853,7 +856,6 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
@@ -865,6 +867,9 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
+        # Commenting this out for now as it's not necessary to remove this files,
+        # and it adds a huge I/O burder on Yellowstone when scaled out to all
+        # RFC regions. 
         #inStr = 'rm -rf diag_hydro.*\n'
         #fileObj.write(inStr)
         #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
@@ -945,6 +950,7 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
     outFile1 = workDir + "/run_NWM_CALIB.sh"
     
     if os.path.isfile(outFile1):
+        # We are just going to manually over-write the file everytime to be safe.
         os.remove(outFile1)
     
     if not os.path.isfile(outFile1):
@@ -956,25 +962,21 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#\n')
             inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
-            #fileObj.write('#BSUB -x\n')
             inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
             fileObj.write(inStr)
-            #fileObj.write("#BSUB -n 1\n")
-            #fileObj.write('#BSUB -R "span[ptile=16]"\n')
             inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#BSUB -o ' + workDir + '/%J.out\n'
             fileObj.write(inStr)
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
+            # We are using 2 hours to be safe here. 
             fileObj.write('#BSUB -W 2:00\n')
             fileObj.write('#BSUB -q premium\n')
-            #fileObj.write('#BSUB -q geyser\n')
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             fileObj.write('./calibCmd.sh\n')
-            #fileObj.write('mpirun.lsf ./calibCmd.sh\n')
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile1
@@ -986,6 +988,8 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
     srcScript = workDir + "/calibScript.R"
         
     if not os.path.isfile(outFile2):
+        # This is the file that will run the R code first to generate params_new.txt and
+        # params_stats.txt. Python is called next, which will read in 
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')

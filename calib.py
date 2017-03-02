@@ -1,7 +1,6 @@
 # Main calling program to initiate a calibration of the National
-# Water Model. This program can either be used to initiate or restart a 
-# spinup if it has crashed unexpectedly. The user will need to provide 
-# a unique Job ID that is stored in the database.
+# Water Model. Please see comments below on steps involved for the workflow
+# to run. 
 
 # Logan Karsten
 # National Center for Atmospheric Research
@@ -54,6 +53,7 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
+    # COMMENTED OUT FOR V1.2
     #try:
     #    uNameTmp = raw_input('Enter Database Username: ')
     #    pwdTmp = getpass.getpass('Enter Database Password: ')
@@ -82,9 +82,11 @@ def main(argv):
         sys.exit(1)
         
     # Establish LOCK file to secure this Python program to make sure
-    # no other instances over-step here.
+    # no other instances over-step here. This is mostly designed to deal
+    # with nohup processes being kicked off Yellowstone login nodes arbitrarily.
+    # We need to continuously be kicking this off from a cronjob to keep things
+    # flowing.
     lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
-    print lockPath
     if os.path.isfile(lockPath):
         # Either a job is still running, or was running
         # and was killed.
@@ -119,7 +121,6 @@ def main(argv):
     if not os.path.isfile(configPath):
         print "ERROR: Configuration file: " + configPath + " not found."
         sys.exit(1)
-
     try:        
         staticData = configMod.readConfig(configPath)
     except:
@@ -132,6 +133,10 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
+    # This was commented out for v1.2. Usually, you should not have any other jobs
+    # running from this workflow if you are starting it up. However, given the 
+    # nature of Yellowstone, we may have several basin/calib jobs running at any
+    # given time. 
     # Extract active jobs for job owner
     #try:
     #    statusMod.checkYsJobs(jobData)
@@ -168,6 +173,10 @@ def main(argv):
         #newSlackToken = raw_input(strTmp)
         #strTmp = "Please enter Slack user name:"
         #newSlackUName = raw_input(strTmp)
+        # V1.2 NOTE!!!!!
+        # Given the automation of the workflow on Yellowstone, we are simply 
+        # keeping contact information the same, but only changing the ownership
+        # of the workflow
         changeFlag = 1
         #if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
         #    print "ERROR: You must specify an associated Slacker API token."
@@ -195,6 +204,10 @@ def main(argv):
             
         # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
             
+        jobData.genMsg = "MSG: User: " + userTmp + " Is Taking Over JobID: " + str(jobData.jobID) + \
+                         " From Owner: " + str(jobData.owner)
+        errMod.sendMsg(jobData)
+        
         # TEMPORARY FOR VERSION 1.2 NWM CALIBRATION!!!!
         # If a new owner takes over, simply change the owner, but keep all 
         # other contact information the same.
@@ -213,10 +226,10 @@ def main(argv):
         except:
             errMod.errOut(jobData)
             
-        jobData.genMsg = "MSG: User: " + userTmp + " Is Taking Over JobID: " + str(jobData.jobID) + \
-                         " From Owner: " + str(jobData.owner)
-        errMod.sendMsg(jobData)
-        
+    # NOTE: Comented this out for V1.2. This is really an unecessary check on the workflow.
+    # Since the statuses for each basin are being read in from the DB, the workflow should
+    # be able to handle seeing existing jobs running. Keeping this code here for now
+    # in case there is a desire to put this back in the future. 
     # Loop through each basin in the calibration job. There should always be at least 
     # ONE job running for a given basin. If any jobs are found, exit gracefully.
     #for basin in range(0,len(jobData.gages)):
@@ -229,7 +242,7 @@ def main(argv):
     #        sys.exit(0)
             
     # Create empty table entries into the Calib_Stats table to be filled in as the workflow progresses.
-    # If table entries have already been entered, continue on.
+    # If table entries have already been entered, continue on. This only needs to be done ONCE. 
     #for basin in range(0,len(jobData.gages)):
     #    try:
     #        domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
@@ -256,18 +269,33 @@ def main(argv):
     # Create a "key" array. This array is of length [numBasins] and is initialized to 0.0.
     # Each array element can have the following values based on current model status:
     # 0.0 - Initial value
+    # 0.25 - This is a special value for the first iteration. The initial default 
+    #        parameter values specified in the parameter table by the user are being
+    #        applied and entered into the DB. 
     # 0.5 - Model simulation in progress
-    # 1.0 - Model simulation complete
-    # -0.5 - Model simulation failed once and a restart has been attempted
-    # -1.0 - Model has failed twice. A LOCK file has been created.
+    # 0.75 - The model simulation has completed. We are ready to run the R code to 
+    #        generate the next set of parameter values and enter evaluation statistics
+    #        into the DB. 
+    # 0.90 - The R code is running to generate new parameters estimates. Python is
+    #        also generating new files.
+    # 1.0 - R/Python code is complete and param/stats have been enetered into the DB. Ready to 
+    #       run the next model iteration. 
+    # -0.1 - The R code to generate the initial parameter values has failed. CALIB.LOCK
+    #        is put into place. 
+    # -0.25 - The workflow has found the model simulation to have failed. 
+    # -0.5 - Model simulation failed once and a restart is being ran. 
+    # -0.75 - The R/Python code to generate new parameters/stats has failed. CALIB.LOCK
+    #         is put into place. 
+    # -1.0 - Model has failed twice. A RUN.LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
     keySlot = np.empty([len(jobData.gages),int(jobData.nIter)])
     keySlot[:,:] = 0.0
+    # NOTE this is different from the spinup. We have a 2D array of values to account
+    # for all the iterations. 
     entryValue = float(len(jobData.gages)*int(jobData.nIter))
     
-    # If this is a reboot of the program, loop through each basin, iteration and ping
-    # the DB to see which iterations have been completed.
+    # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
         try:
             domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
@@ -278,6 +306,8 @@ def main(argv):
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
             errMod.errOut(jobData)
             
+        # We are going to pull all values for one basin, then place them into the array.
+        # This is faster then looping over each iteration at a time. 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         for iteration in range(0,int(jobData.nIter)):
             keySlot[basin,iteration] = float(statusData[iteration][0])
@@ -285,35 +315,35 @@ def main(argv):
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
-        # namelist files appropriately. Then, restart the model. Once all
-        # basins have been accounted for, fire off the monitoring program through
-        # nohup to keep track of the models. If anything goes wrong, notifications
+        # namelist files appropriately. Then, restart the model. If anything goes wrong, notifications
         # will either be emailed per the user's info, or piped to Slack for group
-        # notification. A run directory won't be complete until all output is 
-        # present and the calibration algorithms have successfully completed. Once
-        # that occurs, a COMPLETE flag will be placed into the run directory, indicating
-        # everything for this iteration is complete.  
+        # notification. A simulation is deemed complete when all expected RESTART
+        # files are present and there are no jobs running for the basin. The parameter
+        # estimation is deemed complete when CALIB_ITER.COMPLETE is present and
+        # no calibration jobs for this basin are running. 
         # Loop through each basin. Perform the following steps:
         # 1.) If status is -0.5,0.0, or 0.5, check to see if the model is running
-        #     for this basin.
+        #     for this basin or if parameter estimation is occurring.
         # 2.) If the model is not running, check for expected output and perform
-        #     necessary logistics. Continue to the next basin.
+        #     necessary logistics. Continue to parameter estimation. Note that
+        #     for the first iteration, R needs to be ran before the model to get
+        #     initial default parameters. 
+        # 3.) Once the model is complete, the status goes to 0.75.
+        # 4.) Fire off a job to run R/Python code for parameter estimation, generation
+        #     , plot generation, and generation of model eval statistics to be 
+        #     entered into the DB. Status goes to 0.90.
+        # 5.) Once the calibration job is complete, the status goes to 1.0 and the 
+        #     workflow is ready for the next iteration. 
         # If the status goes to -1.0, a LOCK file is created and must be manually
         # removed from the user. Once the program detects this, it will restart the
-        # model and the status goes back to 0.5.
-        # If the status is -0.5 and no job is running, output must be complete, or 
-        # status goes to -1.0.
-        # If output is not complete, the model is still running, status stays at 0.5.
-        # If job is not running, and output has been completed, status goes to 1.0.
-        # This continues indefinitely until statuses for ALL basins go to 1.0.
-    
+        # model and the status goes back to 0.5. 
+        # If the status goes to -0.75, a LOCK file is created and needs to be removed
+        # manually by the user before the workflow can continue. 
+
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
+                # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
-                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                #time.sleep(7)
-                #calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                #print str(jobData.gageIDs[basin])
                 try:
                     calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                 except:
