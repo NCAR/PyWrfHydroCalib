@@ -865,12 +865,12 @@ def generateRunScript(jobData,gageID,runDir):
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'rm -rf diag_hydro.*\n'
-        fileObj.write(inStr)
-        inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        fileObj.write(inStr)
-        inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        fileObj.write(inStr)
+        #inStr = 'rm -rf diag_hydro.*\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        #fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'

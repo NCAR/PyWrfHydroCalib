@@ -175,21 +175,21 @@ def main(argv):
     idGw.close()
     
     # Remove all model output as we no longer need it in preparation for the next iteration.
-    cmd = 'rm -rf ' + runDir + '/diag_hydro.*'
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        sys.exit(1)
-    cmd = 'rm -rf ' + runDir + '/*.LDASOUT_DOMAIN1'
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        sys.exit(1)
-    cmd = 'rm -rf ' + runDir + '/*.CHRTOUT_DOMAIN1'
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        sys.exit(1)
+    #cmd = 'rm -rf ' + runDir + '/diag_hydro.*'
+    #try:
+    #    subprocess.call(cmd,shell=True)
+    #except:
+    #    sys.exit(1)
+    #cmd = 'rm -rf ' + runDir + '/*.LDASOUT_DOMAIN1'
+    #try:
+    #    subprocess.call(cmd,shell=True)
+    #except:
+    #    sys.exit(1)
+    #cmd = 'rm -rf ' + runDir + '/*.CHRTOUT_DOMAIN1'
+    #try:
+    #    subprocess.call(cmd,shell=True)
+    #except:
+    #    sys.exit(1)
     cmd = 'rm -rf ' + runDir + '/HYDRO_RST.*'
     try:
         subprocess.call(cmd,shell=True)
