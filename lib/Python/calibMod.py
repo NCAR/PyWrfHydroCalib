@@ -944,6 +944,9 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
     
     outFile1 = workDir + "/run_NWM_CALIB.sh"
     
+    if os.path.isfile(outFile1):
+        os.remove(outFile1)
+    
     if not os.path.isfile(outFile1):
         try:
             fileObj = open(outFile1,'w')
@@ -964,7 +967,7 @@ def generateCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write(inStr)
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
-            fileObj.write('#BSUB -W 0:30\n')
+            fileObj.write('#BSUB -W 2:00\n')
             fileObj.write('#BSUB -q premium\n')
             #fileObj.write('#BSUB -q geyser\n')
             fileObj.write('\n')
