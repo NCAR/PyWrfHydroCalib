@@ -77,7 +77,6 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         if typeFlag == 1:
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
         else:
-            #rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d%H') + "_DOMAIN1"
             rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         fileObj.write(inStr)
@@ -122,7 +121,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' OUTPUT_TIMESTEP = ' + str(jobData.lsmOutDt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        # Manually over-writing the restart frequency for now.
+        # Manually over-writing the restart frequency for now. 
         #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(dt.days*24+dt.seconds/3600.0)) + '\n'
         inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
         #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
@@ -190,7 +189,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         
     # Write each line of the hydro namelist file.
     try:
-        dt = eDate - bDate
         fileObj = open(pathOut,'w')
         fileObj.write('&HYDRO_nlist\n')
         fileObj.write('\n')
@@ -234,7 +232,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' !RESTART_FILE = ""' + '\n'
             fileObj.write(inStr)
         elif typeFlag == 2: # Calibration
-            #restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d_%H') + ":00_DOMAIN1"
             restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
             inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
             fileObj.write(inStr)

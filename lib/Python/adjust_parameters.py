@@ -175,6 +175,8 @@ def main(argv):
     idGw.close()
     
     # Remove all model output as we no longer need it in preparation for the next iteration.
+    # For V1.2, not going to remove all output, as we only care about RESTART files.
+    # This adds I/O burden when scaled out to conus on Yellowstone. 
     #cmd = 'rm -rf ' + runDir + '/diag_hydro.*'
     #try:
     #    subprocess.call(cmd,shell=True)
