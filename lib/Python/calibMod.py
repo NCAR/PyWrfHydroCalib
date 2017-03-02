@@ -58,12 +58,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # If BSUB run script doesn't exist, create it here.
     bsubFile = runDir + "/run_NWM.sh"
     bsubFileRst = runDir + "/run_NWM_Restart.sh"
-    if not os.path.isfile(bsubFile):
+    if os.path.isfile(bsubFile):
+        os.remove(bsubFile)
         try:
             generateRunScript(statusData,int(gageID),runDir)
         except:
             raise
-    if not os.path.isfile(bsubFileRst):
+    if os.path.isfile(bsubFileRst):
+        os.remove(bsubFileRst)
         try:
             generateRestartRunScript(statusData,int(gageID),runDir)
         except:
