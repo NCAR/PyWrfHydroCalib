@@ -63,17 +63,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     if os.path.isfile(bsubFile):
         # Going to override for now. 
         os.remove(bsubFile)
-        try:
-            generateRunScript(statusData,int(gageID),runDir)
-        except:
-            raise
     if os.path.isfile(bsubFileRst):
         # Going to override for now. 
         os.remove(bsubFileRst)
-        try:
-            generateRestartRunScript(statusData,int(gageID),runDir)
-        except:
-            raise
+        
+    # Create new BSUB files
+    try:
+        generateRunScript(statusData,int(gageID),runDir)
+    except:
+        raise
+    try:
+        generateRestartRunScript(statusData,int(gageID),runDir)
+    except:
+        raise
+    
     
     # Calculate datetime objects
     begDate = statusData.bCalibDate
