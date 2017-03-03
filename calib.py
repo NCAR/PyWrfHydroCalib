@@ -327,10 +327,14 @@ def main(argv):
             for iteration in range(0,int(jobData.nIter)):
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
-                try:
-                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                except:
-                    errMod.errOut(jobData)
+                # If the status is already 1.0, then continue the loop as now work needs to be done.
+                if keyStatusCheck1 == 1.0:
+                    continue
+                else:
+                    try:
+                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                    except:
+                        errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
                     # Put some spacing between launching model simulations to slow down que geting 
