@@ -217,9 +217,28 @@ if (cyclecount > 0) {
 # PLOTS
 #########################################################
 
+validRanges <- list(obj=c(0,5), cor=c(-1,1), rmse=c(-100000, 100000),
+               bias=c(-500,500), nse=c(-5,1), nselog=c(-5,1),
+               nsewt=c(-5,1), kge=c(-5,1), msof=c(0,10))
+
+# Subset results to remove outlier for plotting purposes
+x_archive_plot <- subset(x_archive, x_archive$obj <= validRanges[["obj"]][2]) 
+if (!exists("x_archive_plot_count")) x_archive_plot_count <- data.frame()
+x_archive_plot_count <- rbind(x_archive_plot_count, data.frame(iter=ifelse(lastcycle, cyclecount, cyclecount-1), outliers=nrow(x_archive)-nrow(x_archive_plot)))
+
+# Outlier count
+if (nrow(x_archive_plot_count) > 0) {
+   write("Outlier count plot...", stdout())
+   gg <- ggplot(data=x_archive_plot_count, aes(x=iter, y=outliers)) +
+            geom_point() + theme_bw() +
+            labs(x="run", y="count of outlier cycles")
+   ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_outliers.png"),
+            plot=gg, units="in", width=6, height=5, dpi=300)
+}
+
    # Update basic objective function plot
    write("Basin objective function plot...", stdout())
-   gg <- ggplot(data=x_archive, aes(x=iter, y=obj)) + 
+   gg <- ggplot(data=x_archive_plot, aes(x=iter, y=obj)) + 
               geom_point() + theme_bw() + 
               labs(x="run", y="objective function")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_run_obj.png"),
@@ -227,7 +246,7 @@ if (cyclecount > 0) {
 
    # Update the Objective function versus the parameter variable
    write("Obj function vs. params...", stdout())
-   DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive), c(metrics, "iter", "obj")))
+   DT.m1 = melt(x_archive_plot[, setdiff(names(x_archive_plot), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive_plot), c(metrics, "iter", "obj")))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
@@ -239,7 +258,7 @@ if (cyclecount > 0) {
 
    # Plot the variables as a function of calibration runs
    write("Params over runs...", stdout())
-   DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive), c("iter", metrics)))
+   DT.m1 = melt(x_archive_plot[, setdiff(names(x_archive_plot), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive_plot), c("iter", metrics)))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
@@ -250,7 +269,7 @@ if (cyclecount > 0) {
 
    # Plot all the stats
    write("Metrics plot...", stdout())
-   DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
+   DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
                iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
