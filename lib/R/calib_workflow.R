@@ -216,31 +216,100 @@ if (cyclecount > 0) {
 #########################################################
 # PLOTS
 #########################################################
+# First we check if all the objective function values are less than the threshold (here 5), define it as no outlier in the iterations
+# If there are objFun values greater than the threshold in the objFun, then calulate the 90% of the objFun
+# Any iteration with objFun values above the 90% would be flagged as outlier. And then two plots will be created 
+# one with all iteration including the outliers, two only 90% of the data if there was an outlier in the model. 
+ 
+objFunThreshold <- 5
+objFunQuantile <- quantile(x_archive$obj, 0.9)
 
-validRanges <- list(obj=c(0,5), cor=c(-1,1), rmse=c(-100000, 100000),
-               bias=c(-500,500), nse=c(-5,1), nselog=c(-5,1),
-               nsewt=c(-5,1), kge=c(-5,1), msof=c(0,10))
+if (any(x_archive$obj > 5)) {
+   write("Outliers found!", stdout())
+   # There is at least one value greater than the threshold value defined 
+   x_archive_plot <- subset(x_archive, x_archive$obj <= objFunThreshold)
+   x_archive_plot_count <- nrow(x_archive) - nrow(x_archive_plot) 
+   x_archive_plot_threshold <- objFunThreshold
 
-# Subset results to remove outlier for plotting purposes
-x_archive_plot <- subset(x_archive, x_archive$obj <= validRanges[["obj"]][2]) 
-if (!exists("x_archive_plot_count")) x_archive_plot_count <- data.frame()
-x_archive_plot_count <- rbind(x_archive_plot_count, data.frame(iter=ifelse(lastcycle, cyclecount, cyclecount-1), outliers=nrow(x_archive)-nrow(x_archive_plot)))
+   if (!exists("x_archive_plot_count_track")) x_archive_plot_count_track <- data.frame()
+   x_archive_plot_count_track <- rbind(x_archive_plot_count_track, data.frame(iter=ifelse(lastcycle, cyclecount, cyclecount-1), outliers=nrow(x_archive)-nrow(x_archive_plot)))
 
-# Outlier count
-if (nrow(x_archive_plot_count) > 0) {
-   write("Outlier count plot...", stdout())
-   gg <- ggplot(data=x_archive_plot_count, aes(x=iter, y=outliers)) +
+   # Outlier count
+   if (nrow(x_archive_plot_count_track) > 0) {
+       write("Outlier count plot...", stdout())
+       gg <- ggplot(data=x_archive_plot_count_track, aes(x=iter, y=outliers)) +
             geom_point() + theme_bw() +
             labs(x="run", y="count of outlier cycles")
-   ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_outliers.png"),
+       ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_outliers.png"),
             plot=gg, units="in", width=6, height=5, dpi=300)
+   }
+
+} else {
+  write("No outliers found.", stdout())
+  # All the objFun vlaues are less than the threshold defined above, therefore, there will not be any outliers specified
+   x_archive_plot <- x_archive
+   x_archive_plot_count <- 0
+   x_archive_plot_threshold <- objFunThreshold
 }
+
+#**************************************************************************************************************************************
+#                                   Create the plots with outlier
+#**************************************************************************************************************************************
 
    # Update basic objective function plot
    write("Basin objective function plot...", stdout())
-   gg <- ggplot(data=x_archive_plot, aes(x=iter, y=obj)) + 
+   gg <- ggplot(data=x_archive, aes(x=iter, y=obj)) + 
               geom_point() + theme_bw() + 
               labs(x="run", y="objective function")
+   ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_run_obj_outlier.png"),
+              plot=gg, units="in", width=6, height=5, dpi=300)
+
+   # Update the Objective function versus the parameter variable
+   write("Obj function vs. params...", stdout())
+   DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive), c(metrics, "iter", "obj")))
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+   gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
+   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
+   gg <- gg + ggplot2::ggtitle(paste0("Scatter Plot of Obj. function versus parameters: ", siteId))
+   gg <- gg + ggplot2::xlab("Parameter Values")+theme_bw()+ggplot2::ylab("Objective Function")
+   ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run_outlier.png"),
+         plot=gg, units="in", width=8, height=6, dpi=300)
+
+
+   # Plot the variables as a function of calibration runs
+   write("Params over runs...", stdout())
+   DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive), c("iter", metrics)))
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+   gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
+   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::ggtitle(paste0("Parameter change with iteration: ", siteId))
+   gg <- gg + ggplot2::xlab("Calibration Iteration")+theme_bw()
+   ggsave(filename=paste0(writePlotDir, "/", siteId, "_parameters_calib_run_outlier.png"),
+         plot=gg, units="in", width=8, height=6, dpi=300)
+
+   # Plot all the stats
+   write("Metrics plot...", stdout())
+   DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
+               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
+   DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+   gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
+   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId))
+   gg <- gg + ggplot2::xlab("Calibration Iteration No.")+theme_bw()+ylab("Value")
+   ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run_outlier.png"),
+         plot=gg, units="in", width=8, height=6, dpi=300)
+
+#############################################################################################################################################################################
+#                      Create the plots without outliers
+############################################################################################################################################################################3
+
+  # Update basic objective function plot
+   write("Basin objective function plot...", stdout())
+   gg <- ggplot(data=x_archive_plot, aes(x=iter, y=obj)) +
+              geom_point() + theme_bw() +
+              labs(x="run", y="objective function") +
+              ggtitle(paste0("ObjFun: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
+
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_run_obj.png"),
               plot=gg, units="in", width=6, height=5, dpi=300)
 
@@ -250,7 +319,7 @@ if (nrow(x_archive_plot_count) > 0) {
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
-   gg <- gg + ggplot2::ggtitle(paste0("Scatter Plot of Obj. function versus parameters: ", siteId))
+   gg <- gg + ggplot2::ggtitle(paste0("ObjFun vs. Params: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
    gg <- gg + ggplot2::xlab("Parameter Values")+theme_bw()+ggplot2::ylab("Objective Function")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -262,7 +331,7 @@ if (nrow(x_archive_plot_count) > 0) {
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
-   gg <- gg + ggplot2::ggtitle(paste0("Parameter change with iteration: ", siteId))
+   gg <- gg + ggplot2::ggtitle(paste0("Parameter vs. iteration: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
    gg <- gg + ggplot2::xlab("Calibration Iteration")+theme_bw()
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_parameters_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -274,7 +343,7 @@ if (nrow(x_archive_plot_count) > 0) {
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
-   gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId))
+   gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId, ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
    gg <- gg + ggplot2::xlab("Calibration Iteration No.")+theme_bw()+ylab("Value")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -300,7 +369,7 @@ if (nrow(x_archive_plot_count) > 0) {
    chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
    # Cleanup
    rm(controlRun, lastRun, bestRun, obsStrDataPlot)
-   
+
 
    gg <- ggplot2::ggplot(chrt.d_plot, ggplot2::aes(POSIXct, q_cms, color = run))
    gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
@@ -314,7 +383,8 @@ if (nrow(x_archive_plot_count) > 0) {
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_hydrograph.png"),
            plot=gg, units="in", width=8, height=4, dpi=300)
 
-  # Plot the scatter plot of the best, last and control run.
+
+# Plot the scatter plot of the best, last and control run.
    write("Scatterplot...", stdout())
    maxval <- max(chrt.d_plot$q_cms, rm.na = TRUE)
    gg <- ggplot()+ geom_point(data = merge(chrt.d_plot [run %in% c("Control Run", "Last Run", "Best Run")], obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
@@ -328,6 +398,7 @@ if (nrow(x_archive_plot_count) > 0) {
 
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_scatter.png"),
            plot=gg, units="in", width=8, height=8, dpi=300)
+
 
 
 #########################################################
