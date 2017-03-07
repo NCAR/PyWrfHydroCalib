@@ -224,12 +224,19 @@ if (cyclecount > 0) {
 objFunThreshold <- 5
 objFunQuantile <- quantile(x_archive$obj, 0.9)
 
-if (any(x_archive$obj > 5)) {
+if (any(x_archive$obj > objFunThreshold)) {
    write("Outliers found!", stdout())
-   # There is at least one value greater than the threshold value defined 
-   x_archive_plot <- subset(x_archive, x_archive$obj <= objFunThreshold)
-   x_archive_plot_count <- nrow(x_archive) - nrow(x_archive_plot) 
-   x_archive_plot_threshold <- objFunThreshold
+
+   # Check which outlier threshold to use
+   if (any(x_archive$obj <= objFunThreshold)) {
+     x_archive_plot <- subset(x_archive, x_archive$obj <= objFunThreshold)
+     x_archive_plot_count <- nrow(x_archive) - nrow(x_archive_plot) 
+     x_archive_plot_threshold <- objFunThreshold
+   } else {
+     x_archive_plot <- subset(x_archive, x_archive$obj <= objFunQuantile)
+     x_archive_plot_count <- nrow(x_archive) - nrow(x_archive_plot)
+     x_archive_plot_threshold <- objFunQuantile
+   }
 
    if (!exists("x_archive_plot_count_track")) x_archive_plot_count_track <- data.frame()
    x_archive_plot_count_track <- rbind(x_archive_plot_count_track, data.frame(iter=ifelse(lastcycle, cyclecount, cyclecount-1), outliers=nrow(x_archive)-nrow(x_archive_plot)))
