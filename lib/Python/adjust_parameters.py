@@ -75,7 +75,7 @@ def main(argv):
             open(outFlag,'a').close()
             sys.exit(0)
         except:
-            sys.exit(1)
+            sys.exit(2)
     
     try:
         shutil.copy(fullDomOrig,fullDomOut)
@@ -83,7 +83,7 @@ def main(argv):
         shutil.copy(soilOrig,soilOut)
         shutil.copy(gwOrig,gwOut)
     except:
-        sys.exit(1)
+        sys.exit(3)
         
     # Read in new parameters table.
     newParams = pd.read_csv(adjTbl,sep=' ')
@@ -196,19 +196,19 @@ def main(argv):
     try:
         subprocess.call(cmd,shell=True)
     except:
-        sys.exit(1)
+        sys.exit(4)
     cmd = 'rm -rf ' + runDir + '/RESTART.*'
     try:
         subprocess.call(cmd,shell=True)
     except:
-        sys.exit(1)
+        sys.exit(5)
 
     # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating
     # calibration iteration is complete.
     try:
         open(outFlag,'a').close()
     except:
-        sys.exit(1)
+        sys.exit(6)
             
 if __name__ == "__main__":
     main(sys.argv[1:])
