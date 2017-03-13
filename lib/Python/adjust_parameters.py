@@ -192,6 +192,16 @@ def main(argv):
     #    subprocess.call(cmd,shell=True)
     #except:
     #    sys.exit(1)
+    cmd = 'rm -rf ' + runDir + '/*.err'
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        sys.exit(1)
+    cmd = 'rm -rf ' + runDir + '/*.out'
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        sys.exit(1)
     cmd = 'rm -rf ' + runDir + '/HYDRO_RST.*'
     try:
         subprocess.call(cmd,shell=True)
