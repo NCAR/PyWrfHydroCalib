@@ -879,6 +879,10 @@ def generateRunScript(jobData,gageID,runDir):
         #fileObj.write(inStr)
         #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         #fileObj.write(inStr)
+        inStr = 'rm -rf *.err\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.out\n'
+        fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
