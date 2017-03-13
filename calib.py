@@ -324,7 +324,9 @@ def main(argv):
         # manually by the user before the workflow can continue. 
 
         for basin in range(0,len(jobData.gages)):
+            print "BASIN = " + jobData.gages[basin]
             for iteration in range(0,int(jobData.nIter)):
+                print "ITERATION = " + str(iteration)
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
                 # If the status is already 1.0, then continue the loop as now work needs to be done.
