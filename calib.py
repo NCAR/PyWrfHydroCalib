@@ -344,6 +344,8 @@ def main(argv):
                     time.sleep(3)
                 if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
                     time.sleep(3)
+                    
+            sys.exit(1)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
