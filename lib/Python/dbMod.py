@@ -919,7 +919,7 @@ class Database(object):
         try:
             fileObj = open(outTbl,'w')
             fileObj.write('paramName, paramValue\n')
-            for pNum in range(0,len(results[:][0])):
+            for pNum in range(0,len(results[0][:])):
                 inStr = str(results[pNum][3]) + ", " + str(results[pNum][4]) + "\n"
                 fileObj.write(inStr)
             fileObj.close()
