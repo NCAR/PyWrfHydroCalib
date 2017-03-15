@@ -905,7 +905,7 @@ class Database(object):
                              str(domainID) + " for jobID: " + str(jobID) 
             raise Exception()
             
-        outTbl = jobData.runDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST/parms_best.tbl"
+        outTbl = jobData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST/parms_best.tbl"
         
         # Remove the file if it already exists.
         if os.path.isfile(outTbl):
