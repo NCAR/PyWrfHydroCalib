@@ -80,7 +80,7 @@ def main(argv):
     # Read in new parameters table.
     newParams = pd.read_csv(dbTable,sep=',')
     paramNames = newParams.paramName.values
-    paramValues = newParams.paramValues.values
+    paramValues = newParams.paramValue.values
 
     # Open NetCDF parameter files for adjustment.
     idFullDom = Dataset(fullDomBest,'a')
