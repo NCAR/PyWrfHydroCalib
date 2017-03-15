@@ -15,7 +15,7 @@ import subprocess
 import warnings
 warnings.filterwarnings("ignore")
 
-def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
+def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,run,libPathTop):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -26,28 +26,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
     the LSM and hydro restart files must be present in order for the
     model to restart. 
     """
-    # First check to make sure control simulation stats is 1.0.
-    if run == 1:
-        if keySlot[basinNum,0] < 1.0:
-            return
-            
-    if run == 0:
-        # Control run
-        runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/CTRL/OUTPUT"
-    else:
-        # Run with best calibrated parameters
-        runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/BEST/OUTPUT"
-    if not os.path.isdir(runDir):
-        statusData.errMsg = "ERROR: " + runDir + " not found."
-        raise Exception()
-        
-    workDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
+    # Establish the "control" and "best" status values. These are important for 
+    # the workflow.
+    ctrlStatus = keySlot[basinNum,0]
+    bestStatus = keySlot[basinNum,1]
     
-    # Make symbolic links as necssary.
-    try:
-        linkToRst(statusData,gage,runDir)
-    except:
-        raise
+    # If the control status is 1.0, this means the model is complete and we can 
+    # return to the main workflow calling program.
+    if ctrlStatus == 1.0:
+        return
         
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
@@ -55,15 +42,87 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
         gageMeta.pullGageMeta(staticData,db,gage)
     except:
         raise
-        
-    # If BSUB run script doesn't exist, create it here.
-    bsubFile = runDir + "/run_NWM.sh"
-    if not os.path.isfile(bsubFile):
-        try:
-            generateRunScript(statusData,int(gageID),runDir,gageMeta)
-        except:
-            raise
     
+    # Establish directory paths.
+    runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
+    bestDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST"
+    parmInDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/BASELINE_PARAMETERS"
+    
+    if not os.path.isdir(runDir):
+        statusData.errMsg = "ERROR: " + runDir + " not found."
+        raise Exception()
+    if not os.path.isdir(parmInDir):
+        statusData.errMsg = "ERROR: " + parmInDir + " not found."
+        raise Exception()
+    if not os.path.isdir(bestDir):
+        statusData.errMsg = "ERROR: " + bestDir + " not found."
+        raise Exception()
+        
+    # Determine which iteration was the best. If no best iteration was found,
+    # this means something happened during the calibrations and all values were reset
+    # to allow remaining basins to finish. If the out status from the DB command
+    # below is -99, then simply set all status values to 1.0
+    try:
+        iterStatus = db.genValidParmTbl(statusData,statusData.jobID,gageID,gage)
+    except:
+        raise
+    if iterStatus == -99:
+        keySlot[basinNum,0] = 1.0
+        keySlot[basinNum,1] = 1.0
+        return
+        
+    # Make symbolic links as necssary.
+    try:
+        linkToRst(statusData,gage,runDir)
+    except:
+        raise
+        
+    # Create symbolic links to Python/R code to generate parameters and evaluate
+    # model output if it hasn't already been created.
+    parmGenProgram = libPathTop + "/Python/generate_parameters.py"
+    evalProgram = libPathTop + "/R/eval_output.R"
+    try:
+        link = bestDir + "/generate_parameters.py"
+        os.symlink(parmGenProgram,link)
+    except:
+        statusData.errMsg = "ERROR: Failure to link: " + parmGenProgram
+        raise
+    try:
+        link = bestDir + "/eval_output.R"
+        os.symlink(evalProgram,link)
+    except:
+        statusData.errMsg = "ERROR: Failure to link: " + evalProgram
+        raise
+        
+    # Create two run scripts:
+    # 1.) Job script to prepare parameter files for both the control and best
+    #     model simulations.
+    # 2.) Job script to run the model with control parameters.
+    parmRunScript = runDir + "/gen_parms.sh"
+    bsub1Script = runDir + "/bsub_parms.sh"
+    bsub2Script = runDir + "/run_NWM.sh"
+    
+    # If the files exist, remove them and re-create.
+    if os.path.isfile(parmRunScript):
+        os.remove(parmRunScript)
+    if os.path.isfile(bsub1Script):
+        os.remove(bsub1Script)
+    if os.path.isfile(bsub2Script):
+        os.remove(bsub2Script)
+        
+    try:
+        generateParmScript()
+    except:
+        raise
+    try:
+        generateParmRunScript()
+    except:
+        raise
+    try:
+        generateRunScript()
+    except:
+        raise
+
     # Calculate datetime objects
     begDate = statusData.bValidDate
     endDate = statusData.eValidDate
@@ -269,8 +328,34 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
             
         keyStatus = 0.5
         keySlot[basinNum,run] = 0.5
+        
+def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
+    """
+    Generic function for running the model. Some basic information about
+    the run directory, beginning date, ending dates, account keys,
+    number of cores to use, etc will be used to compose a BSUB
+    submision script. This function will walk the run directory 
+    to determine where the model left off. If no restart files exist,
+    then the function will assume the model has not ran at all. Both
+    the LSM and hydro restart files must be present in order for the
+    model to restart. 
+    """
+    # Establish the "control" and "best" status values. These are important for 
+    # the workflow.
+    ctrlStatus = keySlot[basinNum,0]
+    bestStatus = keySlot[basinNum,1]
+    
+    # If the control status is not at least 0.25, this means the code to generate
+    # parameters is still running, hasn't begun yet, or there's an issue with
+    # the model. Simply return to the main workflow calling program.
+    if ctrlStatus < 0.25:
+        return
+        
+    # Create two run scripts:
+    # 1.) Job script to run the model with best parameters.
+    # 2.) Job script to run the R code for evaluation/plotting. 
                 
-def generateRunScript(jobData,gageID,runDir,gageMeta):
+def generateRunScript(jobData,gageID,runDir,gageMeta,modName):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model.
@@ -279,8 +364,7 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
     outFile = runDir + "/run_NWM.sh"
     
     if os.path.isfile(outFile):
-        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
-        raise Exception()
+        os.remove(outFile)
         
     try:
         fileObj = open(outFile,'w')
@@ -293,20 +377,43 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
-        inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#BSUB -J NWM_" + str(modName) + "_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
         fileObj.write(inStr)
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
-        fileObj.write('#BSUB -W 4:00\n')
+        fileObj.write('#BSUB -W 6:00\n')
         fileObj.write('#BSUB -q premium\n')
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
         fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateParmScript(jobData,runDir,gage,parmInDir):
+    """
+    Generic function to generate the shell script to call Python to
+    generate the new parameter datasets.
+    """
+    
+    outFile = runDir + "/gen_parms.sh"
+    pyProgram = runDir + "/generate_parameters.py"
+    ctrlRunDir = jobData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
+    defaultDir = jobData.jobDir + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS"
+    
+    if os.path.isfile(outFile):
+        os.remove(outFile)
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('python ' + pyProgram + ' ' + runDir + ' ' + parmInDir + ' ' + \
+                      ctrlRunDir + ' ' + defaultDir + ' \n')
+        fileObj.write('exit\n')
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise

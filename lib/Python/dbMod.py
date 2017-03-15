@@ -859,3 +859,74 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to fill basin status to 1 for missing data " + \
                              "for jobID: " + str(jobID) + " for domainID: " + str(domainID)
             raise
+            
+    def genValidParmTbl(self,jobData,jobID,domainID,gage):
+        """
+        Generic function to extract the best values from the DB for this basin.
+        If no best is found, a special -99 is returned to indicate no values
+        are available. A parameter table is written to the validation directory,
+        which will be used to generate parameter files. 
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        # Initialize the out status value, which will be returned to the user.
+        outStatus = 0
+        
+        # First find the iteration that contains the best parameter values.
+        #select * from Calib_Stats where domainID='2436' and jobID='75' and best='1';
+        sqlCmd = "select * from Calib_Stats where domainID='" + str(domainID) + \
+                 "' and jobID='" + str(jobID) + "' and best='1';"
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Failure to extract the best iteration value " + \
+                             " for domainID: " + str(domainID) + " for jobID: " + \
+                             str(jobID)
+            raise Exception()
+            
+        if not results:
+            outStatus = -99
+            return outStatus
+        
+        iterBest = int(results[2])
+        
+        # Next, find all parameter values, and their associated values from Calib_Params.
+        sqlCmd = "select * from Calib_Params where domainID='" + str(domainID) + \
+                 "' and jobID='" + str(jobID) + "' and iteration='" + \
+                 str(iterBest) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Failure to extract best parameters for domainID: " + \
+                             str(domainID) + " for jobID: " + str(jobID) 
+            raise Exception()
+            
+        outTbl = jobData.runDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST/parms_best.tbl"
+        
+        # Remove the file if it already exists.
+        if os.path.isfile(outTbl):
+            try:
+                os.remove(outTbl)
+            except:
+                jobData.errMsg = "ERROR: Failure to remove: " + outTbl
+                raise Exception()
+                
+        # Write values to the table.
+        try:
+            fileObj = open(outTbl,'w')
+            fileObj.write('paramName, paramValue\n')
+            for pNum in range(0,len(results[:][0])):
+                inStr = str(results[pNum][3]) + ", " + str(results[pNum][4]) + "\n"
+                fileObj.write(inStr)
+            fileObj.close()
+            outStatus = 1
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outTbl
+            raise
+
+        return outStatus                
+        
