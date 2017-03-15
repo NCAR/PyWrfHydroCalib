@@ -16,6 +16,7 @@ from netCDF4 import Dataset
 import os
 import shutil
 import pandas as pd
+import numpy as np
 
 def main(argv):
     # Parse arguments. Only input necessary is the run directory.
@@ -78,7 +79,8 @@ def main(argv):
         
     # Read in new parameters table.
     newParams = pd.read_csv(dbTable,sep=',')
-    paramNames = newParams.paramName
+    paramNames = newParams.paramName.values
+    paramValues = newParams.paramValues.values
 
     # Open NetCDF parameter files for adjustment.
     idFullDom = Dataset(fullDomBest,'a')
