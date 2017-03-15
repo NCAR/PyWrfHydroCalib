@@ -212,7 +212,7 @@ def main(argv):
     keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages))*2.0
     
-    #while not completeStatus:
+    while not completeStatus:
         # Walk through spinup directory for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
         # namelist files appropriately. Then, restart the model. Once all
@@ -233,16 +233,20 @@ def main(argv):
         # If output is not complete, the model is still running, status stays at 0.5.
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
-        #for basin in range(0,len(jobData.gages)):
-        #    for run in range(0,2):
-        #        # First simulation will be the control simulation with default
-        #        # parameters specified by the user at the beginning of the calibration
-        #        # process.
-        #        try:
-        #            validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run)
-        #        except:
-        #            errMod.errOut(jobData)
-        #        time.sleep(3)
+        for basin in range(0,len(jobData.gages)):
+            for run in range(0,2):
+                # First simulation will be the control simulation with default
+                # parameters specified by the user at the beginning of the calibration
+                # process.
+                print jobData.gages[basin]
+                print jobData.gageIDs[basin]
+                #try:
+                #    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run)
+                #except:
+                #    errMod.errOut(jobData)
+                #time.sleep(3)
+                
+            sys.exit(1)
         
         # Check to see if program requirements have been met.
         #if keySlot.sum() == entryValue:
