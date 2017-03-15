@@ -31,8 +31,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,run,libPa
     ctrlStatus = keySlot[basinNum,0]
     bestStatus = keySlot[basinNum,1]
     
-    print "CALIB STATUS = " + ctrlStatus
-    print "BEST STATUS = " + bestStatus
+    print "CALIB STATUS = " + str(ctrlStatus)
+    print "BEST STATUS = " + str(bestStatus)
     # If the control status is 1.0, this means the model is complete and we can 
     # return to the main workflow calling program.
     if ctrlStatus == 1.0:
