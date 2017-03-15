@@ -240,8 +240,9 @@ def main(argv):
                 # process.
                 print jobData.gages[basin]
                 print jobData.gageIDs[basin]
+                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run,libPathTop)
                 #try:
-                #    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run)
+                #    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run,libPathTop)
                 #except:
                 #    errMod.errOut(jobData)
                 #time.sleep(3)
