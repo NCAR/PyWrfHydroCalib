@@ -90,7 +90,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,run,libPa
     #evalProgram = libPathTop + "/R/eval_output.R"
     try:
         link = bestDir + "/generate_parameters.py"
-        os.symlink(parmGenProgram,link)
+        if not os.path.islink(link):
+            os.symlink(parmGenProgram,link)
     except:
         statusData.errMsg = "ERROR: Failure to link: " + parmGenProgram
         raise
