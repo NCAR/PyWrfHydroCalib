@@ -102,11 +102,11 @@ def main(argv):
             lineTmp = line
             lineSplit = lineTmp.split(',')
             if 'dksat' in paramNames:
-                dksatValue = float(lineSplit[0])*float(newParams.dksat[0])
+                dksatValue = float(lineSplit[0])*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
             else:
                 dksatValue = float(lineSplit[0])
             if 'smcmax' in paramNames:
-                smcValue = float(lineSplit[1])*float(newParams.smcmax[0])
+                smcValue = float(lineSplit[1])*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
             else:
                 smcValue = float(lineSplit[1])
             outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
@@ -119,49 +119,49 @@ def main(argv):
     for param in paramNames:
         print param
         if param == "bexp":
-            idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0])
+            idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(paramValues[np.where(paramNames == 'bexp')[0][0]])
         
         if param == "smcmax":
-            idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(newParams.smcmax[0])
+            idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
         
         if param == "slope":
-            idSoil2D.variables['slope'][:,:,:] = float(newParams.slope[0])
+            idSoil2D.variables['slope'][:,:,:] = float(paramValues[np.where(paramNames == 'slope')[0][0]])
         
         if param == "lksatfac":
-            idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[0])
+            idFullDom.variables['LKSATFAC'][:,:] = float(paramValues[np.where(paramNames == 'lksatfac')[0][0]])
         
         if param == "zmax":
-            idGw.variables['Zmax'][:] = float(newParams.zmax[0])
+            idGw.variables['Zmax'][:] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
         
         if param == "expon":
-            idGw.variables['Expon'][:] = float(newParams.expon[0])
+            idGw.variables['Expon'][:] = float(paramValues[np.where(paramNames == 'expon')[0][0]])
         
         if param == "cwpvt":
-            idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0])
+            idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(paramValues[np.where(paramNames == 'cwpvt')[0][0]])
         
         if param == "vcmx25":
-            idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(newParams.vcmx25[0])
+            idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(paramValues[np.where(paramNames == 'vcmx25')[0][0]])
         
         if param == "mp":
-            idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(newParams.mp[0])
+            idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(paramValues[np.where(paramNames == 'mp')[0][0]])
         
         if param == "hvt":
-            idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(newParams.hvt[0])
+            idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(paramValues[np.where(paramNames == 'hvt')[0][0]])
         
         if param == "mfsno":
-            idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(newParams.mfsno[0])
+            idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(paramValues[np.where(paramNames == 'mfsno')[0][0]])
         
         if param == "refkdt":
-            idSoil2D.variables['refkdt'][:,:,:] = float(newParams.refkdt[0])
+            idSoil2D.variables['refkdt'][:,:,:] = float(paramValues[np.where(paramNames == 'refkdt')[0][0]])
         
         if param == "dksat":
-            idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(newParams.dksat[0])
+            idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
         
         if param == "retdeprtfac":
-            idFullDom.variables['RETDEPRTFAC'][:,:] = float(newParams.retdeprtfac[0])
+            idFullDom.variables['RETDEPRTFAC'][:,:] = float(paramValues[np.where(paramNames == 'retdeprtfac')[0][0]])
         
         if param == "ovroughrtfac":
-            idFullDom.variables['OVROUGHRTFAC'][:,:] = float(newParams.ovroughrtfac[0])
+            idFullDom.variables['OVROUGHRTFAC'][:,:] = float(paramValues[np.where(paramNames == 'ovroughrtfac')[0][0]])
             
     # Close NetCDF files
     idFullDom.close()

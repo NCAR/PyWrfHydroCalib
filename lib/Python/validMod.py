@@ -70,6 +70,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,run,libPa
     # below is -99, then simply set all status values to 1.0
     try:
         iterStatus = db.genValidParmTbl(statusData,statusData.jobID,gageID,gage)
+        print "ITER STATUS = " + str(iterStatus)
     except:
         raise
     if iterStatus == -99:
@@ -77,22 +78,22 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,run,libPa
         keySlot[basinNum,1] = 1.0
         return
         
-    ## Make symbolic links as necssary.
-    #try:
-    #    linkToRst(statusData,gage,runDir)
-    #except:
-    #    raise
+    # Make symbolic links as necssary.
+    try:
+        linkToRst(statusData,gage,runDir)
+    except:
+        raise
         
-    ## Create symbolic links to Python/R code to generate parameters and evaluate
-    ## model output if it hasn't already been created.
-    #parmGenProgram = libPathTop + "/Python/generate_parameters.py"
+    # Create symbolic links to Python/R code to generate parameters and evaluate
+    # model output if it hasn't already been created.
+    parmGenProgram = libPathTop + "/Python/generate_parameters.py"
     #evalProgram = libPathTop + "/R/eval_output.R"
-    #try:
-    #    link = bestDir + "/generate_parameters.py"
-    #    os.symlink(parmGenProgram,link)
-    #except:
-    #    statusData.errMsg = "ERROR: Failure to link: " + parmGenProgram
-    #    raise
+    try:
+        link = bestDir + "/generate_parameters.py"
+        os.symlink(parmGenProgram,link)
+    except:
+        statusData.errMsg = "ERROR: Failure to link: " + parmGenProgram
+        raise
     #try:
     #    link = bestDir + "/eval_output.R"
     #    os.symlink(evalProgram,link)
@@ -100,26 +101,26 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,run,libPa
     #    statusData.errMsg = "ERROR: Failure to link: " + evalProgram
     #    raise
         
-    ## Create two run scripts:
-    ## 1.) Job script to prepare parameter files for both the control and best
-    ##     model simulations.
-    ## 2.) Job script to run the model with control parameters.
-    #parmRunScript = runDir + "/gen_parms.sh"
-    #bsub1Script = runDir + "/bsub_parms.sh"
-    #bsub2Script = runDir + "/run_NWM.sh"
+    # Create two run scripts:
+    # 1.) Job script to prepare parameter files for both the control and best
+    #     model simulations.
+    # 2.) Job script to run the model with control parameters.
+    parmRunScript = runDir + "/gen_parms.sh"
+    bsub1Script = runDir + "/bsub_parms.sh"
+    bsub2Script = runDir + "/run_NWM.sh"
     
-    ## If the files exist, remove them and re-create.
-    #if os.path.isfile(parmRunScript):
-    #    os.remove(parmRunScript)
-    #if os.path.isfile(bsub1Script):
-    #    os.remove(bsub1Script)
-    #if os.path.isfile(bsub2Script):
-    #    os.remove(bsub2Script)
+    # If the files exist, remove them and re-create.
+    if os.path.isfile(parmRunScript):
+        os.remove(parmRunScript)
+    if os.path.isfile(bsub1Script):
+        os.remove(bsub1Script)
+    if os.path.isfile(bsub2Script):
+        os.remove(bsub2Script)
         
-    #try:
-    #    generateParmScript()
-    #except:
-    #    raise
+    try:
+        generateParmScript(statusData,bestDir,gage,parmInDir)
+    except:
+        raise
     #try:
     #    generateParmRunScript()
     #except:
@@ -400,14 +401,14 @@ def generateRunScript(jobData,gageID,runDir,gageMeta,modName):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateParmScript(jobData,runDir,gage,parmInDir):
+def generateParmScript(jobData,bestDir,gage,parmInDir):
     """
     Generic function to generate the shell script to call Python to
     generate the new parameter datasets.
     """
     
-    outFile = runDir + "/gen_parms.sh"
-    pyProgram = runDir + "/generate_parameters.py"
+    outFile = bestDir + "/gen_parms.sh"
+    pyProgram = bestDir + "/generate_parameters.py"
     ctrlRunDir = jobData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
     defaultDir = jobData.jobDir + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS"
     
@@ -417,7 +418,7 @@ def generateParmScript(jobData,runDir,gage,parmInDir):
     try:
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
-        fileObj.write('python ' + pyProgram + ' ' + runDir + ' ' + parmInDir + ' ' + \
+        fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' \n')
         fileObj.write('exit\n')
     except:
