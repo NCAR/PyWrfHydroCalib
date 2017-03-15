@@ -56,6 +56,8 @@ def main(argv):
     # First make symbolic links in the control run directory to the default files.
     link = ctrlDir + "/Fulldom.nc"
     if not os.path.islink(link):
+        print fullDomDefault
+        print link
         os.link(fullDomDefault,link)
     link = ctrlDir + "/HYDRO.TBL"
     if not os.path.islink(link):
