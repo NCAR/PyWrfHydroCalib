@@ -438,6 +438,14 @@ def generateParmScript(jobData,bestDir,gage,parmInDir):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
+        raise
+        
 def generateEvalRunScript(jobData):
     """
     Generic function to create evaluation BSUB script in the best simulation
