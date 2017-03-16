@@ -241,7 +241,6 @@ def main(argv):
             print jobData.gages[basin]
             print jobData.gageIDs[basin]
             validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            sys.exit(1)
             #try:
             #    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run,libPathTop)
             #except:
