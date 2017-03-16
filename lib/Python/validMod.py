@@ -117,67 +117,79 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,run,libPa
         os.remove(bsub1Script)
     if os.path.isfile(bsub2Script):
         os.remove(bsub2Script)
-        
+    
+    # Generate the shell script to call Python to generate parameter datasets
+    # in preparation for model runs.     
     try:
         generateParmScript(statusData,bestDir,gage,parmInDir)
     except:
         raise
-    #try:
-    #    generateParmRunScript()
-    #except:
-    #    raise
-    #try:
-    #    generateRunScript()
-    #except:
-    #    raise
+    # Generate the BSUB script to run the parameter generation code. 
+    try:
+        generateParmRunScript(statusData,bestDir,gageID)
+    except:
+        raise
+    # Generate the BSUB run script to run the model simulations. 
+    try:
+        generateRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
+    except:
+        raise
 
-    ## Calculate datetime objects
-    #begDate = statusData.bValidDate
-    #endDate = statusData.eValidDate
+    # Calculate datetime objects
+    begDate = statusData.bValidDate
+    endDate = statusData.eValidDate
         
     ## Initialize status
-    #keyStatus = keySlot[basinNum,run]
+    keyStatus = keySlot[basinNum,0]
     
-    #try:
-    #    basinStatus = statusMod.checkBasJob(statusData,basinNum)
-    #except:
-    #    raise
-        
-    #print "BASIN STATUS = " + str(basinStatus)
-    ## Create path to LOCK file if neeced
-    #lockPath = runDir + "/RUN.LOCK"
+    # Pull status values for parameter generation and model simulations. 
+    try:
+        basinStatus = statusMod.checkBasJob(statusData,basinNum)
+    except:
+        raise
+    try:
+        genParmStatus = statusMod.checkParmGenJob(statusData,basinNum)
+    except:
+        raise
+     
+    print "BASIN STATUS = " + str(basinStatus)
+    print "PARAM GEN STATUS = " + str(genParmStatus)
+    # Create path to LOCK file if neeced
+    lockPath = runDir + "/RUN.LOCK"
+    parmLockPath = runDir + '/PARM_GEN.LOCK'    
     
-    #if keyStatus == 1.0:
-    #    # Model has already completed
-    #    runFlag = False
-    #    return
+    if keyStatus == 1.0:
+        # Model has already completed
+        runFlag = False
+        parmFlag = False
+        return
         
-    ## For uncompleted simulations that are still listed as running.
-    #if keyStatus == 0.5:
-    #    # If a model is running for this basin, continue and set keyStatus to 0.5
-    #    if basinStatus:
-    #        keySlot[basinNum,run] = 0.5
-    #        keyStatus = 0.5
-    #        runFlag = False
-    #    else:
-    #        # Either simulation has completed, or potentially crashed.
-    #        runStatus = statusMod.walkMod(begDate,endDate,runDir)
-    #        begDate = runStatus[0]
-    #        endDate = runStatus[1]
-    #        runFlag = runStatus[2]
-    #        if runFlag:
-    #            # Model crashed as simulation is not complete but no processes are running.
-    #            statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-    #                                " Failed. Attempting to restart."
-    #            print statusData.genMsg
-    #            errMod.sendMsg(statusData)
-    #            keySlot[basinNum,run] = -0.25
-    #            keyStatus = -0.25
-    #        else:
-    #            # Model has completed!
-    #            keySlot[basinNum,run] = 1.0
-    #            keyStatus = 1.0
-    #            runFlag = False
+    # For uncompleted simulations that are still listed as running.
+    if keyStatus == 0.5:
+        # If a model is running for this basin, continue and set keyStatus to 0.5
+        if basinStatus:
+            keySlot[basinNum,run] = 0.5
+            keyStatus = 0.5
+            runFlag = False
+        else:
+            # Either simulation has completed, or potentially crashed.
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if runFlag:
+                # Model crashed as simulation is not complete but no processes are running.
+                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                #                    " Failed. Attempting to restart."
+                #print statusData.genMsg
+                #errMod.sendMsg(statusData)
+                keySlot[basinNum,run] = -0.25
+                keyStatus = -0.25
+            else:
+                # Model has completed!
+                keySlot[basinNum,run] = 1.0
+                keyStatus = 1.0
+                runFlag = False
            
     #print keyStatus
     ## For simulations that are fresh
@@ -422,6 +434,48 @@ def generateParmScript(jobData,bestDir,gage,parmInDir):
         fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' \n')
         fileObj.write('exit\n')
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateEvalRunScript(jobData):
+    """
+    Generic function to create evaluation BSUB script in the best simulation
+    directory. This function also generates the shell script to call R.
+    """
+        
+def generateParmRunScript(jobData,runDir,gageID):
+    """
+    Generic function to run BSUB command to run the parameter generation script.
+    """
+    
+    outFile = runDir + "/bsub_parms.sh"
+    
+    if os.path.isfile(outFile):
+        os.remove(outFile)
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        fileObj.write('#BSUB -x\n')
+        inStr = "#BSUB -n 1\n"
+        fileObj.write(inStr)
+        inStr = "#BSUB -J NWM_PARM_GEN_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = '#BSUB -o ' + runDir + '/%J.out\n'
+        fileObj.write(inStr)
+        inStr = '#BSUB -e ' + runDir + '/%J.err\n'
+        fileObj.write(inStr)
+        fileObj.write('#BSUB -W 0:20\n')
+        fileObj.write('#BSUB -q premium\n')
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        fileObj.write('./gen_parms.sh\n')
+        fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
