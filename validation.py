@@ -248,8 +248,6 @@ def main(argv):
             #    errMod.errOut(jobData)
             #time.sleep(3)
                 
-            sys.exit(1)
-        
         # Check to see if program requirements have been met.
         #if keySlot.sum() == entryValue:
         #    jobData.spinComplete = 1
