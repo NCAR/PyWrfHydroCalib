@@ -404,7 +404,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     if keyStatus == 0.0 and not runFlag:
         print "FIRING OFF PARAM GEN CODE"
         # We need to run parameter generation code.
-        cmd = "bsub < " + runDir + "/bsub_parms.sh"
+        cmd = "bsub < " + bestDir + "/bsub_parms.sh"
         print cmd
         try:
             subprocess.call(cmd,shell=True)
