@@ -234,19 +234,19 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            for run in range(0,2):
-                # First simulation will be the control simulation with default
-                # parameters specified by the user at the beginning of the calibration
-                # process.
-                print jobData.gages[basin]
-                print jobData.gageIDs[basin]
-                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run,libPathTop)
-                sys.exit(1)
-                #try:
-                #    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run,libPathTop)
-                #except:
-                #    errMod.errOut(jobData)
-                #time.sleep(3)
+        for basin in range(0,1):
+            # First simulation will be the control simulation with default
+            # parameters specified by the user at the beginning of the calibration
+            # process.
+            print jobData.gages[basin]
+            print jobData.gageIDs[basin]
+            validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            sys.exit(1)
+            #try:
+            #    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run,libPathTop)
+            #except:
+            #    errMod.errOut(jobData)
+            #time.sleep(3)
                 
             sys.exit(1)
         
