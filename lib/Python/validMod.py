@@ -160,7 +160,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     
     print keyStatus
     # Path that will define when the parameter generation has completed.
-    genParmComplete = runDir + "/PARAM_GEN.COMPLETE"
+    genParmComplete = bestDir + "/PARAM_GEN.COMPLETE"
     
     if keyStatus == 1.0:
         # Model has already completed
