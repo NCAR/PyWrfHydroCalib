@@ -144,7 +144,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     
     # Pull status values for parameter generation and model simulations. 
     try:
-        basinStatus = statusMod.checkBasJob(statusData,basinNum)
+        basinStatus = statusMod.checkBasJobValid(statusData,basinNum)
     except:
         raise
     try:
