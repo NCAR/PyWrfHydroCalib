@@ -245,7 +245,7 @@ def main(argv):
             #    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run,libPathTop)
             #except:
             #    errMod.errOut(jobData)
-            #time.sleep(3)
+            time.sleep(30)
                 
         # Check to see if program requirements have been met.
         #if keySlot.sum() == entryValue:
