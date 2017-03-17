@@ -968,6 +968,7 @@ class Database(object):
                      str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ");"
                      
             try:
+                print sqlCmd
                 self.conn.execute(sqlCmd)
                 self.db.commit()
             except:
