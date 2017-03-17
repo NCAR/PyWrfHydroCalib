@@ -31,6 +31,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     ctrlStatus = keySlot[basinNum,0]
     bestStatus = keySlot[basinNum,1]
     
+    print "CTRL STATUS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     print "CALIB STATUS = " + str(ctrlStatus)
     print "BEST STATUS = " + str(bestStatus)
     # If the control status is 1.0, this means the model is complete and we can 
@@ -449,6 +450,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     ctrlStatus = keySlot[basinNum,0]
     bestStatus = keySlot[basinNum,1]
     
+    print "BEST STATUS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     # If the control status is not at least 0.25, this means the code to generate
     # parameters is still running, hasn't begun yet, or there's an issue with
     # the model. Simply return to the main workflow calling program.
@@ -545,7 +547,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Path that will define when the parameter generation has completed.
     evalComplete = runDir + "/R_VALID_COMPLETE"
     
-    return
     if keyStatus == 1.0:
         # Model has already completed
         runFlag = False
@@ -805,6 +806,9 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             
         keyStatus = 0.5
         keySlot[basinNum,1] = 0.5
+        
+    if keyStatus == 0.75 and not runFlag and ctrlStatus != 1.0:
+        print "CTRL RUN NOT FINISHED YET."
         
     if keyStatus == 0.75 and not runFlag and ctrlStatus == 1.0:
         # Note the control simulation needs to be completed as well in 
