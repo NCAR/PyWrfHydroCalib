@@ -452,6 +452,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # parameters is still running, hasn't begun yet, or there's an issue with
     # the model. Simply return to the main workflow calling program.
     if ctrlStatus < 0.25:
+        print "CONTROL RUNS NOT FAR ENOUGH"
         return
         
     # If the best status is 1.0, this means the model is complete and we can 
@@ -534,16 +535,16 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     except:
         raise
      
-    print "BASIN STATUS = " + str(basinStatus)
-    print "EVAL STATUS = " + str(evalStatus)
+    print "BEST BASIN STATUS = " + str(basinStatus)
+    print "BEST EVAL STATUS = " + str(evalStatus)
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
     evalLockPath = runDir + '/EVAL.LOCK'
     
-    print keyStatus
     # Path that will define when the parameter generation has completed.
     evalComplete = runDir + "/R_VALID_COMPLETE"
     
+    return
     if keyStatus == 1.0:
         # Model has already completed
         runFlag = False

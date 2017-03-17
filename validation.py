@@ -247,7 +247,7 @@ def main(argv):
             #    errMod.errOut(jobData)
             time.sleep(30)
             
-            #validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
             #try:
             #    validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
             #except:
