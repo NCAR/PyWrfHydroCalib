@@ -79,6 +79,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     except:
         raise
     if iterStatus == -99:
+        print "BASIN: " + gage + " WAS BLACKED OUT HERE"
         keySlot[basinNum,0] = 1.0
         keySlot[basinNum,1] = 1.0
         return
@@ -512,7 +513,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Generate scripts to do evaluation on both 
     # the control and best simulations. 
     try:
-        generateEvalRunScript(staticData,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+        generateEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
     except:
         raise
     # Generate the BSUB run script to run the model simulations. 
@@ -530,7 +531,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     
     # Pull status values for evaluation jobs and model simulations. 
     try:
-        basinStatus = statusMod.checkBasJobValid(statusData,basinNum,'CTRL')
+        basinStatus = statusMod.checkBasJobValid(statusData,basinNum,'BEST')
     except:
         raise
     try:
@@ -897,7 +898,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
-def generateEvalRunScript(jobData,gageID,runDir,gageMeta,calibWorkDir,validWorkDir):
+def generateEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir):
     """
     Generic function to create evaluation BSUB script in the best simulation
     directory. This function also generates the shell script to call R.
@@ -921,7 +922,7 @@ def generateEvalRunScript(jobData,gageID,runDir,gageMeta,calibWorkDir,validWorkD
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n 1\n"
         fileObj.write(inStr)
-        inStr = "#BSUB -J NWM_EVAL_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#BSUB -J NWM_EVAL_" + str(jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
         fileObj.write(inStr)
