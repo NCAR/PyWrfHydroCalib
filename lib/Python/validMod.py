@@ -32,7 +32,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     bestStatus = keySlot[basinNum,1]
     
     print "CTRL STATUS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    print "CALIB STATUS = " + str(ctrlStatus)
+    print "CTRL STATUS = " + str(ctrlStatus)
     print "BEST STATUS = " + str(bestStatus)
     # If the control status is 1.0, this means the model is complete and we can 
     # return to the main workflow calling program.
@@ -245,6 +245,16 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             # Parameter generation code is running.
             keySlot[basinNum,0] = 0.1
             keyStatus = 0.1
+            runFlag = False
+        elif os.path.isfile(lockPath):
+            print "MODEL IS LOCKED"
+            keySlot[basinNum,0] = -1.0
+            keyStatus = -1.0
+            runFlag = False
+        elif os.path.isfile(parmLockPath):
+            print "PARAMETER GEN LOCKED"
+            keySlot[basinNum,0] = -0.1
+            keyStatus = -0.1
             runFlag = False
         else:
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
@@ -629,6 +639,16 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             # Parameter generation code is running.
             keySlot[basinNum,1] = 0.9
             keyStatus = 0.9
+            runFlag = False
+        elif os.path.isfile(lockPath):
+            print "MODEL IS LOCKED"
+            keySlot[basinNum,1] = -1.0
+            keyStatus = -1.0
+            runFlag = False
+        elif os.path.isfile(evalLockPath):
+            print "EVAL LOCKED"
+            keySlot[basinNum,1] = -0.1
+            keyStatus = -0.1
             runFlag = False
         else:
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
