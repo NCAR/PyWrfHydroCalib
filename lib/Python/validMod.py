@@ -558,6 +558,9 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Path that will define when the parameter generation has completed.
     evalComplete = runDir + "/R_VALID_COMPLETE"
     
+    # Initialize the runFlag
+    runFlag = False
+    
     if keyStatus == 1.0:
         # Model has already completed
         runFlag = False
