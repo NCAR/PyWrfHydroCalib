@@ -94,6 +94,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # model output if it hasn't already been created.
     parmGenProgram = libPathTop + "/Python/generate_parameters.py"
     evalProgram = libPathTop + "/R/valid_workflow.R"
+    utilProgram = libPathTop + "/calib_workflow.R"
     try:
         link = bestDir + "/generate_parameters.py"
         if not os.path.islink(link):
@@ -107,6 +108,13 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             os.symlink(evalProgram,link)
     except:
         statusData.errMsg = "ERROR: Failure to link: " + evalProgram
+        raise
+    try:
+        link = workDir + "/calib_workflow.R"
+        if not os.path.islink(link):
+            os.symlink(utilProgram,link)
+    except:
+        statusData.errMsg = "ERROR: Failure to link: " + utilProgram
         raise
         
     # Create two run scripts:
@@ -512,7 +520,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # 1.) Job script to run the model with best parameters.
     # 2.) Job script to run the R code for evaluation/plotting.
     bsubRunScript = runDir + "/run_NWM.sh"
-    bsubEvalScript = runDir + "/run_eval.sh"
+    bsubEvalScript = validWorkDir + "/run_eval.sh"
     
     # If the files exist, remove them and re-create.
     if os.path.isfile(bsubRunScript):
@@ -553,10 +561,10 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     print "BEST EVAL STATUS = " + str(evalStatus)
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
-    evalLockPath = runDir + '/EVAL.LOCK'
+    evalLockPath = validWorkDir + '/EVAL.LOCK'
     
     # Path that will define when the parameter generation has completed.
-    evalComplete = runDir + "/R_VALID_COMPLETE"
+    evalComplete = validWorkDir + "/R_VALID_COMPLETE"
     
     # Initialize the runFlag
     runFlag = False
@@ -839,7 +847,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         # order for the evaluation code to complete. 
         print "FIRING OFF EVAL CODE"
         # We need to run parameter generation code.
-        cmd = "bsub < " + runDir + "/run_eval.sh"
+        cmd = "bsub < " + validWorkDir + "/run_eval.sh"
         print cmd
         try:
             subprocess.call(cmd,shell=True)
@@ -954,7 +962,7 @@ def generateEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,vali
         fileObj.write('#BSUB -W 1:00\n')
         fileObj.write('#BSUB -q premium\n')
         fileObj.write('\n')
-        inStr = 'cd ' + runDir + '\n'
+        inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R\n"
         fileObj.write(inStr)
