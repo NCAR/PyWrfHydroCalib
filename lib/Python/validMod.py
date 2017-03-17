@@ -94,7 +94,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # model output if it hasn't already been created.
     parmGenProgram = libPathTop + "/Python/generate_parameters.py"
     evalProgram = libPathTop + "/R/valid_workflow.R"
-    utilProgram = libPathTop + "/calib_workflow.R"
+    utilProgram = libPathTop + "/R/calib_utils.R"
     try:
         link = bestDir + "/generate_parameters.py"
         if not os.path.islink(link):
@@ -110,7 +110,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         statusData.errMsg = "ERROR: Failure to link: " + evalProgram
         raise
     try:
-        link = workDir + "/calib_workflow.R"
+        link = workDir + "/calib_utils.R"
         if not os.path.islink(link):
             os.symlink(utilProgram,link)
     except:
