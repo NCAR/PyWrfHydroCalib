@@ -936,7 +936,7 @@ def generateEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,vali
     """
     # First establish paths to files being created.
     rScript = validWorkDir + "/validScript.R"
-    bsubOut = runDir + "/run_eval.sh"
+    bsubOut = validWorkDir + "/run_eval.sh"
     
     if os.path.isfile(rScript):
         os.remove(rScript)
