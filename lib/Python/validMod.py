@@ -101,7 +101,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         raise
     try:
         link = workDir + "/valid_workflow.R"
-        os.symlink(evalProgram,link)
+        if not os.path.islink(link):
+            os.symlink(evalProgram,link)
     except:
         statusData.errMsg = "ERROR: Failure to link: " + evalProgram
         raise
