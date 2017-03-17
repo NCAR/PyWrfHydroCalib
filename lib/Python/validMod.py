@@ -964,7 +964,7 @@ def generateEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,vali
         fileObj.write('\n')
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
-        inStr = "Rscript " + validWorkDir + "/valid_workflow.R\n"
+        inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
         fileObj.write(inStr)
         fileObj.close
     except:
