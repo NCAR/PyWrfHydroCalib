@@ -658,7 +658,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             runFlag = False
         elif os.path.isfile(evalLockPath):
             print "EVAL LOCKED"
-            keySlot[basinNum,1] = -0.1
+            keySlot[basinNum,1] = -0.9
             keyStatus = -0.1
             runFlag = False
         else:
