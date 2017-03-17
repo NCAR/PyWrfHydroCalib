@@ -955,9 +955,9 @@ def generateEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,vali
         fileObj.write(inStr)
         inStr = "#BSUB -J NWM_EVAL_" + str(jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#BSUB -o ' + runDir + '/%J.out\n'
+        inStr = '#BSUB -o ' + validWorkDir + '/%J.out\n'
         fileObj.write(inStr)
-        inStr = '#BSUB -e ' + runDir + '/%J.err\n'
+        inStr = '#BSUB -e ' + validWorkDir + '/%J.err\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -W 1:00\n')
         fileObj.write('#BSUB -q premium\n')
