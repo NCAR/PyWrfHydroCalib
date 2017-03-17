@@ -928,5 +928,49 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to create: " + outTbl
             raise
 
-        return outStatus                
+        return outStatus            
         
+    def logValidStats(self,jobData,jobID,gageID,gage):
+        """
+        Generic function to log validation workflow statistics generated from 
+        R code. 
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        statsTbl = str(jobData.jobDir) + "/" + gage + "/RUN.VALID/valid_stats.txt"
+        if not os.path.isfile(statsTbl):
+            jobData.errMsg = "ERROR: Validation Stats Table: " + statsTbl + " not found."
+            raise Exception()
+            
+        # Read in stats table.
+        try:
+            tblData = pd.read_csv(statsTbl,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + statsTbl
+            raise
+            
+        numStats = len(tblData.run)
+        if numStats != 6:
+            jobData.errMsg = "ERROR: Unexpected length of validation stats table: " + statsTbl
+            raise Exception()
+            
+        # Loop through table and enter information into DB.
+        for stat in range(0,numStats):
+            sqlCmd = "insert into Valid_Stats (jobID,domainID,simulation,evalPeriod," + \
+                     "objfnVal,bias,rmse,cor,nse,nselog,nseWt,kge,msof) values (" + str(jobID) + \
+                     "," + str(gageID) + "," + tblData.run[stat] + "," + \
+                     tblData.period[stat] + "," + str(tblData.obj[stat]) + "," + \
+                     str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
+                     str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
+                     str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
+                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ");"
+                     
+            try:
+                self.conn.execute(sqlCmd)
+                self.db.commit()
+            except:
+                jobData.errMsg = "ERROR: Failure to enter validation statistics for jobID: " + \
+                                 str(jobID) + " domainID: " + str(gageID)
+                raise

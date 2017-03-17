@@ -49,6 +49,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
     bestDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST"
     parmInDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/BASELINE_PARAMETERS"
+    workDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
     
     print runDir
     print bestDir
@@ -62,6 +63,9 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         raise Exception()
     if not os.path.isdir(bestDir):
         statusData.errMsg = "ERROR: " + bestDir + " not found."
+        raise Exception()
+    if not os.path.isdir(workDir):
+        statusData.errMsg = "ERROR: " + workDir + " not found."
         raise Exception()
         
     # Determine which iteration was the best. If no best iteration was found,
@@ -87,7 +91,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # Create symbolic links to Python/R code to generate parameters and evaluate
     # model output if it hasn't already been created.
     parmGenProgram = libPathTop + "/Python/generate_parameters.py"
-    #evalProgram = libPathTop + "/R/eval_output.R"
+    evalProgram = libPathTop + "/R/valid_workflow.R"
     try:
         link = bestDir + "/generate_parameters.py"
         if not os.path.islink(link):
@@ -95,12 +99,12 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     except:
         statusData.errMsg = "ERROR: Failure to link: " + parmGenProgram
         raise
-    #try:
-    #    link = bestDir + "/eval_output.R"
-    #    os.symlink(evalProgram,link)
-    #except:
-    #    statusData.errMsg = "ERROR: Failure to link: " + evalProgram
-    #    raise
+    try:
+        link = workDir + "/valid_workflow.R"
+        os.symlink(evalProgram,link)
+    except:
+        statusData.errMsg = "ERROR: Failure to link: " + evalProgram
+        raise
         
     # Create two run scripts:
     # 1.) Job script to prepare parameter files for both the control and best
@@ -263,6 +267,19 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 keySlot[basinNum,0] = 0.25
                 keyStatus = 0.25
                 runFlag = True
+                
+    # For when parameter estimation code failed and is locked up. 
+    if keyStatus == -0.1:
+        # If LOCK file exists. File must
+        # be removed manually by user.
+        if os.path.isfile(parmLockPath):
+            keySlot[basinNum,0] = -0.1
+            keyStatus = -0.1
+            runFlag = False
+        else:
+            # LOCK file was removed, upgrade status.
+            keySlot[basinNum,0] = 0.0
+            runFlag = False
 
     # For when the model failed TWICE and is locked.
     if keyStatus == -1.0:
@@ -415,7 +432,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         keyStatus = 0.1
         keySlot[basinNum,0] = 0.1
             
-def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
+def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -437,9 +454,371 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,run):
     if ctrlStatus < 0.25:
         return
         
+    # If the best status is 1.0, this means the model is complete and we can 
+    # return to the main workflow calling program.
+    if bestStatus == 1.0:
+        return
+        
+    # Pull gage metadata
+    gageMeta = calibIoMod.gageMeta()
+    try:
+        gageMeta.pullGageMeta(staticData,db,gage)
+    except:
+        raise
+    
+    # Establish directory paths.
+    runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST"
+    ctrlDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
+    calibWorkDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
+    validWorkDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
+    
+    print runDir
+    
+    if not os.path.isdir(runDir):
+        statusData.errMsg = "ERROR: " + runDir + " not found."
+        raise Exception()
+    if not os.path.isdir(ctrlDir):
+        statusData.errMsg = "ERROR: " + ctrlDir + " not found."
+        raise Exception()
+    if not os.path.isdir(calibWorkDir):
+        statusData.errMsg = "ERROR: " + calibWorkDir + " not found."
+        raise Exception()
+    if not os.path.isdir(validWorkDir):
+        statusData.errMsg = "ERROR: " + validWorkDir + " not found."
+        raise Exception()
+        
+    # Make symbolic links as necssary.
+    try:
+        linkToRst(statusData,gage,runDir)
+    except:
+        raise
+        
     # Create two run scripts:
     # 1.) Job script to run the model with best parameters.
-    # 2.) Job script to run the R code for evaluation/plotting. 
+    # 2.) Job script to run the R code for evaluation/plotting.
+    bsubRunScript = runDir + "/run_NWM.sh"
+    bsubEvalScript = runDir + "/run_eval.sh"
+    
+    # If the files exist, remove them and re-create.
+    if os.path.isfile(bsubRunScript):
+        os.remove(bsubRunScript)
+    if os.path.isfile(bsubEvalScript):
+        os.remove(bsubEvalScript)
+        
+    # Generate scripts to do evaluation on both 
+    # the control and best simulations. 
+    try:
+        generateEvalRunScript(staticData,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+    except:
+        raise
+    # Generate the BSUB run script to run the model simulations. 
+    try:
+        generateRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+    except:
+        raise
+        
+    # Calculate datetime objects
+    begDate = statusData.bValidDate
+    endDate = statusData.eValidDate
+        
+    ## Initialize status
+    keyStatus = keySlot[basinNum,1]
+    
+    # Pull status values for evaluation jobs and model simulations. 
+    try:
+        basinStatus = statusMod.checkBasJobValid(statusData,basinNum,'CTRL')
+    except:
+        raise
+    try:
+        evalStatus = statusMod.checkEvalJob(statusData,basinNum)
+    except:
+        raise
+     
+    print "BASIN STATUS = " + str(basinStatus)
+    print "EVAL STATUS = " + str(evalStatus)
+    # Create path to LOCK file if neeced
+    lockPath = runDir + "/RUN.LOCK"
+    evalLockPath = runDir + '/EVAL.LOCK'
+    
+    print keyStatus
+    # Path that will define when the parameter generation has completed.
+    evalComplete = runDir + "/R_VALID_COMPLETE"
+    
+    if keyStatus == 1.0:
+        # Model has already completed
+        runFlag = False
+        return
+        
+    if keyStatus == 0.9:
+        # Evaluation code is running. 
+        print "EVAL CODE RUNNING"
+        if evalStatus:
+            # Parameter generation code is still running.
+            keySlot[basinNum,1] = 0.9
+            keyStatus = 0.9
+            runFlag = False
+        else:
+            # Check to make sure complete flag is present.
+            if os.path.isfile(evalComplete):
+                print "EVAL CODE COMPLETE"
+                # Evaluation complete.
+                # Log statistics into the DB.
+                try:
+                    db.logValidStats(statusData,int(statusData.jobID),int(gageID),str(gage))
+                except:
+                    raise
+                keySlot[basinNum,1] = 1.0
+                keyStatus = 1.0
+                runFlag = False
+            else:
+                # Evaluation code failed. Lock up basin and 
+                # send error message out.
+                statusData.genMsg = "ERROR: Evaluation failed for gage: " + statusData.gages[basinNum] + \
+                                    " Failed. Please remove LOCKFILE: " + evalLockPath
+                open(evalLockPath,'a').close()
+                errMod.sendMsg(statusData)
+                keySlot[basinNum,1] = -0.9
+                keyStatus = -0.9
+                runFlag = False
+                
+    # For uncompleted simulations that are still listed as running.
+    if keyStatus == 0.5:
+        # If a model is running for this basin, continue and set keyStatus to 0.5
+        if basinStatus:
+            print "MODEL RUNNING"
+            keySlot[basinNum,1] = 0.5
+            keyStatus = 0.5
+            runFlag = False
+        else:
+            # Either simulation has completed, or potentially crashed.
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if runFlag:
+                print "MODEL CRASHED ONCE"
+                # Model crashed as simulation is not complete but no processes are running.
+                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                #                    " Failed. Attempting to restart."
+                #print statusData.genMsg
+                #errMod.sendMsg(statusData)
+                keySlot[basinNum,1] = -0.25
+                keyStatus = -0.25
+                runFlag = True
+            else:
+                print "MODEL COMPLETED"
+                # Model has completed. Ready to run R evaluation code (pending control complete)
+                keySlot[basinNum,1] = 0.75
+                keyStatus = 0.75
+                runFlag = False
+                
+    # For simulations that are fresh
+    if keyStatus == 0.0:
+        if basinStatus:
+            print "MODEL RUNNING"
+            # Model is still running from previous instance of workflow. Allow it to continue.
+            keySlot[basinNum,1] = 0.5
+            keyStatus = 0.5
+            runFlag = False
+        elif evalStatus:
+            print "EVAL CODE RUNNING"
+            # Parameter generation code is running.
+            keySlot[basinNum,1] = 0.9
+            keyStatus = 0.9
+            runFlag = False
+        else:
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if not runFlag and os.path.isfile(evalComplete):
+                print "VALIDATION COMPLETED"
+                # Model validation completed before workflow was restarted.
+                try:
+                    db.logValidStats(statusData,int(statusData.jobID),int(gageID),str(gage))
+                except:
+                    raise
+                keySlot[basinNum,1] = 1.0
+                keyStatus = 1.0
+                runFlag = False
+            if not runFlag and not os.path.isfile(evalComplete):
+                print "READY TO RUN EVAL CODE"
+                # Model has completed, but the eval code hasn't ben ran yet.
+                keySlot[basinNum,1] = 0.75
+                keyStatus = 0.75
+                runFlag = False
+            if runFlag and not os.path.isfile(evalComplete):
+                print "READY TO RUN MODEL"
+                # model either hasn't ran yet, or needs to be restarted.
+                keySlot[basinNum,1] = 0.0
+                keyStatus = 0.0
+                runFlag = True
+                
+    # For when evaluation jobs failed.
+    if keyStatus == -0.9:
+        # If LOCK file exists. File must
+        # be removed manually by user.
+        if os.path.isfile(evalLockPath):
+            keySlot[basinNum,1] = -0.9
+            keyStatus = -0.9
+            runFlag = False
+        else:
+            # LOCK file was removed, upgrade status.
+            keySlot[basinNum,1] = 0.75
+            runFlag = False
+                
+    # For when the model failed TWICE and is locked.
+    if keyStatus == -1.0:
+        # If LOCK file exists, no simulation will take place. File must be removed
+        # manually by user.
+        if os.path.isfile(lockPath):
+            print "MODEL STILL LOCKED"
+            runFlag = False
+        else:
+            # LOCK file was removed, upgrade status to 0.25 temporarily
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if runFlag:
+                print "UPGRADING MODEL STATUS TO UNLOCKED"
+                keySlot[basinNum,1] = 0.0
+                keyStatus = 0.0
+            else:
+                print "MODEL COMPLETED"
+                # Model sucessfully completed. Ready to run evaluation code.
+                keySlot[basinNum,1] = 0.75
+                keyStatus = 0.75
+                runFlag = False
+                
+    # For when the model crashed ONCE
+    if keyStatus == -0.5:
+        if basinStatus:
+            print "MODEL RUNNING AGAIN, UPGRADING STATUS"
+            # Model is running again, upgrade status
+            # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
+            keySlot[basinNum,1] = 0.5
+            keyStatus = 0.5
+            runFlag = False
+        else:
+            runStatus = statusMod.walkMod(begDate,endDate,runDir)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            runFlag = runStatus[2]
+            if runFlag:
+                # Model has crashed again, time to lock it up and send a message out.
+                statusData.genMsg = "ERROR: SIMULATION FOR GAGE: " + statusData.gages[basinNum] + \
+                                    " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
+                                    "MANUALLY REMOVE LOCK FILE: " + lockPath
+                errMod.sendMsg(statusData)
+                print statusData.genMsg
+                open(lockPath,'a').close()
+                keySlot[basinNum,1] = -1.0
+                keyStatus = -1.0
+                runFlag = False
+            else:
+                print "MODEL COMPLETED"
+                # Model sucessfully completed from first failed attempt. Ready to run evaluation code. 
+                keySlot[basinNum,1] = 0.75
+                keyStatus = 0.75
+                
+    if keyStatus == -0.25 and runFlag:
+        print "RESTARTING MODEL"
+        # Restarting model from one crash
+        # First delete namelist files if they exist.
+        check = runDir + "/namelist.hrldas"
+        check2 = runDir + "/hydro.namelist"
+        if os.path.isfile(check):
+            os.remove(check)
+        if os.path.isfile(check2):
+            os.remove(check2)
+        
+        if begDate == staticData.bValidDate:
+            startType = 1
+        else:
+            startType = 2
+        
+        try:
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
+        except:
+            raise
+            
+        if startType == 2:
+            # Clean run directory of any old diagnostics files
+            try:
+                errMod.cleanRunDir(statusData,runDir)
+            except:
+                raise
+                
+        # Fire off model.
+        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+            
+        # Revert statuses to -0.5 for next loop to convey the model crashed once. 
+        keyStatus = -0.5
+        keySlot[basinNum,1] = -0.5
+        
+    if keyStatus == 0.0 and runFlag:
+        print "FIRING OFF MODEL"
+        # Model needs to be either ran, or restarted
+        # First delete namelist files if they exist.
+        check = runDir + "/namelist.hrldas"
+        check2 = runDir + "/hydro.namelist"
+        if os.path.isfile(check):
+            os.remove(check)
+        if os.path.isfile(check2):
+            os.remove(check2)
+        
+        if begDate == staticData.bValidDate:
+            startType = 1
+        else:
+            startType = 2
+        
+        try:
+            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
+            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
+        except:
+            raise
+            
+        if startType == 2:
+            # Clean run directory of any old diagnostics files
+            try:
+                errMod.cleanRunDir(statusData,runDir)
+            except:
+                raise
+                
+        # Fire off model.
+        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        print cmd
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+            
+        keyStatus = 0.5
+        keySlot[basinNum,1] = 0.5
+        
+    if keyStatus == 0.75 and not runFlag and ctrlStatus == 1.0:
+        # Note the control simulation needs to be completed as well in 
+        # order for the evaluation code to complete. 
+        print "FIRING OFF EVAL CODE"
+        # We need to run parameter generation code.
+        cmd = "bsub < " + runDir + "/run_eval.sh"
+        print cmd
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+            
+        keyStatus = 0.9
+        keySlot[basinNum,1] = 0.9
                 
 def generateRunScript(jobData,gageID,runDir,gageMeta,modName):
     """
@@ -512,12 +891,85 @@ def generateParmScript(jobData,bestDir,gage,parmInDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
-def generateEvalRunScript(jobData):
+def generateEvalRunScript(jobData,gageID,runDir,gageMeta,calibWorkDir,validWorkDir):
     """
     Generic function to create evaluation BSUB script in the best simulation
     directory. This function also generates the shell script to call R.
     """
+    # First establish paths to files being created.
+    rScript = runDir + "/validScript.R"
+    bsubOut = runDir + "/run_eval.sh"
+    
+    if os.path.isfile(rScript):
+        os.remove(rScript)
+    if os.path.isfile(bsubOut):
+        os.remove(bsubOut)
         
+    # Create BSUB shell script for the evaluation job.
+    try:
+        fileObj = open(bsubOut,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        fileObj.write('#BSUB -x\n')
+        inStr = "#BSUB -n 1\n"
+        fileObj.write(inStr)
+        inStr = "#BSUB -J NWM_EVAL_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = '#BSUB -o ' + runDir + '/%J.out\n'
+        fileObj.write(inStr)
+        inStr = '#BSUB -e ' + runDir + '/%J.err\n'
+        fileObj.write(inStr)
+        fileObj.write('#BSUB -W 1:00\n')
+        fileObj.write('#BSUB -q premium\n')
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = "Rscript " + validWorkDir + "/valid_workflow.R\n"
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + bsubOut
+        raise
+        
+    # Create validScript.R
+    try:
+        fileObj = open(rScript,'w')
+        fileObj.write("#### Model Parameters ####\n")
+        fileObj.write("# Specify run directory containing validation simulations.\n")
+        inStr = "runDir <- '" + calibWorkDir + "'\n"
+        fileObj.write(inStr)
+        inStr = "validDir <- '" + validWorkDir + "'\n"
+        fileObj.write(inStr)
+        fileObj.write("# Objective function#")
+        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        fileObj.write(inStr)
+        fileObj.write("# Basin-specific metadata\n")
+        inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
+        fileObj.write(inStr)
+        inStr = "linkId <- " + str(gageMeta.comID) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Start and dates for evaluation period (e.g., after spinup period)\n')
+        inStr = "startCalibDate <- as.POSIXct(\"" + jobData.bCalibEvalDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        inStr = "endCalibDate <- as.POSIXct(\"" + jobData.eCalibDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        inStr = "startValidDate <- as.POSIXct(\"" + jobData.bValidEvalDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        inStr = "endValidDate <- as.POSIXct(\"" + jobData.eValidDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify number of cores to use')
+        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + rScript
+        raise
 def generateParmRunScript(jobData,runDir,gageID):
     """
     Generic function to run BSUB command to run the parameter generation script.
