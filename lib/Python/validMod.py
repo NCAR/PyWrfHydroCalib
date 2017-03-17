@@ -899,7 +899,7 @@ def generateEvalRunScript(jobData,gageID,runDir,gageMeta,calibWorkDir,validWorkD
     directory. This function also generates the shell script to call R.
     """
     # First establish paths to files being created.
-    rScript = runDir + "/validScript.R"
+    rScript = validWorkDir + "/validScript.R"
     bsubOut = runDir + "/run_eval.sh"
     
     if os.path.isfile(rScript):
@@ -944,7 +944,7 @@ def generateEvalRunScript(jobData,gageID,runDir,gageMeta,calibWorkDir,validWorkD
         fileObj.write(inStr)
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
-        fileObj.write("# Objective function#")
+        fileObj.write("# Objective function#\n")
         inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
@@ -965,7 +965,7 @@ def generateEvalRunScript(jobData,gageID,runDir,gageMeta,calibWorkDir,validWorkD
         inStr = "endValidDate <- as.POSIXct(\"" + jobData.eValidDate.strftime('%Y-%m-%d') + "\", " + \
                  "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
         fileObj.write(inStr)
-        fileObj.write('# Specify number of cores to use')
+        fileObj.write('# Specify number of cores to use\n')
         inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
         fileObj.write(inStr)
         fileObj.close
