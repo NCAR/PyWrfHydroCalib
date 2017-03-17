@@ -960,8 +960,8 @@ class Database(object):
         for stat in range(0,numStats):
             sqlCmd = "insert into Valid_Stats (jobID,domainID,simulation,evalPeriod," + \
                      "objfnVal,bias,rmse,cor,nse,nselog,nseWt,kge,msof) values (" + str(jobID) + \
-                     "," + str(gageID) + "," + tblData.run[stat] + "," + \
-                     tblData.period[stat] + "," + str(tblData.obj[stat]) + "," + \
+                     "," + str(gageID) + ",'" + tblData.run[stat] + "','" + \
+                     tblData.period[stat] + "'," + str(tblData.obj[stat]) + "," + \
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
                      str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
