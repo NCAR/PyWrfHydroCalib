@@ -48,14 +48,14 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/soil_properties.nc"
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/soil_properties.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/soil_properties.nc"
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/soil_properties.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
@@ -213,14 +213,14 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/Fulldom.nc"
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/Fulldom.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/Fulldom.nc"
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/Fulldom.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
@@ -366,14 +366,14 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/GWBUCKPARM.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/GWBUCKPARM.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()

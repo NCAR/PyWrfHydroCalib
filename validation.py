@@ -26,6 +26,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
+libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
 
@@ -103,11 +104,11 @@ def main(argv):
         errMod.errOut(jobData)
     
     # Extract active jobs for job owner
-    try:
-        statusMod.checkYsJobs(jobData)
-    except:
-        errMod.errOut(jobData)
-    
+    #try:
+    #    statusMod.checkYsJobs(jobData)
+    #except:
+    #    errMod.errOut(jobData)
+        
     # Some house keeping here. If the validation is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
@@ -207,8 +208,8 @@ def main(argv):
     # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
-    keySlot = np.empty(len(jobData.gages),2)
-    keySlot[:] = 0.0
+    keySlot = np.empty([len(jobData.gages),2])
+    keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages))*2.0
     
     while not completeStatus:
@@ -233,25 +234,31 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            for run in range(0,2):
-                # First simulation will be the control simulation with default
-                # parameters specified by the user at the beginning of the calibration
-                # process.
-                print keySlot
-                try:
-                    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run)
-                except:
-                    errMod.errOut(jobData)
-                time.sleep(30)
-        
+            # First simulation will be the control simulation with default
+            # parameters specified by the user at the beginning of the calibration
+            # process.
+            #validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            try:
+                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            except:
+                errMod.errOut(jobData)
+            time.sleep(3)
+            
+            #validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            try:
+                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            except:
+                errMod.errOut(jobData)
+            time.sleep(3)
+                
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
             jobData.spinComplete = 1
             try:
-                db.updateSpinupStatus(jobData)
+                db.updateValidationStatus(jobData)
             except:
                 errMod.errout(jobData)
-            jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
     

@@ -337,3 +337,171 @@ def checkCalibJob(jobData,gageNum):
             status = True
             
     return status
+    
+def checkBasJobValid(jobData,gageNum,modRun):
+    """
+    Generic function to check Yellowstone for job being ran for a particular basin.
+    Job name follows a prescribed format:
+    NWM_SIM_JOBID_DOMAINID where:
+    SIM = Can either CTRL or BEST.
+    JOBID = Unique job ID pulled from database.
+    DOMAINID = Unique domain ID pulled from database.
+    There should be a unique number of nodes found to be running a basin:
+    integer(number_cores/16.0 cores/node)
+    """
+    
+    # Get unique PID.
+    pidUnique = os.getpid()
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
+    
+    if userTmp != str(jobData.owner):
+        jobData.errMsg = "ERROR: you are not the owner of this job."
+        raise Exception()
+    
+    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+        raise
+    
+    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+    try:
+        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    except:
+        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        raise
+        
+    # Delete temporary CSV files
+    cmdTmp = 'rm -rf ' + csvPath
+    subprocess.call(cmdTmp,shell=True)
+        
+    # Compile expected job name that the job should occupy.
+    expName = "NWM_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
+              str(jobData.gageIDs[gageNum])
+    
+    lenJobs = len(jobs.JOBID)
+
+    # Assume no jobs for basin are being ran, unless found in the data frame.
+    status = False
+    
+    if lenJobs == 0:
+        status = False
+    else:
+        # Find if any jobs for this basin are being ran.
+        testDF = jobs.query("JOB_NAME == '" + expName + "'")
+        if len(testDF) != 0:
+            status = True
+            
+    return status
+
+def checkParmGenJob(jobData,gageNum):
+    """
+    Generic Function to check for parameter generation jobs running. This applies
+    mainly to the validation workflow. 
+    """
+    
+    # Get unique PID.
+    pidUnique = os.getpid()
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
+    
+    if userTmp != str(jobData.owner):
+        jobData.errMsg = "ERROR: you are not the owner of this job."
+        raise Exception()
+    
+    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+        raise
+    
+    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+    try:
+        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    except:
+        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        raise
+        
+    # Delete temporary CSV files
+    cmdTmp = 'rm -rf ' + csvPath
+    subprocess.call(cmdTmp,shell=True)
+        
+    # Compile expected job name that the job should occupy.
+    expName = "NWM_PARM_GEN_" + str(jobData.jobID) + "_" + \
+              str(jobData.gageIDs[gageNum])
+    
+    lenJobs = len(jobs.JOBID)
+
+    # Assume no jobs for basin are being ran, unless found in the data frame.
+    status = False
+    
+    if lenJobs == 0:
+        status = False
+    else:
+        # Find if any jobs for this basin are being ran.
+        testDF = jobs.query("JOB_NAME == '" + expName + "'")
+        if len(testDF) != 0:
+            status = True
+            
+    return status
+    
+def checkEvalJob(jobData,gageNum):
+    """ 
+    Generic function to check for jobs running that are evaluating both 
+    a control and best simulation during the validation workflow.
+    """
+    
+    # Get unique PID.
+    pidUnique = os.getpid()
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
+    
+    if userTmp != str(jobData.owner):
+        jobData.errMsg = "ERROR: you are not the owner of this job."
+        raise Exception()
+    
+    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+        raise
+    
+    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+    try:
+        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+    except:
+        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        raise
+        
+    # Delete temporary CSV files
+    cmdTmp = 'rm -rf ' + csvPath
+    subprocess.call(cmdTmp,shell=True)
+        
+    # Compile expected job name that the job should occupy.
+    expName = "NWM_EVAL_" + str(jobData.jobID) + "_" + \
+              str(jobData.gageIDs[gageNum])
+    
+    lenJobs = len(jobs.JOBID)
+
+    # Assume no jobs for basin are being ran, unless found in the data frame.
+    status = False
+    
+    if lenJobs == 0:
+        status = False
+    else:
+        # Find if any jobs for this basin are being ran.
+        testDF = jobs.query("JOB_NAME == '" + expName + "'")
+        if len(testDF) != 0:
+            status = True
+            
+    return status
