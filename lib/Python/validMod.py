@@ -778,8 +778,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keyStatus = 0.5
         keySlot[basinNum,1] = 0.5
         
-    if keyStatus == 0.75 and not runFlag and ctrlStatus != 1.0:
-        
     if keyStatus == 0.75 and not runFlag and ctrlStatus == 1.0:
         # Note the control simulation needs to be completed as well in 
         # order for the evaluation code to complete. 
