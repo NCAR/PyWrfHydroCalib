@@ -234,12 +234,9 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-        #for basin in range(0,1):
             # First simulation will be the control simulation with default
             # parameters specified by the user at the beginning of the calibration
             # process.
-            print jobData.gages[basin]
-            print jobData.gageIDs[basin]
             #validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
             try:
                 validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
@@ -258,7 +255,7 @@ def main(argv):
         if keySlot.sum() == entryValue:
             jobData.spinComplete = 1
             try:
-                db.updateSpinupStatus(jobData)
+                db.updateValidationStatus(jobData)
             except:
                 errMod.errout(jobData)
             jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."

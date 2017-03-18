@@ -31,9 +31,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     ctrlStatus = keySlot[basinNum,0]
     bestStatus = keySlot[basinNum,1]
     
-    print "CTRL STATUS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    print "CTRL STATUS = " + str(ctrlStatus)
-    print "BEST STATUS = " + str(bestStatus)
     # If the control status is 1.0, this means the model is complete and we can 
     # return to the main workflow calling program.
     if ctrlStatus == 1.0:
@@ -51,10 +48,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     bestDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST"
     parmInDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/BASELINE_PARAMETERS"
     workDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
-    
-    print runDir
-    print bestDir
-    print parmInDir
     
     if not os.path.isdir(runDir):
         statusData.errMsg = "ERROR: " + runDir + " not found."
@@ -75,11 +68,9 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # below is -99, then simply set all status values to 1.0
     try:
         iterStatus = db.genValidParmTbl(statusData,statusData.jobID,gageID,gage)
-        print "ITER STATUS = " + str(iterStatus)
     except:
         raise
     if iterStatus == -99:
-        print "BASIN: " + gage + " WAS BLACKED OUT HERE"
         keySlot[basinNum,0] = 1.0
         keySlot[basinNum,1] = 1.0
         return
@@ -167,13 +158,10 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     except:
         raise
      
-    print "BASIN STATUS = " + str(basinStatus)
-    print "PARAM GEN STATUS = " + str(genParmStatus)
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
     parmLockPath = runDir + '/PARM_GEN.LOCK'    
     
-    print keyStatus
     # Path that will define when the parameter generation has completed.
     genParmComplete = bestDir + "/PARAM_GEN.COMPLETE"
     
@@ -184,7 +172,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         
     if keyStatus == 0.1:
         # Parameter generation code is running. 
-        print "PARAM GEN CODE RUNNING"
         if genParmStatus:
             # Parameter generation code is still running.
             keySlot[basinNum,0] = 0.1
@@ -193,7 +180,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         else:
             # Check to make sure complete flag is present.
             if os.path.isfile(genParmComplete):
-                print "PARAM GEN CODE COMPLETE"
                 # Parameter generation complete. Ready to run model. 
                 keySlot[basinNum,0] = 0.25
                 keyStatus = 0.25
@@ -213,7 +199,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     if keyStatus == 0.5:
         # If a model is running for this basin, continue and set keyStatus to 0.5
         if basinStatus:
-            print "MODEL RUNNING"
             keySlot[basinNum,0] = 0.5
             keyStatus = 0.5
             runFlag = False
@@ -224,7 +209,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                print "MODEL CRASHED ONCE"
                 # Model crashed as simulation is not complete but no processes are running.
                 #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
                 #                    " Failed. Attempting to restart."
@@ -234,7 +218,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 keyStatus = -0.25
                 runFlag = True
             else:
-                print "MODEL COMPLETED"
                 # Model has completed!
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
@@ -243,24 +226,20 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # For simulations that are fresh
     if keyStatus == 0.0:
         if basinStatus:
-            print "MODEL RUNNING"
             # Model is still running from previous instance of workflow. Allow it to continue.
             keySlot[basinNum,0] = 0.5
             keyStatus = 0.5
             runFlag = False
         elif genParmStatus:
-            print "PARAM GEN CODE RUNNING"
             # Parameter generation code is running.
             keySlot[basinNum,0] = 0.1
             keyStatus = 0.1
             runFlag = False
         elif os.path.isfile(lockPath):
-            print "MODEL IS LOCKED"
             keySlot[basinNum,0] = -1.0
             keyStatus = -1.0
             runFlag = False
         elif os.path.isfile(parmLockPath):
-            print "PARAMETER GEN LOCKED"
             keySlot[basinNum,0] = -0.1
             keyStatus = -0.1
             runFlag = False
@@ -270,19 +249,16 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if not runFlag and os.path.isfile(genParmComplete):
-                print "MODEL COMPLETED"
                 # Model simulation completed before workflow was restarted.
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
                 runFlag = False
             if runFlag and not os.path.isfile(genParmComplete):
-                print "READY TO RUN PARAM GEN CODE"
                 # Model hasn't ran, and parameter generation code hasn't ran yet.
                 keySlot[basinNum,0] = 0.0
                 keyStatus = 0.0
                 runFlag = False
             if runFlag and os.path.isfile(genParmComplete):
-                print "PARAM GEN CODE COMPLETED. READY TO RUN MODEL"
                 # parameter generation code has completed, and the model either
                 # needs to be restarted or begun.
                 keySlot[basinNum,0] = 0.25
@@ -307,7 +283,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         # If LOCK file exists, no simulation will take place. File must be removed
         # manually by user.
         if os.path.isfile(lockPath):
-            print "MODEL STILL LOCKED"
             runFlag = False
         else:
             # LOCK file was removed, upgrade status to 0.25 temporarily
@@ -316,11 +291,9 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                print "UPGRADING MODEL STATUS TO UNLOCKED"
                 keySlot[basinNum,0] = 0.25
                 keyStatus = 0.25
             else:
-                print "MODEL COMPLETED"
                 # Model sucessfully completed.
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
@@ -329,7 +302,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # For when the model crashed ONCE
     if keyStatus == -0.5:
         if basinStatus:
-            print "MODEL RUNNING AGAIN, UPGRADING STATUS"
             # Model is running again, upgrade status
             # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
             keySlot[basinNum,0] = 0.5
@@ -352,13 +324,11 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 keyStatus = -1.0
                 runFlag = False
             else:
-                print "MODEL COMPLETED"
                 # Model sucessfully completed from first failed attempt.
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
                 
     if keyStatus == -0.25 and runFlag:
-        print "RESTARTING MODEL"
         # Restarting model from one crash
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
@@ -399,7 +369,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         keySlot[basinNum,0] = -0.5
         
     if keyStatus == 0.25 and runFlag:
-        print "FIRING OFF MODEL"
         # Model needs to be either ran, or restarted
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
@@ -429,7 +398,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 
         # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
-        print cmd
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -440,10 +408,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         keySlot[basinNum,0] = 0.5
         
     if keyStatus == 0.0 and not runFlag:
-        print "FIRING OFF PARAM GEN CODE"
         # We need to run parameter generation code.
         cmd = "bsub < " + bestDir + "/bsub_parms.sh"
-        print cmd
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -469,12 +435,10 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     ctrlStatus = keySlot[basinNum,0]
     bestStatus = keySlot[basinNum,1]
     
-    print "BEST STATUS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     # If the control status is not at least 0.25, this means the code to generate
     # parameters is still running, hasn't begun yet, or there's an issue with
     # the model. Simply return to the main workflow calling program.
     if ctrlStatus < 0.25:
-        print "CONTROL RUNS NOT FAR ENOUGH"
         return
         
     # If the best status is 1.0, this means the model is complete and we can 
@@ -494,8 +458,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     ctrlDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
     calibWorkDir = statusData.jobDir + "/" + gage + "/RUN.CALIB"
     validWorkDir = statusData.jobDir + "/" + gage + "/RUN.VALID"
-    
-    print runDir
     
     if not os.path.isdir(runDir):
         statusData.errMsg = "ERROR: " + runDir + " not found."
@@ -557,8 +519,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     except:
         raise
      
-    print "BEST BASIN STATUS = " + str(basinStatus)
-    print "BEST EVAL STATUS = " + str(evalStatus)
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
     evalLockPath = validWorkDir + '/EVAL.LOCK'
@@ -576,7 +536,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         
     if keyStatus == 0.9:
         # Evaluation code is running. 
-        print "EVAL CODE RUNNING"
         if evalStatus:
             # Parameter generation code is still running.
             keySlot[basinNum,1] = 0.9
@@ -585,7 +544,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         else:
             # Check to make sure complete flag is present.
             if os.path.isfile(evalComplete):
-                print "EVAL CODE COMPLETE"
                 # Evaluation complete.
                 # Log statistics into the DB.
                 try:
@@ -610,7 +568,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     if keyStatus == 0.5:
         # If a model is running for this basin, continue and set keyStatus to 0.5
         if basinStatus:
-            print "MODEL RUNNING"
             keySlot[basinNum,1] = 0.5
             keyStatus = 0.5
             runFlag = False
@@ -621,7 +578,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                print "MODEL CRASHED ONCE"
                 # Model crashed as simulation is not complete but no processes are running.
                 #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
                 #                    " Failed. Attempting to restart."
@@ -631,7 +587,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = -0.25
                 runFlag = True
             else:
-                print "MODEL COMPLETED"
                 # Model has completed. Ready to run R evaluation code (pending control complete)
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
@@ -640,24 +595,20 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # For simulations that are fresh
     if keyStatus == 0.0:
         if basinStatus:
-            print "MODEL RUNNING"
             # Model is still running from previous instance of workflow. Allow it to continue.
             keySlot[basinNum,1] = 0.5
             keyStatus = 0.5
             runFlag = False
         elif evalStatus:
-            print "EVAL CODE RUNNING"
             # Parameter generation code is running.
             keySlot[basinNum,1] = 0.9
             keyStatus = 0.9
             runFlag = False
         elif os.path.isfile(lockPath):
-            print "MODEL IS LOCKED"
             keySlot[basinNum,1] = -1.0
             keyStatus = -1.0
             runFlag = False
         elif os.path.isfile(evalLockPath):
-            print "EVAL LOCKED"
             keySlot[basinNum,1] = -0.9
             keyStatus = -0.1
             runFlag = False
@@ -667,7 +618,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if not runFlag and os.path.isfile(evalComplete):
-                print "VALIDATION COMPLETED"
                 # Model validation completed before workflow was restarted.
                 try:
                     db.logValidStats(statusData,int(statusData.jobID),int(gageID),str(gage))
@@ -677,13 +627,11 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 keyStatus = 1.0
                 runFlag = False
             if not runFlag and not os.path.isfile(evalComplete):
-                print "READY TO RUN EVAL CODE"
                 # Model has completed, but the eval code hasn't ben ran yet.
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
                 runFlag = False
             if runFlag and not os.path.isfile(evalComplete):
-                print "READY TO RUN MODEL"
                 # model either hasn't ran yet, or needs to be restarted.
                 keySlot[basinNum,1] = 0.0
                 keyStatus = 0.0
@@ -707,7 +655,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         # If LOCK file exists, no simulation will take place. File must be removed
         # manually by user.
         if os.path.isfile(lockPath):
-            print "MODEL STILL LOCKED"
             runFlag = False
         else:
             # LOCK file was removed, upgrade status to 0.25 temporarily
@@ -716,11 +663,9 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                print "UPGRADING MODEL STATUS TO UNLOCKED"
                 keySlot[basinNum,1] = 0.0
                 keyStatus = 0.0
             else:
-                print "MODEL COMPLETED"
                 # Model sucessfully completed. Ready to run evaluation code.
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
@@ -729,7 +674,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # For when the model crashed ONCE
     if keyStatus == -0.5:
         if basinStatus:
-            print "MODEL RUNNING AGAIN, UPGRADING STATUS"
             # Model is running again, upgrade status
             # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
             keySlot[basinNum,1] = 0.5
@@ -746,19 +690,16 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                                     " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
                                     "MANUALLY REMOVE LOCK FILE: " + lockPath
                 errMod.sendMsg(statusData)
-                print statusData.genMsg
                 open(lockPath,'a').close()
                 keySlot[basinNum,1] = -1.0
                 keyStatus = -1.0
                 runFlag = False
             else:
-                print "MODEL COMPLETED"
                 # Model sucessfully completed from first failed attempt. Ready to run evaluation code. 
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
                 
     if keyStatus == -0.25 and runFlag:
-        print "RESTARTING MODEL"
         # Restarting model from one crash
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
@@ -799,7 +740,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keySlot[basinNum,1] = -0.5
         
     if keyStatus == 0.0 and runFlag:
-        print "FIRING OFF MODEL"
         # Model needs to be either ran, or restarted
         # First delete namelist files if they exist.
         check = runDir + "/namelist.hrldas"
@@ -829,7 +769,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 
         # Fire off model.
         cmd = "bsub < " + runDir + "/run_NWM.sh"
-        print cmd
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -840,15 +779,12 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keySlot[basinNum,1] = 0.5
         
     if keyStatus == 0.75 and not runFlag and ctrlStatus != 1.0:
-        print "CTRL RUN NOT FINISHED YET."
         
     if keyStatus == 0.75 and not runFlag and ctrlStatus == 1.0:
         # Note the control simulation needs to be completed as well in 
         # order for the evaluation code to complete. 
-        print "FIRING OFF EVAL CODE"
         # We need to run parameter generation code.
         cmd = "bsub < " + validWorkDir + "/run_eval.sh"
-        print cmd
         try:
             subprocess.call(cmd,shell=True)
         except:
