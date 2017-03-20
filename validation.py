@@ -253,7 +253,7 @@ def main(argv):
                 
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
-            jobData.spinComplete = 1
+            jobData.validComplete = 1
             try:
                 db.updateValidationStatus(jobData)
             except:

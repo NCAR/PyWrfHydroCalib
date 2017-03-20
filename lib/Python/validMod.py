@@ -338,10 +338,10 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         if os.path.isfile(check2):
             os.remove(check2)
         
-        if begDate == staticData.bValidDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are validation simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
@@ -378,10 +378,10 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         if os.path.isfile(check2):
             os.remove(check2)
         
-        if begDate == staticData.bValidDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are validation simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
@@ -709,10 +709,10 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if os.path.isfile(check2):
             os.remove(check2)
         
-        if begDate == staticData.bValidDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are validation simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
@@ -749,10 +749,10 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if os.path.isfile(check2):
             os.remove(check2)
         
-        if begDate == staticData.bValidDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are validation simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
