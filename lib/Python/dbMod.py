@@ -146,14 +146,14 @@ class Database(object):
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
-                 "valid_complete,acct_key,num_cores_model,num_cores_R,exe,num_gages,owner,email," + \
+                 "valid_complete,acct_key,num_cores_model,num_cores_R,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.exe,len(jobData.gages),\
+                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.exe,jobData.jobRunType,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
         try:
             self.conn.execute(sqlCmd)
@@ -290,13 +290,14 @@ class Database(object):
         jobData.acctKey = results[15]
         jobData.nCoresMod = int(results[16])
         jobData.nCoresR = int(results[17])
-        jobData.exe = results[18]
-        jobData.nGages = int(results[19])
-        jobData.owner = results[20]
-        jobData.email = results[21]
-        jobData.slChan = results[22]
-        jobData.slToken = results[23]
-        jobData.slUser = results[24]
+        jobData.jobRunType = int(results[18])
+        jobData.exe = results[19]
+        jobData.nGages = int(results[20])
+        jobData.owner = results[21]
+        jobData.email = results[22]
+        jobData.slChan = results[23]
+        jobData.slToken = results[24]
+        jobData.slUser = results[25]
         
         # Initiate Slack if fields are not MISSING
         if jobData.slChan != "MISSING":

@@ -37,6 +37,7 @@ class statusMeta:
         self.nIter = []
         self.nCoresMod = []
         self.nCoresR = []
+        self.jobRunType = []
         self.acctKey = []
         self.exe = []
         self.errMsg = []

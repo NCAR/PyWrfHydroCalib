@@ -25,6 +25,7 @@ class jobMeta:
         self.acctKey = []
         self.nCoresMod = []
         self.nCoresR = []
+        self.jobRunType = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -115,6 +116,7 @@ class jobMeta:
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
         self.nIter = int(parser.get('logistics','numIter'))
+        self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
@@ -352,6 +354,12 @@ def checkConfig(parser):
     check = float(parser.get('logistics','nCoresModel'))/16.0 - int(float(parser.get('logistics','nCoresModel'))/16.0)
     if check != 0.0:
         print "ERROR: Number of model cores chosen must be multiple of 16"
+        raise Exception()
+        
+    # Check to make sure a valid option was passed for running model/R code
+    check = int(parser.get('logistics','jobRunType'))
+    if check < 1 or check > 4:
+        print "ERROR: Invalid jobRunType specified."
         raise Exception()
         
     check = int(parser.get('logistics','nCoresR'))

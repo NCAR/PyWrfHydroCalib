@@ -24,6 +24,17 @@ jobName = TEST_SERFC_KARSTEN
 acctKey = NRAL0017
 nCoresModel = 16
 nCoresR     = 16
+# We need to identify the type of system we are working on.
+# The model, and R jobs can be launched and monitored a variety
+# of ways. Here are the following options for the launch 
+# method (jobRunType)
+# 1 - We will launch with bsub and monitor via bjobs command.
+# 2 - We will launch with qsub and monitor via qstat command.
+# 3 - We will launch with slurm and monitor via ?????
+# 4 - Job execution using mpiexec
+# 5 - Job execution using mpirun
+# 6 - Single core executable launch. 
+jobRunType = 1
 
 # Specify number of model iterations to calibrate over
 numIter = 10
