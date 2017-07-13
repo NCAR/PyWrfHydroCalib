@@ -7,8 +7,7 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory.
 
-#import MySQLdb
-import argparse
+import MySQLdb
 import subprocess
 import sys
 import os
@@ -24,6 +23,7 @@ libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
 schemaFile = libPath + 'setup_files/schema.sql'
+schemaPathTmp = libPath + "setup_files/schemaTmp.sql"
 libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
@@ -32,14 +32,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def main(argv):
-    # Parse arguments. User must input a root password to initialize the proper
-    # database, etc using the schema file.
-    parser = argparse.ArgumentParser(description='DB Initialization Program')
-    parser.add_argument('--hostName',metavar='hostName',type=str,nargs='?',
-                        help='Optional hostname if MySQL server on different machine.')    
-
-    args = parser.parse_args()  
-    
     # Obtain root password from user for the MySQL DB. This is necessary to 
     # create the necessary DB and associated tables.
     try:
@@ -52,12 +44,43 @@ def main(argv):
         print "ERROR: Improper MySQL root password provided."
         sys.exit(1)
         
+    # Check to see if this DB has already been created. If it has, throw an 
+    # error back to the user. 
+    try:
+        db = MySQLdb.connect('localhost','root',pwdTmp)
+    except:
+        print "ERROR: Unable to connect to MySQL as user root. It's possible you entered an incorrect password."
+        sys.exit(1)
+    conn = db.cursor()
+    sqlCmd = 'show databases;'
+    conn.execute(sqlCmd)
+    qResult = conn.fetchall()
+    nResults = len(qResult)
+    for i in range(0,nResults):
+        if qResult[i][0] == 'NWM_Calib_DB':
+            conn.close()
+            print "ERROR: NWM_Calib_DB Database already exists. Please remove before re-running this program."
+            sys.exit(1)
+    sqlCmd = 'select user from mysql.user;'
+    conn.execute(sqlCmd)
+    qResult = conn.fetchall()
+    nResults = len(qResult)
+    for i in range(0,nResults):
+        if qResult[i][0] == 'NWM_Calib_rw':
+            conn.close()
+            print "ERROR: NWM_Calib_rw User already exists. Please remove before re-running this program."
+            sys.exit(1)
+    try:
+        conn.close()
+    except:
+        print "ERROR: Unable to disconnect from MySQL as user root."
+        sys.exit(1)
+            
     # Prompt user to enter in password for read-write access to DB being created. 
     # Be sure to let user know that they need to keep the password handy for future
     # access and calibration.
-    print "PLEASE ENTER A PASSWORD FOR ACCESS TO THE CALIBRATION DATABASE."
     try:
-        pwdUser1 = getpass.getpass('Create Database Password: ')
+        pwdUser1 = getpass.getpass('Create New Database Password: ')
     except:
         print "ERROR: Error in parsing password."
         sys.exit(1)
@@ -67,7 +90,7 @@ def main(argv):
         sys.exit(1)
         
     try:
-        pwdUser2 = getpass.getpass('Re-Enter Database Password: ')
+        pwdUser2 = getpass.getpass('Re-Enter New Database Password: ')
     except:
         print "ERROR: Error in parsing password."
         sys.exit(1)
@@ -86,7 +109,8 @@ def main(argv):
 
     # Make a temporary copy of the schema file. Replace the temporary password
     # in the temporary file with the password provided by the user.      
-    schemaPathTmp = './schemaTmp.sql'
+    if os.path.isfile(schemaPathTmp):
+        os.remove(schemaPathTmp)
     searchStr = "PWD_TMP"
     replaceStr = "'" + pwdUser1 + "'"
     shutil.copyfile(schemaFile,schemaPathTmp)
@@ -100,14 +124,8 @@ def main(argv):
                 check = check + 1
         sys.stdout.write(line)
         
-    if args.hostName:
-        # An optional hostname was passed from the user, indicating we are 
-        # initializing the DB off another system.
-        cmd = "mysql -h " + args.hostName + " -u root -p'" + pwdTmp + "' < " + schemaPathTmp
-    else:
-        cmd = "mysql -u root -p'" + pwdTmp + "' < " + schemaPathTmp
+    cmd = "mysql -u root -p'" + pwdTmp + "' < " + schemaPathTmp
      
-    print cmd
     subprocess.call(cmd,shell=True)
     
     # Remove temporary schema file

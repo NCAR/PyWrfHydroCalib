@@ -17,7 +17,7 @@
 import sys
 import argparse
 import os
-#import getpass
+import getpass
 
 # Set the Python path to include package specific functions included with this 
 # package.
@@ -44,7 +44,7 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
-    parser.add_argument('parmTbl',metavar='parmTbl',type=str,nargs='+',
+    parser.add_argument('--parmTbl',metavar='parmTbl',type=str,nargs='+',
                         help='Calibration Parameter Table.')
             
     args = parser.parse_args()            
@@ -58,17 +58,15 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Calibration Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
     jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    #jobData.dbPwd = 'IJustWannaCalibrate'    
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:

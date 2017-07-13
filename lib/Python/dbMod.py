@@ -7,7 +7,7 @@
 
 import MySQLdb
 import datetime
-from slacker import Slacker
+#from slacker import Slacker
 import pandas as pd
 import os
 import shutil
@@ -22,7 +22,7 @@ class Database(object):
         etc
         """
         self.connected = False
-        self.host = 'hydro-c1-web.rap.ucar.edu'
+        self.host = jobData.mySQLHost
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
         self.dbName = 'NWM_Calib_DB'
@@ -146,14 +146,14 @@ class Database(object):
         sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
-                 "valid_complete,acct_key,num_cores_model,num_cores_R,job_run_type,exe,num_gages,owner,email," + \
+                 "valid_complete,acct_key,num_cores_model,num_cores_R,sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.exe,jobData.jobRunType,len(jobData.gages),\
+                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.jobData.mySQLHost,jobData.jobRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
         try:
             self.conn.execute(sqlCmd)

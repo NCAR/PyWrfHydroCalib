@@ -139,6 +139,8 @@ CREATE TABLE `Job_Meta` (
   `acct_key` text,
   `num_cores_model` int(11) DEFAULT NULL,
   `num_cores_R` int(11) DEFAULT NULL,
+  `sql_host` text,
+  `job_run_type` int(11) DEFAULT NULL,
   `exe` text,
   `num_gages` int(11) DEFAULT NULL,
   `owner` text,

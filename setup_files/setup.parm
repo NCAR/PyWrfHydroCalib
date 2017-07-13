@@ -22,6 +22,7 @@
 outDir = /glade/p/nwc/nwmv12_calib
 jobName = TEST_SERFC_KARSTEN
 acctKey = NRAL0017
+mySQLHost = pequin.rap.ucar.edu
 nCoresModel = 16
 nCoresR     = 16
 # We need to identify the type of system we are working on.

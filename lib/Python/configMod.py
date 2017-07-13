@@ -12,7 +12,7 @@ import os
 import datetime
 import ast
 import pwd
-from slacker import Slacker
+#from slacker import Slacker
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -26,6 +26,7 @@ class jobMeta:
         self.nCoresMod = []
         self.nCoresR = []
         self.jobRunType = []
+        self.host = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -115,6 +116,7 @@ class jobMeta:
         self.acctKey = str(parser.get('logistics','acctKey'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
+        self.host = str(parser.get('logistics','mySQLHost'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
@@ -127,12 +129,12 @@ class jobMeta:
         self.slUser = str(parser.get('logistics','slackUser'))
         # Initiate Slack object if user has specified. Throw an error message
         # if Slack is not successfully inititated.
-        if len(self.slChan) > 0:
-            try:
-                self.slackObj = Slacker(str(self.slToken))
-            except:
-                print "ERROR: Failure to initiate Slack."
-                raise
+        #if len(self.slChan) > 0:
+        #    try:
+        #        self.slackObj = Slacker(str(self.slToken))
+        #    except:
+        #        print "ERROR: Failure to initiate Slack."
+        #        raise
         self.exe = str(parser.get('logistics','wrfExe'))
         self.genParmTbl = str(parser.get('logistics','genParmTbl'))
         #self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
@@ -322,6 +324,11 @@ def checkConfig(parser):
         raise Exception()
     if check != 'NRAL0017':
         print "ERROR: Invalid account key for calibration workflow."
+        raise Exception()
+        
+    check = str(parser.get('logistics','mySQLHost'))
+    if len(check) == 0:
+        print "ERROR: Zero length SQL passed length passed to program."
         raise Exception()
         
     # Either email or Slack must be chosen. If Slack is chosen, user
