@@ -22,7 +22,7 @@ class Database(object):
         etc
         """
         self.connected = False
-        self.host = jobData.mySQLHost
+        self.host = jobData.host
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
         self.dbName = 'NWM_Calib_DB'
