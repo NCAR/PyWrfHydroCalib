@@ -322,9 +322,9 @@ def checkConfig(parser):
     if len(check) == 0:
         print "ERROR: Zero length account key passed to program."
         raise Exception()
-    if check != 'NRAL0017':
-        print "ERROR: Invalid account key for calibration workflow."
-        raise Exception()
+    #if check != 'NRAL0017':
+    #    print "ERROR: Invalid account key for calibration workflow."
+    #    raise Exception()
         
     check = str(parser.get('logistics','mySQLHost'))
     if len(check) == 0:
