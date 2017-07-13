@@ -358,10 +358,10 @@ def checkConfig(parser):
         print "ERROR: Invalid number of model cores to use."
         raise Exception()
     #Check to make sure nCoresMod is an even division of 16 (16 cores/node)
-    check = float(parser.get('logistics','nCoresModel'))/16.0 - int(float(parser.get('logistics','nCoresModel'))/16.0)
-    if check != 0.0:
-        print "ERROR: Number of model cores chosen must be multiple of 16"
-        raise Exception()
+    #check = float(parser.get('logistics','nCoresModel'))/16.0 - int(float(parser.get('logistics','nCoresModel'))/16.0)
+    #if check != 0.0:
+    #    print "ERROR: Number of model cores chosen must be multiple of 16"
+    #    raise Exception()
         
     # Check to make sure a valid option was passed for running model/R code
     check = int(parser.get('logistics','jobRunType'))
