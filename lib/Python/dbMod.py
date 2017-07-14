@@ -273,6 +273,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID)
             raise Exception()
             
+        print 'mom'
         # Fill jobData object with metadata on job and status.
         jobData.jobDir = results[1]
         jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d')
@@ -301,6 +302,7 @@ class Database(object):
         jobData.slToken = results[25]
         jobData.slUser = results[26]
         
+        print 'mom again'
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
         #    #jobData.email = None
