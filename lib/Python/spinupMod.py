@@ -29,7 +29,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     """
     runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT"
     workDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
-    exeMpi = runDir + "/wrf_hydro_" + int(statusData.jobID) + "_" + str(gageID) + ".exe"
+    exeMpi = runDir + "/wrf_hydro_" + str(int(statusData.jobID)) + "_" + str(gageID) + ".exe"
     if not os.path.isdir(workDir):
         statusData.errMsg = "ERROR: " + workDir + " not found."
         raise Exception()
