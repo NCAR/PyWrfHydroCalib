@@ -236,7 +236,7 @@ def checkBasJob(jobData,gageNum):
         exeName = "wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) + ".exe"
         for proc in psutil.process_iter():
             if proc.name() == exeName:
-                pidActive.append(proc.id)
+                pidActive.append(proc.pid)
         if len(pidActive) == 0:
             status = False
             print "NO JOBS FOUND"
