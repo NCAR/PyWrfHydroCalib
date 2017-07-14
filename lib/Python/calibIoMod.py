@@ -304,10 +304,10 @@ def setupModels(jobData,db,args,libPathTop):
             raise
             
         # Create symbolic links necessary for model runs.
-        link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
-        link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
-        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/wrf_hydro" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) + ".exe"
         try:
             os.symlink(str(jobData.exe),link1)
             os.symlink(str(jobData.exe),link2)
