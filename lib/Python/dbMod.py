@@ -148,12 +148,12 @@ class Database(object):
                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
                  "valid_complete,acct_key,num_cores_model,num_cores_R,sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.jobData.mySQLHost,jobData.jobRunType,jobData.exe,len(jobData.gages),\
+                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
         try:
             self.conn.execute(sqlCmd)

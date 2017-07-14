@@ -33,9 +33,14 @@ def errOut(jobData):
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
-        s = smtplib.SMTP('localhost')
-        s.sendmail(jobData.email,[jobData.email],msg.as_string())
-        s.quit()
+        try:
+            s = smtplib.SMTP('localhost',1025)
+            s.sendmail(jobData.email,[jobData.email],msg.as_string())
+            s.quit()
+        except:
+            print msgContent
+            print "ERROR: Unable to send email from workflow."
+            print "SMTP on a port needs to be activated from this host machine."
     #elif jobData.slackObj:
     if jobData.slackObj:
         msg1 = "ERROR in Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
@@ -241,9 +246,14 @@ def sendMsg(jobData):
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
-        s = smtplib.SMTP('localhost')
-        s.sendmail(jobData.email,[jobData.email],msg.as_string())
-        s.quit()
+        try:
+            s = smtplib.SMTP('localhost')
+            s.sendmail(jobData.email,[jobData.email],msg.as_string())
+            s.quit()
+        except:
+            print msgContent
+            print "ERROR: Unable to send email from workflow."
+            print "SMTP on a port needs to be activated from this host machine."
     if jobData.slackObj:
         msg1 = "MESSAGE for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
