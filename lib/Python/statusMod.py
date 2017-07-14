@@ -249,7 +249,10 @@ def checkBasJob(jobData,gageNum):
             if userCheck != str(jobData.owner):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
+                status = False
                 raise
+            else:
+                status = True
             
     return status
     
