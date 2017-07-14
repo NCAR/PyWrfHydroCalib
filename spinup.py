@@ -14,7 +14,7 @@ import argparse
 import getpass
 import os
 #import subprocess
-#import pandas as pd
+import pandas as pd
 import pwd
 import numpy as np
 
@@ -112,6 +112,40 @@ def main(argv):
             statusMod.checkYsJobs(jobData)
         except:
             errMod.errOut(jobData)
+            
+    # Establish LOCK file to secure this Python program to make sure
+    # no other instances over-step here. This is mostly designed to deal
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
+    pyLockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    if os.path.isfile(pyLockPath):
+        # Either a job is still running, or was running
+        # and was killed.
+
+        print 'LOCK FILE FOUND.'
+        # Read in to get PID number
+        pidObj = pd.read_csv(pyLockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(pyLockPath)
+                fileObj = open(pyLockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
+    else:
+        print 'LOCK FILE NOT FOUND.'
+        # Write a LOCK file for this program.
+        fileObj = open(pyLockPath,'w')
+        fileObj.write('\"PID\"\n')
+        fileObj.write(str(os.getpid()))
+        fileObj.close()
     
     # Some house keeping here. If the spinup is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
@@ -261,6 +295,9 @@ def main(argv):
             jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
+            
+    # Remove LOCK file
+    os.remove(pyLockPath)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

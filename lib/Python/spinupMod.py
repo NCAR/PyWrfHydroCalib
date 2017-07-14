@@ -29,7 +29,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     """
     runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT"
     workDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
-    exeMpi = runDir + "/wrf_hydro_" + str(int(statusData.jobID)) + "_" + str(gageID) + ".exe"
     if not os.path.isdir(workDir):
         statusData.errMsg = "ERROR: " + workDir + " not found."
         raise Exception()
@@ -75,6 +74,16 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         
     # Create path to LOCK file if neeced
     lockPath = workDir + "/RUN.LOCK"
+    
+    # If the LOCK file is present, report this and lock things up.
+    if os.path.isfile(lockPath):
+        keySlot[basinNum] = -1.0
+        keyStatus = -1.0
+        runFlag = False
+        statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " Is locked. " + \
+                            "Please remove: " + lockPath + " before continuing."
+        errMod.sendMsg(statusData)
+                            
     
     if keyStatus == 1.0:
         # Model has already completed

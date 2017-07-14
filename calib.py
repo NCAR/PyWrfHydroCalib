@@ -88,9 +88,8 @@ def main(argv):
         
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here. This is mostly designed to deal
-    # with nohup processes being kicked off Yellowstone login nodes arbitrarily.
-    # We need to continuously be kicking this off from a cronjob to keep things
-    # flowing.
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
     lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
     if os.path.isfile(lockPath):
         # Either a job is still running, or was running
