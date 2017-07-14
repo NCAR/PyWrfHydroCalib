@@ -52,6 +52,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 generateBsubScript(statusData,int(gageID),runDir,gageMeta)
             except:
                 raise
+    if statusData.jobRunType == 4:
+        # If run script doesn't exist, create it here.
+        runScript = runDir + "/run_NWM.sh"
+        if not os.path.isfile(runScript):
+            try:
+                generateMpiScript(statusData,int(gageID),runDir,gageMeta)
+            except:
+                raise
     
     # Calculate datetime objects
     begDate = statusData.bSpinDate
@@ -200,7 +208,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_NWM.sh"
         if statusData.jobRunType == 4:
-            cmd = "mpiexec -n " + str(statusData.nCoresMod) + " " + exeMpi
+            cmd = "./" + runDir + "/run_NWM.sh"
         try:
             print cmd
             subprocess.call(cmd,shell=True)
@@ -244,7 +252,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_NWM.sh"
         if statusData.jobRunType == 4:
-            cmd = "mpiexec -n " + str(statusData.nCoresMod) + " " + exeMpi
+            cmd = "./" + runDir + "/run_NWM.sh"
         try:
             print cmd
             subprocess.call(cmd,shell=True)
@@ -298,6 +306,30 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateMpiScript(jobData,gageID,runDir,gageMeta):
+    """
+    Generic function to create a run script that will use mpiexec to execute
+    the model.
+    """
+    
+    outFile = runDir + "/run_NWM.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        inStr = 'cd + ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
+        str(jobData.jobID) + '_' + str(gageID) + '.exe\n'
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
