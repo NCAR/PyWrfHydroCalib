@@ -89,6 +89,7 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
     
+    print 'blah again'
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
     if not os.path.isfile(configPath):
