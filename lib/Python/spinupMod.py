@@ -208,7 +208,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_NWM.sh"
         if statusData.jobRunType == 4:
-            cmd = "./" + runDir + "/run_NWM.sh"
+            cmd = runDir + "/run_NWM.sh"
         try:
             print cmd
             subprocess.call(cmd,shell=True)
@@ -252,7 +252,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_NWM.sh"
         if statusData.jobRunType == 4:
-            cmd = "./" + runDir + "/run_NWM.sh"
+            cmd = runDir + "/run_NWM.sh"
         try:
             print cmd
             subprocess.call(cmd,shell=True)
@@ -326,11 +326,20 @@ def generateMpiScript(jobData,gageID,runDir,gageMeta):
     try:
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
-        inStr = 'cd + ' + runDir + '\n'
+        inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
         str(jobData.jobID) + '_' + str(gageID) + '.exe\n'
+        fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+    
+    # Make the file an executable.
+    cmd = "chmod +x " + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
