@@ -193,7 +193,7 @@ def checkBasJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    if jobData.jobRunType == 4:
+    if jobData.jobRunType == 1:
         #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
@@ -239,7 +239,9 @@ def checkBasJob(jobData,gageNum):
                 pidActive.append(proc.id)
         if len(pidActive) == 0:
             status = False
+            print "NO JOBS FOUND"
         else:
+            print "JOBS FOUND"
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid

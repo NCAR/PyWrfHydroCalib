@@ -202,6 +202,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 4:
             cmd = "mpiexec -n" + str(statusData.nCoresMod) + " " + exeMpi
         try:
+            print cmd
             subprocess.call(cmd,shell=True)
         except:
             statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
@@ -245,6 +246,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 4:
             cmd = "mpiexec -n" + str(statusData.nCoresMod) + " " + exeMpi
         try:
+            print cmd
             subprocess.call(cmd,shell=True)
         except:
             statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])

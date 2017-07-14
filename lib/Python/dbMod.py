@@ -268,7 +268,6 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID)
             raise
             
-        print results
         if not results:
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID)
             raise Exception()
