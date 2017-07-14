@@ -81,7 +81,6 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
         
-    print 'blah'
     # Extract job data from database
     try:
         db.jobStatus(jobData)
@@ -89,7 +88,6 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
     
-    print 'blah again'
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
     if not os.path.isfile(configPath):
@@ -109,11 +107,12 @@ def main(argv):
         errMod.errOut(jobData)
     
     print 'alaskjdf'
-    # Extract active jobs for job owner
-    try:
-        statusMod.checkYsJobs(jobData)
-    except:
-        errMod.errOut(jobData)
+    if staticData.runJobType == 1:
+        # Extract active jobs for job owner
+        try:
+            statusMod.checkYsJobs(jobData)
+        except:
+            errMod.errOut(jobData)
     
     print 'aslkdfj'
     # Some house keeping here. If the spinup is already complete, throw an error. 
