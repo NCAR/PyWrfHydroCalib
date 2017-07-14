@@ -200,7 +200,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_NWM.sh"
         if statusData.jobRunType == 4:
-            cmd = "mpiexec -n" + str(statusData.nCoresMod) + " " + exeMpi
+            cmd = "mpiexec -n " + str(statusData.nCoresMod) + " " + exeMpi
         try:
             print cmd
             subprocess.call(cmd,shell=True)
@@ -244,7 +244,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_NWM.sh"
         if statusData.jobRunType == 4:
-            cmd = "mpiexec -n" + str(statusData.nCoresMod) + " " + exeMpi
+            cmd = "mpiexec -n " + str(statusData.nCoresMod) + " " + exeMpi
         try:
             print cmd
             subprocess.call(cmd,shell=True)
