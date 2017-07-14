@@ -166,7 +166,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(' ! for extract greenfrac\n')
         inStr = ' GEO_STATIC_FLNM = "' + str(gageData.geoFile) + '"' + '\n'
         fileObj.write(inStr)
-        fileObj.write('/')
+        fileObj.write('/\n')
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + pathOut
