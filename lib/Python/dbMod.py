@@ -260,7 +260,7 @@ class Database(object):
             raise
             
         sqlCmd = "select * from Job_Meta where jobID='" + str(jobData.jobID) + "';"
-        
+        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchone()
@@ -301,19 +301,19 @@ class Database(object):
         jobData.slUser = results[26]
         
         # Initiate Slack if fields are not MISSING
-        if jobData.slChan != "MISSING":
-            #jobData.email = None
-            try:
-                jobData.slackObj = Slacker(str(jobData.slToken))
-            except:
-                jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
-                                 str(jobData.slUser) + " channel: " + str(jobData.slChan)
-                raise
-        else:
-            jobData.slChan = None
-            jobData.slToken = None
-            jobData.slUser = None
-            jobData.slackObj = None
+        #if jobData.slChan != "MISSING":
+        #    #jobData.email = None
+        #    try:
+        #        jobData.slackObj = Slacker(str(jobData.slToken))
+        #    except:
+        #        jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
+        #                         str(jobData.slUser) + " channel: " + str(jobData.slChan)
+        #        raise
+        #else:
+        jobData.slChan = None
+        jobData.slToken = None
+        jobData.slUser = None
+        jobData.slackObj = None
         
     def updateJobOwner(self,jobData,newOwner,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag):
         """
