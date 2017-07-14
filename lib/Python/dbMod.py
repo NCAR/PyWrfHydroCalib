@@ -295,7 +295,7 @@ class Database(object):
         jobData.acctKey = results[15]
         jobData.nCoresMod = int(results[16])
         jobData.nCoresR = int(results[17])
-        jobData.host = int(results[18])
+        jobData.host = str(results[18])
         jobData.jobRunType = int(results[19])
         print '19'
         jobData.exe = results[20]
