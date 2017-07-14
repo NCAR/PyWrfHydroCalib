@@ -214,7 +214,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             if statusData.jobRunType == 1:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4:
-                subprocess.Popen([cmd],close_fds=True)
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         except:
             statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
             raise
@@ -261,7 +261,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             if statusData.jobRunType == 1:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4:
-                subprocess.Popen([cmd],close_fds=True)
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         except:
             statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
             raise
