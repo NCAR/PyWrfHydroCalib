@@ -19,8 +19,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
-    number of cores to use, etc will be used to compose a BSUB
-    submision script. This function will walk the run directory 
+    number of cores to use, etc will be used to compose a BSUB/QSUB
+    submision script or run mpiexec/mpirun. This function will walk the run directory 
     to determine where the model left off. If no restart files exist,
     then the function will assume the model has not ran at all. Both
     the LSM and hydro restart files must be present in order for the

@@ -20,7 +20,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
     number of cores to use, etc will be used to compose a BSUB
-    submision script. This function will walk the run directory 
+    submision script,execute mpiexec/mpirun, or a QSUB script. 
+    This function will walk the run directory 
     to determine where the model left off. If no restart files exist,
     then the function will assume the model has not ran at all. Both
     the LSM and hydro restart files must be present in order for the
@@ -28,6 +29,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     """
     runDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT"
     workDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP"
+    exeMpi = runDir + "/wrf_hydro_" + int(statusData.jobID) + "_" + str(gageID) + ".exe"
     if not os.path.isdir(workDir):
         statusData.errMsg = "ERROR: " + workDir + " not found."
         raise Exception()
@@ -42,13 +44,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     except:
         raise
         
-    # If BSUB run script doesn't exist, create it here.
-    bsubFile = runDir + "/run_NWM.sh"
-    if not os.path.isfile(bsubFile):
-        try:
-            generateRunScript(statusData,int(gageID),runDir,gageMeta)
-        except:
-            raise
+    if statusData.jobRunType == 1:
+        # If BSUB run script doesn't exist, create it here.
+        bsubFile = runDir + "/run_NWM.sh"
+        if not os.path.isfile(bsubFile):
+            try:
+                generateBsubScript(statusData,int(gageID),runDir,gageMeta)
+            except:
+                raise
     
     # Calculate datetime objects
     begDate = statusData.bSpinDate
@@ -194,7 +197,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 raise
                 
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + runDir + "/run_NWM.sh"
+        if statusData.jobRunType == 4:
+            cmd = "mpiexec -n" + str(statusData.nCoresMod) + " " + exeMpi
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -234,7 +240,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 raise
                 
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + runDir + "/run_NWM.sh"
+        if statusData.jobRunType == 4:
+            cmd = "mpiexec -n" + str(statusData.nCoresMod) + " " + exeMpi
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -244,7 +253,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keyStatus = 0.5
         keySlot[basinNum] = 0.5
                 
-def generateRunScript(jobData,gageID,runDir,gageMeta):
+def generateBsubScript(jobData,gageID,runDir,gageMeta):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model.

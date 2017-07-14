@@ -19,8 +19,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
-    number of cores to use, etc will be used to compose BSUB
-    submision scripts. This function will walk the run directory 
+    number of cores to use, etc will be used to compose BSUB/QSUB
+    submision scripts, or run mpiexec/mpirun. 
+    This function will walk the run directory 
     to determine where the model left off. If no restart files exist,
     then the function will assume the model has not ran at all. Both
     the LSM and hydro restart files must be present in order for the
@@ -50,32 +51,33 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     except:
         raise
         
-    # Generate BSUB file necessary for running R calibration/analysis
-    # code.
-    try:
-        generateCalibScript(statusData,int(gageID),runDir,workDir)
-    except:
-        raise
+    if statusData.jobRunType == 1:
+        # Generate BSUB file necessary for running R calibration/analysis
+        # code.
+        try:
+            generateBsubCalibScript(statusData,int(gageID),runDir,workDir)
+        except:
+            raise
         
-    # If BSUB run script doesn't exist, create it here.
-    bsubFile = runDir + "/run_NWM.sh"
-    bsubFileRst = runDir + "/run_NWM_Restart.sh"
-    if os.path.isfile(bsubFile):
-        # Going to override for now. 
-        os.remove(bsubFile)
-    if os.path.isfile(bsubFileRst):
-        # Going to override for now. 
-        os.remove(bsubFileRst)
+        # If BSUB run script doesn't exist, create it here.
+        bsubFile = runDir + "/run_NWM.sh"
+        bsubFileRst = runDir + "/run_NWM_Restart.sh"
+        if os.path.isfile(bsubFile):
+            # Going to override for now. 
+            os.remove(bsubFile)
+        if os.path.isfile(bsubFileRst):
+            # Going to override for now. 
+            os.remove(bsubFileRst)
         
-    # Create new BSUB files
-    try:
-        generateRunScript(statusData,int(gageID),runDir)
-    except:
-        raise
-    try:
-        generateRestartRunScript(statusData,int(gageID),runDir)
-    except:
-        raise
+        # Create new BSUB files
+        try:
+            generateBsubScript(statusData,int(gageID),runDir)
+        except:
+            raise
+        try:
+            generateRestartBsubScript(statusData,int(gageID),runDir)
+        except:
+            raise
     
     
     # Calculate datetime objects
@@ -794,7 +796,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         raise
     
                 
-def generateRestartRunScript(jobData,gageID,runDir):
+def generateRestartBsubScript(jobData,gageID,runDir):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model. This run script is used specifically to restart
@@ -835,7 +837,7 @@ def generateRestartRunScript(jobData,gageID,runDir):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateRunScript(jobData,gageID,runDir):
+def generateBsubScript(jobData,gageID,runDir):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model. For this particular BSUB script, we clean out
@@ -945,7 +947,7 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         jobData.errMsg = "ERROR: Failure to create: " + outPath
         raise        
         
-def generateCalibScript(jobData,gageID,runDir,workDir):
+def generateBsubCalibScript(jobData,gageID,runDir,workDir):
     """
     Generic Function function to create BSUB script for running R
     calibration routines. These jobs will be shorter than 
