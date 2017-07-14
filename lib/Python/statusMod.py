@@ -38,6 +38,7 @@ class statusMeta:
         self.nCoresMod = []
         self.nCoresR = []
         self.jobRunType = []
+        self.host = []
         self.acctKey = []
         self.exe = []
         self.errMsg = []

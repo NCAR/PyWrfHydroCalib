@@ -290,14 +290,15 @@ class Database(object):
         jobData.acctKey = results[15]
         jobData.nCoresMod = int(results[16])
         jobData.nCoresR = int(results[17])
-        jobData.jobRunType = int(results[18])
-        jobData.exe = results[19]
-        jobData.nGages = int(results[20])
-        jobData.owner = results[21]
-        jobData.email = results[22]
-        jobData.slChan = results[23]
-        jobData.slToken = results[24]
-        jobData.slUser = results[25]
+        jobData.host = int(results[18])
+        jobData.jobRunType = int(results[19])
+        jobData.exe = results[20]
+        jobData.nGages = int(results[21])
+        jobData.owner = results[22]
+        jobData.email = results[23]
+        jobData.slChan = results[24]
+        jobData.slToken = results[25]
+        jobData.slUser = results[26]
         
         # Initiate Slack if fields are not MISSING
         if jobData.slChan != "MISSING":

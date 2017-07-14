@@ -318,6 +318,20 @@ def setupModels(jobData,db,args,libPathTop):
             jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
             raise
             
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro.exe"
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro.exe"
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro.exe"
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/wrf_hydro.exe"
+        try:
+            os.symlink(str(jobData.exe),link1)
+            os.symlink(str(jobData.exe),link2)
+            os.symlink(str(jobData.exe),link3)
+            os.symlink(str(jobData.exe),link4)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
+            raise
+            
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/CHANPARM.TBL"

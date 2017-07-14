@@ -53,8 +53,7 @@ def main(argv):
         print "ERROR: Unable to authenticate credentials for database."
         sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib'
-    #jobData.dbPwd = 'CalibrateGoodTimes'    
+    jobData.dbUName = 'NWM_Calib_rw'
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:

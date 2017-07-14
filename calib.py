@@ -10,7 +10,7 @@
 
 import sys
 import argparse
-#import getpass
+import getpass
 import os
 import time
 import pwd
@@ -41,6 +41,8 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration spinup.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
     
     args = parser.parse_args()
     
@@ -53,18 +55,21 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    # COMMENTED OUT FOR V1.2
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
     jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    
+    if not args.hostname:
+        # We will assume localhost for MySQL DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+    jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
