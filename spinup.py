@@ -81,6 +81,7 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
         
+    print 'blah'
     # Extract job data from database
     try:
         db.jobStatus(jobData)
@@ -106,12 +107,14 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
+    print 'alaskjdf'
     # Extract active jobs for job owner
     try:
         statusMod.checkYsJobs(jobData)
     except:
         errMod.errOut(jobData)
     
+    print 'aslkdfj'
     # Some house keeping here. If the spinup is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
