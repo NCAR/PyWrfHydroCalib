@@ -369,6 +369,12 @@ def checkConfig(parser):
         print "ERROR: Invalid jobRunType specified."
         raise Exception()
         
+    # TEMPORARY BLOCK. We have tested BSUB/MPIEXEC successfully, but not other options.
+    # For now, will restrict the workflow to bsub/mpiexec. 
+    if check == 2 or check == 3 or check == 5 or check == 6:
+        print "ERROR: Only jobRunType of 1 and 4 supported at this time."
+        raise Exception()
+        
     check = int(parser.get('logistics','nCoresR'))
     if not check:
         print "ERROR: Number of R Cores to use not specified."

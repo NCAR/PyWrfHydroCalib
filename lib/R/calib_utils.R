@@ -1,5 +1,19 @@
 ###----------------- UTILITIES -------------------###
 
+# Functions migrated from rwrfhydro to remove rwrfhydro dependency for user.
+
+CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
+  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone),
+                                       tz=timeZone), "days"))
+  return(timeDate)
+}
+
+ReadRouteLink <- function(linkFile) {
+     rtLinks <- GetNcdfFile(linkFile, variables=c("time"), exclude=TRUE, quiet=TRUE)
+     rtLinks$site_no <- stringr::str_trim(rtLinks$gages)
+     rtLinks
+}
+
 # Namelist read function
 
 ReadNamelist <- function(nlist) {
@@ -10,7 +24,8 @@ ReadNamelist <- function(nlist) {
 # Convert to daily flow
 
 Convert2Daily <- function(str) {
-   str$Date <- rwrfhydro::CalcDateTrunc(str$POSIXct)
+   #str$Date <- rwrfhydro::CalcDateTrunc(str$POSIXct)
+   str$Date <- CalcDateTrunc(str$POSIXct)
    setkey(str, Date)
    str.d <- str[, list(q_cms=mean(q_cms, na.rm=TRUE)), by = "Date"]
    str.d$POSIXct <- as.POSIXct(paste0(str.d$Date, " 00:00"), tz="UTC")

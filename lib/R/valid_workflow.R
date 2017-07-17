@@ -4,7 +4,7 @@ namelistFile <- args[1]
 #namelistFile <- "validScript.R"
 
 .libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
-library(rwrfhydro)
+#library(rwrfhydro)
 library(data.table)
 library(ggplot2)
 library(plyr)
