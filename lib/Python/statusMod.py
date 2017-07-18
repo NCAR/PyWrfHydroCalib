@@ -326,45 +326,70 @@ def checkCalibJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    csvPath = "./BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
-        raise
+    if jobData.jobRunType == 1:
+        csvPath = "./BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
+        cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+            raise
     
-    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
-               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    try:
-        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
-    except:
-        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        raise
+        colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+                   'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+        try:
+            jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
         
-    # Delete temporary CSV file
-    try:
-        os.remove(csvPath)
-    except:
-        jobData.errMsg = "ERROR: Failure to remove: " + csvPath
-        raise
+        # Delete temporary CSV file
+        try:
+            os.remove(csvPath)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + csvPath
+            raise
         
-    # Compile expected job name that the job should occupy.
-    expName = "NWM_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        # Compile expected job name that the job should occupy.
+        expName = "NWM_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
     
-    lenJobs = len(jobs.JOBID)
+        lenJobs = len(jobs.JOBID)
 
-    # Assume no jobs for basin are being ran, unless found in the data frame.
-    status = False
-    
-    if lenJobs == 0:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
-    else:
-        # Find if any jobs for this basin are being ran.
-        testDF = jobs.query("JOB_NAME == '" + expName + "'")
-        if len(testDF) != 0:
-            status = True
-            
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            testDF = jobs.query("JOB_NAME == '" + expName + "'")
+            if len(testDF) != 0:
+                status = True
+    
+    if jobData.jobRunType == 4:
+        # We are running via mpiexec
+        pidActive = []
+        exeName = "CalibCmd_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) + ".sh"
+        for proc in psutil.process_iter():
+            if proc.name() == exeName:
+                pidActive.append(proc.pid)
+        if len(pidActive) == 0:
+            status = False
+            print "NO CALIB JOBS FOUND"
+        else:
+            print "CALIB JOBS FOUND"
+            # Ensure these are being ran by the proper user.
+            proc_stat_file = os.stat('/proc/%d' % pidActive[0])
+            uid = proc_stat_file.st_uid
+            userCheck = pwd.getpwuid(uid)[0]
+            if userCheck != str(jobData.owner):
+                jobData.errMsg = "ERROR: " + exeName + " is being ran by : " + \
+                userCheck + " When it should be ran by: " + jobData.owner
+                status = False
+                raise
+            else:
+                status = True
+                
     return status
     
 def checkBasJobValid(jobData,gageNum,modRun):

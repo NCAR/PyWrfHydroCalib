@@ -78,8 +78,32 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             generateRestartBsubScript(statusData,int(gageID),runDir)
         except:
             raise
+    if statusData.jobRunType == 4:
+        # Generate mpiexec run script and R submission script for running
+        # calibration/analysis code.
+        try:
+            generateMpiexecCalibScript(statusData,int(gageID),runDir,workDir)
+        except:
+            raise
+            
+        # If run script doesn't exist, create it here.
+        runFile = runDir + "/run_NWM.sh"
+        rstFile = runDir + "/run_NWM_Restart.sh"
+        if os.path.isfile(runFile):
+            os.remove(runFile)
+        if os.path.isfile(rstFile):
+            os.remove(rstFile)
+            
+        try:
+            generateMpiexecScript(statusData,int(gageID),runDir)
+        except:
+            raise
+        try:
+            generateMpiexecRstScript(statusData,int(gageID),runDir)
+        except:
+            raise
     
-    
+    sys.exit(1)
     # Calculate datetime objects
     begDate = statusData.bCalibDate
     endDate = statusData.eCalibDate
@@ -657,12 +681,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM_Restart.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + runDir + "/run_NWM_Restart.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = runDir + "/run_NWM_Restart.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
@@ -712,12 +744,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + runDir + "/run_NWM.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = runDir + "/run_NWM.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.5
         keySlot[basinNum,iteration] = 0.5
@@ -751,12 +791,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         # Fire off calibration programs.
-        cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = workDir + "/run_NWM_CALIB.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.25
         keySlot[basinNum,iteration] = 0.25
@@ -779,12 +827,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
             
         # Fire off calibration program.
-        cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = workDir + "/run_NWM_CALIB.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.90
         keySlot[basinNum,iteration] = 0.90
@@ -835,6 +891,40 @@ def generateRestartBsubScript(jobData,gageID,runDir):
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateMpiexecRstScript(jobData,gageID,runDir):
+    """
+    Generic function to create a run script that will be called by mpiexec
+    to execute the model. This script is used specifically to restart the
+    model instead of removing all output prior to running the model.
+    """
+    
+    outFile = runDir + "/run_NWM_Restart.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
+        str(jobData.jobID) + '_' + str(gageID) + '.exe\n'
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+    # Make the file an executable
+    cmd = "chmod +x " + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
 def generateBsubScript(jobData,gageID,runDir):
@@ -893,6 +983,44 @@ def generateBsubScript(jobData,gageID,runDir):
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateMpiexecScript(jobData,gageID,runDir):
+    """
+    Generic function to create a run script that will be called by mpiexec
+    to execute the model. For this particular script, we clean out all prior
+    moel output in preparation for the next iteration.
+    """
+    
+    outFile = runDir + "/run_NWM.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
+        str(jobData.jobID) + '_' + str(gageID) + '.exe\n'
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = 'Failure to create: ' + outFile
+        raise
+        
+    # Make the file an executable.
+    cmd = "chmod +x " + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
 def generateRScript(jobData,gageMeta,gageNum,iteration):
@@ -1016,6 +1144,76 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
     except:
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
+        
+def generateMpiexecCalibScript(jobData,gageID,runDir,workDir):
+    """
+    Generic function to create mpiexec script for running R calibration
+    routines. This function also creates the shell script that will execute
+    R and Python to modify parameters. 
+    """
+    
+    outFile1 = workDir + "/run_NWM_CALIB.sh"
+    
+    if os.path.isfile(outFile1):
+        # We are just gonig to manually over-write the file everytime to be safe.
+        os.remove(outFile1)
+        
+    if not os.path.isfile(outFile1):
+        try:
+            fileObj = open(outFile1,'w')
+            fileObj.write('#!/bin/bash\n')
+            inStr = 'cd ' + workDir + '\n'
+            fileObj.write(inStr)
+            inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./calibCmd' + \
+            str(jobData.jobID) + '_' + str(gageID) +'.sh\n'
+            fileObj.write(inStr)
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create " + outFile1
+            raise
+            
+    # Make the file an executable.
+    cmd = "chmod +x " + outFile1
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile1 + " to an executable."
+        raise
+            
+    outFile2 = workDir + '/calibCmd.sh'
+    outLink2 = workDir + '/calibCmd' + str(jobData.jobID) + '_' + str(gageID) + '.sh'
+    
+    runRProgram = workDir + '/calib_workflow.R'
+    srcScript = workDir + '/calibScript.R'
+    
+    if not os.path.isfile(outFile2):
+        # This is the file that will run R code. First to generate params_new.txt and
+        # params_stats.txt. Python is called next, which will generate new parameters.
+        try:
+            fileObj = open(outFile2,'w')
+            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('exit\n')
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile2
+            raise
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile2
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
+        raise
+        
+    # Make symbolic link to newly created executable, which will be called by
+    # mpiexec.
+    if not os.path.islink(outLink2):
+        try:
+            os.symlink(outFile2,outLink2)
+        except:
+            jobData.errMsg = "ERROR: Failure to create symbolic link: " + outLink2
+            raise
         
 def linkToRst(statusData,gage,runDir):
     """

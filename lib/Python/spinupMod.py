@@ -219,7 +219,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 4:
             cmd = runDir + "/run_NWM.sh"
         try:
-            print cmd
             if statusData.jobRunType == 1:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4:

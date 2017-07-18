@@ -56,9 +56,6 @@ def main(argv):
                         help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
                         
     args = parser.parse_args()
-    print args
-    print args.inCSV
-    print args.hostname
     
     # Obtain the NWM_Calib_rw username password. 
     # NOTE YOU MUST INITIALIZE THE MYSQL DB FIRST BY
@@ -79,8 +76,6 @@ def main(argv):
     else:
         hostTmp = str(args.hostname)
         
-    print str(hostTmp)
-    print str(pwdTmp)
     # Connect to the database
     try:
         db = MySQLdb.connect(str(hostTmp),'NWM_Calib_rw',str(pwdTmp),'NWM_Calib_DB')

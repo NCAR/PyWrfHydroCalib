@@ -122,7 +122,6 @@ def main(argv):
         # Either a job is still running, or was running
         # and was killed.
 
-        print 'LOCK FILE FOUND.'
         # Read in to get PID number
         pidObj = pd.read_csv(pyLockPath)
         pidCheck = int(pidObj.PID[0])
@@ -140,7 +139,6 @@ def main(argv):
                 fileObj.write(str(os.getpid()))
                 fileObj.close()
     else:
-        print 'LOCK FILE NOT FOUND.'
         # Write a LOCK file for this program.
         fileObj = open(pyLockPath,'w')
         fileObj.write('\"PID\"\n')
