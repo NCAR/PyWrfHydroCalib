@@ -11,6 +11,7 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
+import sys
 
 import warnings
 warnings.filterwarnings("ignore")
