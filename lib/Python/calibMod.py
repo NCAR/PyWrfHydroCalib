@@ -837,8 +837,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if statusData.jobRunType == 4:
             cmd = workDir + "/run_NWM_CALIB.sh"
             print cmd
-            p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            p2.communicate()
+            p2 = subprocess.Popen([cmd],stdout=subprocess.PIPE)
+            #p2.communicate()
             sys.exit(1)
             #try:
             #    print cmd
