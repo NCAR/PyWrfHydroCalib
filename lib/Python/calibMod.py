@@ -838,6 +838,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             cmd = workDir + "/run_NWM_CALIB.sh"
             print cmd
             p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            (stdout,stderr) = p2.communicate()
+            print stdout
+            print stderr
             sys.exit(1)
             #try:
             #    print cmd
