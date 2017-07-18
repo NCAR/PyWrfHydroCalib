@@ -3,7 +3,7 @@ args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- args[1]
 #mCurrent <- args[2]
 
-.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
+#.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
 #library(rwrfhydro)
 library(data.table)
 library(ggplot2)
