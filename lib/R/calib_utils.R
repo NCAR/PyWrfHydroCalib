@@ -1,6 +1,13 @@
 ###----------------- UTILITIES -------------------###
 
 # Functions migrated from rwrfhydro to remove rwrfhydro dependency for user.
+
+NamedList <- function(theNames) {
+  theList <- as.list(theNames)
+  names(theList)<- theNames
+  theList
+}
+
 GetNcdfFile <- function(file, variables=NULL, exclude=FALSE, quiet=FALSE, flip2D=TRUE){
   
   if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
