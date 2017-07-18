@@ -1,6 +1,55 @@
 ###----------------- UTILITIES -------------------###
 
 # Functions migrated from rwrfhydro to remove rwrfhydro dependency for user.
+GetNcdfFile <- function(file, variables=NULL, exclude=FALSE, quiet=FALSE, flip2D=TRUE){
+  
+  if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
+
+  if(!quiet) ncdump(file)
+    
+  nc <- ncdf4::nc_open(file)
+  
+  # Deal with variables asked for
+  varsInFile <- names(nc$var)
+  dimVarsInFile <- names(nc$dim)
+  whDimVarsVals <- plyr::laply(nc$dim, '[[', 'create_dimvar')
+  if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
+  
+  returnVars <- 
+  if(!is.null(variables)) {
+    varsNotInFile <- setdiff(variables, varsInFile)
+    if(length(varsNotInFile)) 
+      warning(paste0('The following variables were not found in the file', paste(varsNotInFile, collapse=', ')))
+    if(!exclude) intersect(variables, varsInFile) else setdiff(varsInFile, variables)
+  } else varsInFile
+  
+  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar)
+  outList <- plyr::llply(NamedList(returnVars), doGetVar)
+
+  doGetVarAtt <- function(theVar) ncdf4::ncatt_get( nc, varid=theVar )
+  attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
+  
+  natts <- nc$natts
+  if( natts  > 0 ) attList$global <- ncdf4::ncatt_get( nc, 0 )
+
+  ncdf4::nc_close(nc)
+  
+  nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
+  
+  if(flip2D & any(nDims==2)){
+    wh2D <- which(nDims==2)
+    for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
+  }
+    
+  if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
+  
+  vecLen <- plyr::laply(outList[-10], length)
+  if( all(vecLen==vecLen[1]) ) outList <- as.data.frame(outList)
+
+  if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
+  
+  outList
+}
 
 CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
   timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone),
