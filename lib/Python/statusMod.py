@@ -369,7 +369,7 @@ def checkCalibJob(jobData,gageNum):
     if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
-        exeName = "CalibCmd_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) + ".sh"
+        exeName = "CalibCmd" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) + ".sh"
         print exeName
         for proc in psutil.process_iter():
             if proc.name() == exeName:
