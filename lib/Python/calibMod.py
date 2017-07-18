@@ -839,6 +839,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             try:
                 print cmd
                 p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                print 'blah'
             except:
                 statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
