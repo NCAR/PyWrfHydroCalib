@@ -839,7 +839,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             cmd = workDir + "/run_NWM_CALIB.sh"
             print cmd
             p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            time.sleep(10)
+            time.sleep(5)
             #dump = p2.communicate()
             #p2 = subprocess.Popen([cmd],shell=True,close_fds=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             #sys.exit(1)
@@ -893,7 +893,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             #dump = p3.communicate()
             try:
                 p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                time.sleep(10)
+                time.sleep(5)
             #    dump = p2.communicate()
             #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             except:
