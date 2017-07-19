@@ -845,7 +845,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             #    print cmd
                 p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 #print 'a'
-                #p2.communicate
+                p2.communicate
                 #print 'b'
                 #sys.exit(1)
             #    subprocess.call(cmd,shell=True)
@@ -892,6 +892,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             #dump = p3.communicate()
             try:
                 p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p3.communicate
             #    dump = p2.communicate()
             #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             except:
