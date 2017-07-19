@@ -837,20 +837,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if statusData.jobRunType == 4:
             cmd = workDir + "/run_NWM_CALIB.sh"
             print cmd
-            p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            dump = p2.communicate()
+            #p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            #dump = p2.communicate()
             #p2 = subprocess.Popen([cmd],shell=True,close_fds=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             #sys.exit(1)
-            #try:
+            try:
             #    print cmd
-            #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             #    subprocess.call(cmd,shell=True)
             #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             #    print 'blah'
             #    sys.exit(1)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
-            #    raise
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.25
         keySlot[basinNum,iteration] = 0.25
@@ -884,15 +884,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if statusData.jobRunType == 4:
             cmd = workDir + "/run_NWM_CALIB.sh"
             print cmd
-            p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            dump = p3.communicate()
-            #try:
-            #    p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            #p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            #dump = p3.communicate()
+            try:
+                p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             #    dump = p2.communicate()
             #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
-            #    raise
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.90
         keySlot[basinNum,iteration] = 0.90
@@ -1243,6 +1243,7 @@ def generateMpiexecCalibScript(jobData,gageID,runDir,workDir):
         # params_stats.txt. Python is called next, which will generate new parameters.
         try:
             fileObj = open(outFile2,'w')
+            fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
             fileObj.write('exit\n')
