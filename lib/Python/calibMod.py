@@ -973,7 +973,7 @@ def generateMpiexecRstScript(jobData,gageID,runDir):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
-        str(jobData.jobID) + '_' + str(gageID) + '.exe\n'
+        str(jobData.jobID) + '_' + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1069,7 +1069,7 @@ def generateMpiexecScript(jobData,gageID,runDir):
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
-        str(jobData.jobID) + '_' + str(gageID) + '.exe\n'
+        str(jobData.jobID) + '_' + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1226,7 +1226,7 @@ def generateMpiexecCalibScript(jobData,gageID,runDir,workDir):
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./calibCmd' + \
-            str(jobData.jobID) + '_' + str(gageID) +'.sh\n'
+            str(jobData.jobID) + '_' + str(gageID) +'\n'
             fileObj.write(inStr)
             fileObj.close
         except:
@@ -1242,7 +1242,7 @@ def generateMpiexecCalibScript(jobData,gageID,runDir,workDir):
         raise
             
     outFile2 = workDir + '/calibCmd.sh'
-    outLink2 = workDir + '/calibCmd' + str(jobData.jobID) + '_' + str(gageID) + '.sh'
+    outLink2 = workDir + '/calibCmd' + str(jobData.jobID) + '_' + str(gageID) 
     
     runRProgram = workDir + '/calib_workflow.R'
     srcScript = workDir + '/calibScript.R'
