@@ -323,7 +323,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.genMsg = "ERROR: 1st Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
                 # Scrub calib-related files that were created as everything will need to be re-ran.
-                sys.exit(1)
                 try:
                     errMod.scrubParams(statusData,runDir)
                 except:
@@ -432,7 +431,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         keyStatus = -0.10
                         runFlag = False
                         runCalib = False
-                        sys.exit(1)
                     else:
                         print "CALIB CODE FAILED"
                         # The main calib failed.
@@ -840,25 +838,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 raise
         if statusData.jobRunType == 4:
             cmd = workDir + "/run_NWM_CALIB.sh"
-            print cmd
-            p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            time.sleep(5)
-            #dump = p2.communicate()
-            #p2 = subprocess.Popen([cmd],shell=True,close_fds=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            #sys.exit(1)
-            #try:
-                #p2 = subprocess.check_call([cmd])
-                #print 'a'
-                #p2.communicate
-                #print 'b'
-                #sys.exit(1)
-            #    subprocess.call(cmd,shell=True)
-            #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            #    print 'blah'
-            #    sys.exit(1)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
-            #    raise
+            try:
+                p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                time.sleep(5)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.25
         keySlot[basinNum,iteration] = 0.25
@@ -891,14 +876,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 raise
         if statusData.jobRunType == 4:
             cmd = "`" + workDir + "/run_NWM_CALIB.sh`"
-            print cmd
-            #p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            #dump = p3.communicate()
             try:
                 p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 time.sleep(5)
-            #    dump = p2.communicate()
-            #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             except:
                 statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise

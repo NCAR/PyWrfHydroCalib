@@ -370,12 +370,9 @@ def checkCalibJob(jobData,gageNum):
         # We are running via mpiexec
         pidActive = []
         exeName = "calibCmd" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
-        print exeName
         for proc in psutil.process_iter():
-            print proc.name
             if proc.name() == exeName:
                 pidActive.append(proc.pid)
-        print pidActive
         if len(pidActive) == 0:
             status = False
             print "NO CALIB JOBS FOUND"
