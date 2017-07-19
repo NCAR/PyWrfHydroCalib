@@ -372,6 +372,7 @@ def checkCalibJob(jobData,gageNum):
         exeName = "calibCmd" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) + ".sh"
         print exeName
         for proc in psutil.process_iter():
+            print proc.name()
             if proc.name() == exeName:
                 pidActive.append(proc.pid)
         print pidActive
