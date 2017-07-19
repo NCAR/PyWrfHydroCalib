@@ -322,6 +322,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.genMsg = "ERROR: 1st Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
                 # Scrub calib-related files that were created as everything will need to be re-ran.
+                sys.exit(1)
                 try:
                     errMod.scrubParams(statusData,runDir)
                 except:
