@@ -12,6 +12,7 @@ import statusMod
 import errMod
 import subprocess
 import sys
+import time
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -838,6 +839,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             cmd = workDir + "/run_NWM_CALIB.sh"
             print cmd
             p2 = subprocess.Popen([str(cmd)],shell=True)
+            time.sleep(15)
             #dump = p2.communicate()
             #p2 = subprocess.Popen([cmd],shell=True,close_fds=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             #sys.exit(1)
