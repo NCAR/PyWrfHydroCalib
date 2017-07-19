@@ -233,7 +233,7 @@ def checkBasJob(jobData,gageNum):
     if jobData.jobRunType == 4:
         # We are using mpiexec.
         pidActive = []
-        exeName = "wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) + ".exe"
+        exeName = "wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
         for proc in psutil.process_iter():
             if proc.name() == exeName:
                 pidActive.append(proc.pid)
