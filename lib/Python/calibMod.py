@@ -840,7 +840,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             p2 = subprocess.Popen([str(cmd)],shell=True)
             #dump = p2.communicate()
             #p2 = subprocess.Popen([cmd],shell=True,close_fds=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            sys.exit(1)
+            #sys.exit(1)
             #try:
                 #p2 = subprocess.check_call([cmd])
                 #print 'a'
