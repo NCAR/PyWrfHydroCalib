@@ -843,9 +843,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             #sys.exit(1)
             try:
             #    print cmd
-                p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 print 'a'
-                p2.communicate
+                #p2.communicate
                 print 'b'
                 sys.exit(1)
             #    subprocess.call(cmd,shell=True)
