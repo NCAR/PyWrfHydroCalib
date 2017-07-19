@@ -837,13 +837,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if statusData.jobRunType == 4:
             cmd = workDir + "/run_NWM_CALIB.sh"
             print cmd
-            #p2 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            p2 = subprocess.Popen([str(cmd)],shell=True)
             #dump = p2.communicate()
             #p2 = subprocess.Popen([cmd],shell=True,close_fds=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            #sys.exit(1)
-            try:
-                print cmd
-                p2 = subprocess.check_call([cmd])
+            sys.exit(1)
+            #try:
+                #p2 = subprocess.check_call([cmd])
                 #print 'a'
                 #p2.communicate
                 #print 'b'
@@ -852,9 +851,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             #    #p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             #    print 'blah'
             #    sys.exit(1)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
-                raise
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             
         keyStatus = 0.25
         keySlot[basinNum,iteration] = 0.25
