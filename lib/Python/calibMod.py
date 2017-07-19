@@ -275,6 +275,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # to proceed with model simulation. 
             if os.path.isfile(calibCompleteFlag):
                 # Copy parameter files to the DEFAULT directory
+                print calibCompleteFlag
                 try:
                     calibIoMod.copyDefaultParms(statusData,runDir,gage)
                 except:
