@@ -430,6 +430,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         keyStatus = -0.10
                         runFlag = False
                         runCalib = False
+                        sys.exit(1)
                     else:
                         print "CALIB CODE FAILED"
                         # The main calib failed.
