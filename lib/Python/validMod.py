@@ -1008,7 +1008,7 @@ def generateMpiexecEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkD
         
     # Create mpiexec shell script for the evaluation job.
     try:
-        fileObj = open(fileOut)
+        fileObj = open(fileOut,'w')
         fileObj.write('#!/bin/bash\n')
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
