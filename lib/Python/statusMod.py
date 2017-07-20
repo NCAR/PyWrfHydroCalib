@@ -538,7 +538,7 @@ def checkParmGenJob(jobData,gageNum):
             testDF = jobs.query("JOB_NAME == '" + expName + "'")
             if len(testDF) != 0:
                 status = True
-    if jobData.jobRunType == 1:
+    if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
         exeName = "run_params_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
