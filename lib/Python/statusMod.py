@@ -235,8 +235,11 @@ def checkBasJob(jobData,gageNum):
         pidActive = []
         exeName = "wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
         for proc in psutil.process_iter():
-            if proc.name() == exeName:
-                pidActive.append(proc.pid)
+            try:
+                if proc.name() == exeName:
+                    pidActive.append(proc.pid)
+            except:
+                print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
             print "NO JOBS FOUND"
@@ -371,8 +374,11 @@ def checkCalibJob(jobData,gageNum):
         pidActive = []
         exeName = "calibCmd" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
         for proc in psutil.process_iter():
-            if proc.name() == exeName:
-                pidActive.append(proc.pid)
+            try:
+                if proc.name() == exeName:
+                    pidActive.append(proc.pid)
+            except:
+                print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
             print "NO CALIB JOBS FOUND"
