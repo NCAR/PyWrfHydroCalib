@@ -454,7 +454,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 raise
         if statusData.jobRunType == 4:
             print gageMeta.gage
-            cmd = bestDir + "/run_params_" + str(statusData.jobID) + "_" + str(gageMeta.gage[basinNum])
+            cmd = bestDir + "/run_params_" + str(statusData.jobID) + "_" + str(gageID)
             print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -867,7 +867,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4:
-            cmd = validWorkDir + "/run_eval_" + str(statusData.jobID) + "_" + str(gageMeta.gage[basinNum])
+            cmd = validWorkDir + "/run_eval_" + str(statusData.jobID) + "_" + str(gageID)
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 time.sleep(5)
