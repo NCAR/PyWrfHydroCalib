@@ -453,6 +453,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 raise
         if statusData.jobRunType == 4:
             cmd = bestDir + "/run_params_" + str(statusData.jobID) + "_" + str(gageMeta.gage[basinNum])
+            print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 time.sleep(5)
