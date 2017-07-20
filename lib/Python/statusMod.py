@@ -468,6 +468,7 @@ def checkBasJobValid(jobData,gageNum,modRun):
                 print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
+            print exeName
             print "NO VALID MODEL JOBS FOUND"
         else:
             print "BASIN VALID JOBS FOUND"
