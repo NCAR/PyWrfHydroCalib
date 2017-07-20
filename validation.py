@@ -277,6 +277,7 @@ def main(argv):
             # First simulation will be the control simulation with default
             # parameters specified by the user at the beginning of the calibration
             # process.
+            print "Running CONTROL"
             validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
             #try:
             #    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
@@ -284,6 +285,7 @@ def main(argv):
             #    errMod.errOut(jobData)
             time.sleep(3)
             
+            print "Running BEST"
             validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
             #try:
             #    validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)

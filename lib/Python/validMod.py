@@ -11,6 +11,7 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
+import time
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -374,13 +375,21 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             except:
                 raise
                 
-        # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            # Fire off model.
+            cmd = "bsub < " + runDir + "/run_NWM.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = runDir + "/run_NWM.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
@@ -414,25 +423,42 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             except:
                 raise
                 
-        # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            # Fire off model.
+            cmd = "bsub < " + runDir + "/run_NWM.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = runDir + "/run_NWM.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.5
         keySlot[basinNum,0] = 0.5
         
     if keyStatus == 0.0 and not runFlag:
         # We need to run parameter generation code.
-        cmd = "bsub < " + bestDir + "/run_parms.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + bestDir + "/run_parms.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = workDir + "/run_params_" + str(statusData.jobID) + "_" + str(gageMeta.gage[basinNum])
+            try:
+                p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                time.sleep(5)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.1
         keySlot[basinNum,0] = 0.1
@@ -499,26 +525,48 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Create two run scripts:
     # 1.) Job script to run the model with best parameters.
     # 2.) Job script to run the R code for evaluation/plotting.
-    bsubRunScript = runDir + "/run_NWM.sh"
-    bsubEvalScript = validWorkDir + "/run_eval.sh"
+    if statusData.jobRunType == 1:
+        bsubRunScript = runDir + "/run_NWM.sh"
+        bsubEvalScript = validWorkDir + "/run_eval.sh"
     
-    # If the files exist, remove them and re-create.
-    if os.path.isfile(bsubRunScript):
-        os.remove(bsubRunScript)
-    if os.path.isfile(bsubEvalScript):
-        os.remove(bsubEvalScript)
+        # If the files exist, remove them and re-create.
+        if os.path.isfile(bsubRunScript):
+            os.remove(bsubRunScript)
+        if os.path.isfile(bsubEvalScript):
+            os.remove(bsubEvalScript)
         
-    # Generate scripts to do evaluation on both 
-    # the control and best simulations. 
-    try:
-        generateBsubEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
-    except:
-        raise
-    # Generate the BSUB run script to run the model simulations. 
-    try:
-        generateBsubRunScript(statusData,gageID,runDir,gageMeta,'BEST')
-    except:
-        raise
+        # Generate scripts to do evaluation on both 
+        # the control and best simulations. 
+        try:
+            generateBsubEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+        except:
+            raise
+        # Generate the BSUB run script to run the model simulations. 
+        try:
+            generateBsubRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+        except:
+            raise
+    if statusData.jobRunType == 1:
+        runScript = runDir + "/run_NWM.sh"
+        evalScript = validWorkDir + "/run_eval_" + str(statusData.jobID) + "_" + str(gageID)
+    
+        # If the files exist, remove them and re-create.
+        if os.path.isfile(runScript):
+            os.remove(runScript)
+        if os.path.isfile(evalScript):
+            os.remove(evalScript)
+        
+        # Generate scripts to do evaluation on both 
+        # the control and best simulations. 
+        try:
+            generateMpiexecEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+        except:
+            raise
+        # Generate the BSUB run script to run the model simulations. 
+        try:
+            generateMpiexecRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+        except:
+            raise
         
     # Calculate datetime objects
     begDate = statusData.bValidDate
@@ -786,12 +834,20 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 raise
                 
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + runDir + "/run_NWM.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = runDir + "/run_NWM.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.5
         keySlot[basinNum,1] = 0.5
@@ -800,12 +856,21 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         # Note the control simulation needs to be completed as well in 
         # order for the evaluation code to complete. 
         # We need to run parameter generation code.
-        cmd = "bsub < " + validWorkDir + "/run_eval.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + validWorkDir + "/run_eval.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = validWorkDir + "/run_eval_" + str(statusData.jobID) + "_" + str(gageMeta.gage[basinNum])
+            try:
+                p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                time.sleep(5)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+                raise
             
         keyStatus = 0.9
         keySlot[basinNum,1] = 0.9
