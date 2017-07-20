@@ -549,7 +549,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             generateBsubRunScript(statusData,gageID,runDir,gageMeta,'BEST')
         except:
             raise
-    if statusData.jobRunType == 1:
+    if statusData.jobRunType == 4:
         runScript = runDir + "/run_NWM.sh"
         evalScript = validWorkDir + "/run_eval_" + str(statusData.jobID) + "_" + str(gageID)
     
@@ -797,13 +797,21 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 raise
                 
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
-            raise
-            
+        if statusData.jobRunType == 1:   
+            cmd = "bsub < " + runDir + "/run_NWM.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4:
+            cmd = runDir + "/run_NWM.sh"
+            try:
+                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+                
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
         keySlot[basinNum,1] = -0.5
