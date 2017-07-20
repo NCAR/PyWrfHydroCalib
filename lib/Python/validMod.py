@@ -1008,6 +1008,14 @@ def generateMpiexecEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkD
         jobData.errMsg = "ERROR: Failure to create: " + fileOut
         raise
         
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + fileOut
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + fileOut + " to an executable."
+        raise
+        
     # Create validScript.R
     try:
         fileObj = open(rScript,'w')
@@ -1190,6 +1198,14 @@ def generateMpiexecParmRunScript(jobData,runDir,gageID):
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
     # Create symbolic link with basin/job info in link name for monitoring
