@@ -44,6 +44,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     except:
         raise
     
+    print "JOB ID = " + str(statusData.jobID)
     # Establish directory paths.
     runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
     bestDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST"
