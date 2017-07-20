@@ -452,7 +452,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4:
-            cmd = workDir + "/run_params_" + str(statusData.jobID) + "_" + str(gageMeta.gage[basinNum])
+            cmd = bestDir + "/run_params_" + str(statusData.jobID) + "_" + str(gageMeta.gage[basinNum])
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 time.sleep(5)
