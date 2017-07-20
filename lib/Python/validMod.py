@@ -113,7 +113,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     #     model simulations.
     # 2.) Job script to run the model with control parameters.
     parmRunScript = runDir + "/gen_parms.sh"
-    bsub1Script = runDir + "/bsub_parms.sh"
+    bsub1Script = runDir + "/run_parms.sh"
     bsub2Script = runDir + "/run_NWM.sh"
     
     # If the files exist, remove them and re-create.
@@ -124,22 +124,40 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     if os.path.isfile(bsub2Script):
         os.remove(bsub2Script)
     
-    # Generate the shell script to call Python to generate parameter datasets
-    # in preparation for model runs.     
-    try:
-        generateParmScript(statusData,bestDir,gage,parmInDir)
-    except:
-        raise
-    # Generate the BSUB script to run the parameter generation code. 
-    try:
-        generateParmRunScript(statusData,bestDir,gageID)
-    except:
-        raise
-    # Generate the BSUB run script to run the model simulations. 
-    try:
-        generateRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
-    except:
-        raise
+    if statusData.jobRunType == 1:
+        # Generate the shell script to call Python to generate parameter datasets
+        # in preparation for model runs.     
+        try:
+            generateParmScript(statusData,bestDir,gage,parmInDir)
+        except:
+            raise
+        # Generate the BSUB script to run the parameter generation code. 
+        try:
+            generateBsubParmRunScript(statusData,bestDir,gageID)
+        except:
+            raise
+        # Generate the BSUB run script to run the model simulations. 
+        try:
+            generateBsubRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
+        except:
+            raise
+    if statusData.jobRunType == 4:
+        # Generate the shell script to call Python to generate parameter datasets
+        # in preparation for model runs.
+        try:
+            generateParmScript(statusData,bestDir,gage,parmInDir)
+        except:
+            raise
+        # Generate the mpiexec script to run the parameter generation 
+        try:
+            generateMpiexecParmRunScript(statusData,bestDir,gageID)
+        except:
+            raise
+        # Generate the BSUB run script to run the model simulations. 
+        try:
+            generateMpiexecRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
+        except:
+            raise
 
     # Calculate datetime objects
     begDate = statusData.bValidDate
@@ -409,7 +427,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         
     if keyStatus == 0.0 and not runFlag:
         # We need to run parameter generation code.
-        cmd = "bsub < " + bestDir + "/bsub_parms.sh"
+        cmd = "bsub < " + bestDir + "/run_parms.sh"
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -493,12 +511,12 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Generate scripts to do evaluation on both 
     # the control and best simulations. 
     try:
-        generateEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+        generateBsubEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
     except:
         raise
     # Generate the BSUB run script to run the model simulations. 
     try:
-        generateRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+        generateBsubRunScript(statusData,gageID,runDir,gageMeta,'BEST')
     except:
         raise
         
@@ -792,7 +810,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keyStatus = 0.9
         keySlot[basinNum,1] = 0.9
                 
-def generateRunScript(jobData,gageID,runDir,gageMeta,modName):
+def generateBsubRunScript(jobData,gageID,runDir,gageMeta,modName):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model.
@@ -831,6 +849,42 @@ def generateRunScript(jobData,gageID,runDir,gageMeta,modName):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
+def generateMpiexecRunScript(jobData,gageID,runDir,gageMeta,modName):
+    """
+    Generic function to create a run script that will use mpiexec to run
+    the model
+    """
+    
+    outFile = runDir + "/run_NWM.sh"
+    
+    if os.path.isfile(outFile):
+        os.remove(outFile)
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
+        modName + '_' + str(jobData.jobID) + '_' + str(gageID) + '\n'
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = 'Failure to create: ' + outFile
+        raise
+        
+    # Make the file an executable.
+    cmd = "chmod +x " + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
+        raise
+        
 def generateParmScript(jobData,bestDir,gage,parmInDir):
     """
     Generic function to generate the shell script to call Python to
@@ -862,8 +916,81 @@ def generateParmScript(jobData,bestDir,gage,parmInDir):
     except:
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
+def generateMpiexecEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir):
+    """
+    Generic function to create evaluation mpiexec script in the best simulation directory.
+    This function also generates the shell script to call R.
+    """
+    # First establish paths to files being created.
+    rScript = validWorkDir + "/validScript.R"
+    fileOut = validWorkDir + "/run_eval.sh"
+    
+    if os.path.isfile(rScript):
+        os.remove(rScript)
+    if os.path.isfile(fileOut):
+        os.remove(fileOut)
         
-def generateEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir):
+    # Create mpiexec shell script for the evaluation job.
+    try:
+        fileObj = open(fileOut)
+        fileObj.write('#!/bin/bash\n')
+        inStr = 'cd ' + validWorkDir + '\n'
+        fileObj.write(inStr)
+        inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + fileOut
+        raise
+        
+    # Create validScript.R
+    try:
+        fileObj = open(rScript,'w')
+        fileObj.write("#### Model Parameters ####\n")
+        fileObj.write("# Specify run directory containing validation simulations.\n")
+        inStr = "runDir <- '" + calibWorkDir + "'\n"
+        fileObj.write(inStr)
+        inStr = "validDir <- '" + validWorkDir + "'\n"
+        fileObj.write(inStr)
+        fileObj.write("# Objective function#\n")
+        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        fileObj.write(inStr)
+        fileObj.write("# Basin-specific metadata\n")
+        inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
+        fileObj.write(inStr)
+        inStr = "linkId <- " + str(gageMeta.comID) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Start and dates for evaluation period (e.g., after spinup period)\n')
+        inStr = "startCalibDate <- as.POSIXct(\"" + jobData.bCalibEvalDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        inStr = "endCalibDate <- as.POSIXct(\"" + jobData.eCalibDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        inStr = "startValidDate <- as.POSIXct(\"" + jobData.bValidEvalDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        inStr = "endValidDate <- as.POSIXct(\"" + jobData.eValidDate.strftime('%Y-%m-%d') + "\", " + \
+                 "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify number of cores to use\n')
+        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + rScript
+        raise
+        
+    # Create symbolic link with basin/job info in link name for monitoring
+    fileLink = validWorkDir + "/run_eval_" + str(jobID) + "_" + str(gageID)
+    if not os.path.islink(fileLink):
+        try:
+            os.symlink(fileOut,fileLink)
+        except:
+            jobData.errMsg = "ERROR: Failure to create symbolic link: " + fileLink
+            raise
+        
+def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir):
     """
     Generic function to create evaluation BSUB script in the best simulation
     directory. This function also generates the shell script to call R.
@@ -942,12 +1069,12 @@ def generateEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,vali
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript
         raise
-def generateParmRunScript(jobData,runDir,gageID):
+def generateBsubParmRunScript(jobData,runDir,gageID):
     """
     Generic function to run BSUB command to run the parameter generation script.
     """
     
-    outFile = runDir + "/bsub_parms.sh"
+    outFile = runDir + "/run_parms.sh"
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -977,6 +1104,37 @@ def generateParmRunScript(jobData,runDir,gageID):
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
+        
+def generateMpiexecParmRunScript(jobData,runDir,gageID):
+    """
+    Generic function to run mpiexec to run the parameter generation script.
+    """
+    
+    outFile = runDir + "/run_params.sh"
+    fileLink = runDir + "/run_params_" + str(jobData.jobID) + "_" + str(gageID)
+    
+    if os.path.isfile(outFile):
+        os.remove(outFile)
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        fileObj.write('./gen_parms.sh\n')
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+    # Create symbolic link with basin/job info in link name for monitoring
+    fileLink = runDir + "/run_params_" + str(jobData.jobID) + "_" + str(gageID)
+    if not os.path.islink(fileLink):
+        try:
+            os.symlink(outFile,fileLink)
+        except:
+            jobData.errMsg = "ERROR: Failure to create symbolic link: " + fileLink
+            raise
         
 def linkToRst(statusData,gage,runDir):
     """

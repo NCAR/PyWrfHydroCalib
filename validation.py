@@ -16,7 +16,7 @@ import argparse
 import getpass
 import os
 #import subprocess
-#import pandas as pd
+import pandas as pd
 import pwd
 import numpy as np
 
@@ -108,6 +108,40 @@ def main(argv):
         jobData.checkGages(db)
     except:
         errMod.errOut(jobData)
+        
+    # Establish LOCK file to secure this Python program to make sure
+    # no other instances over-step here. This is mostly designed to deal
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
+    lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    if os.path.isfile(lockPath):
+        # Either a job is still running, or was running
+        # and was killed.
+
+        print 'LOCK FILE FOUND.'
+        # Read in to get PID number
+        pidObj = pd.read_csv(lockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(lockPath)
+                fileObj = open(lockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
+    else:
+        print 'LOCK FILE NOT FOUND.'
+        # Write a LOCK file for this program.
+        fileObj = open(lockPath,'w')
+        fileObj.write('\"PID\"\n')
+        fileObj.write(str(os.getpid()))
+        fileObj.close()
     
     # Extract active jobs for job owner
     #try:
@@ -243,18 +277,18 @@ def main(argv):
             # First simulation will be the control simulation with default
             # parameters specified by the user at the beginning of the calibration
             # process.
-            #validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            try:
-                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            except:
-                errMod.errOut(jobData)
+            validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            #try:
+            #    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            #except:
+            #    errMod.errOut(jobData)
             time.sleep(3)
             
-            #validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            try:
-                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            except:
-                errMod.errOut(jobData)
+            validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            #try:
+            #    validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            #except:
+            #    errMod.errOut(jobData)
             time.sleep(3)
                 
         # Check to see if program requirements have been met.
@@ -267,6 +301,9 @@ def main(argv):
             jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
+            
+    # Remove LOCK file
+    os.remove(lockPath)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

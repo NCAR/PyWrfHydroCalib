@@ -418,43 +418,70 @@ def checkBasJobValid(jobData,gageNum,modRun):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
-        raise
+    if jobData.jobRunType == 1:
+        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+        csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+        cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+            raise
     
-    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
-               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    try:
-        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
-    except:
-        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        raise
+        colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+                   'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+        try:
+            jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
         
-    # Delete temporary CSV files
-    cmdTmp = 'rm -rf ' + csvPath
-    subprocess.call(cmdTmp,shell=True)
+        # Delete temporary CSV files
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
         
-    # Compile expected job name that the job should occupy.
-    expName = "NWM_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
-              str(jobData.gageIDs[gageNum])
+        # Compile expected job name that the job should occupy.
+        expName = "NWM_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
     
-    lenJobs = len(jobs.JOBID)
+        lenJobs = len(jobs.JOBID)
 
-    # Assume no jobs for basin are being ran, unless found in the data frame.
-    status = False
-    
-    if lenJobs == 0:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
-    else:
-        # Find if any jobs for this basin are being ran.
-        testDF = jobs.query("JOB_NAME == '" + expName + "'")
-        if len(testDF) != 0:
-            status = True
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            testDF = jobs.query("JOB_NAME == '" + expName + "'")
+            if len(testDF) != 0:
+                status = True
+    if jobData.jobRunType == 4:
+        # We are running via mpiexec
+        pidActive = []
+        exeName = "wrf_hydro_" + modRun + "_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        for proc in psutil.process_iter():
+            try:
+                if proc.name() == exeName:
+                    pidActive.append(proc.pid)
+            except:
+                print exeName + " Found, but ended before Python could get the PID."
+        if len(pidActive) == 0:
+            status = False
+            print "NO VALID MODEL JOBS FOUND"
+        else:
+            print "BASIN VALID JOBS FOUND"
+            # Ensure these are being ran by the proper user.
+            proc_stat_file = os.stat('/proc/%d' % pidActive[0])
+            uid = proc_stat_file.st_uid
+            userCheck = pwd.getpwuid(uid)[0]
+            if userCheck != str(jobData.owner):
+                jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
+                userCheck + " When it should be ran by: " + jobData.owner
+                status = False
+                raise
+            else:
+                status = True
             
     return status
 
@@ -472,43 +499,70 @@ def checkParmGenJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
-        raise
+    if jobData.jobRunType == 1:
+        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+        csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+        cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+            raise
     
-    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
-               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    try:
-        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
-    except:
-        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        raise
+        colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+                   'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+        try:
+            jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
         
-    # Delete temporary CSV files
-    cmdTmp = 'rm -rf ' + csvPath
-    subprocess.call(cmdTmp,shell=True)
+        # Delete temporary CSV files
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
         
-    # Compile expected job name that the job should occupy.
-    expName = "NWM_PARM_GEN_" + str(jobData.jobID) + "_" + \
-              str(jobData.gageIDs[gageNum])
+        # Compile expected job name that the job should occupy.
+        expName = "NWM_PARM_GEN_" + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
     
-    lenJobs = len(jobs.JOBID)
+        lenJobs = len(jobs.JOBID)
 
-    # Assume no jobs for basin are being ran, unless found in the data frame.
-    status = False
-    
-    if lenJobs == 0:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
-    else:
-        # Find if any jobs for this basin are being ran.
-        testDF = jobs.query("JOB_NAME == '" + expName + "'")
-        if len(testDF) != 0:
-            status = True
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            testDF = jobs.query("JOB_NAME == '" + expName + "'")
+            if len(testDF) != 0:
+                status = True
+    if jobData.jobRunType == 1:
+        # We are running via mpiexec
+        pidActive = []
+        exeName = "run_params_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        for proc in psutil.process_iter():
+            try:
+                if proc.name() == exeName:
+                    pidActive.append(proc.pid)
+            except:
+                print exeName + " Found, but ended before Python could get the PID."
+        if len(pidActive) == 0:
+            status = False
+            print "NO EVAL JOBS FOUND"
+        else:
+            print "EVAL JOBS FOUND"
+            # Ensure these are being ran by the proper user.
+            proc_stat_file = os.stat('/proc/%d' % pidActive[0])
+            uid = proc_stat_file.st_uid
+            userCheck = pwd.getpwuid(uid)[0]
+            if userCheck != str(jobData.owner):
+                jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
+                userCheck + " When it should be ran by: " + jobData.owner
+                status = False
+                raise
+            else:
+                status = True
             
     return status
     
@@ -526,42 +580,69 @@ def checkEvalJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
-    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
-        raise
+    if jobData.jobRunType == 1:
+        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+        csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+        cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+            raise
     
-    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
-               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    try:
-        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
-    except:
-        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        raise
+        colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+                   'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+        try:
+            jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
         
-    # Delete temporary CSV files
-    cmdTmp = 'rm -rf ' + csvPath
-    subprocess.call(cmdTmp,shell=True)
+        # Delete temporary CSV files
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
         
-    # Compile expected job name that the job should occupy.
-    expName = "NWM_EVAL_" + str(jobData.jobID) + "_" + \
-              str(jobData.gageIDs[gageNum])
-    
-    lenJobs = len(jobs.JOBID)
+        # Compile expected job name that the job should occupy.
+        expName = "NWM_EVAL_" + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
+                  
+        lenJobs = len(jobs.JOBID)
 
-    # Assume no jobs for basin are being ran, unless found in the data frame.
-    status = False
-    
-    if lenJobs == 0:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
-    else:
-        # Find if any jobs for this basin are being ran.
-        testDF = jobs.query("JOB_NAME == '" + expName + "'")
-        if len(testDF) != 0:
-            status = True
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            testDF = jobs.query("JOB_NAME == '" + expName + "'")
+            if len(testDF) != 0:
+                status = True
+    if jobData.jobRunType == 4:
+        # We are running via mpiexec
+        pidActive = []
+        exeName = "run_eval_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        for proc in psutil.process_iter():
+            try:
+                if proc.name() == exeName:
+                    pidActive.append(proc.pid)
+            except:
+                print exeName + " Found, but ended before Python could get the PID."
+        if len(pidActive) == 0:
+            status = False
+            print "NO EVAL JOBS FOUND"
+        else:
+            print "EVAL JOBS FOUND"
+            # Ensure these are being ran by the proper user.
+            proc_stat_file = os.stat('/proc/%d' % pidActive[0])
+            uid = proc_stat_file.st_uid
+            userCheck = pwd.getpwuid(uid)[0]
+            if userCheck != str(jobData.owner):
+                jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
+                userCheck + " When it should be ran by: " + jobData.owner
+                status = False
+                raise
+            else:
+                status = True
             
     return status

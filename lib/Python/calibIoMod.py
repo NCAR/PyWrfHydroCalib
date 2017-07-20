@@ -306,8 +306,8 @@ def setupModels(jobData,db,args,libPathTop):
         # Create symbolic links necessary for model runs.
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) 
         link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage]) 
-        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage])
-        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage])
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro_CTRL_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage])
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/wrf_hydro_BEST_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gage])
         try:
             os.symlink(str(jobData.exe),link1)
             os.symlink(str(jobData.exe),link2)
