@@ -15,6 +15,7 @@ import sys
 import argparse
 import getpass
 import os
+import sys
 #import subprocess
 import pandas as pd
 import pwd
@@ -279,6 +280,7 @@ def main(argv):
             # process.
             print "Running CONTROL"
             validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            sys.exit(1)
             #try:
             #    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
             #except:
