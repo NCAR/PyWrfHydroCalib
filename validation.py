@@ -294,6 +294,8 @@ def main(argv):
             #except:
             #    errMod.errOut(jobData)
             time.sleep(3)
+            
+            print keySlot
                 
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
