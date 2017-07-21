@@ -624,8 +624,8 @@ def checkEvalJob(jobData,gageNum):
         pidActive = []
         exeName = "run_eval_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
         print "LOOKING FOR: " + exeName
-        print psutil.process.iter()
         for proc in psutil.process_iter():
+            print proc
             try:
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
