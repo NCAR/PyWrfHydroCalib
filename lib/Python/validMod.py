@@ -551,7 +551,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             raise
     if statusData.jobRunType == 4:
         runScript = runDir + "/run_NWM.sh"
-        evalScript = validWorkDir + "/run_eval_" + str(statusData.jobID) + "_" + str(gageID)
+        evalScript = validWorkDir + "/eval_" + str(statusData.jobID) + "_" + str(gageID)
     
         # If the files exist, remove them and re-create.
         if os.path.isfile(runScript):
@@ -875,7 +875,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4:
-            cmd = validWorkDir + "/run_eval_" + str(statusData.jobID) + "_" + str(gageID)
+            cmd = validWorkDir + "/eval_" + str(statusData.jobID) + "_" + str(gageID)
             print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -1069,7 +1069,7 @@ def generateMpiexecEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkD
         raise
         
     # Create symbolic link with basin/job info in link name for monitoring
-    fileLink = validWorkDir + "/run_eval_" + str(jobID) + "_" + str(gageID)
+    fileLink = validWorkDir + "/eval_" + str(jobID) + "_" + str(gageID)
     if not os.path.islink(fileLink):
         try:
             os.symlink(fileOut,fileLink)

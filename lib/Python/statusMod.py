@@ -622,7 +622,7 @@ def checkEvalJob(jobData,gageNum):
     if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
-        exeName = "run_eval_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        exeName = "eval_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
         print "LOOKING FOR: " + exeName
         for proc in psutil.process_iter():
             print proc
