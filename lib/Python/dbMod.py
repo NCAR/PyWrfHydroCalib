@@ -898,7 +898,7 @@ class Database(object):
         # Next, find all parameter values, and their associated values from Calib_Params.
         sqlCmd = "select * from Calib_Params where domainID='" + str(domainID) + \
                  "' and jobID='" + str(jobID) + "' and iteration='" + \
-                 str(iterBest) + "' and parmValue!='-9999';"
+                 str(iterBest) + "' and paramValue!='-9999';"
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
