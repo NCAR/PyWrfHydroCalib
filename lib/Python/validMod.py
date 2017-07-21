@@ -879,7 +879,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                time.sleep(5)
+                time.sleep(10)
                 print 'blah'
                 p2.communicate
             except:
