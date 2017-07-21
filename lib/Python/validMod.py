@@ -446,7 +446,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     if keyStatus == 0.0 and not runFlag:
         # We need to run parameter generation code.
         if statusData.jobRunType == 1:
-            cmd = "bsub < " + bestDir + "/run_parms.sh"
+            cmd = "bsub < " + bestDir + "/run_params.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
@@ -454,7 +454,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 raise
         if statusData.jobRunType == 4:
             print gageMeta.gage
-            cmd = bestDir + "/run_params_" + str(statusData.jobID) + "_" + str(gageID)
+            cmd = bestDir + "/P" + str(statusData.jobID) + str(gageID)
             print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -551,7 +551,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             raise
     if statusData.jobRunType == 4:
         runScript = runDir + "/run_NWM.sh"
-        evalScript = validWorkDir + "/eval_" + str(statusData.jobID) + "_" + str(gageID)
+        evalScript = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
     
         # If the files exist, remove them and re-create.
         if os.path.isfile(runScript):
@@ -875,7 +875,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4:
-            cmd = validWorkDir + "/eval_" + str(statusData.jobID) + "_" + str(gageID)
+            cmd = validWorkDir + "/E" + str(statusData.jobID) + "_" + str(gageID)
             print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -948,8 +948,12 @@ def generateMpiexecRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
-        modName + '_' + str(jobData.jobID) + '_' + str(gageID) + '\n'
+        if modName == "BEST":
+            inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./WB' + \
+            str(jobData.jobID) + str(gageID) + '\n'
+        if modName == "CTRL":
+            inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./WC' + \
+            str(jobData.jobID) + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1069,7 +1073,7 @@ def generateMpiexecEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkD
         raise
         
     # Create symbolic link with basin/job info in link name for monitoring
-    fileLink = validWorkDir + "/eval_" + str(jobID) + "_" + str(gageID)
+    fileLink = validWorkDir + "/E_" + str(jobID) + str(gageID)
     if not os.path.islink(fileLink):
         try:
             os.symlink(fileOut,fileLink)
@@ -1198,7 +1202,6 @@ def generateMpiexecParmRunScript(jobData,runDir,gageID):
     """
     
     outFile = runDir + "/run_params.sh"
-    fileLink = runDir + "/run_params_" + str(jobData.jobID) + "_" + str(gageID)
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -1223,7 +1226,7 @@ def generateMpiexecParmRunScript(jobData,runDir,gageID):
         raise
         
     # Create symbolic link with basin/job info in link name for monitoring
-    fileLink = runDir + "/run_params_" + str(jobData.jobID) + "_" + str(gageID)
+    fileLink = runDir + "/P" + str(jobData.jobID) + str(gageID)
     if not os.path.islink(fileLink):
         try:
             os.symlink(outFile,fileLink)

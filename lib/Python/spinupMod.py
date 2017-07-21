@@ -342,8 +342,8 @@ def generateMpiScript(jobData,gageID,runDir,gageMeta):
         fileObj.write('#!/bin/bash\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./wrf_hydro_' + \
-        str(jobData.jobID) + '_' + str(gageID) + '\n'
+        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
+        str(jobData.jobID) + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:

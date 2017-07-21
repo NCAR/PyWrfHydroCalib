@@ -233,7 +233,7 @@ def checkBasJob(jobData,gageNum):
     if jobData.jobRunType == 4:
         # We are using mpiexec.
         pidActive = []
-        exeName = "wrf_hydro_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        exeName = "W" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
         for proc in psutil.process_iter():
             try:
                 if proc.name() == exeName:
@@ -372,7 +372,7 @@ def checkCalibJob(jobData,gageNum):
     if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
-        exeName = "calibCmd" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        exeName = "C" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
         for proc in psutil.process_iter():
             try:
                 if proc.name() == exeName:
@@ -459,7 +459,10 @@ def checkBasJobValid(jobData,gageNum,modRun):
     if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
-        exeName = "wrf_hydro_" + modRun + "_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        if modRun == "BEST":
+            exeName = "WB" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
+        if modRun == "CTRL":
+            exeName = "WC" + str(jobData.jobID) + str(jobData.gageIDs[gageNum])
         for proc in psutil.process_iter():
             try:
                 if proc.name() == exeName:
@@ -541,7 +544,7 @@ def checkParmGenJob(jobData,gageNum):
     if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
-        exeName = "run_params_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum]) 
+        exeName = "P" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
         for proc in psutil.process_iter():
             try:
                 if proc.name() == exeName:
