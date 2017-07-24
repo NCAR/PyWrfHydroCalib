@@ -875,7 +875,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4:
-            cmd = validWorkDir + "/E" + str(statusData.jobID) + "_" + str(gageID)
+            cmd = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
             print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -1073,7 +1073,7 @@ def generateMpiexecEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkD
         raise
         
     # Create symbolic link with basin/job info in link name for monitoring
-    fileLink = validWorkDir + "/E_" + str(jobID) + str(gageID)
+    fileLink = validWorkDir + "/E" + str(jobID) + str(gageID)
     if not os.path.islink(fileLink):
         try:
             os.symlink(fileOut,fileLink)
