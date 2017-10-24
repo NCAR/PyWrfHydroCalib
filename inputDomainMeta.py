@@ -36,7 +36,8 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-import MySQLdb
+#import MySQLdb
+import psycopg2
 import getpass
 import argparse
 import os
@@ -57,30 +58,32 @@ def main(argv):
                         
     args = parser.parse_args()
     
-    # Obtain the NWM_Calib_rw username password. 
+    # Obtain the WH_Calib_rw username password. 
     # NOTE YOU MUST INITIALIZE THE MYSQL DB FIRST BY
     # RUNNING initDB.py BEFORE YOU CAN RUN THIS PROGRAM.
     try:
-        pwdTmp = getpass.getpass('Enter NWM_Calib_rw password: ')
+        pwdTmp = getpass.getpass('Enter WH_Calib_rw password: ')
     except:
         print "ERROR: Unable to authenticate credentials for database."
         sys.exit(1)
         
     if not pwdTmp:
-        print "ERROR: Improper NWM_Calib_rw password provided."
+        print "ERROR: Improper WH_Calib_rw password provided."
         sys.exit(1)
         
     if not args.hostname:
-        # We will assume localhost for MySQL DB
+        # We will assume localhost for postgres DB
         hostTmp = 'localhost'
     else:
         hostTmp = str(args.hostname)
         
     # Connect to the database
     try:
-        db = MySQLdb.connect(str(hostTmp),'NWM_Calib_rw',str(pwdTmp),'NWM_Calib_DB')
+        strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdTmp + " port=5432 host=" + hostTmp
+        db = psycopg2.connect(strTmp)
+        #db = MySQLdb.connect(str(hostTmp),'NWM_Calib_rw',str(pwdTmp),'NWM_Calib_DB')
     except:
-        print "ERROR: Unable to connect to NWM_Calib_DB. Please check your password you set " + \
+        print "ERROR: Unable to connect to WH_Calib_DB. Please check your password you set " + \
               " or verify the database has been created."
         sys.exit(1)
     conn = db.cursor()
@@ -195,11 +198,11 @@ def main(argv):
             sys.exit(1)
     
         # Compose SQL command
-        cmd = "insert into Domain_Meta (gage_id,link_id,domain_path,gage_agency,geo_e," + \
+        cmd = "INSERT INTO \"Domain_Meta\" (gage_id,link_id,domain_path,gage_agency,geo_e," + \
               "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,wrfinput_file," + \
               "soil_file,fulldom_file,rtlink_file,spweight_file," + \
               "gw_file,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
-              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc) values " + \
+              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc) VALUES " + \
               "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
@@ -210,13 +213,13 @@ def main(argv):
         try:
             conn.execute(cmd)
         except:
-            print "ERROR: Unable to execute SQL command: " + cmd
+            print "ERROR: Unable to execute postgres command: " + cmd
             sys.exit(1)
             
         try:
             db.commit()
         except:
-            print "ERROR: Unable to commit SQL command: " + cmd
+            print "ERROR: Unable to commit postgres command: " + cmd
             sys.exit(1)
             
     # Close connection to DB

@@ -24,7 +24,9 @@ class jobMeta:
         self.jobID = []
         self.acctKey = []
         self.nCoresMod = []
+        self.nNodesMod = []
         self.nCoresR = []
+        self.nNodesR = []
         self.jobRunType = []
         self.host = []
         self.nIter = []
@@ -115,7 +117,9 @@ class jobMeta:
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
+        self.nNodesMod = int(parser.get('logistics','nNodesModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
+        self.nNodesR = int(parser.get('logistics','nNodesR'))
         self.host = str(parser.get('logistics','mySQLHost'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
@@ -362,6 +366,13 @@ def checkConfig(parser):
     #if check != 0.0:
     #    print "ERROR: Number of model cores chosen must be multiple of 16"
     #    raise Exception()
+    check = int(parser.get('logistics','nCoresModel'))
+    if not check:
+        print "ERROR: Number of model nodes to use not specified."
+        raise Exception()
+    if check <= 0:
+        print "ERROR: Invalid number of model nodes to use."
+        raise Exception()
         
     # Check to make sure a valid option was passed for running model/R code
     check = int(parser.get('logistics','jobRunType'))
@@ -380,8 +391,15 @@ def checkConfig(parser):
         print "ERROR: Number of R Cores to use not specified."
         raise Exception()
     # R code will be restricted to one node.
-    if check <= 0 or check > 16:
-        print "ERROR: Number of R cores must be either greater than 0 or less than 17."
+    #if check <= 0 or check > 16:
+    #    print "ERROR: Number of R cores must be either greater than 0 or less than 17."
+    #    raise Exception()
+    check = int(parser.get('logistics','nNodesR'))
+    if not check:
+        print "ERROR: Number of R Nodes to use not specified."
+        raise Exception()
+    if check <= 0:
+        print "ERROR: Invalid number of R Nodes to use."
         raise Exception()
         
     # Check to make sure calibration method is DDS

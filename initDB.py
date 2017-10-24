@@ -7,7 +7,8 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory.
 
-import MySQLdb
+#import MySQLdb
+import psycopg2
 import subprocess
 import sys
 import os
@@ -22,7 +23,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
-schemaFile = libPath + 'setup_files/schema.sql'
+schemaFile = libPath + 'setup_files/psql_schema.sql'
 schemaPathTmp = libPath + "setup_files/schemaTmp.sql"
 libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
@@ -41,39 +42,43 @@ def main(argv):
         sys.exit(1)
     
     if not pwdTmp:
-        print "ERROR: Improper MySQL root password provided."
+        print "ERROR: Improper postgres root password provided."
         sys.exit(1)
         
     # Check to see if this DB has already been created. If it has, throw an 
     # error back to the user. 
     try:
-        db = MySQLdb.connect('localhost','root',pwdTmp)
+        #db = MySQLdb.connect('localhost','root',pwdTmp)
+        strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=localHost"
+        db = psycopg2.connect(strTmp)
     except:
-        print "ERROR: Unable to connect to MySQL as user root. It's possible you entered an incorrect password."
+        print "ERROR: Unable to connect to postgres as user root. It's possible you entered an incorrect password."
         sys.exit(1)
     conn = db.cursor()
-    sqlCmd = 'show databases;'
+    #sqlCmd = 'show databases;'
+    sqlCmd = 'SELECT datname FROM pg_database;'
     conn.execute(sqlCmd)
     qResult = conn.fetchall()
     nResults = len(qResult)
     for i in range(0,nResults):
-        if qResult[i][0] == 'NWM_Calib_DB':
+        if qResult[i][0] == 'wrfHydroCalib_DB':
             conn.close()
-            print "ERROR: NWM_Calib_DB Database already exists. Please remove before re-running this program."
+            print "ERROR: wrfHydroCalib_DB Database already exists. Please remove before re-running this program."
             sys.exit(1)
-    sqlCmd = 'select user from mysql.user;'
+    #sqlCmd = 'select user from mysql.user;'
+    sqlCmd = 'SELECT usename FROM pg_user;'
     conn.execute(sqlCmd)
     qResult = conn.fetchall()
     nResults = len(qResult)
     for i in range(0,nResults):
-        if qResult[i][0] == 'NWM_Calib_rw':
+        if qResult[i][0] == 'WH_Calib_rw':
             conn.close()
-            print "ERROR: NWM_Calib_rw User already exists. Please remove before re-running this program."
+            print "ERROR: WH_Calib_rw User already exists. Please remove before re-running this program."
             sys.exit(1)
     try:
         conn.close()
     except:
-        print "ERROR: Unable to disconnect from MySQL as user root."
+        print "ERROR: Unable to disconnect from postgres as user root."
         sys.exit(1)
             
     # Prompt user to enter in password for read-write access to DB being created. 
@@ -124,12 +129,12 @@ def main(argv):
                 check = check + 1
         sys.stdout.write(line)
         
-    cmd = "mysql -u root -p'" + pwdTmp + "' < " + schemaPathTmp
+    #cmd = "mysql -u root -p'" + pwdTmp + "' < " + schemaPathTmp
      
-    subprocess.call(cmd,shell=True)
+    #subprocess.call(cmd,shell=True)
     
     # Remove temporary schema file
-    os.remove(schemaPathTmp)
+    #os.remove(schemaPathTmp)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

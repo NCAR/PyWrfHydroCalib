@@ -64,7 +64,7 @@ def main(argv):
         print "ERROR: Unable to authenticate credentials for database."
         sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib_rw'
+    jobData.dbUName = 'WH_Calib_rw'
     
     if not args.hostname:
         # We will assume localhost for MySQL DB

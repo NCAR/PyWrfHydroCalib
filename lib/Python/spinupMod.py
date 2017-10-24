@@ -325,6 +325,57 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
+def generatePbsScript(jobData,gageID,runDir,gageMeta):
+    """
+    Generic function to create a script that will be called by qsub
+    to execute the model.
+    """
+    
+    outFile = runDir + "/run_NWM.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+    
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# PBS Batch Script to Run NWM Calibration Simulations\n')
+        fileObj.write('#\n')
+        inStr = "#PBS -N NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        inStr = "#PBS -l walltime=08:00:00\n"
+        fileObj.write(inStr)
+        inStr = "#PBS -q regular\n"
+        fileObj.write(inStr)
+        inStr = "#PBS -o NWM_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        fileObj.write(inStr)
+        inStr = "#PBS -e NWM_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        fileObj.write(inStr)
+        nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
+        inStr = "#PBS -l select=" = str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
+                ":mpiprocs=" + str(nCoresPerNode) + "\n"
+        fileObj.write(inStr)
+        fileObj.write("\n")
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+        
 def generateMpiScript(jobData,gageID,runDir,gageMeta):
     """
     Generic function to create a run script that will use mpiexec to execute

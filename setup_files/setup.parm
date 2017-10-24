@@ -24,7 +24,10 @@ jobName = TEST_SERFC_KARSTEN
 acctKey = NRAL0017
 mySQLHost = pequin.rap.ucar.edu
 nCoresModel = 16
+nNodesModel = 1
 nCoresR     = 16
+nNodesR = 1
+
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
 # of ways. Here are the following options for the launch 

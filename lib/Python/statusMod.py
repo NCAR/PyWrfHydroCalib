@@ -38,7 +38,9 @@ class statusMeta:
         self.validComplete = []
         self.nIter = []
         self.nCoresMod = []
+        self.nNodesMod = []
         self.nCoresR = []
+        self.nNodesR = []
         self.jobRunType = []
         self.host = []
         self.acctKey = []
@@ -152,8 +154,8 @@ def checkYsJobs(jobData):
     # of the gages.
     if len(jobs) != 0:
         for gageCheck in range(0,len(jobData.gageIDs)):
-            jobNameCheck = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
-            jobNameCheck2 = "NWM_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
+            jobNameCheck = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
+            jobNameCheck2 = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
             testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
             if len(testDF) != 0:
                 jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobID) + \
@@ -216,7 +218,7 @@ def checkBasJob(jobData,gageNum):
         subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that the job should occupy.
-        expName = "NWM_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
     
         lenJobs = len(jobs.JOBID)
 
@@ -230,6 +232,43 @@ def checkBasJob(jobData,gageNum):
             testDF = jobs.query("JOB_NAME == '" + expName + "'")
             if len(testDF) != 0:
                 status = True
+                
+    if jobData.jobRunType == 2:
+        # We are running via qsub
+        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
+            
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
+        # Delete temporary CSV fies
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+                  
+        lenJobs = len(jobs[1])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            for jobNum in range(0,lenJobs):
+                if jobs[1][jobNum].strip() == expName:
+                    status = True
+                    
     if jobData.jobRunType == 4:
         # We are using mpiexec.
         pidActive = []
@@ -354,7 +393,7 @@ def checkCalibJob(jobData,gageNum):
             raise
         
         # Compile expected job name that the job should occupy.
-        expName = "NWM_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
     
         lenJobs = len(jobs.JOBID)
 
@@ -368,6 +407,42 @@ def checkCalibJob(jobData,gageNum):
             testDF = jobs.query("JOB_NAME == '" + expName + "'")
             if len(testDF) != 0:
                 status = True
+                
+    if jobData.jobRunType == 2:
+        # We are running via qsub
+        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
+            
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
+        # Delete temporary CSV fies
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+                  
+        lenJobs = len(jobs[1])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            for jobNum in range(0,lenJobs):
+                if jobs[1][jobNum].strip() == expName:
+                    status = True
     
     if jobData.jobRunType == 4:
         # We are running via mpiexec
@@ -441,7 +516,7 @@ def checkBasJobValid(jobData,gageNum,modRun):
         subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that the job should occupy.
-        expName = "NWM_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
+        expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
     
         lenJobs = len(jobs.JOBID)
@@ -456,6 +531,44 @@ def checkBasJobValid(jobData,gageNum,modRun):
             testDF = jobs.query("JOB_NAME == '" + expName + "'")
             if len(testDF) != 0:
                 status = True
+                
+    if jobData.jobRunType == 2:
+        # We are running via qsub
+        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
+            
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
+        # Delete temporary CSV fies
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
+                  
+        lenJobs = len(jobs[1])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            for jobNum in range(0,lenJobs):
+                if jobs[1][jobNum].strip() == expName:
+                    status = True
+                    
     if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
@@ -486,6 +599,8 @@ def checkBasJobValid(jobData,gageNum,modRun):
                 raise
             else:
                 status = True
+                
+    
             
     return status
 
@@ -526,7 +641,7 @@ def checkParmGenJob(jobData,gageNum):
         subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that the job should occupy.
-        expName = "NWM_PARM_GEN_" + str(jobData.jobID) + "_" + \
+        expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
     
         lenJobs = len(jobs.JOBID)
@@ -567,6 +682,42 @@ def checkParmGenJob(jobData,gageNum):
                 raise
             else:
                 status = True
+                
+    if jobData.jobRunType == 2:
+        # We are running via qsub
+        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
+            
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
+        # Delete temporary CSV fies
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
+        
+        expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
+                  
+        lenJobs = len(jobs[1])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            for jobNum in range(0,lenJobs):
+                if jobs[1][jobNum].strip() == expName:
+                    status = True
             
     return status
     
@@ -607,7 +758,7 @@ def checkEvalJob(jobData,gageNum):
         subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that the job should occupy.
-        expName = "NWM_EVAL_" + str(jobData.jobID) + "_" + \
+        expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
                   
         lenJobs = len(jobs.JOBID)
@@ -622,6 +773,44 @@ def checkEvalJob(jobData,gageNum):
             testDF = jobs.query("JOB_NAME == '" + expName + "'")
             if len(testDF) != 0:
                 status = True
+                
+    if jobData.jobRunType == 2:
+        # We are running via qsub
+        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
+            
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
+        # Delete temporary CSV fies
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
+        
+        # Compile expected job name that job should occupy
+        expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
+                  
+        lenJobs = len(jobs[1])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+    
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            for jobNum in range(0,lenJobs):
+                if jobs[1][jobNum].strip() == expName:
+                    status = True
+                
     if jobData.jobRunType == 4:
         # We are running via mpiexec
         pidActive = []
