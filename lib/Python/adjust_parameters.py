@@ -1,4 +1,4 @@
-# Program to adjust NWM parameter files per output from R calibration 
+# Program to adjust wrfHydro parameter files per output from R calibration 
 # evaluations and adjustments. The following files will be adjusted:
 # 1.) Fulldom.nc
 # 2.) HYDRO.TBL

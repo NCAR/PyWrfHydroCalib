@@ -62,8 +62,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             raise
         
         # If BSUB run script doesn't exist, create it here.
-        bsubFile = runDir + "/run_NWM.sh"
-        bsubFileRst = runDir + "/run_NWM_Restart.sh"
+        bsubFile = runDir + "/run_WH.sh"
+        bsubFileRst = runDir + "/run_WH_Restart.sh"
         if os.path.isfile(bsubFile):
             # Going to override for now. 
             os.remove(bsubFile)
@@ -80,28 +80,79 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             generateRestartBsubScript(statusData,int(gageID),runDir)
         except:
             raise
-    if statusData.jobRunType == 4:
-        # Generate mpiexec run script and R submission script for running
+    if statusData.jobRunType == 2:
+        # Generate PBS file necessary to running R calibration/analysis code.
+        try:
+            generatePbsCalibScript(statusData,int(gageID),runDir,workDir)
+        except:
+            raise
+            
+        # If PBS run script doesn't exist, create it here.
+        pbsFile = runDir + "/run_WH.sh"
+        pbsFileRst = runDir + "/run_WH_Restart.sh"
+        if os.path.isfile(pbsFile):
+            os.remove(pbsFile)
+        if os.path.isfile(pbsFileRst):
+            os.remove(pbsFileRst)
+            
+        # Create new PBS files
+        try:
+            generatePbsScript(statusData,int(gageID),runDir)
+        except:
+            raise
+            
+        try:
+            generateRestartPbsScript(statusData,int(gageID),runDir)
+        except:
+            raise
+    if statusData.jobRunType == 3:
+        # Generate Slurm file necessary to run R calibration/analysis code.
+        try:
+            generateSlurmCalibScript(statusData,int(gageID),runDir,workDir)
+        except:
+            raise
+            
+        # If PBS run script doesn't exist, create it here.
+        pbsFile = runDir + "/run_WH.sh"
+        pbsFileRst = runDir + "/run_WH_Restart.sh"
+        if os.path.isfile(pbsFile):
+            os.remove(pbsFile)
+        if os.path.isfile(pbsFileRst):
+            os.remove(pbsFileRst)
+            
+        # Create new Slurm files
+        try:
+            generateSlurmScript(statusData,int(gageID),runDir)
+        except:
+            raise
+            
+        try:
+            generateRestartSlurmScript(statusData,int(gageID),runDir)
+        except:
+            raise
+            
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        # Generate mpiexec/mpirun run script and R submission script for running
         # calibration/analysis code.
         try:
-            generateMpiexecCalibScript(statusData,int(gageID),runDir,workDir)
+            generateMpiCalibScript(statusData,int(gageID),runDir,workDir)
         except:
             raise
             
         # If run script doesn't exist, create it here.
-        runFile = runDir + "/run_NWM.sh"
-        rstFile = runDir + "/run_NWM_Restart.sh"
+        runFile = runDir + "/run_WH.sh"
+        rstFile = runDir + "/run_WH_Restart.sh"
         if os.path.isfile(runFile):
             os.remove(runFile)
         if os.path.isfile(rstFile):
             os.remove(rstFile)
             
         try:
-            generateMpiexecScript(statusData,int(gageID),runDir)
+            generateMpiScript(statusData,int(gageID),runDir)
         except:
             raise
         try:
-            generateMpiexecRstScript(statusData,int(gageID),runDir)
+            generateMpiRstScript(statusData,int(gageID),runDir)
         except:
             raise
     
@@ -718,18 +769,32 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         print "RESTARTING MODEL"
         # Fire off model.
         if statusData.jobRunType == 1:
-            cmd = "bsub < " + runDir + "/run_NWM_Restart.sh"
+            cmd = "bsub < " + runDir + "/run_WH_Restart.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4:
-            cmd = runDir + "/run_NWM_Restart.sh"
+        if statusData.jobRunType == 2:
+            cmd = "qsub " + runDir + "/run_WH_Restart.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 3:
+            cmd = "sbatch " + runDir + "/run_WH_Restart.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+            cmd = runDir + "/run_WH_Restart.sh"
             try:
                 p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
             
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
@@ -782,18 +847,32 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         print "FIRING OFF MODEL SIMULATION"
         # Fire off model.
         if statusData.jobRunType == 1:
-            cmd = "bsub < " + runDir + "/run_NWM.sh"
+            cmd = "bsub < " + runDir + "/run_WH.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4:
-            cmd = runDir + "/run_NWM.sh"
+        if statusData.jobRunType == 2:
+            cmd = "qsub " + runDir + "/run_WH.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 3:
+            cmd = "sbatch " + runDir + "/run_WH.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+            cmd = runDir + "/run_WH.sh"
             try:
                 p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
             
         keyStatus = 0.5
@@ -830,19 +909,33 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         print "FIRING OFF FIRST CALIBRATION CODE"
         # Fire off calibration programs.
         if statusData.jobRunType == 1:
-            cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
+            cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4:
-            cmd = workDir + "/run_NWM_CALIB.sh"
+        if statusData.jobRunType == 2:
+            cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 3:
+            cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+            cmd = workDir + "/run_WH_CALIB.sh"
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 time.sleep(5)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
             
         keyStatus = 0.25
@@ -868,19 +961,33 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         print "FIRING OFF CALIB CODE"
         # Fire off calibration program.
         if statusData.jobRunType == 1:
-            cmd = "bsub < " + workDir + "/run_NWM_CALIB.sh"
+            cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4:
-            cmd = "`" + workDir + "/run_NWM_CALIB.sh`"
+        if statusData.jobRunType == 2:
+            cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 3:
+            cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+                raise
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+            cmd = "`" + workDir + "/run_WH_CALIB.sh`"
             try:
                 p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 time.sleep(5)
             except:
-                statusData.errMsg = "ERROR: Unable to launch NWM Calib job for gage: " + str(gageMeta.gage[basinNum])
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
             
         keyStatus = 0.90
@@ -900,7 +1007,7 @@ def generateRestartBsubScript(jobData,gageID,runDir):
     the model instead of removing all output prior to running the model.
     """
     
-    outFile = runDir + "/run_NWM_Restart.sh"
+    outFile = runDir + "/run_WH_Restart.sh"
     
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
@@ -910,21 +1017,23 @@ def generateRestartBsubScript(jobData,gageID,runDir):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        fileObj.write('# LSF Batch Script to Run NWM Calibration Simulations\n')
+        fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
         inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#BSUB -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
         fileObj.write(inStr)
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -W 6:00\n')
-        fileObj.write('#BSUB -q premium\n')
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
+            fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
@@ -937,11 +1046,11 @@ def generateRestartBsubScript(jobData,gageID,runDir):
 def generateRestartPbsScript(jobData,gageID,runDir):
     """
     Generic function to create a run script that will be called by qsub
-    to execute the model. Thisrun script is used specifically to restart the model
+    to execute the model. This run script is used specifically to restart the model
     instead of removing all output prior to running the model.
     """
     
-    outFile = runDir + "/run_NWM_Restart.sh"
+    outFile = runDir + "/run_WH_Restart.sh"
     
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
@@ -951,19 +1060,20 @@ def generateRestartPbsScript(jobData,gageID,runDir):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        fileObj.write('# PBS Batch Script to Run NWM Calibration Simulations\n')
+        fileObj.write('# PBS Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#PBS -N NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
-        inStr = "#PBS -q regular\n"
+        if len(jobData.queName.strip()) > 0:
+            inStr = "#PBS -q " + str(jobData.queName) + "\n"
+            fileObj.write(inStr)
+        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -o NWM_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
-        fileObj.write(inStr)
-        inStr = "#PBS -e NWM_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" = str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -978,14 +1088,58 @@ def generateRestartPbsScript(jobData,gageID,runDir):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateMpiexecRstScript(jobData,gageID,runDir):
+def generateRestartSlurmScript(jobData,gageID,runDir):
     """
-    Generic function to create a run script that will be called by mpiexec
+    Generic function to create a run script that will be called by Slurm
+    to execute the model. This run script is used specifically to restart the model
+    instead of removing all output prior to running the model.
+    """
+    
+    outFile = runDir + "/run_WH_Restart.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+    
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# Slurm Batch Script to Run WRF-Hydro Calibration Simulations\n')
+        fileObj.write('#\n')
+        inStr = "#SBATCH -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        inStr = "#SBATCH -t 08:00:00\n"
+        fileObj.write(inStr)
+        if len(jobData.queName.strip()) > 0:
+            inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
+            fileObj.write(inStr)
+        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        fileObj.write(inStr)
+        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        fileObj.write(inStr)
+        inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+        fileObj.write(inStr)
+        fileObj.write("\n")
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'srun -n ' + jobData.nCoresMod + ' ./wrf_hydro.exe\n'
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateMpiRstScript(jobData,gageID,runDir):
+    """
+    Generic function to create a run script that will be called by mpiexec/mpirun
     to execute the model. This script is used specifically to restart the
     model instead of removing all output prior to running the model.
     """
     
-    outFile = runDir + "/run_NWM_Restart.sh"
+    outFile = runDir + "/run_WH_Restart.sh"
     
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
@@ -996,8 +1150,12 @@ def generateMpiexecRstScript(jobData,gageID,runDir):
         fileObj.write('#!/bin/bash\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-        str(jobData.jobID) + str(gageID) + '\n'
+        if jobData.jobRunType == 4:
+            inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
+            str(jobData.jobID) + str(gageID) + '\n'
+        if jobData.jobRunType == 5:
+            inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./W' + \
+            str(jobData.jobID) + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1019,7 +1177,7 @@ def generateBsubScript(jobData,gageID,runDir):
     all prior model output in preparation for the next iteration. 
     """
     
-    outFile = runDir + "/run_NWM.sh"
+    outFile = runDir + "/run_WH.sh"
     
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
@@ -1029,21 +1187,23 @@ def generateBsubScript(jobData,gageID,runDir):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        fileObj.write('# LSF Batch Script to Run NWM Calibration Simulations\n')
+        fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
         inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#BSUB -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
         fileObj.write(inStr)
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -W 6:00\n')
-        fileObj.write('#BSUB -q premium\n')
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
+            fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
@@ -1070,14 +1230,134 @@ def generateBsubScript(jobData,gageID,runDir):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateMpiexecScript(jobData,gageID,runDir):
+def generatePbsScript(jobData,gageID,runDir):
     """
-    Generic function to create a run script that will be called by mpiexec
+    Generic function to create a script that will be called by qsub
+    to execute the model.
+    """
+    
+    outFile = runDir + "/run_WH.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# PBS Batch Script to Run WRF-Hydro Calibration Simulations\n')
+        fileObj.write('#\n')
+        inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        inStr = "#PBS -l walltime=08:00:00\n"
+        fileObj.write(inStr)
+        if len(jobData.queName.strip()) > 0:
+            inStr = "#PBS -q " + str(jobData.queName) + "\n"
+            fileObj.write(inStr)
+        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        fileObj.write(inStr)
+        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        fileObj.write(inStr)
+        nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
+        inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
+                ":mpiprocs=" + str(nCoresPerNode) + "\n"
+        fileObj.write(inStr)
+        fileObj.write("\n")
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        # Commenting this out for now as it's not necessary to remove this files,
+        # and it adds a huge I/O burder on Yellowstone when scaled out to all
+        # RFC regions. 
+        #inStr = 'rm -rf diag_hydro.*\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.err\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.out\n'
+        #fileObj.write(inStr)
+        inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateSlurmScript(jobData,gageID,runDir):
+    """
+    Generic function to create a script that will be called by Slurm
+    to execute the model.
+    """
+    
+    outFile = runDir + "/run_WH.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# Slurm Batch Script to Run WRF-Hydro Calibration Simulations\n')
+        fileObj.write('#\n')
+        inStr = "#SBATCH -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        inStr = "#SBATCH -t 08:00:00\n"
+        fileObj.write(inStr)
+        if len(jobData.queName.strip()) > 0:
+            inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
+            fileObj.write(inStr)
+        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        fileObj.write(inStr)
+        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        fileObj.write(inStr)
+        inStr = "#SBATCH -N " + str(jobData.nNodesMod) + "\n"
+        fileObj.write(inStr)
+        fileObj.write("\n")
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        # Commenting this out for now as it's not necessary to remove this files,
+        # and it adds a huge I/O burder on Yellowstone when scaled out to all
+        # RFC regions. 
+        #inStr = 'rm -rf diag_hydro.*\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.err\n'
+        #fileObj.write(inStr)
+        #inStr = 'rm -rf *.out\n'
+        #fileObj.write(inStr)
+        inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        fileObj.write(inStr)
+        inStr = "srun -n " + jobData.nCoresMod + " ./wrf_hydro.exe\n"
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateMpiScript(jobData,gageID,runDir):
+    """
+    Generic function to create a run script that will be called by mpiexec/mpirun
     to execute the model. For this particular script, we clean out all prior
     moel output in preparation for the next iteration.
     """
     
-    outFile = runDir + "/run_NWM.sh"
+    outFile = runDir + "/run_WH.sh"
     
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
@@ -1092,8 +1372,12 @@ def generateMpiexecScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-        str(jobData.jobID) + str(gageID) + '\n'
+        if jobData.jobRunType == 4:
+            inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
+            str(jobData.jobID) + str(gageID) + '\n'
+        if jobData.jobRunType == 5:
+            inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./W' + \
+            str(jobData.jobID) + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1169,7 +1453,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
     will execute R and Python to modify parameters.
     """
     
-    outFile1 = workDir + "/run_NWM_CALIB.sh"
+    outFile1 = workDir + "/run_WH_CALIB.sh"
     
     if os.path.isfile(outFile1):
         # We are just going to manually over-write the file everytime to be safe.
@@ -1180,13 +1464,13 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             fileObj = open(outFile1,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('#\n')
-            fileObj.write('# LSF Batch Script to Run NWM Calibration R Code\n')
+            fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration R Code\n')
             fileObj.write('#\n')
             inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
             inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
             fileObj.write(inStr)
-            inStr = "#BSUB -J NWM_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            inStr = "#BSUB -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#BSUB -o ' + workDir + '/%J.out\n'
             fileObj.write(inStr)
@@ -1194,7 +1478,9 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
             fileObj.write('#BSUB -W 2:00\n')
-            fileObj.write('#BSUB -q premium\n')
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
+                fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1230,14 +1516,160 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateMpiexecCalibScript(jobData,gageID,runDir,workDir):
+def generatePbsCalibScript(jobData,gageID,runDir,workDir):
     """
-    Generic function to create mpiexec script for running R calibration
+    Generic Function function to create PBS script for running R
+    calibration routines. These jobs will be shorter than 
+    the model runs, but still need to be ran through HPC
+    compute nodes. This function also creates the shell script that
+    will execute R and Python to modify parameters.
+    """
+    
+    outFile1 = workDir + "/run_WH_CALIB.sh"
+    
+    if os.path.isfile(outFile1):
+        # We are just going to manually over-write the file everytime to be safe.
+        os.remove(outFile1)
+    
+    if not os.path.isfile(outFile1):
+        try:
+            fileObj = open(outFile1,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# PBS Batch Script to Run WRF-Hydro Calibration R Code\n')
+            fileObj.write('#\n')
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
+            inStr = "#PBS -N WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            fileObj.write(inStr)
+            inStr = '#PBS -o WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            fileObj.write(inStr)
+            inStr = '#PBS -e WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            fileObj.write(inStr)
+            nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
+            inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
+                    ":mpiprocs=" + str(nCoresPerNode) + "\n"
+            fileObj.write(inStr)
+            # We are using 2 hours to be safe here. 
+            fileObj.write('#PBS -l walltime=02:00:00\n')
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#PBS -q ' + str(jobData.queName) + '\n'
+                fileObj.write(inStr)
+            fileObj.write('\n')
+            inStr = 'cd ' + workDir + '\n'
+            fileObj.write(inStr)
+            fileObj.write('./calibCmd.sh\n')
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile1
+            raise    
+            
+    outFile2 = workDir + "/calibCmd.sh"
+    
+    runRProgram = workDir + "/calib_workflow.R"
+    srcScript = workDir + "/calibScript.R"
+        
+    if not os.path.isfile(outFile2):
+        # This is the file that will run the R code first to generate params_new.txt and
+        # params_stats.txt. Python is called next, which will read in 
+        try:
+            fileObj = open(outFile2,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('exit\n')
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile2
+            raise
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile2
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
+        raise
+        
+def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
+    """
+    Generic Function function to create Slurm script for running R
+    calibration routines. These jobs will be shorter than 
+    the model runs, but still need to be ran through HPC
+    compute nodes. This function also creates the shell script that
+    will execute R and Python to modify parameters.
+    """
+    
+    outFile1 = workDir + "/run_WH_CALIB.sh"
+    
+    if os.path.isfile(outFile1):
+        # We are just going to manually over-write the file everytime to be safe.
+        os.remove(outFile1)
+    
+    if not os.path.isfile(outFile1):
+        try:
+            fileObj = open(outFile1,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# Slurm Batch Script to Run WRF-Hydro Calibration R Code\n')
+            fileObj.write('#\n')
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
+            inStr = "#SBATCH -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            fileObj.write(inStr)
+            inStr = '#SBATCH -o WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            fileObj.write(inStr)
+            inStr = '#SBATCH -e WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            fileObj.write(inStr)
+            inStr = "#SBATCH -N " + str(jobData.nNodesR) + "\n"
+            fileObj.write(inStr)
+            # We are using 2 hours to be safe here. 
+            fileObj.write('#SBATCH -t 02:00:00\n')
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
+                fileObj.write(inStr)
+            fileObj.write('\n')
+            inStr = 'cd ' + workDir + '\n'
+            fileObj.write(inStr)
+            fileObj.write('./calibCmd.sh\n')
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile1
+            raise    
+            
+    outFile2 = workDir + "/calibCmd.sh"
+    
+    runRProgram = workDir + "/calib_workflow.R"
+    srcScript = workDir + "/calibScript.R"
+        
+    if not os.path.isfile(outFile2):
+        # This is the file that will run the R code first to generate params_new.txt and
+        # params_stats.txt. Python is called next, which will read in 
+        try:
+            fileObj = open(outFile2,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('exit\n')
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile2
+            raise
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile2
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
+        raise
+        
+def generateMpiCalibScript(jobData,gageID,runDir,workDir):
+    """
+    Generic function to create mpiexec/mpirun script for running R calibration
     routines. This function also creates the shell script that will execute
     R and Python to modify parameters. 
     """
     
-    outFile1 = workDir + "/run_NWM_CALIB.sh"
+    outFile1 = workDir + "/run_WH_CALIB.sh"
     
     if os.path.isfile(outFile1):
         # We are just gonig to manually over-write the file everytime to be safe.
@@ -1249,8 +1681,12 @@ def generateMpiexecCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#!/bin/bash\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./C' + \
-            str(jobData.jobID) + str(gageID) +'\n'
+            if jobData.jobRunType == 4:
+                inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./C' + \
+                str(jobData.jobID) + str(gageID) +'\n'
+            if jobData.jobRunType == 5:
+                inStr = 'mpirun -np ' + str(int(jobData.nCoresR)) + ' ./C' + \
+                str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)
             fileObj.close
         except:
@@ -1293,7 +1729,7 @@ def generateMpiexecCalibScript(jobData,gageID,runDir,workDir):
         raise
         
     # Make symbolic link to newly created executable, which will be called by
-    # mpiexec.
+    # mpiexec/mpirun.
     if not os.path.islink(outLink2):
         try:
             os.symlink(outFile2,outLink2)

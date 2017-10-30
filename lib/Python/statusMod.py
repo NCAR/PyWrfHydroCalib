@@ -44,6 +44,7 @@ class statusMeta:
         self.jobRunType = []
         self.host = []
         self.acctKey = []
+        self.queName = []
         self.exe = []
         self.errMsg = []
         self.genMsg = []
@@ -178,7 +179,7 @@ def checkYsJobs(jobData):
 def checkBasJob(jobData,gageNum):
     """
     Generic function to check the status of a model run. If we are running BSUB/QSUB,
-    we will check the que for a specific job name following the format: NWM_JOBID_DOMAINID
+    we will check the que for a specific job name following the format: WH_JOBID_DOMAINID
     where JOBID = Unique job ID pulled from the database and DOMAINID is
     a unique domain ID pulled from the database. If we are running mpiexec/mpirun,
     we will be looking for instances of the model to be running in the format of
@@ -269,7 +270,26 @@ def checkBasJob(jobData,gageNum):
                 if jobs[1][jobNum].strip() == expName:
                     status = True
                     
-    if jobData.jobRunType == 4:
+    if jobData.jobRunType == 3:
+        # We are running via slurm
+        csvPath = "./SLURM_" + str(pidUnique) + ".csv"
+        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
+            raise
+            
+        # Delete temporary CSV files.
+        cmdTmp = "rm -rf " + csvPath
+        subprocess.call(cmd,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        
+        # STILL TO DO MORE.....
+                    
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # We are using mpiexec.
         pidActive = []
         exeName = "W" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
@@ -355,7 +375,7 @@ def checkCalibJob(jobData,gageNum):
     Generic function to check Yellowstone for calibration R job being ran for a 
     particular basin for a particular job.
     Job name follows a prescribed format:
-    NWM_CALIBRATION_JOBID_DOMAINID where:
+    WH_CALIBRATION_JOBID_DOMAINID where:
     JOBID = Unique job ID pulled from database.
     DOMAINID = Unique domain ID pulled from database.
     """
@@ -443,8 +463,27 @@ def checkCalibJob(jobData,gageNum):
             for jobNum in range(0,lenJobs):
                 if jobs[1][jobNum].strip() == expName:
                     status = True
+                    
+    if jobData.jobRunType == 3:
+        # We are running via slurm
+        csvPath = "./SLURM_" + str(pidUnique) + ".csv"
+        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
+            raise
+            
+        # Delete temporary CSV files.
+        cmdTmp = "rm -rf " + csvPath
+        subprocess.call(cmd,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        
+        # STILL TO DO MORE.....
     
-    if jobData.jobRunType == 4:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # We are running via mpiexec
         pidActive = []
         exeName = "C" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
@@ -477,7 +516,7 @@ def checkBasJobValid(jobData,gageNum,modRun):
     """
     Generic function to check Yellowstone for job being ran for a particular basin.
     Job name follows a prescribed format:
-    NWM_SIM_JOBID_DOMAINID where:
+    WH_SIM_JOBID_DOMAINID where:
     SIM = Can either CTRL or BEST.
     JOBID = Unique job ID pulled from database.
     DOMAINID = Unique domain ID pulled from database.
@@ -569,7 +608,27 @@ def checkBasJobValid(jobData,gageNum,modRun):
                 if jobs[1][jobNum].strip() == expName:
                     status = True
                     
-    if jobData.jobRunType == 4:
+    if jobData.jobRunType == 3:
+        # We are running via slurm
+        csvPath = "./SLURM_" + str(pidUnique) + ".csv"
+        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
+            raise
+            
+        # Delete temporary CSV files.
+        cmdTmp = "rm -rf " + csvPath
+        subprocess.call(cmd,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
+        
+        # STILL TO DO MORE.....
+                    
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # We are running via mpiexec
         pidActive = []
         if modRun == "BEST":
@@ -656,8 +715,29 @@ def checkParmGenJob(jobData,gageNum):
             testDF = jobs.query("JOB_NAME == '" + expName + "'")
             if len(testDF) != 0:
                 status = True
-    if jobData.jobRunType == 4:
-        # We are running via mpiexec
+                
+    if jobData.jobRunType == 3:
+        # We are running via slurm
+        csvPath = "./SLURM_" + str(pidUnique) + ".csv"
+        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
+            raise
+            
+        # Delete temporary CSV files.
+        cmdTmp = "rm -rf " + csvPath
+        subprocess.call(cmd,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
+        
+        # STILL TO DO MORE.....
+        
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+        # We are running via mpiexec/mpirun
         pidActive = []
         exeName = "P" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
         for proc in psutil.process_iter():
@@ -810,8 +890,28 @@ def checkEvalJob(jobData,gageNum):
             for jobNum in range(0,lenJobs):
                 if jobs[1][jobNum].strip() == expName:
                     status = True
+                    
+    if jobData.jobRunType == 3:
+        # We are running via slurm
+        csvPath = "./SLURM_" + str(pidUnique) + ".csv"
+        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
+            raise
+            
+        # Delete temporary CSV files.
+        cmdTmp = "rm -rf " + csvPath
+        subprocess.call(cmd,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
+                  str(jobData.gageIDs[gageNum])
+        
+        # STILL TO DO MORE.....
                 
-    if jobData.jobRunType == 4:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # We are running via mpiexec
         pidActive = []
         exeName = "E" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 

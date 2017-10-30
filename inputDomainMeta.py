@@ -50,7 +50,7 @@ warnings.filterwarnings("ignore")
 def main(argv):
     # Parse arguments. User must input a job name and directory.
     parser = argparse.ArgumentParser(description='Utility program to enter ' + \
-             'domain metadata into NWM_Calib_DB')
+             'domain metadata into wrfHydroCalib_DB')
     parser.add_argument('inCSV',metavar='inCSV',type=str,nargs='+',
                         help='Input CSV file containing information on basins.')
     parser.add_argument('--hostname',type=str,nargs='?',
@@ -83,7 +83,7 @@ def main(argv):
         db = psycopg2.connect(strTmp)
         #db = MySQLdb.connect(str(hostTmp),'NWM_Calib_rw',str(pwdTmp),'NWM_Calib_DB')
     except:
-        print "ERROR: Unable to connect to WH_Calib_DB. Please check your password you set " + \
+        print "ERROR: Unable to connect to wrfHydroCalib_DB. Please check your password you set " + \
               " or verify the database has been created."
         sys.exit(1)
     conn = db.cursor()

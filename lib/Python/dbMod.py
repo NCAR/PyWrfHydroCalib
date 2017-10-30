@@ -1,5 +1,5 @@
 # Module file that contains various functions for handling interations
-# with the NWM calibration database.
+# with the wrfHydro calibration database.
 
 # Logan Karsten
 # National Center for Atmospheric Research
@@ -26,7 +26,7 @@ class Database(object):
         self.host = jobData.host
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
-        self.dbName = 'WH_Calib_DB'
+        self.dbName = 'wrfHydroCalib_DB'
         self.db = None
     
     def connect(self,jobData):
@@ -38,8 +38,9 @@ class Database(object):
             raise Exception()
         
         try:
-            strTmp = "dbname=" + str(self.db) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
+            strTmp = "dbname=" + str(self.dbName) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
                      " port=5432 host=" + self.host
+            print strTmp
             db = psycopg2.connect(strTmp)
             #db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
         except:
@@ -150,7 +151,7 @@ class Database(object):
         sqlCmd = "insert into \"Job_Meta\" (\"Job_Directory\",date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
-                 "valid_complete,acct_key,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
+                 "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
                  "sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
@@ -158,7 +159,8 @@ class Database(object):
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
+                 0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
+                 jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
         try:
             self.conn.execute(sqlCmd)
@@ -293,19 +295,20 @@ class Database(object):
         jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d')
         jobData.validComplete = int(results[14])
         jobData.acctKey = results[15]
-        jobData.nCoresMod = int(results[16])
-        jobData.nNodesMod = int(results[17])
-        jobData.nCoresR = int(results[18])
-        jobData.nNodesR = int(results[19])
-        jobData.host = str(results[20])
-        jobData.jobRunType = int(results[21])
-        jobData.exe = results[22]
-        jobData.nGages = int(results[23])
-        jobData.owner = results[24]
-        jobData.email = results[25]
-        jobData.slChan = results[26]
-        jobData.slToken = results[27]
-        jobData.slUser = results[28]
+        jobData.queName = results[16]
+        jobData.nCoresMod = int(results[17])
+        jobData.nNodesMod = int(results[18])
+        jobData.nCoresR = int(results[19])
+        jobData.nNodesR = int(results[20])
+        jobData.host = str(results[21])
+        jobData.jobRunType = int(results[22])
+        jobData.exe = results[23]
+        jobData.nGages = int(results[24])
+        jobData.owner = results[25]
+        jobData.email = results[26]
+        jobData.slChan = results[27]
+        jobData.slToken = results[28]
+        jobData.slUser = results[29]
         
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
@@ -977,7 +980,6 @@ class Database(object):
                      str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ");"
                      
             try:
-                print sqlCmd
                 self.conn.execute(sqlCmd)
                 self.db.commit()
             except:

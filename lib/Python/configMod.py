@@ -23,6 +23,7 @@ class jobMeta:
         self.jobName = []
         self.jobID = []
         self.acctKey = []
+        self.queName = []
         self.nCoresMod = []
         self.nNodesMod = []
         self.nCoresR = []
@@ -116,6 +117,7 @@ class jobMeta:
         self.jobName = str(parser.get('logistics','jobName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
+        self.queName = str(parser.get('logistics','optQueName'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
@@ -249,6 +251,7 @@ def createJob(argsUser):
 
     # Check to make sure calibration parameter table exists.
     if not os.path.isfile(argsUser.parmTbl[0]):
+        print 'blah'
         print "ERROR: Calibration parameter table: " + str(argsUser.parmTbl[0]) + " not found."
         raise Exception()
         
@@ -326,9 +329,9 @@ def checkConfig(parser):
     if len(check) == 0:
         print "ERROR: Zero length account key passed to program."
         raise Exception()
-    #if check != 'NRAL0017':
-    #    print "ERROR: Invalid account key for calibration workflow."
-    #    raise Exception()
+
+    # We won't check the optional que name as it's optional. Even if some 
+    # run with a job submission method, they may not need to run with a que.
         
     check = str(parser.get('logistics','mySQLHost'))
     if len(check) == 0:
@@ -366,7 +369,7 @@ def checkConfig(parser):
     #if check != 0.0:
     #    print "ERROR: Number of model cores chosen must be multiple of 16"
     #    raise Exception()
-    check = int(parser.get('logistics','nCoresModel'))
+    check = int(parser.get('logistics','nNodesModel'))
     if not check:
         print "ERROR: Number of model nodes to use not specified."
         raise Exception()
@@ -376,15 +379,15 @@ def checkConfig(parser):
         
     # Check to make sure a valid option was passed for running model/R code
     check = int(parser.get('logistics','jobRunType'))
-    if check < 1 or check > 4:
+    if check < 1 or check > 5:
         print "ERROR: Invalid jobRunType specified."
         raise Exception()
         
     # TEMPORARY BLOCK. We have tested BSUB/MPIEXEC successfully, but not other options.
     # For now, will restrict the workflow to bsub/mpiexec. 
-    if check == 2 or check == 3 or check == 5 or check == 6:
-        print "ERROR: Only jobRunType of 1 and 4 supported at this time."
-        raise Exception()
+    #if check == 2 or check == 3 or check == 5:
+    #    print "ERROR: Only jobRunType of 1 and 4 supported at this time."
+    #    raise Exception()
         
     check = int(parser.get('logistics','nCoresR'))
     if not check:

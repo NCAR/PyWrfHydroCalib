@@ -63,7 +63,7 @@ def wipeJobDir(jobData):
         
 def removeOutput(jobData,runDir):
     """
-    Generic function to clean up NWM output. This is used specifically
+    Generic function to clean up wrfHydro output. This is used specifically
     between calibration simulations.
     """
     filesCheck = glob.glob(runDir + "/diag_hydro.*")
@@ -263,7 +263,7 @@ def sendMsg(jobData):
         
 def CleanSpinup(jobData,runDir):
     """
-    Generic function to clean up NWM output from the spinup. This will not
+    Generic function to clean up wrfHydro output from the spinup. This will not
     remove RESTART files as those are needed by the calibrations.
     """
     filesCheck = glob.glob(runDir + "/diag_hydro.*")
