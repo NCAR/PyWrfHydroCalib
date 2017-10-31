@@ -88,13 +88,16 @@ class jobMeta:
         self.hydroRstFreq = []
         self.hydroOutDt = []
         self.rstType = []
-        self.iocFlag = []
+        self.ioConfigOutputs = []
+        self.ioFormOutputs = []
         self.chrtoutDomain = []
+        self.chanObs = []
         self.chrtoutGrid = []
         self.lsmDomain = []
         self.rtoutDomain = []
         self.gwOut = []
         self.lakeOut = []
+        self.frxstPts = []
         self.resetHydro = []
         self.strOrder = []
         self.solarAdj = []
@@ -105,6 +108,7 @@ class jobMeta:
         self.chnRtFlag = []
         self.chnRtOpt = []
         self.rtOpt = []
+        self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
         self.gages = []
@@ -194,13 +198,16 @@ class jobMeta:
         self.hydroRstFreq = int(parser.get('modelTime','hydroRstFreq'))
         self.hydroOutDt = int(parser.get('modelTime','hydroOutDt'))
         self.rstType = int(parser.get('hydroIO','rstType'))
-        self.iocFlag = int(parser.get('hydroIO','iocFlag'))
+        self.ioConfigOutputs = int(parser.get('hydroIO','ioConfigOutputs'))
+        self.ioFormOutputs = int(parser.get('hydroIO','ioFormOutputs'))
         self.chrtoutDomain = int(parser.get('hydroIO','chrtoutDomain'))
+        self.chanObs = int(parser.get('hydroIO','chanObsDomain'))
         self.chrtoutGrid = int(parser.get('hydroIO','chrtoutGrid'))
         self.lsmDomain = int(parser.get('hydroIO','lsmDomain'))
         self.rtoutDomain = int(parser.get('hydroIO','rtoutDomain'))
         self.gwOut = int(parser.get('hydroIO','gwOut'))
         self.lakeOut = int(parser.get('hydroIO','lakeOut'))
+        self.frxstPts = int(parser.get('hydroIO','frxsOut'))
         self.resetHydro = int(parser.get('hydroIO','resetHydroAcc'))
         self.strOrder = int(parser.get('hydroIO','streamOrderOut'))
         self.solarAdj = int(parser.get('hydroPhysics','solarAdj'))
@@ -211,6 +218,7 @@ class jobMeta:
         self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
         self.chnRtFlag = int(parser.get('hydroPhysics','channelRouting'))
         self.chnRtOpt = int(parser.get('hydroPhysics','chanRtOpt'))
+        self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
@@ -723,17 +731,30 @@ def checkConfig(parser):
         print "ERROR: Invalid rstType passed to program."
         raise Exception()
         
-    check = parser.get('hydroIO','iocFlag')
+    check = parser.get('hydroIO','ioConfigOutputs')
     if len(check) == 0:
-        print "ERROR: Zero length iocFlag passed to program."
+        print "ERROR: Zero length ioConfigOutputs passed to program."
+        raise Exception()
+    if int(check) < 0 or int(check) > 6:
+        print "ERROR: Invalid ioConfigOutputs passed to program."
+        raise Exception()
+        
+    check = parser.get('hydroIO','ioFormOutputs')
+    if len(check) == 0:
+        print "ERROR: Zero length ioFormOutputs passed to program."
         raise Exception()
     if int(check) < 0 or int(check) > 4:
-        print "ERROR: Invalid iocFlag passed to program."
+        print "ERROR: Invalid ioFormOutputs passed to program."
         raise Exception()
         
     check = int(parser.get('hydroIO','chrtoutDomain'))
-    if check < 0 or check > 2:
+    if check < 0 or check > 1:
         print "ERROR: Invalid CHRTOUT_DOMAIN option passed to program."
+        raise Exception()
+        
+    check = int(parser.get('hydroIO','chanObsDomain'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid CHANOBS_DOMAIN optino passed to program."
         raise Exception()
         
     check = int(parser.get('hydroIO','chrtoutGrid'))
@@ -759,6 +780,11 @@ def checkConfig(parser):
     check = int(parser.get('hydroIO','lakeOut'))
     if check < 0 or check > 1:
         print "ERROR: Invalid LAKE_OUT option passed to program."
+        raise Exception()
+        
+    check = int(parser.get('hydroIO','frxstOut'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid frxstOut option passed to program."
         raise Exception()
         
     check = int(parser.get('hydroIO','resetHydroAcc'))
@@ -810,6 +836,11 @@ def checkConfig(parser):
     check = int(parser.get('hydroPhysics','chanRtOpt'))
     if check < 0 or check > 3:
         print "ERROR: Invalid channel routing option passed to program."
+        raise Exception()
+        
+    check = int(parser.get('hydroPhysics','udmpOpt'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid user-defined mapping option passed to program."
         raise Exception()
         
     check = int(parser.get('hydroPhysics','gwBaseSw'))

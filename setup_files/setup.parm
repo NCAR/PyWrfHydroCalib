@@ -167,21 +167,33 @@ hydroOutDt = 3600
 # Flag for overwriting soil variables from routing restart file (0:Off,1:On)
 rstType = 1
 
-# IOC-Specific output flags for outputs
+# Output-Specific output flags for outputs
 # Specify wrfHydro output config.    
-# 0: Diagnostics
+# 0: All (Default)
 # 1: Analysis-Assimilation
 # 2: Short Range
 # 3: Medium Range                               
 # 4: Long Range
-iocFlag = 1
+# 5: Retrospective
+ioConfigOutputs = 1
+
+# Flag to configure form of output files. 
+# 1: With scale_factor/add_offset + internal compression
+# 2: With scale_factor/add_offset + NO internal compression
+# 3: NO scale_factor/add_offset + internal compression
+# 4: NO scale_factor/add_offset + NO internal compression
+ioFormOutputs = 1
 
 # Hydro specific output options
 # Streamflow output  
 # 0: No output
-# 1: Streamflow and lateral inflows
-# 2: Thinned channel output
+# 1: Output 
 chrtoutDomain = 1
+
+# Streamflow NetCDF at forecast points / gage points
+# 0: No output
+# 1: Output
+chanObsDomain = 1
 
 # Gridded channel flow    
 # 0: No output
@@ -207,6 +219,11 @@ gwOut = 0
 # 0: No output
 # 1: NetCDF file of lake outputs
 lakeOut = 0
+
+# Text file of streamflow at forecast / gage points
+# 0: No output
+# 1: Output
+frxstOut = 1
 
 # Reset restart accumulation variables in hydro files? (0:Off,1:On)
 resetHydroAcc = 1
@@ -238,6 +255,12 @@ rtOpt = 1
 # 2: Muskingam-Cunge-reach
 # 3: Diffusive Wave-gridded
 chanRtOpt = 2
+
+# Specify user mapping option (1 = NWM)
+# NOTE: Workflow will expect a mapping file if not 0.
+# 0: No mapping
+# 1: User-defined mapping
+udmpOpt = 1
 
 # Groundwater Bucket  
 # 0: No groundwater bucket activation.

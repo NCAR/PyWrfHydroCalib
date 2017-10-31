@@ -155,6 +155,7 @@ def main(argv):
             
         # Compose paths to input files and check for existence of files.
         geoPath = dirBasin + "/geo_em.nc"
+        landSpatialMetaPath = dirBasin + "/GEOGRID_LDASOUT_Spatial_Metadata.nc"
         fullDomPath = dirBasin + "/Fulldom.nc"
         gwPath = dirBasin + "/GWBUCKPARM.nc"
         lakePath = dirBasin + "/LAKEPARM.nc"
@@ -168,6 +169,9 @@ def main(argv):
         # Double check to make sure input files exist
         if not os.path.isfile(geoPath):
             print "ERROR: " + geoPath + " not found."
+            sys.exit(1)
+        if not os.path.isfile(landSpatialMetaPath):
+            print "ERROR: " + landSpatialMetaPath + " not found."
             sys.exit(1)
         if not os.path.isfile(fullDomPath):
             print "ERROR: " + fullDomPath + " not found."
@@ -199,13 +203,13 @@ def main(argv):
     
         # Compose SQL command
         cmd = "INSERT INTO \"Domain_Meta\" (gage_id,link_id,domain_path,gage_agency,geo_e," + \
-              "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,wrfinput_file," + \
+              "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
               "soil_file,fulldom_file,rtlink_file,spweight_file," + \
               "gw_file,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
               "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc) VALUES " + \
               "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
-              hydS,hydN,geoPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
+              hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
               lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
               county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc)
            

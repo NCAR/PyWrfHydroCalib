@@ -19,6 +19,7 @@ class gageMeta:
         self.gageID = []
         self.comID = []
         self.geoFile = []
+        self.landSpatialMeta = []
         self.fullDom = []
         self.rtLnk = []
         self.lkFile = []
@@ -31,7 +32,7 @@ class gageMeta:
     def pullGageMeta(self,jobData,db,gageName):
         # Function to extract locations of gage-specific spatial files.
         
-        tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
+        tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','forceDir':'',\
                    'obsFile':'','gageID':'','comID':'','nCoresMod':''}
@@ -43,6 +44,7 @@ class gageMeta:
         self.gage = tmpMeta['gageName']
         self.gageID = tmpMeta['gageID']
         self.geoFile = tmpMeta['geoFile']
+        self.landSpatialMeta = tmpMeta['landSpatialMeta']
         self.fullDom = tmpMeta['fullDomFile']
         self.rtLnk = tmpMeta['rtLnk']
         self.lkFile = tmpMeta['lkFile']
