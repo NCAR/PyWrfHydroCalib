@@ -235,12 +235,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH.sh"
+            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
             if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p = subprocess.Popen([cmd],shell=True)
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise
@@ -285,13 +287,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + " /run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH.sh"
+            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            print cmd
             if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p = subprocess.Popen([cmd],shell=True)
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise

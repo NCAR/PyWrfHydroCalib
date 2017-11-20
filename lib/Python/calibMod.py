@@ -790,9 +790,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH_Restart.sh"
+            cmd = runDir + "/run_WH_Restart.sh 1>" + runDir + "/WH_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
             try:
-                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p = subprocess.Popen([cmd],shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -868,9 +870,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH.sh"
+            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
             try:
-                p = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p = subprocess.Popen([cmd],shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -930,9 +934,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = workDir + "/run_WH_CALIB.sh"
+            cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
             try:
-                p2 = subprocess.Popen([str(cmd)],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p2 = subprocess.Popen([str(cmd)],shell=True)
                 time.sleep(5)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
@@ -982,9 +988,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = "`" + workDir + "/run_WH_CALIB.sh`"
+            cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+            print cmd
             try:
-                p3 = subprocess.Popen([cmd],shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                p3 = subprocess.Popen([cmd],shell=True)
                 time.sleep(5)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
@@ -1076,7 +1085,7 @@ def generateRestartPbsScript(jobData,gageID,runDir):
         inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
-        inStr = "#PBS -l select=" = str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
+        inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
                 ":mpiprocs=" + str(nCoresPerNode) + "\n"
         fileObj.write(inStr)
         fileObj.write("\n")

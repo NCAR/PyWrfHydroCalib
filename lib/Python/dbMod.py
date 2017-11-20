@@ -40,7 +40,6 @@ class Database(object):
         try:
             strTmp = "dbname=" + str(self.dbName) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
                      " port=5432 host=" + self.host
-            print strTmp
             db = psycopg2.connect(strTmp)
             #db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
         except:
@@ -154,7 +153,7 @@ class Database(object):
                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
                  "sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
@@ -184,7 +183,7 @@ class Database(object):
             self.conn.execute(str(jobData.gSQL))
             results = self.conn.fetchall()
         except:
-            jobData.errMsg = "ERROR: Unable to query domain metadata for gages list."
+            jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
             raise
             
         if len(results) == 0:
@@ -254,9 +253,10 @@ class Database(object):
         tmpMeta['rtLnk'] = results[18]
         tmpMeta['udMap'] = results[19]
         tmpMeta['gwFile'] = results[20]
-        tmpMeta['lkFile'] = results[21]
-        tmpMeta['forceDir'] = results[22]
-        tmpMeta['obsFile'] = results[23]
+        tmpMeta['gwMask'] = results[21]
+        tmpMeta['lkFile'] = results[22]
+        tmpMeta['forceDir'] = results[23]
+        tmpMeta['obsFile'] = results[24]
         
     def jobStatus(self,jobData):
         """
@@ -282,18 +282,18 @@ class Database(object):
             
         # Fill jobData object with metadata on job and status.
         jobData.jobDir = results[1]
-        jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d')
-        jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d')
+        jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d %H:%M:%S')
+        jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d %H:%M:%S')
         jobData.spinComplete = int(results[4])
-        jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d')
-        jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d')
-        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d')
+        jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d %H:%M:%S')
+        jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d %H:%M:%S')
+        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d %H:%M:%S')
         jobData.nIter = int(results[8])
         jobData.calibIter = int(results[9])
         jobData.calibComplete = int(results[10])
-        jobData.bValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
-        jobData.eValidDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d')
-        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d')
+        jobData.bValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d %H:%M:%S')
         jobData.validComplete = int(results[14])
         jobData.acctKey = results[15]
         jobData.queName = results[16]
@@ -607,8 +607,9 @@ class Database(object):
             
         jobID = int(jobData.jobID)
         
-        sqlCmd = "select complete from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
+        sqlCmd = "select iteration,complete from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "';"
+        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()

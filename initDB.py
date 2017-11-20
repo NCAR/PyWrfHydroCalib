@@ -9,12 +9,9 @@
 
 #import MySQLdb
 import psycopg2
-import subprocess
 import sys
 import os
 import getpass
-import fileinput
-import shutil
 
 # Set the Python path to include package specific functions included with this 
 # package.
@@ -23,8 +20,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
-schemaFile = libPath + 'setup_files/psql_schema.sql'
-schemaPathTmp = libPath + "setup_files/schemaTmp.sql"
+schemaFile2 = libPath + 'setup_files/psql_schema2.sql'
 libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
@@ -49,11 +45,12 @@ def main(argv):
     # error back to the user. 
     try:
         #db = MySQLdb.connect('localhost','root',pwdTmp)
-        strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=localHost"
+        strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=dbHost"
         db = psycopg2.connect(strTmp)
     except:
         print "ERROR: Unable to connect to postgres as user root. It's possible you entered an incorrect password."
         sys.exit(1)
+    db.autocommit = True
     conn = db.cursor()
     #sqlCmd = 'show databases;'
     sqlCmd = 'SELECT datname FROM pg_database;'
@@ -65,7 +62,6 @@ def main(argv):
             conn.close()
             print "ERROR: wrfHydroCalib_DB Database already exists. Please remove before re-running this program."
             sys.exit(1)
-    #sqlCmd = 'select user from mysql.user;'
     sqlCmd = 'SELECT usename FROM pg_user;'
     conn.execute(sqlCmd)
     qResult = conn.fetchall()
@@ -75,11 +71,6 @@ def main(argv):
             conn.close()
             print "ERROR: WH_Calib_rw User already exists. Please remove before re-running this program."
             sys.exit(1)
-    try:
-        conn.close()
-    except:
-        print "ERROR: Unable to disconnect from postgres as user root."
-        sys.exit(1)
             
     # Prompt user to enter in password for read-write access to DB being created. 
     # Be sure to let user know that they need to keep the password handy for future
@@ -108,33 +99,49 @@ def main(argv):
         print "ERROR: Password Re-Entered Does Not Match First Password Created."
         sys.exit(1)
         
-    if not os.path.isfile(schemaFile):
-        print "ERROR: The necessary input schema file: " + schemaFile + " not found."
+    # STEP 1: Create proper database and user per user input.
+    cmd = "CREATE USER \"WH_Calib_rw\" WITH PASSWORD \'" + pwdUser1 + "\';"
+    try:
+        conn.execute(cmd)
+    except:
+        print "ERROR: Failure to create DB User WH_Calib_rw."
         sys.exit(1)
-
-    # Make a temporary copy of the schema file. Replace the temporary password
-    # in the temporary file with the password provided by the user.      
-    if os.path.isfile(schemaPathTmp):
-        os.remove(schemaPathTmp)
-    searchStr = "PWD_TMP"
-    replaceStr = "'" + pwdUser1 + "'"
-    shutil.copyfile(schemaFile,schemaPathTmp)
-    check = 0
-    for line in fileinput.input(schemaPathTmp,inplace=1):
-        if searchStr in line:
-            if check == 0:
-                line = line.replace(searchStr,replaceStr)
-                check = check + 1
-            else:
-                check = check + 1
-        sys.stdout.write(line)
+    cmd = "CREATE DATABASE \"wrfHydroCalib_DB\" OWNER \'WH_Calib_rw\' CONNECTION_LIMIT 5;"
+    try:
+        conn.execute(cmd)
+    except:
+        print "ERROR: Failure to create DB wrfHydroCalib_DB."
+        sys.exit(1)
         
-    #cmd = "mysql -u root -p'" + pwdTmp + "' < " + schemaPathTmp
-     
-    #subprocess.call(cmd,shell=True)
+    try:
+        conn.close()
+    except:
+        print "ERROR: Unable to disconnect from postgres as user postgres."
+        sys.exit(1)
     
-    # Remove temporary schema file
-    #os.remove(schemaPathTmp)
+    # Re-connect to the new database created with the user-provided password.
+    # Then create the necessary tables. 
+    strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=5432 host=dbHost"
+    try:
+        db = psycopg2.connect(strTmp)
+    except:
+        print "ERROR; Failure to establish connection with newly created wrfHydroCalib_DB."
+        sys.exit(1)
+    db.autocommit = True
+    conn = db.cursor()
+    
+    # Load schema file in to create database tables.
+    try:
+        conn.execute(open(schemaFile2,'r').read())
+    except:
+        print "ERROR: Unable to load schema table to create tables for wrfHydroCalib_DB."
+        sys.exit(1)
+    
+    try:
+        conn.close()
+    except:
+        print "ERROR: Unable to disconnect from postgres as user postgres."
+        sys.exit(1)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

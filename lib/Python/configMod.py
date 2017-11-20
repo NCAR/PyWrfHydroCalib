@@ -207,7 +207,7 @@ class jobMeta:
         self.rtoutDomain = int(parser.get('hydroIO','rtoutDomain'))
         self.gwOut = int(parser.get('hydroIO','gwOut'))
         self.lakeOut = int(parser.get('hydroIO','lakeOut'))
-        self.frxstPts = int(parser.get('hydroIO','frxsOut'))
+        self.frxstPts = int(parser.get('hydroIO','frxstOut'))
         self.resetHydro = int(parser.get('hydroIO','resetHydroAcc'))
         self.strOrder = int(parser.get('hydroIO','streamOrderOut'))
         self.solarAdj = int(parser.get('hydroPhysics','solarAdj'))
@@ -274,11 +274,12 @@ def createJob(argsUser):
     jobObj = jobMeta()
     
     # Read in values
-    try:
-        jobMeta.readConfig(jobObj,parser)
-    except:
-        print "ERROR: Unable to assign values from config file."
-        raise
+    jobMeta.readConfig(jobObj,parser)
+    #try:
+    #    jobMeta.readConfig(jobObj,parser)
+    #except:
+    #    print "ERROR: Unable to assign values from config file."
+    #    raise
         
     # Assign ownership to this job
     jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
@@ -335,8 +336,7 @@ def checkConfig(parser):
         
     check = str(parser.get('logistics','acctKey'))
     if len(check) == 0:
-        print "ERROR: Zero length account key passed to program."
-        raise Exception()
+        print "WARNING: Zero length account key passed to program."
 
     # We won't check the optional que name as it's optional. Even if some 
     # run with a job submission method, they may not need to run with a que.
@@ -526,9 +526,9 @@ def checkConfig(parser):
         print "ERROR: Must specify ending spinup date greater than beginning spinup date."
         raise Exception()
     # Impose a restriction here that the beg/end day must fall on the 1st of the month.
-    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
-        print "ERROR: You must specify beg/end spinup day to be on the 1st of the month."
-        raise Exception()
+    #if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+    #    print "ERROR: You must specify beg/end spinup day to be on the 1st of the month."
+    #    raise Exception()
         
     bDate = parser.get('logistics','bCalibDate')
     eDate = parser.get('logistics','eCalibDate')
@@ -548,9 +548,9 @@ def checkConfig(parser):
               " that is before the ending date for calibration simulations."
         raise Exception()
     # Impose a restriction here that the beg/end day must fall on the 1st of the month.
-    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
-        print "ERROR: You must specify beg/end calib day to be on the 1st of the month."
-        raise Exception()
+    #if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+    #    print "ERROR: You must specify beg/end calib day to be on the 1st of the month."
+    #    raise Exception()
         
     bDate = parser.get('logistics','bValidDate')
     eDate = parser.get('logistics','eValidDate')
@@ -570,9 +570,9 @@ def checkConfig(parser):
               " that is before the ending date for validation simulations."
         raise Exception()
     # Impose a restriction here that the beg/end day must fall on the 1st of the month.
-    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
-        print "ERROR: You must specify beg/end validation day to be on the 1st of the month."
-        raise Exception()
+    #if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+    #    print "ERROR: You must specify beg/end validation day to be on the 1st of the month."
+    #    raise Exception()
     
     # Check gauge information
     check1 = str(parser.get('gageInfo','gageListFile'))

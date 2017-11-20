@@ -50,11 +50,12 @@ def main(argv):
     args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
-    try:
-         jobData = configMod.createJob(args)
-    except:
-        print "ERROR: Failure to initialize calibration workflow job."
-        sys.exit(1)
+    jobData = configMod.createJob(args)
+    #try:
+    #     jobData = configMod.createJob(args)
+    #except:
+    #    print "ERROR: Failure to initialize calibration workflow job."
+    #    sys.exit(1)
         
     # Lookup database username/login credentials based on username
     # running program.
@@ -93,10 +94,11 @@ def main(argv):
         errMod.errOut(jobData)
         
     # Create DB entries for job name
-    try:
-        db.enterJobID(jobData)
-    except:
-        errMod.errOut(jobData)
+    db.enterJobID(jobData)
+    #try:
+    #    db.enterJobID(jobData)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Pull Job ID from newly created job. Will be used for calibration 
     # parameter DB entries

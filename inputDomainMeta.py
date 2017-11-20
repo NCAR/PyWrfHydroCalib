@@ -81,16 +81,22 @@ def main(argv):
     try:
         strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdTmp + " port=5432 host=" + hostTmp
         db = psycopg2.connect(strTmp)
-        #db = MySQLdb.connect(str(hostTmp),'NWM_Calib_rw',str(pwdTmp),'NWM_Calib_DB')
     except:
         print "ERROR: Unable to connect to wrfHydroCalib_DB. Please check your password you set " + \
-              " or verify the database has been created."
+              " or verify the database has been created. Also check your host name...."
         sys.exit(1)
     conn = db.cursor()
     
+    # Create expected dictionary of column types
+    dtype_dic= {'site_no':str,'link':int,'hyd_w':int,'hyd_e':int,'hyd_s':int,'hyd_n':int,
+                'geo_w':int,'geo_e':int,'geo_s':int,'geo_n':int,'dirname':str,
+                'agency_cd':str,'site_name':str,'lat':float,'lon':float,'area_sqmi':float,
+                'area_sqkm':float,'county_cd':str,'state':str,'HUC2':str,'HUC4':str,
+                'HUC6':str,'HUC8':str,'ecol3':str,'ecol4':str,'rfc':str}
+    
     # Read in CSV file containing necessary input metadata.
     try:
-        metaCSV = pd.read_csv(str(args.inCSV[0]))
+        metaCSV = pd.read_csv(str(args.inCSV[0]),dtype = dtype_dic)
     except:
         print "ERROR: Unable to open CSV file: " + str(args.inCSV[0])
         sys.exit(1)
@@ -158,6 +164,7 @@ def main(argv):
         landSpatialMetaPath = dirBasin + "/GEOGRID_LDASOUT_Spatial_Metadata.nc"
         fullDomPath = dirBasin + "/Fulldom.nc"
         gwPath = dirBasin + "/GWBUCKPARM.nc"
+        gwMskPath = dirBasin + "/GWBASINS.nc"
         lakePath = dirBasin + "/LAKEPARM.nc"
         routePath = dirBasin + "/RouteLink.nc"
         soilPath = dirBasin + "/soil_properties.nc"
@@ -183,8 +190,8 @@ def main(argv):
             print "ERROR: " + lakePath + " not found."
             sys.exit(1)
         if not os.path.isfile(routePath):
-            print "ERROR: " + routePath + " not found."
-            sys.exit(1)
+            print "WARNING: " + routePath + " not found. Assuming this is for gridded routing....."
+            routePath = "EMPTY"
         if not os.path.isfile(soilPath):
             print "ERROR: " + soilPath + " not found."
             sys.exit(1)
@@ -200,17 +207,20 @@ def main(argv):
         if not os.path.isfile(obsFile):
             print "ERROR: " + obsFile + " not found."
             sys.exit(1)
+        if not os.path.isfile(gwMskPath):
+            print "WARNING: " + gwMskPath + " not found. Assuming you are running reach-based/NWM routing...."
     
+        
         # Compose SQL command
         cmd = "INSERT INTO \"Domain_Meta\" (gage_id,link_id,domain_path,gage_agency,geo_e," + \
               "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
               "soil_file,fulldom_file,rtlink_file,spweight_file," + \
-              "gw_file,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
+              "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
               "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc) VALUES " + \
-              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
+              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
-              lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
+              gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
               county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc)
            
         # Make entry into DB

@@ -296,8 +296,19 @@ def main(argv):
         # We are going to pull all values for one basin, then place them into the array.
         # This is faster then looping over each iteration at a time. 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
+        statusData = [list(item) for item in statusData]
+        print statusData
         for iteration in range(0,int(jobData.nIter)):
-            keySlot[basin,iteration] = float(statusData[iteration][0])
+            print "CHECKING ITERATION " + str(iteration+1)
+            for iteration2 in range(0,int(jobData.nIter)):
+                print statusData[iteration2][1]
+                if statusData[iteration2][0] == iteration+1:
+                    print iteration
+                    keySlot[basin,iteration] = float(statusData[iteration2][1])
+                    
+        print keySlot
+            
+        #sys.exit(1)
                 
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
