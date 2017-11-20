@@ -12,7 +12,7 @@ import os
 import datetime
 import ast
 import pwd
-from slacker import Slacker
+#from slacker import Slacker
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -23,8 +23,13 @@ class jobMeta:
         self.jobName = []
         self.jobID = []
         self.acctKey = []
+        self.queName = []
         self.nCoresMod = []
+        self.nNodesMod = []
         self.nCoresR = []
+        self.nNodesR = []
+        self.jobRunType = []
+        self.host = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -83,13 +88,16 @@ class jobMeta:
         self.hydroRstFreq = []
         self.hydroOutDt = []
         self.rstType = []
-        self.iocFlag = []
+        self.ioConfigOutputs = []
+        self.ioFormOutputs = []
         self.chrtoutDomain = []
+        self.chanObs = []
         self.chrtoutGrid = []
         self.lsmDomain = []
         self.rtoutDomain = []
         self.gwOut = []
         self.lakeOut = []
+        self.frxstPts = []
         self.resetHydro = []
         self.strOrder = []
         self.solarAdj = []
@@ -100,6 +108,7 @@ class jobMeta:
         self.chnRtFlag = []
         self.chnRtOpt = []
         self.rtOpt = []
+        self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
         self.gages = []
@@ -112,9 +121,14 @@ class jobMeta:
         self.jobName = str(parser.get('logistics','jobName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
+        self.queName = str(parser.get('logistics','optQueName'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
+        self.nNodesMod = int(parser.get('logistics','nNodesModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
+        self.nNodesR = int(parser.get('logistics','nNodesR'))
+        self.host = str(parser.get('logistics','mySQLHost'))
         self.nIter = int(parser.get('logistics','numIter'))
+        self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
@@ -125,12 +139,12 @@ class jobMeta:
         self.slUser = str(parser.get('logistics','slackUser'))
         # Initiate Slack object if user has specified. Throw an error message
         # if Slack is not successfully inititated.
-        if len(self.slChan) > 0:
-            try:
-                self.slackObj = Slacker(str(self.slToken))
-            except:
-                print "ERROR: Failure to initiate Slack."
-                raise
+        #if len(self.slChan) > 0:
+        #    try:
+        #        self.slackObj = Slacker(str(self.slToken))
+        #    except:
+        #        print "ERROR: Failure to initiate Slack."
+        #        raise
         self.exe = str(parser.get('logistics','wrfExe'))
         self.genParmTbl = str(parser.get('logistics','genParmTbl'))
         #self.gwParmTbl = str(parser.get('logistics','gwParmTbl'))
@@ -184,13 +198,16 @@ class jobMeta:
         self.hydroRstFreq = int(parser.get('modelTime','hydroRstFreq'))
         self.hydroOutDt = int(parser.get('modelTime','hydroOutDt'))
         self.rstType = int(parser.get('hydroIO','rstType'))
-        self.iocFlag = int(parser.get('hydroIO','iocFlag'))
+        self.ioConfigOutputs = int(parser.get('hydroIO','ioConfigOutputs'))
+        self.ioFormOutputs = int(parser.get('hydroIO','ioFormOutputs'))
         self.chrtoutDomain = int(parser.get('hydroIO','chrtoutDomain'))
+        self.chanObs = int(parser.get('hydroIO','chanObsDomain'))
         self.chrtoutGrid = int(parser.get('hydroIO','chrtoutGrid'))
         self.lsmDomain = int(parser.get('hydroIO','lsmDomain'))
         self.rtoutDomain = int(parser.get('hydroIO','rtoutDomain'))
         self.gwOut = int(parser.get('hydroIO','gwOut'))
         self.lakeOut = int(parser.get('hydroIO','lakeOut'))
+        self.frxstPts = int(parser.get('hydroIO','frxstOut'))
         self.resetHydro = int(parser.get('hydroIO','resetHydroAcc'))
         self.strOrder = int(parser.get('hydroIO','streamOrderOut'))
         self.solarAdj = int(parser.get('hydroPhysics','solarAdj'))
@@ -201,6 +218,7 @@ class jobMeta:
         self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
         self.chnRtFlag = int(parser.get('hydroPhysics','channelRouting'))
         self.chnRtOpt = int(parser.get('hydroPhysics','chanRtOpt'))
+        self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
         
@@ -241,6 +259,7 @@ def createJob(argsUser):
 
     # Check to make sure calibration parameter table exists.
     if not os.path.isfile(argsUser.parmTbl[0]):
+        print 'blah'
         print "ERROR: Calibration parameter table: " + str(argsUser.parmTbl[0]) + " not found."
         raise Exception()
         
@@ -255,11 +274,12 @@ def createJob(argsUser):
     jobObj = jobMeta()
     
     # Read in values
-    try:
-        jobMeta.readConfig(jobObj,parser)
-    except:
-        print "ERROR: Unable to assign values from config file."
-        raise
+    jobMeta.readConfig(jobObj,parser)
+    #try:
+    #    jobMeta.readConfig(jobObj,parser)
+    #except:
+    #    print "ERROR: Unable to assign values from config file."
+    #    raise
         
     # Assign ownership to this job
     jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
@@ -316,10 +336,14 @@ def checkConfig(parser):
         
     check = str(parser.get('logistics','acctKey'))
     if len(check) == 0:
-        print "ERROR: Zero length account key passed to program."
-        raise Exception()
-    if check != 'NRAL0017':
-        print "ERROR: Invalid account key for calibration workflow."
+        print "WARNING: Zero length account key passed to program."
+
+    # We won't check the optional que name as it's optional. Even if some 
+    # run with a job submission method, they may not need to run with a que.
+        
+    check = str(parser.get('logistics','mySQLHost'))
+    if len(check) == 0:
+        print "ERROR: Zero length SQL passed length passed to program."
         raise Exception()
         
     # Either email or Slack must be chosen. If Slack is chosen, user
@@ -349,18 +373,44 @@ def checkConfig(parser):
         print "ERROR: Invalid number of model cores to use."
         raise Exception()
     #Check to make sure nCoresMod is an even division of 16 (16 cores/node)
-    check = float(parser.get('logistics','nCoresModel'))/16.0 - int(float(parser.get('logistics','nCoresModel'))/16.0)
-    if check != 0.0:
-        print "ERROR: Number of model cores chosen must be multiple of 16"
+    #check = float(parser.get('logistics','nCoresModel'))/16.0 - int(float(parser.get('logistics','nCoresModel'))/16.0)
+    #if check != 0.0:
+    #    print "ERROR: Number of model cores chosen must be multiple of 16"
+    #    raise Exception()
+    check = int(parser.get('logistics','nNodesModel'))
+    if not check:
+        print "ERROR: Number of model nodes to use not specified."
         raise Exception()
+    if check <= 0:
+        print "ERROR: Invalid number of model nodes to use."
+        raise Exception()
+        
+    # Check to make sure a valid option was passed for running model/R code
+    check = int(parser.get('logistics','jobRunType'))
+    if check < 1 or check > 5:
+        print "ERROR: Invalid jobRunType specified."
+        raise Exception()
+        
+    # TEMPORARY BLOCK. We have tested BSUB/MPIEXEC successfully, but not other options.
+    # For now, will restrict the workflow to bsub/mpiexec. 
+    #if check == 2 or check == 3 or check == 5:
+    #    print "ERROR: Only jobRunType of 1 and 4 supported at this time."
+    #    raise Exception()
         
     check = int(parser.get('logistics','nCoresR'))
     if not check:
         print "ERROR: Number of R Cores to use not specified."
         raise Exception()
     # R code will be restricted to one node.
-    if check <= 0 or check > 16:
-        print "ERROR: Number of R cores must be either greater than 0 or less than 17."
+    #if check <= 0 or check > 16:
+    #    print "ERROR: Number of R cores must be either greater than 0 or less than 17."
+    #    raise Exception()
+    check = int(parser.get('logistics','nNodesR'))
+    if not check:
+        print "ERROR: Number of R Nodes to use not specified."
+        raise Exception()
+    if check <= 0:
+        print "ERROR: Invalid number of R Nodes to use."
         raise Exception()
         
     # Check to make sure calibration method is DDS
@@ -476,9 +526,9 @@ def checkConfig(parser):
         print "ERROR: Must specify ending spinup date greater than beginning spinup date."
         raise Exception()
     # Impose a restriction here that the beg/end day must fall on the 1st of the month.
-    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
-        print "ERROR: You must specify beg/end spinup day to be on the 1st of the month."
-        raise Exception()
+    #if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+    #    print "ERROR: You must specify beg/end spinup day to be on the 1st of the month."
+    #    raise Exception()
         
     bDate = parser.get('logistics','bCalibDate')
     eDate = parser.get('logistics','eCalibDate')
@@ -498,9 +548,9 @@ def checkConfig(parser):
               " that is before the ending date for calibration simulations."
         raise Exception()
     # Impose a restriction here that the beg/end day must fall on the 1st of the month.
-    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
-        print "ERROR: You must specify beg/end calib day to be on the 1st of the month."
-        raise Exception()
+    #if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+    #    print "ERROR: You must specify beg/end calib day to be on the 1st of the month."
+    #    raise Exception()
         
     bDate = parser.get('logistics','bValidDate')
     eDate = parser.get('logistics','eValidDate')
@@ -520,9 +570,9 @@ def checkConfig(parser):
               " that is before the ending date for validation simulations."
         raise Exception()
     # Impose a restriction here that the beg/end day must fall on the 1st of the month.
-    if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
-        print "ERROR: You must specify beg/end validation day to be on the 1st of the month."
-        raise Exception()
+    #if bDate.strftime('%d') != '01' or eDate.strftime('%d') != '01':
+    #    print "ERROR: You must specify beg/end validation day to be on the 1st of the month."
+    #    raise Exception()
     
     # Check gauge information
     check1 = str(parser.get('gageInfo','gageListFile'))
@@ -681,17 +731,30 @@ def checkConfig(parser):
         print "ERROR: Invalid rstType passed to program."
         raise Exception()
         
-    check = parser.get('hydroIO','iocFlag')
+    check = parser.get('hydroIO','ioConfigOutputs')
     if len(check) == 0:
-        print "ERROR: Zero length iocFlag passed to program."
+        print "ERROR: Zero length ioConfigOutputs passed to program."
+        raise Exception()
+    if int(check) < 0 or int(check) > 6:
+        print "ERROR: Invalid ioConfigOutputs passed to program."
+        raise Exception()
+        
+    check = parser.get('hydroIO','ioFormOutputs')
+    if len(check) == 0:
+        print "ERROR: Zero length ioFormOutputs passed to program."
         raise Exception()
     if int(check) < 0 or int(check) > 4:
-        print "ERROR: Invalid iocFlag passed to program."
+        print "ERROR: Invalid ioFormOutputs passed to program."
         raise Exception()
         
     check = int(parser.get('hydroIO','chrtoutDomain'))
-    if check < 0 or check > 2:
+    if check < 0 or check > 1:
         print "ERROR: Invalid CHRTOUT_DOMAIN option passed to program."
+        raise Exception()
+        
+    check = int(parser.get('hydroIO','chanObsDomain'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid CHANOBS_DOMAIN optino passed to program."
         raise Exception()
         
     check = int(parser.get('hydroIO','chrtoutGrid'))
@@ -717,6 +780,11 @@ def checkConfig(parser):
     check = int(parser.get('hydroIO','lakeOut'))
     if check < 0 or check > 1:
         print "ERROR: Invalid LAKE_OUT option passed to program."
+        raise Exception()
+        
+    check = int(parser.get('hydroIO','frxstOut'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid frxstOut option passed to program."
         raise Exception()
         
     check = int(parser.get('hydroIO','resetHydroAcc'))
@@ -768,6 +836,11 @@ def checkConfig(parser):
     check = int(parser.get('hydroPhysics','chanRtOpt'))
     if check < 0 or check > 3:
         print "ERROR: Invalid channel routing option passed to program."
+        raise Exception()
+        
+    check = int(parser.get('hydroPhysics','udmpOpt'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid user-defined mapping option passed to program."
         raise Exception()
         
     check = int(parser.get('hydroPhysics','gwBaseSw'))

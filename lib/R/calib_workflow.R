@@ -3,10 +3,11 @@ args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- args[1]
 #mCurrent <- args[2]
 
-.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
-library(rwrfhydro)
+#.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
+#library(rwrfhydro)
 library(data.table)
 library(ggplot2)
+library(ncdf4)
 library(plyr)
 
 #########################################################
@@ -122,12 +123,22 @@ if (cyclecount > 0) {
    write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
    system.time({
    filesList <- list.files(path = outPath,
-                          pattern = glob2rx("*.CHRTOUT_DOMAIN*"),
+                          pattern = glob2rx("*.CHANOBS_DOMAIN*"),
                           full.names = TRUE)
    filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
    whFiles <- which(filesListDate >= startDate)
    filesList <- filesList[whFiles]
    if (length(filesList) == 0) stop("No matching files in specified directory.")
+   # Find the index of the gage from the first file in the list.
+   idTmp <- nc_open(filesList[1])
+   featureIdTmp <- ncvar_get(idTmp,'feature_id')
+   gageIndx <- which(featureIdTmp == linkId)
+   print(gageIndx)
+   print(whFiles[0])
+   nc_close(idTmp)
+   rm(idTmp)
+   rm(featureIdTmp)
+   
    chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
    })
 

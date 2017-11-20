@@ -10,7 +10,7 @@
 
 import sys
 import argparse
-#import getpass
+import getpass
 import os
 import time
 import pwd
@@ -41,6 +41,8 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration spinup.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
     
     args = parser.parse_args()
     
@@ -53,18 +55,21 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    # COMMENTED OUT FOR V1.2
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    jobData.dbUName = 'WH_Calib_rw'
+    
+    if not args.hostname:
+        # We will assume localhost for MySQL DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+    jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -83,9 +88,8 @@ def main(argv):
         
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here. This is mostly designed to deal
-    # with nohup processes being kicked off Yellowstone login nodes arbitrarily.
-    # We need to continuously be kicking this off from a cronjob to keep things
-    # flowing.
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
     lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
     if os.path.isfile(lockPath):
         # Either a job is still running, or was running
@@ -292,8 +296,19 @@ def main(argv):
         # We are going to pull all values for one basin, then place them into the array.
         # This is faster then looping over each iteration at a time. 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
+        statusData = [list(item) for item in statusData]
+        print statusData
         for iteration in range(0,int(jobData.nIter)):
-            keySlot[basin,iteration] = float(statusData[iteration][0])
+            print "CHECKING ITERATION " + str(iteration+1)
+            for iteration2 in range(0,int(jobData.nIter)):
+                print statusData[iteration2][1]
+                if statusData[iteration2][0] == iteration+1:
+                    print iteration
+                    keySlot[basin,iteration] = float(statusData[iteration2][1])
+                    
+        print keySlot
+            
+        #sys.exit(1)
                 
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
@@ -325,16 +340,18 @@ def main(argv):
 
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
+                print "ITERATION = " + str(iteration)
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
                 # If the status is already 1.0, then continue the loop as now work needs to be done.
                 if keyStatusCheck1 == 1.0:
                     continue
                 else:
-                    try:
-                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                    except:
-                        errMod.errOut(jobData)
+                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                    #try:
+                    #    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                    #except:
+                    #    errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
                     # Put some spacing between launching model simulations to slow down que geting 

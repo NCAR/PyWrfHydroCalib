@@ -3,8 +3,8 @@ args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- args[1]
 #namelistFile <- "validScript.R"
 
-.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
-library(rwrfhydro)
+#.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
+#library(rwrfhydro)
 library(data.table)
 library(ggplot2)
 library(plyr)
@@ -58,7 +58,7 @@ maxDate <- max(endCalibDate, endValidDate)
 write(paste0("Reading control run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
 system.time({
   filesList <- list.files(path = outPathControl,
-                        pattern = glob2rx("*.CHRTOUT_DOMAIN*"),
+                        pattern = glob2rx("*.CHANOBS_DOMAIN*"),
                         full.names = TRUE)
   filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
   whFiles <- which(filesListDate >= minDate)
@@ -70,7 +70,7 @@ system.time({
 write(paste0("Reading validation run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
 system.time({
   filesList <- list.files(path = outPathValid,
-                        pattern = glob2rx("*.CHRTOUT_DOMAIN*"),
+                        pattern = glob2rx("*.CHANOBS_DOMAIN*"),
                         full.names = TRUE)
   filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
   whFiles <- which(filesListDate >= minDate)

@@ -20,7 +20,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
     number of cores to use, etc will be used to compose a BSUB
-    submision script. This function will walk the run directory 
+    submision script,execute mpiexec/mpirun, or a QSUB script. 
+    This function will walk the run directory 
     to determine where the model left off. If no restart files exist,
     then the function will assume the model has not ran at all. Both
     the LSM and hydro restart files must be present in order for the
@@ -42,13 +43,36 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     except:
         raise
         
-    # If BSUB run script doesn't exist, create it here.
-    bsubFile = runDir + "/run_NWM.sh"
-    if not os.path.isfile(bsubFile):
-        try:
-            generateRunScript(statusData,int(gageID),runDir,gageMeta)
-        except:
-            raise
+    if statusData.jobRunType == 1:
+        # If BSUB run script doesn't exist, create it here.
+        bsubFile = runDir + "/run_WH.sh"
+        if not os.path.isfile(bsubFile):
+            try:
+                generateBsubScript(statusData,int(gageID),runDir,gageMeta)
+            except:
+                raise
+    if statusData.jobRunType == 2:
+        pbsFile = runDir = "/run_WH.sh"
+        if not os.path.isfile(pbsFile):
+            try:
+                generatePbsScript(statusData,int(gageID),runDir,gageMeta)
+            except:
+                raise
+    if statusData.jobRunType == 3:
+        slurmFile = runDir + "/run_WH.sh"
+        if not os.path.isfile(slurmFile):
+            try:
+                generateSlurmScript(statusData,int(gageID),runDir,gageMeta)
+            except:
+                raise
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        # If run script doesn't exist, create it here.
+        runScript = runDir + "/run_WH.sh"
+        if not os.path.isfile(runScript):
+            try:
+                generateMpiScript(statusData,int(gageID),runDir,gageMeta)
+            except:
+                raise
     
     # Calculate datetime objects
     begDate = statusData.bSpinDate
@@ -64,6 +88,16 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         
     # Create path to LOCK file if neeced
     lockPath = workDir + "/RUN.LOCK"
+    
+    # If the LOCK file is present, report this and lock things up.
+    if os.path.isfile(lockPath):
+        keySlot[basinNum] = -1.0
+        keyStatus = -1.0
+        runFlag = False
+        statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " Is locked. " + \
+                            "Please remove: " + lockPath + " before continuing."
+        errMod.sendMsg(statusData)
+                            
     
     if keyStatus == 1.0:
         # Model has already completed
@@ -194,11 +228,23 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 raise
                 
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + runDir + "/run_WH.sh"
+        if statusData.jobRunType == 2:
+            cmd = "qsub " + runDir + "/run_WH.sh"
+        if statusData.jobRunType == 3:
+            cmd = "sbatch " + runDir + "/run_WH.sh"
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            subprocess.call(cmd,shell=True)
+            if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
+                subprocess.call(cmd,shell=True)
+            if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+                p = subprocess.Popen([cmd],shell=True)
         except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise
             
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
@@ -234,23 +280,35 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 raise
                 
         # Fire off model.
-        cmd = "bsub < " + runDir + "/run_NWM.sh"
+        if statusData.jobRunType == 1:
+            cmd = "bsub < " + runDir + "/run_WH.sh"
+        if statusData.jobRunType == 2:
+            cmd = "qsub " + runDir + " /run_WH.sh"
+        if statusData.jobRunType == 3:
+            cmd = "sbatch " + runDir + " /run_WH.sh"
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            subprocess.call(cmd,shell=True)
+            if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
+                subprocess.call(cmd,shell=True)
+            if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+                p = subprocess.Popen([cmd],shell=True)
         except:
-            statusData.errMsg = "ERROR: Unable to launch NWM job for gage: " + str(gageMeta.gage[basinNum])
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise
             
         keyStatus = 0.5
         keySlot[basinNum] = 0.5
                 
-def generateRunScript(jobData,gageID,runDir,gageMeta):
+def generateBsubScript(jobData,gageID,runDir,gageMeta):
     """
     Generic function to create a run script that will be called by bsub
     to execute the model.
     """
     
-    outFile = runDir + "/run_NWM.sh"
+    outFile = runDir + "/run_WH.sh"
     
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
@@ -260,7 +318,7 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        fileObj.write('# LSF Batch Script to Run NWM Calibration Simulations\n')
+        fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
         inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
@@ -268,14 +326,16 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
         #fileObj.write('#BSUB -R "span[ptile=16]"\n')
-        inStr = "#BSUB -J NWM_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#BSUB -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
         fileObj.write(inStr)
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -W 8:00\n')
-        fileObj.write('#BSUB -q premium\n')
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
+            fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
@@ -290,4 +350,142 @@ def generateRunScript(jobData,gageID,runDir,gageMeta):
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generatePbsScript(jobData,gageID,runDir,gageMeta):
+    """
+    Generic function to create a script that will be called by qsub
+    to execute the model.
+    """
+    
+    outFile = runDir + "/run_WH.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+    
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# PBS Batch Script to Run WH Calibration Simulations\n')
+        fileObj.write('#\n')
+        inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        inStr = "#PBS -l walltime=08:00:00\n"
+        fileObj.write(inStr)
+        if len(jobData.queName.strip()) > 0:
+            inStr = "#PBS -q " + str(jobData.queName) + "\n"
+            fileObj.write(inStr)
+        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        fileObj.write(inStr)
+        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        fileObj.write(inStr)
+        nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
+        inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
+                ":mpiprocs=" + str(nCoresPerNode) + "\n"
+        fileObj.write(inStr)
+        fileObj.write("\n")
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateSlurmScript(jobData,gageID,runDir,gageMeta):
+    """
+    Generic function to create a script that will be called by Slurm
+    to execute the model.
+    """
+
+    outFile = runDir + "/run_WH.sh"
+
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# Slurm Batch Script to Run WH Calibration Simulations\n')
+        fileObj.write('#\n')
+        inStr = '#SBATCH -J WH_' + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        fileObj.write(inStr)
+        inStr = '#SBATCH -A ' + str(jobData.acctKey) + '\n'
+        fileObj.write(inStr)
+        inStr = '#SBATCH -t 08:00:00\n'
+        fileObj.write(inStr)
+        if len(jobData.queName.str()) > 0:
+            inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
+            fileObj.write(inStr)
+        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        fileObj.write(inStr)
+        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        fileObj.write(inStr)
+        inStr = '#SBATCH -N ' + str(jobData.nNodesMod) + '\n'
+        fileObj.write(inStr)
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'srun -n ' + jobData.nCoresMod + ' ./wrf_hydro.exe\n'
+        fileObj.write(inStr)
+        fileObj.write('\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        fileObj.close        
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+        
+def generateMpiScript(jobData,gageID,runDir,gageMeta):
+    """
+    Generic function to create a run script that will use mpiexec/mpirun to execute
+    the model.
+    """
+    
+    outFile = runDir + "/run_WH.sh"
+    
+    if os.path.isfile(outFile):
+        jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+        
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        if jobData.jobRunType == 4:
+            inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
+                    str(jobData.jobID) + str(gageID) + '\n'
+        if jobData.jobRunType == 5:
+            inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./W' + \
+                    str(jobData.jobID) + str(gageID) + '\n'
+        fileObj.write(inStr)
+        fileObj.close
+    except:
+        jobData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+    
+    # Make the file an executable.
+    cmd = "chmod +x " + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise

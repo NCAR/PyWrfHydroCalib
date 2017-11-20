@@ -1,13 +1,14 @@
 # Module file that contains various functions for handling interations
-# with the NWM calibration database.
+# with the wrfHydro calibration database.
 
 # Logan Karsten
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-import MySQLdb
+#import MySQLdb
+import psycopg2
 import datetime
-from slacker import Slacker
+#from slacker import Slacker
 import pandas as pd
 import os
 import shutil
@@ -22,22 +23,25 @@ class Database(object):
         etc
         """
         self.connected = False
-        self.host = 'hydro-c1-web.rap.ucar.edu'
+        self.host = jobData.host
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
-        self.dbName = 'NWM_Calib_DB'
+        self.dbName = 'wrfHydroCalib_DB'
         self.db = None
     
     def connect(self,jobData):
         """
-        Connect to the MySQL Databse Server
+        Connect to the postgres Databse Server
         """
         if self.connected:
             jobData.errMsg = "ERROR: Connection to DB already established."
             raise Exception()
         
         try:
-            db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
+            strTmp = "dbname=" + str(self.dbName) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
+                     " port=5432 host=" + self.host
+            db = psycopg2.connect(strTmp)
+            #db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
         except:
             jobData.errMsg = "ERROR: Unable to connect to database: " + self.dbName
             raise
@@ -48,7 +52,7 @@ class Database(object):
         
     def disconnect(self,jobData):
         """
-        Disconnect from MySQL database server and cleanup.
+        Disconnect from postgres database server and cleanup.
         """
         if not self.connected:
             jobData.errMsg = "ERROR: Connection to DB already disconnected."
@@ -74,13 +78,13 @@ class Database(object):
         # output directory.            
         jobDir = jobData.outDir + "/" + jobData.jobName
         
-        sqlCmd = "select jobID from Job_Meta where Job_Directory='%s'" % (jobDir) + ";"
+        sqlCmd = "select \"jobID\" from \"Job_Meta\" where \"Job_Directory\"='%s'" % (jobDir) + ";"
         
         try:
             self.conn.execute(sqlCmd)
             result = self.conn.fetchone()
         except:
-            jobData.errMsg = "ERROR: Unable to execute SQL command to inquire job ID."
+            jobData.errMsg = "ERROR: Unable to execute postgres command to inquire job ID."
             raise
         
         if result is None:
@@ -99,7 +103,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
             
-        sqlCmd = "select domainID from Domain_Meta where gage_id='%s'" % (str(gageName)) + ";"
+        sqlCmd = "select \"domainID\" from \"Domain_Meta\" where \"gage_id\"='%s'" % (str(gageName)) + ";"
         
         try:
             self.conn.execute(sqlCmd)
@@ -143,17 +147,19 @@ class Database(object):
             slStr3 = str(jobData.slUser)
             
         jobDir = jobData.outDir + "/" + jobData.jobName
-        sqlCmd = "insert into Job_Meta (Job_Directory,date_su_start,date_su_end," + \
+        sqlCmd = "insert into \"Job_Meta\" (\"Job_Directory\",date_su_start,date_su_end," + \
                  "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
-                 "valid_complete,acct_key,num_cores_model,num_cores_R,exe,num_gages,owner,email," + \
+                 "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
+                 "sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
-                 0,jobData.acctKey,jobData.nCoresMod,jobData.nCoresR,jobData.exe,len(jobData.gages),\
+                 0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
+                 jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
         try:
             self.conn.execute(sqlCmd)
@@ -177,7 +183,7 @@ class Database(object):
             self.conn.execute(str(jobData.gSQL))
             results = self.conn.fetchall()
         except:
-            jobData.errMsg = "ERROR: Unable to query domain metadata for gages list."
+            jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
             raise
             
         if len(results) == 0:
@@ -202,7 +208,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd = "Select * from Domain_Meta where gage_id='" + str(gageName) + "';"
+        sqlCmd = "Select * from \"Domain_Meta\" where gage_id='" + str(gageName) + "';"
         
         try:
             self.conn.execute(sqlCmd)
@@ -224,7 +230,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd = "select * from Domain_Meta where gage_id='" + tmpMeta['gageName'] + "';"
+        sqlCmd = "select * from \"Domain_Meta\" where gage_id='" + tmpMeta['gageName'] + "';"
         
         try:
             self.conn.execute(sqlCmd)
@@ -240,15 +246,17 @@ class Database(object):
         tmpMeta['gageID'] = results[0]
         tmpMeta['comID'] = results[2]
         tmpMeta['geoFile'] = results[13]
-        tmpMeta['wrfInput'] = results[14]
-        tmpMeta['soilFile'] = results[15]
-        tmpMeta['fullDomFile'] = results[16]
-        tmpMeta['rtLnk'] = results[17]
-        tmpMeta['udMap'] = results[18]
-        tmpMeta['gwFile'] = results[19]
-        tmpMeta['lkFile'] = results[20]
-        tmpMeta['forceDir'] = results[21]
-        tmpMeta['obsFile'] = results[22]
+        tmpMeta['landSpatialMeta'] = results[14]
+        tmpMeta['wrfInput'] = results[15]
+        tmpMeta['soilFile'] = results[16]
+        tmpMeta['fullDomFile'] = results[17]
+        tmpMeta['rtLnk'] = results[18]
+        tmpMeta['udMap'] = results[19]
+        tmpMeta['gwFile'] = results[20]
+        tmpMeta['gwMask'] = results[21]
+        tmpMeta['lkFile'] = results[22]
+        tmpMeta['forceDir'] = results[23]
+        tmpMeta['obsFile'] = results[24]
         
     def jobStatus(self,jobData):
         """
@@ -259,7 +267,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd = "select * from Job_Meta where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(jobData.jobID) + "';"
         
         try:
             self.conn.execute(sqlCmd)
@@ -274,44 +282,49 @@ class Database(object):
             
         # Fill jobData object with metadata on job and status.
         jobData.jobDir = results[1]
-        jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d')
-        jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d')
+        jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d %H:%M:%S')
+        jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d %H:%M:%S')
         jobData.spinComplete = int(results[4])
-        jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d')
-        jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d')
-        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d')
+        jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d %H:%M:%S')
+        jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d %H:%M:%S')
+        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d %H:%M:%S')
         jobData.nIter = int(results[8])
         jobData.calibIter = int(results[9])
         jobData.calibComplete = int(results[10])
-        jobData.bValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d')
-        jobData.eValidDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d')
-        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d')
+        jobData.bValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d %H:%M:%S')
         jobData.validComplete = int(results[14])
         jobData.acctKey = results[15]
-        jobData.nCoresMod = int(results[16])
-        jobData.nCoresR = int(results[17])
-        jobData.exe = results[18]
-        jobData.nGages = int(results[19])
-        jobData.owner = results[20]
-        jobData.email = results[21]
-        jobData.slChan = results[22]
-        jobData.slToken = results[23]
-        jobData.slUser = results[24]
+        jobData.queName = results[16]
+        jobData.nCoresMod = int(results[17])
+        jobData.nNodesMod = int(results[18])
+        jobData.nCoresR = int(results[19])
+        jobData.nNodesR = int(results[20])
+        jobData.host = str(results[21])
+        jobData.jobRunType = int(results[22])
+        jobData.exe = results[23]
+        jobData.nGages = int(results[24])
+        jobData.owner = results[25]
+        jobData.email = results[26]
+        jobData.slChan = results[27]
+        jobData.slToken = results[28]
+        jobData.slUser = results[29]
         
         # Initiate Slack if fields are not MISSING
-        if jobData.slChan != "MISSING":
-            #jobData.email = None
-            try:
-                jobData.slackObj = Slacker(str(jobData.slToken))
-            except:
-                jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
-                                 str(jobData.slUser) + " channel: " + str(jobData.slChan)
-                raise
-        else:
-            jobData.slChan = None
-            jobData.slToken = None
-            jobData.slUser = None
-            jobData.slackObj = None
+        #if jobData.slChan != "MISSING":
+        #    #jobData.email = None
+        #    try:
+        #        jobData.slackObj = Slacker(str(jobData.slToken))
+        #    except:
+        #        jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
+        #                         str(jobData.slUser) + " channel: " + str(jobData.slChan)
+        #        raise
+        #else:
+        jobData.slChan = None
+        jobData.slToken = None
+        jobData.slUser = None
+        jobData.slackObj = None
         
     def updateJobOwner(self,jobData,newOwner,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag):
         """
@@ -323,24 +336,24 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd1 = "update Job_Meta set Job_Meta.owner='" + str(newOwner) + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd2 = "update Job_Meta set Job_Meta.email='" + str(newEmail) + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd3 = "update Job_Meta set Job_Meta.slack_channel='" + str(newSlackChannel) + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd4 = "update Job_Meta set Job_Meta.slack_token='" + str(newSlackToken) + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd5 = "update Job_Meta set Job_Meta.slack_user='" + str(newSlackUName) + \
-                  "' where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd6 = "update Job_Meta set Job_Meta.email='MISSING'" + \
-                  " where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd7 = "update Job_Meta set Job_Meta.slack_channel='MISSING'" + \
-                  " where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd8 = "update Job_Meta set Job_Meta.slack_token='MISSING'" + \
-                  " where jobID='" + str(jobData.jobID) + "';"
-        sqlCmd9 = "update Job_Meta set Job_Meta.slack_user='MISSING'" + \
-                  " where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd1 = "update \"Job_Meta\" set owner='" + str(newOwner) + \
+                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd2 = "update \"Job_Meta\" set email='" + str(newEmail) + \
+                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd3 = "update \"Job_Meta\" set slack_channel='" + str(newSlackChannel) + \
+                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd4 = "update \"Job_Meta\" set slack_token='" + str(newSlackToken) + \
+                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd5 = "update \"Job_Meta\" set slack_user='" + str(newSlackUName) + \
+                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd6 = "update \"Job_Meta\" set email='MISSING'" + \
+                  " where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd7 = "update \"Job_Meta\" set slack_channel='MISSING'" + \
+                  " where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd8 = "update \"Job_Meta\" set slack_token='MISSING'" + \
+                  " where \"jobID\"='" + str(jobData.jobID) + "';"
+        sqlCmd9 = "update \"Job_Meta\" set slack_user='MISSING'" + \
+                  " where \"jobID\"='" + str(jobData.jobID) + "';"
                   
         try:
             # Update the owner of the job, regardless of whatever options were filled.
@@ -384,7 +397,7 @@ class Database(object):
                 jobData.slChan = str(newSlackChannel)
                 jobData.slToken = str(newSlackToken)
                 jobData.slUser = str(newSlackUName)
-                jobData.slackObj = Slacker(str(jobData.slToken))
+                #jobData.slackObj = Slacker(str(jobData.slToken))
             else:
                 # Enter in Slack info as MISSING
                 try:
@@ -410,8 +423,8 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
         
-        sqlCmd = "update Job_Meta set Job_Meta.su_complete='" + str(jobData.spinComplete) + \
-                 "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd = "update \"Job_Meta\" set su_complete='" + str(jobData.spinComplete) + \
+                 "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
             self.conn.execute(sqlCmd)
@@ -428,8 +441,8 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
         
-        sqlCmd = "update Job_Meta set Job_Meta.calib_complete='" + str(jobData.calibComplete) + \
-                 "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd = "update \"Job_Meta\" set calib_complete='" + str(jobData.calibComplete) + \
+                 "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
             self.conn.execute(sqlCmd)
@@ -446,8 +459,8 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
         
-        sqlCmd = "update Job_Meta set Job_Meta.valid_complete='" + str(jobData.validComplete) + \
-                 "' where jobID='" + str(jobData.jobID) + "';"
+        sqlCmd = "update \"Job_Meta\" set valid_complete='" + str(jobData.validComplete) + \
+                 "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
             self.conn.execute(sqlCmd)
@@ -479,7 +492,7 @@ class Database(object):
             minValue = str(tblData.minValue[entry])
             maxValue = str(tblData.maxValue[entry])
             if flag == 1:
-                sqlCmd = "insert into Job_Params (jobID,param,defaultValue,min,max) " + \
+                sqlCmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max) " + \
                          "values ('%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue)
 
                 try:
@@ -517,9 +530,9 @@ class Database(object):
                     itStr = str(iteration)
                     gageStr = str(jobData.gages[basin])
                     # First determine if table row has already been created.
-                    sqlCmd = "select * from Calib_Params where jobID='" + str(jobID) + "'" + \
-                             " and domainID='" + str(domainID) + "'" + " and iteration='" + \
-                             itStr + "'" + " and paramName='" + parmName + "';"
+                    sqlCmd = "select * from \"Calib_Params\" where \"jobID\"='" + str(jobID) + "'" + \
+                             " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
+                             itStr + "'" + " and \"paramName\"='" + parmName + "';"
                     try:
                         self.conn.execute(sqlCmd)
                         results = self.conn.fetchone()
@@ -531,7 +544,7 @@ class Database(object):
                         
                     if not results:
                         # Create "empty" entry into table.
-                        sqlCmd = "insert into Calib_Params (jobID,domainID,iteration,paramName,paramValue) " + \
+                        sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
                                  "values (" + str(jobID) + "," + str(domainID) + "," + \
                                  str(iteration) + ",'" + parmName + "',-9999);"
                         try:
@@ -558,8 +571,8 @@ class Database(object):
         
         for iteration in range(1,numIter+1):
             # First determine if table row has already been created.
-            sqlCmd = "select * from Calib_Stats where jobID='" + str(jobID) + "'" + \
-                     " and domainID='" + str(domainID) + "'" + " and iteration='" + \
+            sqlCmd = "select * from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
+                     " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                      str(iteration) + "';"
             try:
                 self.conn.execute(sqlCmd)
@@ -571,7 +584,7 @@ class Database(object):
             
             if not results:
                 # Create "empty" entry into table.
-                sqlCmd = "insert into Calib_Stats (jobID,domainID,iteration,objfnVal,bias,rmse," + \
+                sqlCmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
                          "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
@@ -594,8 +607,9 @@ class Database(object):
             
         jobID = int(jobData.jobID)
         
-        sqlCmd = "select complete from Calib_Stats where jobID='" + str(jobID) + "'" + \
-                 " and domainID='" + str(domainID) + "';"
+        sqlCmd = "select iteration,complete from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
+                 " and \"domainID\"='" + str(domainID) + "';"
+        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
@@ -617,8 +631,8 @@ class Database(object):
         jobID = int(jobData.jobID)
         iterTmp = iteration + 1
             
-        sqlCmd = "update Calib_Stats set Calib_Stats.complete='" + str(newStatus) + "' " + \
-                 "where jobID='" + str(jobID) + "'" + " and domainID='" + str(domainID) + \
+        sqlCmd = "update \"Calib_Stats\" set complete='" + str(newStatus) + "' " + \
+                 "where \"jobID\"='" + str(jobID) + "'" + " and \"domainID\"='" + str(domainID) + \
                  "'" + " and iteration='" + str(iterTmp) + "';"
                  
         try:
@@ -661,7 +675,7 @@ class Database(object):
                 #         "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
                 #         "' and iteration='" + str(iteration) + "' and paramName='" + \
                 #         str(paramName) + "';"
-                sqlCmd = "insert into Calib_Params (jobID,domainID,iteration,paramName,paramValue) " + \
+                sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
                          "values (" + str(jobID) + "," + str(domainID) + "," + \
                          str(iteration) + ",'" + paramName + "'," + str(tblData[paramName][0]) + ");"
                 try:
@@ -791,8 +805,8 @@ class Database(object):
                 raise
             
             # First reset iteration where best currently is to 0
-            sqlCmd = "update Calib_Stats set Calib_Stats.best='0' where best='1' and " + \
-                     "jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
+            sqlCmd = "update \"Calib_Stats\" set best='0' where best='1' and " + \
+                     "\"jobID\"='" + str(jobID) + "' and \"domainID\"='" + str(domainID) + \
                      "';"
             
             try:
@@ -806,8 +820,8 @@ class Database(object):
                 raise
                 
             # Now update this iteration to be the "best"
-            sqlCmd = "update Calib_Stats set Calib_Stats.best='1' where jobID='" + \
-                     str(jobID) + "' and domainID='" + str(domainID) + "' and " + \
+            sqlCmd = "update \"Calib_Stats\" set best='1' where \"jobID\"='" + \
+                     str(jobID) + "' and \"domainID\"='" + str(domainID) + "' and " + \
                      "iteration='" + str(iteration) + "';"
             try:
                 self.conn.execute(sqlCmd)
@@ -819,14 +833,14 @@ class Database(object):
                 raise
                 
         # Update Calib_Stats table.
-        sqlCmd = "update Calib_Stats set Calib_Stats.objfnVal='" + objF + "', " + \
-                 "Calib_Stats.bias='" + bias + "', Calib_Stats.rmse='" + \
-                 rmse + "', Calib_Stats.cor='" + cor + "', Calib_Stats.nse='" + \
-                 nse + "', Calib_Stats.nselog='" + nselog + "', Calib_Stats.kge='" + \
-                 kge + "', Calib_Stats.fdcerr='" + fdc + \
-                 "', Calib_Stats.msof='" + msof + \
-                 "', Calib_Stats.complete='1' where jobID='" + str(jobID) + "' and " + \
-                 "domainID='" + str(domainID) + "' and iteration='" + str(iteration) + \
+        sqlCmd = "update \"Calib_Stats\" set \"objfnVal\"='" + objF + "', " + \
+                 "bias='" + bias + "', rmse='" + \
+                 rmse + "', cor='" + cor + "', nse='" + \
+                 nse + "', nselog='" + nselog + "', kge='" + \
+                 kge + "', fdcerr='" + fdc + \
+                 "', msof='" + msof + \
+                 "', complete='1' where \"jobID\"='" + str(jobID) + "' and " + \
+                 "\"domainID\"='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
             
         try:
@@ -849,8 +863,8 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
     
-        sqlCmd = "update Calib_Stats set Calib_Stats.complete='1' where jobID='" + \
-                 str(jobID) + "' and domainID='" + str(domainID) + "';"
+        sqlCmd = "update \"Calib_Stats\" set complete='1' where \"jobID\"='" + \
+                 str(jobID) + "' and \"domainID\"='" + str(domainID) + "';"
         
         try:
             self.conn.execute(sqlCmd)
@@ -876,8 +890,8 @@ class Database(object):
         
         # First find the iteration that contains the best parameter values.
         #select * from Calib_Stats where domainID='2436' and jobID='75' and best='1';
-        sqlCmd = "select * from Calib_Stats where domainID='" + str(domainID) + \
-                 "' and jobID='" + str(jobID) + "' and best='1';"
+        sqlCmd = "select * from \"Calib_Stats\" where \"domainID\"='" + str(domainID) + \
+                 "' and \"jobID\"='" + str(jobID) + "' and best='1';"
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchone()
@@ -894,9 +908,9 @@ class Database(object):
         iterBest = int(results[2])
         
         # Next, find all parameter values, and their associated values from Calib_Params.
-        sqlCmd = "select * from Calib_Params where domainID='" + str(domainID) + \
-                 "' and jobID='" + str(jobID) + "' and iteration='" + \
-                 str(iterBest) + "';"
+        sqlCmd = "select * from \"Calib_Params\" where \"domainID\"='" + str(domainID) + \
+                 "' and \"jobID\"='" + str(jobID) + "' and iteration='" + \
+                 str(iterBest) + "' and \"paramValue\"!='-9999';"
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
@@ -958,8 +972,8 @@ class Database(object):
             
         # Loop through table and enter information into DB.
         for stat in range(0,numStats):
-            sqlCmd = "insert into Valid_Stats (jobID,domainID,simulation,evalPeriod," + \
-                     "objfnVal,bias,rmse,cor,nse,nselog,nseWt,kge,msof) values (" + str(jobID) + \
+            sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
+                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof) values (" + str(jobID) + \
                      "," + str(gageID) + ",'" + tblData.run[stat] + "','" + \
                      tblData.period[stat] + "'," + str(tblData.obj[stat]) + "," + \
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
@@ -968,7 +982,6 @@ class Database(object):
                      str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ");"
                      
             try:
-                print sqlCmd
                 self.conn.execute(sqlCmd)
                 self.db.commit()
             except:

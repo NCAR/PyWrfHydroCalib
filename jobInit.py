@@ -17,7 +17,7 @@
 import sys
 import argparse
 import os
-#import getpass
+import getpass
 
 # Set the Python path to include package specific functions included with this 
 # package.
@@ -44,31 +44,29 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
-    parser.add_argument('parmTbl',metavar='parmTbl',type=str,nargs='+',
+    parser.add_argument('--parmTbl',metavar='parmTbl',type=str,nargs='+',
                         help='Calibration Parameter Table.')
             
     args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
-    try:
-         jobData = configMod.createJob(args)
-    except:
-        print "ERROR: Failure to initialize calibration workflow job."
-        sys.exit(1)
+    jobData = configMod.createJob(args)
+    #try:
+    #     jobData = configMod.createJob(args)
+    #except:
+    #    print "ERROR: Failure to initialize calibration workflow job."
+    #    sys.exit(1)
         
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Calibration Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    jobData.dbUName = 'WH_Calib_rw'
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
@@ -95,22 +93,23 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
-    # Create necessary run directories to hold output, analysis, etc.
-    try:
-        calibIoMod.setupModels(jobData,db,args,libPathTop)
-    except:
-        errMod.errOut(jobData)
-       
     # Create DB entries for job name
-    try:
-        db.enterJobID(jobData)
-    except:
-        errMod.errOut(jobData)
+    db.enterJobID(jobData)
+    #try:
+    #    db.enterJobID(jobData)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Pull Job ID from newly created job. Will be used for calibration 
     # parameter DB entries
     try:
         db.getJobID(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # Create necessary run directories to hold output, analysis, etc.
+    try:
+        calibIoMod.setupModels(jobData,db,args,libPathTop)
     except:
         errMod.errOut(jobData)
         
@@ -122,10 +121,10 @@ def main(argv):
         
     # Create empty table to hold calibrated parameter values that will be 
     # calculated during calibration.
-    #try:
-    #    db.populateParmTable(jobData,str(args.parmTbl[0]))
-    #except:
-    #    errMod.errOut(jobData)
+    try:
+        db.populateParmTable(jobData,str(args.parmTbl[0]))
+    except:
+        errMod.errOut(jobData)
     
     # Disconnect from the calibration database.
     try:

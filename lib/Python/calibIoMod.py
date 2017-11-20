@@ -19,10 +19,12 @@ class gageMeta:
         self.gageID = []
         self.comID = []
         self.geoFile = []
+        self.landSpatialMeta = []
         self.fullDom = []
         self.rtLnk = []
         self.lkFile = []
         self.gwFile = []
+        self.gwMask = []
         self.udMap = []
         self.wrfInput = []
         self.soilFile = []
@@ -31,7 +33,7 @@ class gageMeta:
     def pullGageMeta(self,jobData,db,gageName):
         # Function to extract locations of gage-specific spatial files.
         
-        tmpMeta = {'gageName':gageName,'geoFile':'','fullDomFile':'',\
+        tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','forceDir':'',\
                    'obsFile':'','gageID':'','comID':'','nCoresMod':''}
@@ -43,10 +45,12 @@ class gageMeta:
         self.gage = tmpMeta['gageName']
         self.gageID = tmpMeta['gageID']
         self.geoFile = tmpMeta['geoFile']
+        self.landSpatialMeta = tmpMeta['landSpatialMeta']
         self.fullDom = tmpMeta['fullDomFile']
         self.rtLnk = tmpMeta['rtLnk']
         self.lkFile = tmpMeta['lkFile']
         self.gwFile = tmpMeta['gwFile']
+        self.gwMask = tmpMeta['gwMask']
         self.udMap = tmpMeta['udMap']
         self.wrfInput = tmpMeta['wrfInput']
         self.soilFile = tmpMeta['soilFile']
@@ -304,6 +308,20 @@ def setupModels(jobData,db,args,libPathTop):
             raise
             
         # Create symbolic links necessary for model runs.
+        link1 = gageDir + "/RUN.SPINUP/OUTPUT/W" + str(jobData.jobID) + str(jobData.gageIDs[gage]) 
+        link2 = gageDir + "/RUN.CALIB/OUTPUT/W" + str(jobData.jobID) + str(jobData.gageIDs[gage]) 
+        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/WC" + str(jobData.jobID) + str(jobData.gageIDs[gage])
+        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/WB" + str(jobData.jobID) + str(jobData.gageIDs[gage])
+        try:
+            os.symlink(str(jobData.exe),link1)
+            os.symlink(str(jobData.exe),link2)
+            os.symlink(str(jobData.exe),link3)
+            os.symlink(str(jobData.exe),link4)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
+            raise
+            
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/wrf_hydro.exe"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/wrf_hydro.exe"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/wrf_hydro.exe"

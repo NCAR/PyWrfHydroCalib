@@ -13,10 +13,11 @@
 
 import sys
 import argparse
-#import getpass
+import getpass
 import os
+import sys
 #import subprocess
-#import pandas as pd
+import pandas as pd
 import pwd
 import numpy as np
 
@@ -46,6 +47,8 @@ def main(argv):
              'calibration validation simulation for the National Water Model')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration validation.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
     
     args = parser.parse_args()
     
@@ -58,17 +61,21 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    jobData.dbUName = 'WH_Calib_rw'
+    
+    if not args.hostname:
+        # We will assume localhost for MySQL DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+    jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -102,6 +109,40 @@ def main(argv):
         jobData.checkGages(db)
     except:
         errMod.errOut(jobData)
+        
+    # Establish LOCK file to secure this Python program to make sure
+    # no other instances over-step here. This is mostly designed to deal
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
+    lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    if os.path.isfile(lockPath):
+        # Either a job is still running, or was running
+        # and was killed.
+
+        print 'LOCK FILE FOUND.'
+        # Read in to get PID number
+        pidObj = pd.read_csv(lockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(lockPath)
+                fileObj = open(lockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
+    else:
+        print 'LOCK FILE NOT FOUND.'
+        # Write a LOCK file for this program.
+        fileObj = open(lockPath,'w')
+        fileObj.write('\"PID\"\n')
+        fileObj.write(str(os.getpid()))
+        fileObj.close()
     
     # Extract active jobs for job owner
     #try:
@@ -237,19 +278,24 @@ def main(argv):
             # First simulation will be the control simulation with default
             # parameters specified by the user at the beginning of the calibration
             # process.
-            #validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            try:
-                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            except:
-                errMod.errOut(jobData)
+            print "Running CONTROL"
+            validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            #sys.exit(1)
+            #try:
+            #    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            #except:
+            #    errMod.errOut(jobData)
             time.sleep(3)
             
-            #validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            try:
-                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            except:
-                errMod.errOut(jobData)
+            print "Running BEST"
+            validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            #try:
+            #    validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            #except:
+            #    errMod.errOut(jobData)
             time.sleep(3)
+            
+            print keySlot
                 
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
@@ -261,6 +307,9 @@ def main(argv):
             jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
+            
+    # Remove LOCK file
+    os.remove(lockPath)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

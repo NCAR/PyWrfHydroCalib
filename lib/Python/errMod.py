@@ -29,13 +29,18 @@ def errOut(jobData):
     if jobData.email:
         # Send error email out
         msg = MIMEText(msgContent)
-        emailTitle = "Errors in NWM Calibration for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
+        emailTitle = "Errors in WRF-Hydro Calibration for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
-        s = smtplib.SMTP('localhost')
-        s.sendmail(jobData.email,[jobData.email],msg.as_string())
-        s.quit()
+        try:
+            s = smtplib.SMTP('localhost',1025)
+            s.sendmail(jobData.email,[jobData.email],msg.as_string())
+            s.quit()
+        except:
+            print msgContent
+            print "ERROR: Unable to send email from workflow."
+            print "SMTP on a port needs to be activated from this host machine."
     #elif jobData.slackObj:
     if jobData.slackObj:
         msg1 = "ERROR in Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
@@ -58,7 +63,7 @@ def wipeJobDir(jobData):
         
 def removeOutput(jobData,runDir):
     """
-    Generic function to clean up NWM output. This is used specifically
+    Generic function to clean up wrfHydro output. This is used specifically
     between calibration simulations.
     """
     filesCheck = glob.glob(runDir + "/diag_hydro.*")
@@ -241,9 +246,14 @@ def sendMsg(jobData):
         msg['Subject'] = emailTitle
         msg['From'] = jobData.email
         msg['To'] = jobData.email
-        s = smtplib.SMTP('localhost')
-        s.sendmail(jobData.email,[jobData.email],msg.as_string())
-        s.quit()
+        try:
+            s = smtplib.SMTP('localhost')
+            s.sendmail(jobData.email,[jobData.email],msg.as_string())
+            s.quit()
+        except:
+            print msgContent
+            print "ERROR: Unable to send email from workflow."
+            print "SMTP on a port needs to be activated from this host machine."
     if jobData.slackObj:
         msg1 = "MESSAGE for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
         jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
@@ -253,7 +263,7 @@ def sendMsg(jobData):
         
 def CleanSpinup(jobData,runDir):
     """
-    Generic function to clean up NWM output from the spinup. This will not
+    Generic function to clean up wrfHydro output from the spinup. This will not
     remove RESTART files as those are needed by the calibrations.
     """
     filesCheck = glob.glob(runDir + "/diag_hydro.*")

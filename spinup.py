@@ -11,10 +11,10 @@
 
 import sys
 import argparse
-#import getpass
+import getpass
 import os
 #import subprocess
-#import pandas as pd
+import pandas as pd
 import pwd
 import numpy as np
 
@@ -43,6 +43,8 @@ def main(argv):
              'calibration spinup for the National Water Model')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration spinup.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
     
     args = parser.parse_args()
     
@@ -55,17 +57,21 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    jobData.dbUName = 'WH_Calib_rw'
+    
+    if not args.hostname:
+        # We will assume localhost for MySQL DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+    jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -100,11 +106,44 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
-    # Extract active jobs for job owner
-    try:
-        statusMod.checkYsJobs(jobData)
-    except:
-        errMod.errOut(jobData)
+    if jobData.jobRunType == 1:
+        # Extract active jobs for job owner
+        try:
+            statusMod.checkYsJobs(jobData)
+        except:
+            errMod.errOut(jobData)
+            
+    # Establish LOCK file to secure this Python program to make sure
+    # no other instances over-step here. This is mostly designed to deal
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
+    pyLockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    if os.path.isfile(pyLockPath):
+        # Either a job is still running, or was running
+        # and was killed.
+
+        # Read in to get PID number
+        pidObj = pd.read_csv(pyLockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(pyLockPath)
+                fileObj = open(pyLockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
+    else:
+        # Write a LOCK file for this program.
+        fileObj = open(pyLockPath,'w')
+        fileObj.write('\"PID\"\n')
+        fileObj.write(str(os.getpid()))
+        fileObj.close()
     
     # Some house keeping here. If the spinup is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
@@ -237,10 +276,11 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            try:
-                spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            except:
-                errMod.errOut(jobData)
+            spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            #try:
+            #    spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            #except:
+            #    errMod.errOut(jobData)
             time.sleep(2)
         
         # Check to see if program requirements have been met.
@@ -253,6 +293,9 @@ def main(argv):
             jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
+            
+    # Remove LOCK file
+    os.remove(pyLockPath)
     
 if __name__ == "__main__":
     main(sys.argv[1:])
