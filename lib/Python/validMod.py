@@ -1111,9 +1111,9 @@ def generatePbsRunScript(jobData,gageID,runDir,gageMeta,modName):
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1435,9 +1435,9 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         fileObj.write(inStr)
         inStr = "#PBS -N WH_EVAL_" + str(jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#PBS -o WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
+        inStr = '#PBS -o ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
         fileObj.write(inStr)
-        inStr = '#PBS -e WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
+        inStr = '#PBS -e ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#PBS -l walltime=01:00:00\n')
         if len(jobData.queName.strip()) > 0:
@@ -1626,9 +1626,9 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
         fileObj.write(inStr)
         inStr = "#PBS -N WH_PARM_GEN_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#PBS -o WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+        inStr = '#PBS -o ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
         fileObj.write(inStr)
-        inStr = '#PBS -e WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+        inStr = '#PBS -e ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#PBS -l walltime=00:20:00\n')
         if len(jobData.queName.strip()) > 0:

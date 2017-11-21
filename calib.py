@@ -297,18 +297,11 @@ def main(argv):
         # This is faster then looping over each iteration at a time. 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         statusData = [list(item) for item in statusData]
-        print statusData
         for iteration in range(0,int(jobData.nIter)):
-            print "CHECKING ITERATION " + str(iteration+1)
             for iteration2 in range(0,int(jobData.nIter)):
-                print statusData[iteration2][1]
                 if statusData[iteration2][0] == iteration+1:
-                    print iteration
                     keySlot[basin,iteration] = float(statusData[iteration2][1])
                     
-        print keySlot
-            
-        #sys.exit(1)
                 
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
@@ -340,7 +333,6 @@ def main(argv):
 
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
-                print "ITERATION = " + str(iteration)
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
                 # If the status is already 1.0, then continue the loop as now work needs to be done.

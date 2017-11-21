@@ -263,11 +263,13 @@ def checkBasJob(jobData,gageNum):
         status = False
     
         if lenJobs == 0:
+            print "NO JOBS FOUND"
             status = False
         else:
             # Find if any jobs for this basin are being ran.
             for jobNum in range(0,lenJobs):
                 if jobs[1][jobNum].strip() == expName:
+                    print "JOBS FOUND"
                     status = True
                     
     if jobData.jobRunType == 3:

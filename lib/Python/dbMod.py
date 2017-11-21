@@ -671,13 +671,13 @@ class Database(object):
         # Update parameter values in Calib_Params
         for paramName in paramNames:
             if paramName != "iter":
-                #sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
-                #         "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
-                #         "' and iteration='" + str(iteration) + "' and paramName='" + \
-                #         str(paramName) + "';"
-                sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
-                         "values (" + str(jobID) + "," + str(domainID) + "," + \
-                         str(iteration) + ",'" + paramName + "'," + str(tblData[paramName][0]) + ");"
+                sqlCmd = "update \"Calib_Params\" set \"paramValue\"='" + str(tblData[paramName][0]) + \
+                         "' where \"jobID\"='" + str(jobID) + "' and \"domainID\"='" + str(domainID) + \
+                         "' and \"iteration\"='" + str(iteration) + "' and \"paramName\"='" + \
+                         str(paramName) + "';"
+                #sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
+                #         "values (" + str(jobID) + "," + str(domainID) + "," + \
+                #         str(iteration) + ",'" + paramName + "'," + str(tblData[paramName][0]) + ");"
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()

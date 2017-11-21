@@ -52,7 +52,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             except:
                 raise
     if statusData.jobRunType == 2:
-        pbsFile = runDir = "/run_WH.sh"
+        pbsFile = runDir + "/run_WH.sh"
         if not os.path.isfile(pbsFile):
             try:
                 generatePbsScript(statusData,int(gageID),runDir,gageMeta)
@@ -231,7 +231,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            cmd = "qsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
@@ -283,7 +283,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + " /run_WH.sh"
+            cmd = "qsub " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + " /run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
@@ -379,9 +379,9 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta):
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \

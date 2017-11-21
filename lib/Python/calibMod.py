@@ -1080,9 +1080,9 @@ def generateRestartPbsScript(jobData,gageID,runDir):
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1266,9 +1266,9 @@ def generatePbsScript(jobData,gageID,runDir):
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1551,9 +1551,9 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write(inStr)
             inStr = "#PBS -N WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#PBS -o WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            inStr = '#PBS -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#PBS -e WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            inStr = '#PBS -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
             nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
             inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
