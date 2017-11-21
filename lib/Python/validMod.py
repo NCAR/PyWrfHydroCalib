@@ -6,6 +6,7 @@
 
 #import datetime
 import os
+import sys
 import calibIoMod
 import namelistMod
 import statusMod
@@ -115,7 +116,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     #     model simulations.
     # 2.) Job script to run the model with control parameters.
     parmRunScript = runDir + "/gen_parms.sh"
-    bsub1Script = runDir + "/run_parms.sh"
+    bsub1Script = runDir + "/run_params.sh"
     bsub2Script = runDir + "/run_WH.sh"
     
     # If the files exist, remove them and re-create.
@@ -507,6 +508,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 raise
         if statusData.jobRunType == 2:
             cmd = "qsub " + bestDir + "/run_params.sh"
+            print cmd
             try:
                 subprocess.call(cmd,shell=True)
             except:
@@ -1575,7 +1577,7 @@ def generateBsubParmRunScript(jobData,runDir,gageID):
     Generic function to run BSUB command to run the parameter generation script.
     """
     
-    outFile = runDir + "/run_parms.sh"
+    outFile = runDir + "/run_params.sh"
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -1613,7 +1615,7 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
     Generic function to run PBS command to run the parameter generation script.
     """
     
-    outFile = runDir + "/run_parms.sh"
+    outFile = runDir + "/run_params.sh"
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -1635,6 +1637,7 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
             inStr = '#PBS -q ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
+        fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
@@ -1649,7 +1652,7 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
     Generic function to run Slurm command to run the parameter generation script.
     """
     
-    outFile = runDir + "/run_parms.sh"
+    outFile = runDir + "/run_params.sh"
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -1671,6 +1674,7 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#SBATCH -N 1\n"
+        fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)

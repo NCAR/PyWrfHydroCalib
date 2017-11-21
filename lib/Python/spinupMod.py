@@ -231,7 +231,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub < " + runDir + "/run_WH.sh"
+            cmd = "qsub " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:

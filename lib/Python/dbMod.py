@@ -970,6 +970,10 @@ class Database(object):
             jobData.errMsg = "ERROR: Unexpected length of validation stats table: " + statsTbl
             raise Exception()
             
+        # Set any missing values to -9999
+        for tmpName in list(tblData.columns.values):
+            tblData[tmpName][pd.isnull(tblData[tmpName])] = -9999.0
+        
         # Loop through table and enter information into DB.
         for stat in range(0,numStats):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \

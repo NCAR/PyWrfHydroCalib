@@ -71,7 +71,7 @@ def main(argv):
     jobData.dbUName = 'WH_Calib_rw'
     
     if not args.hostname:
-        # We will assume localhost for MySQL DB
+        # We will assume localhost for Postgres DB
         hostTmp = 'localhost'
     else:
         hostTmp = str(args.hostname)
