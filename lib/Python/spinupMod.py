@@ -430,9 +430,9 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
-        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         inStr = '#SBATCH -N ' + str(jobData.nNodesMod) + '\n'
         fileObj.write(inStr)
