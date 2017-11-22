@@ -299,9 +299,9 @@ def checkBasJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
         
-        if len(jobs.JOBID) > 0:
-            for jobNum in range(0,len(jobs.JOBID)):
-                if jobs.JOBID[jobNum].strip() == expName:
+        if len(jobs.NAME) > 0:
+            for jobNum in range(0,len(jobs.NAME)):
+                if jobs.NAME[jobNum].strip() == expName:
                     print "JOBS FOUND"
                     status = True
         else:
