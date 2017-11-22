@@ -275,7 +275,7 @@ def checkBasJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -469,7 +469,7 @@ def checkCalibJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -613,7 +613,7 @@ def checkBasJobValid(jobData,gageNum,modRun):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -721,7 +721,7 @@ def checkParmGenJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -896,7 +896,7 @@ def checkEvalJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner)  > csvPath
+        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:

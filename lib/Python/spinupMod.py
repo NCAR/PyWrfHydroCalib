@@ -427,7 +427,7 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = '#SBATCH -t 08:00:00\n'
         fileObj.write(inStr)
-        if len(jobData.queName.str()) > 0:
+        if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
@@ -438,8 +438,9 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
+        print 'alsdfj'
         fileObj.write(inStr)
-        inStr = 'srun -n ' + jobData.nCoresMod + ' ./wrf_hydro.exe\n'
+        inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'

@@ -1134,7 +1134,7 @@ def generateRestartSlurmScript(jobData,gageID,runDir):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'srun -n ' + jobData.nCoresMod + ' ./wrf_hydro.exe\n'
+        inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1353,7 +1353,7 @@ def generateSlurmScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = "srun -n " + jobData.nCoresMod + " ./wrf_hydro.exe\n"
+        inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
