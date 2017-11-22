@@ -282,6 +282,16 @@ def checkBasJob(jobData,gageNum):
             jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
             raise
             
+        if not os.path.isfile(csvPath):
+            jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
+            raise
+            
+        try:
+            jobs = pd.read_csv(csvPath,delim_whitespace=True)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
         # Delete temporary CSV files.
         cmdTmp = "rm -rf " + csvPath
         subprocess.call(cmd,shell=True)
@@ -289,8 +299,17 @@ def checkBasJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
         
-        # STILL TO DO MORE.....
-                    
+        if len(jobs.JOBID) > 0:
+            for jobNum in range(0,len(jobs.JOBID)):
+                if jobs.JOBID[jobNum].strip() == expName:
+                    print "JOBS FOUND"
+                    status = True
+        else:
+            status = False
+        
+        if not status:
+            print "NO JOBS FOUND"
+            
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # We are using mpiexec.
         pidActive = []

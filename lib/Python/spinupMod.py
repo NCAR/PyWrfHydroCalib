@@ -425,7 +425,7 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = '#SBATCH -A ' + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
-        inStr = '#SBATCH -t 08:00:00\n'
+        inStr = '#SBATCH --time=[08:00:00]\n'
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'

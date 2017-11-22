@@ -1120,7 +1120,7 @@ def generateRestartSlurmScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -t 08:00:00\n"
+        inStr = "#SBATCH --time[ 08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
@@ -1322,7 +1322,7 @@ def generateSlurmScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -t 08:00:00\n"
+        inStr = "#SBATCH --time=[08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
@@ -1632,7 +1632,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
             inStr = "#SBATCH -N " + str(jobData.nNodesR) + "\n"
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
-            fileObj.write('#SBATCH -t 02:00:00\n')
+            fileObj.write('#SBATCH --time=[02:00:00]\n')
             if len(jobData.queName.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)

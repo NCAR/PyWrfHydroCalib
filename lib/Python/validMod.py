@@ -1152,7 +1152,7 @@ def generateSlurmRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write(inStr)
         inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -t 08:00:00\n"
+        inStr = "#SBATCH --time=[08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
@@ -1518,7 +1518,7 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         fileObj.write(inStr)
         inStr = '#SBATCH -e WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
-        fileObj.write('#SBATCH -t 01:00:00\n')
+        fileObj.write('#SBATCH --time=[01:00:00]\n')
         if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
@@ -1669,7 +1669,7 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
         fileObj.write(inStr)
         inStr = '#SBATCH -e WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
-        fileObj.write('#SBATCH -t 00:20:00\n')
+        fileObj.write('#SBATCH --time=[00:20:00]\n')
         if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
