@@ -256,6 +256,9 @@ def checkBasJob(jobData,gageNum):
         
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
                   
         lenJobs = len(jobs[1])
         
@@ -275,7 +278,9 @@ def checkBasJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
+        cmd = "squeue -u " + str(jobData.owner) + \
+              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
+              ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -299,6 +304,9 @@ def checkBasJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
         
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
@@ -311,6 +319,9 @@ def checkBasJob(jobData,gageNum):
             print "NO JOBS FOUND"
             
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
         # We are using mpiexec.
         pidActive = []
         exeName = "W" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
@@ -435,6 +446,9 @@ def checkCalibJob(jobData,gageNum):
         
         # Compile expected job name that the job should occupy.
         expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
     
         lenJobs = len(jobs.JOBID)
 
@@ -471,6 +485,9 @@ def checkCalibJob(jobData,gageNum):
         
         # Compile expected job name that the job should occupy.
         expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
+        
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
                   
         lenJobs = len(jobs[1])
         
@@ -488,7 +505,9 @@ def checkCalibJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
+        cmd = "squeue -u " + str(jobData.owner) + \
+              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
+              ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -512,6 +531,9 @@ def checkCalibJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
         
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
@@ -524,6 +546,9 @@ def checkCalibJob(jobData,gageNum):
             print "NO CALIB JOBS FOUND"
     
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
         # We are running via mpiexec
         pidActive = []
         exeName = "C" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
@@ -597,6 +622,9 @@ def checkBasJobValid(jobData,gageNum,modRun):
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
     
         lenJobs = len(jobs.JOBID)
 
@@ -635,6 +663,9 @@ def checkBasJobValid(jobData,gageNum,modRun):
         expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
                   
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+                  
         lenJobs = len(jobs[1])
         
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -651,7 +682,9 @@ def checkBasJobValid(jobData,gageNum,modRun):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
+        cmd = "squeue -u " + str(jobData.owner) + \
+              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
+              ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -675,6 +708,9 @@ def checkBasJobValid(jobData,gageNum,modRun):
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
         
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
@@ -688,6 +724,9 @@ def checkBasJobValid(jobData,gageNum,modRun):
             print "NO VALID MODEL JOBS FOUND"
                     
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
         # We are running via mpiexec
         pidActive = []
         if modRun == "BEST":
@@ -761,6 +800,9 @@ def checkParmGenJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
     
         lenJobs = len(jobs.JOBID)
 
@@ -778,7 +820,9 @@ def checkParmGenJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
+        cmd = "squeue -u " + str(jobData.owner) + \
+              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
+              ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -802,6 +846,9 @@ def checkParmGenJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
         
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
@@ -815,6 +862,9 @@ def checkParmGenJob(jobData,gageNum):
             print "NO EVAL JOBS FOUND"
         
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
         # We are running via mpiexec/mpirun
         pidActive = []
         exeName = "P" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
@@ -863,6 +913,9 @@ def checkParmGenJob(jobData,gageNum):
         
         expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
                   
         lenJobs = len(jobs[1])
         
@@ -919,6 +972,9 @@ def checkEvalJob(jobData,gageNum):
         expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
                   
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+                  
         lenJobs = len(jobs.JOBID)
 
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -956,6 +1012,9 @@ def checkEvalJob(jobData,gageNum):
         expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
                   
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+                  
         lenJobs = len(jobs[1])
         
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -972,7 +1031,9 @@ def checkEvalJob(jobData,gageNum):
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
-        cmd = "squeue -u " + str(jobData.owner) + ' > ' + csvPath
+        cmd = "squeue -u " + str(jobData.owner) + \
+              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
+              ' > ' + csvPath
         try:
             subprocess.call(cmd,shell=True)
         except:
@@ -996,6 +1057,9 @@ def checkEvalJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
         
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
@@ -1009,6 +1073,9 @@ def checkEvalJob(jobData,gageNum):
             print "NO EVAL JOBS FOUND"
                 
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
         # We are running via mpiexec
         pidActive = []
         exeName = "E" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
