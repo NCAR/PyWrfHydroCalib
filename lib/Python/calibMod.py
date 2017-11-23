@@ -1123,14 +1123,14 @@ def generateRestartSlurmScript(jobData,gageID,runDir):
         if len(jobData.acctKey.strip()) > 0:
             inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
-        inStr = "#SBATCH --time[ 08:00:00]\n"
+        inStr = "#SBATCH --time[08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
         fileObj.write(inStr)
@@ -1333,9 +1333,9 @@ def generateSlurmScript(jobData,gageID,runDir):
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         inStr = "#SBATCH -N " + str(jobData.nNodesMod) + "\n"
         fileObj.write(inStr)
