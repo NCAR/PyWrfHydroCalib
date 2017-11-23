@@ -94,9 +94,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keySlot[basinNum] = -1.0
         keyStatus = -1.0
         runFlag = False
-        statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " Is locked. " + \
-                            "Please remove: " + lockPath + " before continuing."
-        errMod.sendMsg(statusData)
+        print "MODEL IS LOCKED"
+        #statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " Is locked. " + \
+        #                    "Please remove: " + lockPath + " before continuing."
+        #errMod.sendMsg(statusData)
                             
     
     if keyStatus == 1.0:
