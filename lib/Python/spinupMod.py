@@ -438,7 +438,6 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
-        print 'alsdfj'
         fileObj.write(inStr)
         inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
