@@ -1123,7 +1123,7 @@ def generateRestartSlurmScript(jobData,gageID,runDir):
         if len(jobData.acctKey.strip()) > 0:
             inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
             fileObj.write(inStr)
-        inStr = "#SBATCH --time[08:00:00]\n"
+        inStr = "#SBATCH --time=[08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
