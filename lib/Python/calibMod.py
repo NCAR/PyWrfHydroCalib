@@ -1028,8 +1028,9 @@ def generateRestartBsubScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
@@ -1073,8 +1074,9 @@ def generateRestartPbsScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
@@ -1118,8 +1120,9 @@ def generateRestartSlurmScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#SBATCH -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH --time[ 08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
@@ -1198,8 +1201,9 @@ def generateBsubScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
@@ -1259,8 +1263,9 @@ def generatePbsScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
@@ -1320,8 +1325,9 @@ def generateSlurmScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#SBATCH -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH --time=[08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
@@ -1475,8 +1481,9 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#\n')
             fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration R Code\n')
             fileObj.write('#\n')
-            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
             inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
             fileObj.write(inStr)
             inStr = "#BSUB -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
@@ -1547,8 +1554,9 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#\n')
             fileObj.write('# PBS Batch Script to Run WRF-Hydro Calibration R Code\n')
             fileObj.write('#\n')
-            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
             inStr = "#PBS -N WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#PBS -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
@@ -1621,18 +1629,19 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#\n')
             fileObj.write('# Slurm Batch Script to Run WRF-Hydro Calibration R Code\n')
             fileObj.write('#\n')
-            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
             inStr = "#SBATCH -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#SBATCH -o WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            inStr = '#SBATCH -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#SBATCH -e WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            inStr = '#SBATCH -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
             inStr = "#SBATCH -N " + str(jobData.nNodesR) + "\n"
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
-            fileObj.write('#SBATCH --time=[02:00:00]\n')
+            #fileObj.write('#SBATCH --time=[02:00:00]\n')
             if len(jobData.queName.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)

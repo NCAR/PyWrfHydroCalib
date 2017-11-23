@@ -1063,8 +1063,9 @@ def generateBsubRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write('#\n')
         fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
@@ -1106,8 +1107,9 @@ def generatePbsRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write('#\n')
         inStr = "#PBS -N WH_" + str(modName) + "_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
@@ -1150,8 +1152,9 @@ def generateSlurmRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write('#\n')
         inStr = "#SBATCH -J WH_" + str(modName) + "_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH --time=[08:00:00]\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
@@ -1355,8 +1358,9 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         fileObj = open(bsubOut,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n 1\n"
         fileObj.write(inStr)
@@ -1433,8 +1437,9 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         fileObj = open(pbsOut,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -N WH_EVAL_" + str(jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#PBS -o ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
@@ -1510,8 +1515,9 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         fileObj = open(pbsOut,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH -J WH_EVAL_" + str(jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#SBATCH -o WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
@@ -1586,8 +1592,9 @@ def generateBsubParmRunScript(jobData,runDir,gageID):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n 1\n"
         fileObj.write(inStr)
@@ -1624,8 +1631,9 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -N WH_PARM_GEN_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#PBS -o ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
@@ -1661,8 +1669,9 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH -J WH_PARM_GEN_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#SBATCH -o WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
