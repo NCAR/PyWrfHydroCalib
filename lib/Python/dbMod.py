@@ -41,7 +41,6 @@ class Database(object):
             strTmp = "dbname=" + str(self.dbName) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
                      " port=5432 host=" + self.host
             db = psycopg2.connect(strTmp)
-            #db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
         except:
             jobData.errMsg = "ERROR: Unable to connect to database: " + self.dbName
             raise
@@ -609,7 +608,6 @@ class Database(object):
         
         sqlCmd = "select iteration,complete from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "';"
-        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
@@ -675,9 +673,6 @@ class Database(object):
                          "' where \"jobID\"='" + str(jobID) + "' and \"domainID\"='" + str(domainID) + \
                          "' and \"iteration\"='" + str(iteration) + "' and \"paramName\"='" + \
                          str(paramName) + "';"
-                #sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
-                #         "values (" + str(jobID) + "," + str(domainID) + "," + \
-                #         str(iteration) + ",'" + paramName + "'," + str(tblData[paramName][0]) + ");"
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
