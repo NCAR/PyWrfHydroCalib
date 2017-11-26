@@ -31,7 +31,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # Establish the "control" and "best" status values. These are important for 
     # the workflow.
     ctrlStatus = keySlot[basinNum,0]
-    bestStatus = keySlot[basinNum,1]
     
     # If the control status is 1.0, this means the model is complete and we can 
     # return to the main workflow calling program.
