@@ -11,10 +11,9 @@
 # karsten@ucare.edu
 
 import argparse
-#import pwd
 import sys
-import time
 import os
+import getpass
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -38,6 +37,8 @@ def main(argv):
                                      ' make sure a given job is running.')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration spinup.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
     
     args = parser.parse_args()
     
@@ -47,17 +48,20 @@ def main(argv):
 
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
-    
-    jobData.dbUName = 'NWM_Calib'
-    jobData.dbPwd = 'CalibrateGoodTimes'
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbUName= 'WH_Calib_rw'
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
+        
+    if not args.hostname:
+        # We will assume localhost for Postgres DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+    jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -99,17 +103,17 @@ def main(argv):
         calibStatus = statusMod.checkCalibJob(jobData,basin)
         modelStatus = statusMod.checkBasJob(jobData,basin)
         if calibStatus or modelStatus:
-            #print "BASIN: " + str(jobData.gages[basin])
-            #print "MODEL STATUS: " + str(modelStatus)
-            #print "CALIB STATUS: " + str(calibStatus)
-            #print "WORKFLOW IS RUNNING."
+            print "BASIN: " + str(jobData.gages[basin])
+            print "MODEL STATUS: " + str(modelStatus)
+            print "CALIB STATUS: " + str(calibStatus)
+            print "WORKFLOW IS RUNNING."
             sys.exit(0)
             
     # If this loop exited without finding something running, this implies the 
     # workflow has crashed. Error out.
-    jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
-                     " Appears to Have Crashed for user: " + str(jobData.owner)
-    errMod.errOut(jobData)
+    #jobData.errMsg = "ERROR: Calibration Workflow for JOB: " + str(jobData.jobID) + \
+    #                " Appears to Have Crashed for user: " + str(jobData.owner)
+    #errMod.errOut(jobData)
     
     # Loop through each basin being calibrated. Obtain the calibration status
     # for each iteration. If the calibration status is listed as having either

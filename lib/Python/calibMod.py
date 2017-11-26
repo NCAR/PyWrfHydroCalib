@@ -11,7 +11,6 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
-import sys
 import time
 
 import warnings
@@ -1220,19 +1219,6 @@ def generateBsubScript(jobData,gageID,runDir):
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        # Commenting this out for now as it's not necessary to remove this files,
-        # and it adds a huge I/O burder on Yellowstone when scaled out to all
-        # RFC regions. 
-        #inStr = 'rm -rf diag_hydro.*\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.err\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.out\n'
-        #fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
@@ -1282,19 +1268,6 @@ def generatePbsScript(jobData,gageID,runDir):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        # Commenting this out for now as it's not necessary to remove this files,
-        # and it adds a huge I/O burder on Yellowstone when scaled out to all
-        # RFC regions. 
-        #inStr = 'rm -rf diag_hydro.*\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.err\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.out\n'
-        #fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
@@ -1342,19 +1315,6 @@ def generateSlurmScript(jobData,gageID,runDir):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        # Commenting this out for now as it's not necessary to remove this files,
-        # and it adds a huge I/O burder on Yellowstone when scaled out to all
-        # RFC regions. 
-        #inStr = 'rm -rf diag_hydro.*\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.err\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.out\n'
-        #fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'

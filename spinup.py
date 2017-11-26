@@ -13,7 +13,6 @@ import sys
 import argparse
 import getpass
 import os
-#import subprocess
 import pandas as pd
 import pwd
 import numpy as np
@@ -106,13 +105,6 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
-    if jobData.jobRunType == 1:
-        # Extract active jobs for job owner
-        try:
-            statusMod.checkYsJobs(jobData)
-        except:
-            errMod.errOut(jobData)
-            
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here. This is mostly designed to deal
     # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.

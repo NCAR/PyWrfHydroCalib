@@ -6,7 +6,6 @@
 
 #import datetime
 import os
-import sys
 import calibIoMod
 import namelistMod
 import statusMod

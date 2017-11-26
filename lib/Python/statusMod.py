@@ -11,7 +11,6 @@ import subprocess
 import pandas as pd
 import datetime
 import psutil
-import pwd
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -84,98 +83,6 @@ class statusMeta:
         self.gages = gagesTmp[:]
         self.gageIDs = gageIDsTmp[:]
         
-def checkYsJobs(jobData):
-    # Function to obtain a data frame containing Yellowstone
-    # jobs being ran under the owner of the JobID.
-
-    # Get unique PID.
-    pidUnique = os.getpid()
-    userTmp = pwd.getpwuid(os.getuid()).pw_name
-    
-    csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
-    cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
-    try:
-        subprocess.call(cmd,shell=True)
-    except:
-        jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
-        raise
-    
-    colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
-               'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
-    try:
-        jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
-    except:
-        jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        raise
-        
-    lenJobs = len(jobs.JOBID)
-    
-    # Loop through data frame. For jobs across multiple cores, the data frame
-    # needs to be filled in as the duplicate cores have NaN values, except for the
-    # first core.
-    for job in range(0,lenJobs):
-        # Assume a NaN value with the "USER" field means this is a duplicate.
-        jobIdTmp = jobs.JOBID[job]
-        userTmp = jobs.USER[job]
-        statTmp = jobs.STAT[job]
-        queTmp = jobs.QUEUE[job]
-        hostTmp = jobs.FROM_HOST[job]
-        jobNameTmp = jobs.JOB_NAME[job]
-        monthTmp = jobs.SUBMIT_MONTH[job]
-        dayTmp = jobs.SUBMIT_DAY[job]
-        hourTmp = jobs.SUBMIT_HHMM[job]
-        
-        if str(userTmp) != 'nan' and str(userTmp) != 'NaN':
-            jobIdHold = jobIdTmp
-            userHold = userTmp
-            statHold = statTmp
-            queHold = queTmp
-            hostHold = hostTmp
-            jobNameHold = jobNameTmp
-            monthHold = monthTmp
-            dayHold = dayTmp
-            hourHold = hourTmp
-        else:
-            jobs.JOBID[job] = jobIdHold
-            jobs.USER[job] = userHold
-            jobs.STAT[job] = statHold
-            jobs.QUEUE[job] = queHold
-            jobs.FROM_HOST[job] = hostHold
-            jobs.EXEC_HOST[job] = userTmp
-            jobs.JOB_NAME[job] = jobNameHold
-            jobs.SUBMIT_MONTH[job] = monthHold
-            jobs.SUBMIT_DAY[job] = dayHold
-            jobs.SUBMIT_HHMM[job] = hourHold
-            
-    # Delete temporary CSV files
-    cmdTmp = 'rm -rf ' + csvPath
-    subprocess.call(cmdTmp,shell=True)
-
-    # Loop through and check to make sure no existing jobs are being ran for any 
-    # of the gages.
-    if len(jobs) != 0:
-        for gageCheck in range(0,len(jobData.gageIDs)):
-            jobNameCheck = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
-            jobNameCheck2 = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageCheck])
-            testDF = jobs.query("JOB_NAME == '" + jobNameCheck + "'")
-            if len(testDF) != 0:
-                jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobID) + \
-                                 " is already being ran under owner: " + \
-                                 str(jobData.owner) + ". User: " + \
-                                 str(userTmp) + " is attempting to initiate the workflow."
-                print "ERROR: You are attempting to initiate a job that is already being " + \
-                      "ran by user: " + str(jobData.owner)
-                raise Exception()
-            testDF = jobs.query("JOB_NAME == '" + jobNameCheck2 + "'")
-            if len(testDF) != 0:
-                jobData.errMsg = "ERROR: Job ID: " + str(jobData.jobID) + \
-                                 " is already being ran under owner: " + \
-                                 str(jobData.owner) + ". User: " + \
-                                 str(userTmp) + " is attempting to initiate the workflow."
-                print "ERROR: You are attempting to initiate a job that is already being " + \
-                      "ran by user: " + str(jobData.owner)
-                raise Exception()
-                
 def checkBasJob(jobData,gageNum):
     """
     Generic function to check the status of a model run. If we are running BSUB/QSUB,
@@ -257,9 +164,6 @@ def checkBasJob(jobData,gageNum):
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
         
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-                  
         lenJobs = len(jobs[1])
         
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -366,8 +270,6 @@ def walkMod(bDate,eDate,runDir):
     runFlag = True
     
     output = []
-    #print bDate
-    #print eDate
     for hourModel in range(0,nHours+1):
         dCurrent = bDateOrig + datetime.timedelta(seconds=3600.0*hourModel)
         #print dCurrent
@@ -376,22 +278,6 @@ def walkMod(bDate,eDate,runDir):
         
         if os.path.isfile(lsmRestartPath) and os.path.isfile(hydroRestartPath):
             bDate = dCurrent
-            #if hourModel == 0:
-            #    # This implies the first time step of output is present. Get the expected
-            #    # file size. This will be used to check to make sure the files present
-            #    # are complete.
-            #    rstPth1 = runDir + "/RESTART." + bDateRstChck.strftime('%Y%m%d%H') + "_DOMAIN1"
-            #    rstPth2 = runDir + "/HYDRO_RST." + bDateRstChck.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
-            #    
-            #    lsmSize = os.path.getsize(rstPth1)
-            #    hydroSize = os.path.getsize(rstPth2)
-            #    
-            #    countTmp = countTmp + 1
-            #if hourModel >= 1:
-            #    checkLsm = os.path.getsize(lsmRestartPath)
-            #    checkHydro = os.path.getsize(hydroRestartPath)
-            #    if checkLsm == lsmSize and checkHydro == hydroSize:
-            #        bDate = dCurrent
             
     # If the bDate has reached the eDate, this means the model completed as expected.
     if bDate == eDate:
@@ -404,10 +290,10 @@ def walkMod(bDate,eDate,runDir):
     
 def checkCalibJob(jobData,gageNum):
     """
-    Generic function to check Yellowstone for calibration R job being ran for a 
+    Generic function to check for a calibration R job being ran for a 
     particular basin for a particular job.
     Job name follows a prescribed format:
-    WH_CALIBRATION_JOBID_DOMAINID where:
+    WH_CALIB_JOBID_DOMAINID where:
     JOBID = Unique job ID pulled from database.
     DOMAINID = Unique domain ID pulled from database.
     """
@@ -452,9 +338,6 @@ def checkCalibJob(jobData,gageNum):
     
         lenJobs = len(jobs.JOBID)
 
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         if lenJobs == 0:
             status = False
         else:
@@ -491,9 +374,6 @@ def checkCalibJob(jobData,gageNum):
                   
         lenJobs = len(jobs[1])
         
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         if lenJobs == 0:
             status = False
         else:
@@ -579,7 +459,7 @@ def checkCalibJob(jobData,gageNum):
     
 def checkBasJobValid(jobData,gageNum,modRun):
     """
-    Generic function to check Yellowstone for job being ran for a particular basin.
+    Generic function to check for validation job being ran for a particular basin.
     Job name follows a prescribed format:
     WH_SIM_JOBID_DOMAINID where:
     SIM = Can either CTRL or BEST.
@@ -623,9 +503,6 @@ def checkBasJobValid(jobData,gageNum,modRun):
         expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
                   
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         lenJobs = len(jobs.JOBID)
 
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -668,9 +545,6 @@ def checkBasJobValid(jobData,gageNum,modRun):
                   
         lenJobs = len(jobs[1])
         
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         if lenJobs == 0:
             status = False
         else:
@@ -806,9 +680,6 @@ def checkParmGenJob(jobData,gageNum):
     
         lenJobs = len(jobs.JOBID)
 
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         if lenJobs == 0:
             status = False
         else:
@@ -919,9 +790,6 @@ def checkParmGenJob(jobData,gageNum):
                   
         lenJobs = len(jobs[1])
         
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         if lenJobs == 0:
             status = False
         else:
@@ -977,9 +845,6 @@ def checkEvalJob(jobData,gageNum):
                   
         lenJobs = len(jobs.JOBID)
 
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         if lenJobs == 0:
             status = False
         else:
@@ -1017,9 +882,6 @@ def checkEvalJob(jobData,gageNum):
                   
         lenJobs = len(jobs[1])
         
-        # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-    
         if lenJobs == 0:
             status = False
         else:

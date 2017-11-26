@@ -15,8 +15,6 @@ import sys
 import argparse
 import getpass
 import os
-import sys
-#import subprocess
 import pandas as pd
 import pwd
 import numpy as np
@@ -144,12 +142,6 @@ def main(argv):
         fileObj.write(str(os.getpid()))
         fileObj.close()
     
-    # Extract active jobs for job owner
-    #try:
-    #    statusMod.checkYsJobs(jobData)
-    #except:
-    #    errMod.errOut(jobData)
-        
     # Some house keeping here. If the validation is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
@@ -279,20 +271,17 @@ def main(argv):
             # parameters specified by the user at the beginning of the calibration
             # process.
             print "Running CONTROL"
-            validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            #sys.exit(1)
-            #try:
-            #    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            #except:
-            #    errMod.errOut(jobData)
+            try:
+                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            except:
+                errMod.errOut(jobData)
             time.sleep(3)
             
             print "Running BEST"
-            validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            #try:
-            #    validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            #except:
-            #    errMod.errOut(jobData)
+            try:
+                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            except:
+                errMod.errOut(jobData)
             time.sleep(3)
             
             print keySlot
