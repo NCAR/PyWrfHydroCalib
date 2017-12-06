@@ -65,7 +65,7 @@ def main(argv):
     jobData.dbUName = 'WH_Calib_rw'
     
     if not args.hostname:
-        # We will assume localhost for MySQL DB
+        # We will assume localhost for Postgres DB
         hostTmp = 'localhost'
     else:
         hostTmp = str(args.hostname)
@@ -137,16 +137,6 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
-    # This was commented out for v1.2. Usually, you should not have any other jobs
-    # running from this workflow if you are starting it up. However, given the 
-    # nature of Yellowstone, we may have several basin/calib jobs running at any
-    # given time. 
-    # Extract active jobs for job owner
-    #try:
-    #    statusMod.checkYsJobs(jobData)
-    #except:
-    #    errMod.errOut(jobData)
-        
     # Some house keeping here. If the calibration is already complete, throw an error. 
     # Also ensure the spinup has been entered as complete. This is necessary for the 
     # calibration to run.
@@ -297,18 +287,11 @@ def main(argv):
         # This is faster then looping over each iteration at a time. 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         statusData = [list(item) for item in statusData]
-        print statusData
         for iteration in range(0,int(jobData.nIter)):
-            print "CHECKING ITERATION " + str(iteration+1)
             for iteration2 in range(0,int(jobData.nIter)):
-                print statusData[iteration2][1]
                 if statusData[iteration2][0] == iteration+1:
-                    print iteration
                     keySlot[basin,iteration] = float(statusData[iteration2][1])
                     
-        print keySlot
-            
-        #sys.exit(1)
                 
     while not completeStatus:
         # Walk through calibration directories for each basin. Determine the status of
@@ -340,18 +323,16 @@ def main(argv):
 
         for basin in range(0,len(jobData.gages)):
             for iteration in range(0,int(jobData.nIter)):
-                print "ITERATION = " + str(iteration)
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
                 # If the status is already 1.0, then continue the loop as now work needs to be done.
                 if keyStatusCheck1 == 1.0:
                     continue
                 else:
-                    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                    #try:
-                    #    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                    #except:
-                    #    errMod.errOut(jobData)
+                    try:
+                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                    except:
+                        errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
                     # Put some spacing between launching model simulations to slow down que geting 

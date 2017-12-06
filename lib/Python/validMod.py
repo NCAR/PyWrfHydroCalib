@@ -30,7 +30,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # Establish the "control" and "best" status values. These are important for 
     # the workflow.
     ctrlStatus = keySlot[basinNum,0]
-    bestStatus = keySlot[basinNum,1]
     
     # If the control status is 1.0, this means the model is complete and we can 
     # return to the main workflow calling program.
@@ -115,7 +114,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     #     model simulations.
     # 2.) Job script to run the model with control parameters.
     parmRunScript = runDir + "/gen_parms.sh"
-    bsub1Script = runDir + "/run_parms.sh"
+    bsub1Script = runDir + "/run_params.sh"
     bsub2Script = runDir + "/run_WH.sh"
     
     # If the files exist, remove them and re-create.
@@ -133,45 +132,56 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     except:
         raise
         
-    if statusData.jobRunType == 1:
+    if statusData.analysisRunType == 1:
         # Generate the BSUB script to run the parameter generation code. 
         try:
             generateBsubParmRunScript(statusData,bestDir,gageID)
         except:
             raise
+            
+    if statusData.jobRunType == 1:
         # Generate the BSUB run script to run the model simulations. 
         try:
             generateBsubRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
         except:
             raise
-    if statusData.jobRunType == 2:
+            
+    if statusData.analysisRunType == 2:
         # Generate the PBS script to run the parameter generation code.
         try:
             generatePbsParmRunScript(statusData,bestDir,gageID)
         except:
             raise
+            
+    if statusData.jobRunType == 2:
         # Generate the PBS script to run the model simulations.
         try:
             generatePbsRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
         except:
             raise
-    if statusData.jobRunType == 3:
+            
+    if statusData.analysisRunType == 3:
         # Generate the Slurm script to run the parameter generation code.
         try:
             generateSlurmParmRunScript(statusData,bestDir,gageID)
         except:
             raise
+            
+    if statusData.jobRunType == 3:
         # Generate the Slurm script to run the model simulations.
         try:
             generateSlurmRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
         except:
             raise
-    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+            
+    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
         # Generate the mpiexec/mpirun script to run the parameter generation 
         try:
             generateMpiParmRunScript(statusData,bestDir,gageID)
         except:
             raise
+            
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
         # Generate the BSUB run script to run the model simulations. 
         try:
             generateMpiRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
@@ -498,28 +508,29 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         
     if keyStatus == 0.0 and not runFlag:
         # We need to run parameter generation code.
-        if statusData.jobRunType == 1:
+        if statusData.analysisRunType == 1:
             cmd = "bsub < " + bestDir + "/run_params.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 2:
+        if statusData.analysisRunType == 2:
             cmd = "qsub " + bestDir + "/run_params.sh"
+            print cmd
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
-            cmd = "sbatch " + runDir + "/run_params.sh"
+        if statusData.analysisRunType == 3:
+            cmd = "sbatch " + bestDir + "/run_params.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             print gageMeta.gage
             cmd = bestDir + "/P" + str(statusData.jobID) + str(gageID)
             print cmd
@@ -595,13 +606,10 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     # Create two run scripts:
     # 1.) Job script to run the model with best parameters.
     # 2.) Job script to run the R code for evaluation/plotting.
-    if statusData.jobRunType == 1:
-        bsubRunScript = runDir + "/run_WH.sh"
+    if statusData.analysisRunType == 1:
         bsubEvalScript = validWorkDir + "/run_eval.sh"
     
         # If the files exist, remove them and re-create.
-        if os.path.isfile(bsubRunScript):
-            os.remove(bsubRunScript)
         if os.path.isfile(bsubEvalScript):
             os.remove(bsubEvalScript)
         
@@ -611,18 +619,23 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             generateBsubEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
         except:
             raise
+            
+    if statusData.jobRunType == 1:
+        bsubRunScript = runDir + "/run_WH.sh"
+        
+        # If the files exist, remove them and re-create.
+        if os.path.isfile(bsubRunScript):
+            os.remove(bsubRunScript)
         # Generate the BSUB run script to run the model simulations. 
         try:
             generateBsubRunScript(statusData,gageID,runDir,gageMeta,'BEST')
         except:
             raise
-    if statusData.jobRunType == 2:
-        pbsRunScript = runDir + "/run_WH.sh"
+            
+    if statusData.analysisRunType == 2:
         pbsEvalScript = validWorkDir + "/run_eval.sh"
         
         # If the file exists, remove them and re-create.
-        if os.path.isfile(pbsRunScript):
-            os.remove(pbsRunScript)
         if os.path.isfile(pbsEvalScript):
             os.remove(pbsEvalScript)
             
@@ -632,18 +645,23 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             generatePbsEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
         except:
             raise
+            
+    if statusData.jobRunType == 2:
+        pbsRunScript = runDir + "/run_WH.sh"
+        
+        # If the file exists, remove them and re-create.
+        if os.path.isfile(pbsRunScript):
+            os.remove(pbsRunScript)
         # Generate the PBS run script to run the model simulations.
         try:
             generatePbsRunScript(statusData,gageID,runDir,gageMeta,'BEST')
         except:
             raise
-    if statusData.jobRunType == 3:
-        slurmRunScript = runDir + "/run_WH.sh"
+            
+    if statusData.analysisRunType == 3:
         slurmEvalScript = validWorkDir + "/run_eval.sh"
         
         # If the file exists, remove them and re-create.
-        if os.path.isfile(slurmRunScript):
-            os.remove(slurmRunScript)
         if os.path.isfile(slurmEvalScript):
             os.remove(slurmEvalScript)
             
@@ -653,27 +671,41 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             generateSlurmEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
         except:
             raise
+            
+    if statusData.jobRunType == 3:
+        slurmRunScript = runDir + "/run_WH.sh"
+        
+        # If the file exists, remove them and re-create.
+        if os.path.isfile(slurmRunScript):
+            os.remove(slurmRunScript)
+            
         # Generate the Slurm run script to run the model simulations.
         try:
             generateSlurmRunScript(statusData,gageID,runDir,gageMeta,'BEST')
         except:
             raise
-    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        runScript = runDir + "/run_WH.sh"
+            
+    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
         evalScript = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
     
         # If the files exist, remove them and re-create.
-        if os.path.isfile(runScript):
-            os.remove(runScript)
         if os.path.isfile(evalScript):
             os.remove(evalScript)
-        
-        # Generate scripts to do evaluation on both 
-        # the control and best simulations. 
+            
         try:
             generateMpiEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
         except:
             raise
+        
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        # Generate scripts to do evaluation on both 
+        # the control and best simulations. 
+    
+        runScript = runDir + "/run_WH.sh"
+        
+        # If the files exist, remove them and re-create.
+        if os.path.isfile(runScript):
+            os.remove(runScript)
         # Generate the BSUB run script to run the model simulations. 
         try:
             generateMpiRunScript(statusData,gageID,runDir,gageMeta,'BEST')
@@ -1008,28 +1040,28 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         # Note the control simulation needs to be completed as well in 
         # order for the evaluation code to complete. 
         # We need to run parameter generation code.
-        if statusData.jobRunType == 1:
+        if statusData.analysisRunType == 1:
             cmd = "bsub < " + validWorkDir + "/run_eval.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 2:
+        if statusData.analysisRunType == 2:
             cmd = "qsub " + validWorkDir + "/run_eval.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.analysisRunType == 3:
             cmd = "sbatch " + validWorkDir + "/run_eval.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
             print cmd
             try:
@@ -1061,8 +1093,9 @@ def generateBsubRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write('#\n')
         fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
@@ -1104,16 +1137,17 @@ def generatePbsRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write('#\n')
         inStr = "#PBS -N WH_" + str(modName) + "_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1148,16 +1182,17 @@ def generateSlurmRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write('#\n')
         inStr = "#SBATCH -J WH_" + str(modName) + "_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH -t 08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#SBATCH -o WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WH_" + str(modName) + '_' + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         inStr = "#SBATCH -N " + str(jobData.nNodesMod) + "\n"
         fileObj.write(inStr)
@@ -1353,8 +1388,9 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         fileObj = open(bsubOut,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n 1\n"
         fileObj.write(inStr)
@@ -1431,13 +1467,14 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         fileObj = open(pbsOut,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -N WH_EVAL_" + str(jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#PBS -o WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
+        inStr = '#PBS -o ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
         fileObj.write(inStr)
-        inStr = '#PBS -e WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
+        inStr = '#PBS -e ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#PBS -l walltime=01:00:00\n')
         if len(jobData.queName.strip()) > 0:
@@ -1508,13 +1545,14 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         fileObj = open(pbsOut,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH -J WH_EVAL_" + str(jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#SBATCH -o WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
+        inStr = '#SBATCH -o ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.out\n'
         fileObj.write(inStr)
-        inStr = '#SBATCH -e WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
+        inStr = '#SBATCH -e ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#SBATCH -t 01:00:00\n')
         if len(jobData.queName.strip()) > 0:
@@ -1575,7 +1613,7 @@ def generateBsubParmRunScript(jobData,runDir,gageID):
     Generic function to run BSUB command to run the parameter generation script.
     """
     
-    outFile = runDir + "/run_parms.sh"
+    outFile = runDir + "/run_params.sh"
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -1584,8 +1622,9 @@ def generateBsubParmRunScript(jobData,runDir,gageID):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n 1\n"
         fileObj.write(inStr)
@@ -1613,7 +1652,7 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
     Generic function to run PBS command to run the parameter generation script.
     """
     
-    outFile = runDir + "/run_parms.sh"
+    outFile = runDir + "/run_params.sh"
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -1622,19 +1661,21 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -N WH_PARM_GEN_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#PBS -o WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+        inStr = '#PBS -o ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
         fileObj.write(inStr)
-        inStr = '#PBS -e WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+        inStr = '#PBS -e ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#PBS -l walltime=00:20:00\n')
         if len(jobData.queName.strip()) > 0:
             inStr = '#PBS -q ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
+        fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
@@ -1649,7 +1690,7 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
     Generic function to run Slurm command to run the parameter generation script.
     """
     
-    outFile = runDir + "/run_parms.sh"
+    outFile = runDir + "/run_params.sh"
     
     if os.path.isfile(outFile):
         os.remove(outFile)
@@ -1658,19 +1699,21 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('#\n')
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH -J WH_PARM_GEN_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#SBATCH -o WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+        inStr = '#SBATCH -o ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
         fileObj.write(inStr)
-        inStr = '#SBATCH -e WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+        inStr = '#SBATCH -e ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#SBATCH -t 00:20:00\n')
         if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#SBATCH -N 1\n"
+        fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)

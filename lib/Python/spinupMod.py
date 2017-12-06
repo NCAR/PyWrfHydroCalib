@@ -52,7 +52,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             except:
                 raise
     if statusData.jobRunType == 2:
-        pbsFile = runDir = "/run_WH.sh"
+        pbsFile = runDir + "/run_WH.sh"
         if not os.path.isfile(pbsFile):
             try:
                 generatePbsScript(statusData,int(gageID),runDir,gageMeta)
@@ -94,9 +94,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         keySlot[basinNum] = -1.0
         keyStatus = -1.0
         runFlag = False
-        statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " Is locked. " + \
-                            "Please remove: " + lockPath + " before continuing."
-        errMod.sendMsg(statusData)
+        print "MODEL IS LOCKED"
+        #statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " Is locked. " + \
+        #                    "Please remove: " + lockPath + " before continuing."
+        #errMod.sendMsg(statusData)
                             
     
     if keyStatus == 1.0:
@@ -283,9 +284,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + " /run_WH.sh"
+            cmd = "qsub " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 3:
-            cmd = "sbatch " + runDir + " /run_WH.sh"
+            cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
@@ -320,8 +321,9 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta):
         fileObj.write('#\n')
         fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
@@ -372,16 +374,17 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta):
         fileObj.write('#\n')
         inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -423,23 +426,24 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write('#\n')
         inStr = '#SBATCH -J WH_' + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = '#SBATCH -A ' + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = '#SBATCH -A ' + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = '#SBATCH -t 08:00:00\n'
         fileObj.write(inStr)
-        if len(jobData.queName.str()) > 0:
+        if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
-        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         inStr = '#SBATCH -N ' + str(jobData.nNodesMod) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'srun -n ' + jobData.nCoresMod + ' ./wrf_hydro.exe\n'
+        inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'

@@ -41,7 +41,6 @@ class Database(object):
             strTmp = "dbname=" + str(self.dbName) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
                      " port=5432 host=" + self.host
             db = psycopg2.connect(strTmp)
-            #db = MySQLdb.connect(self.host,self.uName,self.pwd,self.dbName)
         except:
             jobData.errMsg = "ERROR: Unable to connect to database: " + self.dbName
             raise
@@ -153,13 +152,13 @@ class Database(object):
                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
                  "sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
                  0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
-                 jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
+                 jobData.host,jobData.jobRunType,jobData.analysisRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3)
         try:
             self.conn.execute(sqlCmd)
@@ -249,14 +248,17 @@ class Database(object):
         tmpMeta['landSpatialMeta'] = results[14]
         tmpMeta['wrfInput'] = results[15]
         tmpMeta['soilFile'] = results[16]
-        tmpMeta['fullDomFile'] = results[17]
-        tmpMeta['rtLnk'] = results[18]
-        tmpMeta['udMap'] = results[19]
-        tmpMeta['gwFile'] = results[20]
-        tmpMeta['gwMask'] = results[21]
-        tmpMeta['lkFile'] = results[22]
-        tmpMeta['forceDir'] = results[23]
-        tmpMeta['obsFile'] = results[24]
+        tmpMeta['hydroSpatial'] = results[17]
+        tmpMeta['fullDomFile'] = results[18]
+        tmpMeta['rtLnk'] = results[19]
+        tmpMeta['udMap'] = results[20]
+        tmpMeta['gwFile'] = results[21]
+        tmpMeta['gwMask'] = results[22]
+        tmpMeta['lkFile'] = results[23]
+        tmpMeta['forceDir'] = results[24]
+        tmpMeta['obsFile'] = results[25]
+        tmpMeta['dxHydro'] = results[29]
+        tmpMeta['aggFactor'] = results[30]
         
     def jobStatus(self,jobData):
         """
@@ -303,13 +305,14 @@ class Database(object):
         jobData.nNodesR = int(results[20])
         jobData.host = str(results[21])
         jobData.jobRunType = int(results[22])
-        jobData.exe = results[23]
-        jobData.nGages = int(results[24])
-        jobData.owner = results[25]
-        jobData.email = results[26]
-        jobData.slChan = results[27]
-        jobData.slToken = results[28]
-        jobData.slUser = results[29]
+        jobData.analysisRunType = int(results[23])
+        jobData.exe = results[24]
+        jobData.nGages = int(results[25])
+        jobData.owner = results[26]
+        jobData.email = results[27]
+        jobData.slChan = results[28]
+        jobData.slToken = results[29]
+        jobData.slUser = results[30]
         
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
@@ -609,7 +612,6 @@ class Database(object):
         
         sqlCmd = "select iteration,complete from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "';"
-        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
@@ -671,13 +673,10 @@ class Database(object):
         # Update parameter values in Calib_Params
         for paramName in paramNames:
             if paramName != "iter":
-                #sqlCmd = "update Calib_Params set Calib_Params.paramValue='" + str(tblData[paramName][0]) + \
-                #         "' where jobID='" + str(jobID) + "' and domainID='" + str(domainID) + \
-                #         "' and iteration='" + str(iteration) + "' and paramName='" + \
-                #         str(paramName) + "';"
-                sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
-                         "values (" + str(jobID) + "," + str(domainID) + "," + \
-                         str(iteration) + ",'" + paramName + "'," + str(tblData[paramName][0]) + ");"
+                sqlCmd = "update \"Calib_Params\" set \"paramValue\"='" + str(tblData[paramName][0]) + \
+                         "' where \"jobID\"='" + str(jobID) + "' and \"domainID\"='" + str(domainID) + \
+                         "' and \"iteration\"='" + str(iteration) + "' and \"paramName\"='" + \
+                         str(paramName) + "';"
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
@@ -685,7 +684,6 @@ class Database(object):
                     jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
                                      " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
                                      " iteration: " + str(iteration)
-                    print jobData.errMsg
                     raise
                 
     def logCalibStats(self,jobData,jobID,domainID,gage,iteration,statsTbl):
@@ -764,8 +762,10 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
-            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO.TBL"
+            #inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
+            #outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO.TBL"
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO_TBL_2D.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO_TBL_2D.nc"
             # Remove existing "best" file.
             if os.path.isfile(outFile):
                 try:
@@ -889,7 +889,6 @@ class Database(object):
         outStatus = 0
         
         # First find the iteration that contains the best parameter values.
-        #select * from Calib_Stats where domainID='2436' and jobID='75' and best='1';
         sqlCmd = "select * from \"Calib_Stats\" where \"domainID\"='" + str(domainID) + \
                  "' and \"jobID\"='" + str(jobID) + "' and best='1';"
         try:
@@ -970,6 +969,10 @@ class Database(object):
             jobData.errMsg = "ERROR: Unexpected length of validation stats table: " + statsTbl
             raise Exception()
             
+        # Set any missing values to -9999
+        for tmpName in list(tblData.columns.values):
+            tblData[tmpName][pd.isnull(tblData[tmpName])] = -9999.0
+        
         # Loop through table and enter information into DB.
         for stat in range(0,numStats):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
@@ -988,3 +991,104 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failure to enter validation statistics for jobID: " + \
                                  str(jobID) + " domainID: " + str(gageID)
                 raise
+                
+    def checkPreviousEntries(self,jobData):
+        """
+        Generic function that will check Calib_Params, Calib_Stats, Job_Params, and Valid_Stats
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+        
+        statusTmp = True
+
+        # Check Calib_Params        
+        sqlCmd = "select \"jobID\" from \"Calib_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Failure to pull information from Calib_Params"
+            raise            
+        if len(results) != 0:
+            statusTmp = False
+            
+        # Check Calib_Stats        
+        sqlCmd = "select \"jobID\" from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Failure to pull information from Calib_Stats"
+            raise            
+        if len(results) != 0:
+            statusTmp = False
+            
+        # Check Job_Params        
+        sqlCmd = "select \"jobID\" from \"Job_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Failure to pull information from Job_Params"
+            raise            
+        if len(results) != 0:
+            statusTmp = False
+            
+        # Check Valid_Stats        
+        sqlCmd = "select \"jobID\" from \"Valid_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Failure to pull information from Valid_Stats"
+            raise            
+        if len(results) != 0:
+            statusTmp = False
+            
+        return statusTmp
+        
+    def cleanupJob(self,jobData):
+        """
+        Generic function to cleanup Calib_Params, Calib_Stats, Job_Params, and Valid Stats
+        of an old orphaned job.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        # Cleanup Calib_Params
+        sqlCmd = "delete from \"Calib_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Calib_Params for job: " + str(jobData.jobID)
+            raise Exception()
+            
+        # Cleanup Calib_Stats
+        sqlCmd = "delete from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Calib_Stats for job: " + str(jobData.jobID)
+            raise Exception()
+            
+        # Cleanup Job_Params
+        sqlCmd = "delete from \"Job_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Job_Params for job: " + str(jobData.jobID)
+            raise Exception()
+            
+        # Cleanup Valid_Stats
+        sqlCmd = "delete from \"Valid_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Valid_Stats for job: " + str(jobData.jobID)
+            raise Exception()

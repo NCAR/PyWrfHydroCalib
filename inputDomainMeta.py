@@ -36,13 +36,13 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-#import MySQLdb
 import psycopg2
 import getpass
 import argparse
 import os
 import sys
 import pandas as pd
+from netCDF4 import Dataset
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -59,7 +59,7 @@ def main(argv):
     args = parser.parse_args()
     
     # Obtain the WH_Calib_rw username password. 
-    # NOTE YOU MUST INITIALIZE THE MYSQL DB FIRST BY
+    # NOTE YOU MUST INITIALIZE THE POSTGRES DB FIRST BY
     # RUNNING initDB.py BEFORE YOU CAN RUN THIS PROGRAM.
     try:
         pwdTmp = getpass.getpass('Enter WH_Calib_rw password: ')
@@ -165,9 +165,11 @@ def main(argv):
         fullDomPath = dirBasin + "/Fulldom.nc"
         gwPath = dirBasin + "/GWBUCKPARM.nc"
         gwMskPath = dirBasin + "/GWBASINS.nc"
-        lakePath = dirBasin + "/LAKEPARM.nc"
+        lakePath1 = dirBasin + "/LAKEPARM.nc"
+        lakePath2 = dirBasin + "/LAKEPARM.TBL"
         routePath = dirBasin + "/RouteLink.nc"
         soilPath = dirBasin + "/soil_properties.nc"
+        hydro2d = dirBasin + "/HYDRO_TBL_2D.nc"
         wghtPath = dirBasin + "/spatialweights.nc"
         wrfInPath = dirBasin + "/wrfinput.nc"
         forceDir = dirBasin + "/FORCING"
@@ -178,26 +180,29 @@ def main(argv):
             print "ERROR: " + geoPath + " not found."
             sys.exit(1)
         if not os.path.isfile(landSpatialMetaPath):
-            print "ERROR: " + landSpatialMetaPath + " not found."
-            sys.exit(1)
+            print "WARNING: " + landSpatialMetaPath + " not found. Output will not be CF-Compliant."
+            landSpatialMetaPath = "-9999"
         if not os.path.isfile(fullDomPath):
             print "ERROR: " + fullDomPath + " not found."
             sys.exit(1)
         if not os.path.isfile(gwPath):
-            print "ERROR: " + gwPath + " not found."
+            print "ERROR: " + gwPath + "not found."
             sys.exit(1)
-        if not os.path.isfile(lakePath):
-            print "ERROR: " + lakePath + " not found."
-            sys.exit(1)
+        if not os.path.isfile(lakePath1) and not os.path.isfile(lakePath2):
+            print "WARNING: No lake parameter files found. Assuming you have setup a domain with no lakes."
+            lakePath = '-9999'
         if not os.path.isfile(routePath):
             print "WARNING: " + routePath + " not found. Assuming this is for gridded routing....."
-            routePath = "EMPTY"
+            routePath = "-9999"
         if not os.path.isfile(soilPath):
             print "ERROR: " + soilPath + " not found."
             sys.exit(1)
-        if not os.path.isfile(wghtPath):
-            print "ERROR: " + wghtPath + " not found."
+        if not os.path.isfile(hydro2d):
+            print "ERROR: " + hydro2d + " not found."
             sys.exit(1)
+        if not os.path.isfile(wghtPath):
+            print "WARNING: " + wghtPath + " not found. Assuming you are running a non NWM routing...."
+            wghtPath = "-9999"
         if not os.path.isfile(wrfInPath):
             print "ERROR: " + wrfInPath + " not found."
             sys.exit(1)
@@ -208,21 +213,31 @@ def main(argv):
             print "ERROR: " + obsFile + " not found."
             sys.exit(1)
         if not os.path.isfile(gwMskPath):
-            print "WARNING: " + gwMskPath + " not found. Assuming you are running reach-based/NWM routing...."
-    
+            print "WARNING: " + gwMskPath + " not found. Assuming you are running non NWM routing...."
+            gwMskPath = "-9999"
+            
+        # Look for a NetCDF lake parameter file first, and use it. If not, use the ASCII table instead.
+        if os.path.isfile(lakePath1):
+            lakePath = lakePath1
+        else:
+            if os.path.isfile(lakePath2):
+                lakePath = lakePath2
+            
+        # Calculate grid spacing and aggregation factors from geogrid and Fulldom files...
+        dxrt,aggFactor = calcSpacing(geoPath,fullDomPath)
         
-        # Compose SQL command
+        # Compose Postgres command
         cmd = "INSERT INTO \"Domain_Meta\" (gage_id,link_id,domain_path,gage_agency,geo_e," + \
               "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
-              "soil_file,fulldom_file,rtlink_file,spweight_file," + \
-              "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
+              "soil_file,hydro_tbl_spatial,fulldom_file,rtlink_file,spweight_file," + \
+              "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon,dx_hydro,agg_factor," + \
               "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc) VALUES " + \
-              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
+              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
-              hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
-              gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
+              hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,hydro2d,fullDomPath,routePath,wghtPath,gwPath,\
+              gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,dxrt,aggFactor,sqMi,sqKm,\
               county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc)
-           
+              
         # Make entry into DB
         try:
             conn.execute(cmd)
@@ -242,6 +257,49 @@ def main(argv):
     except:
         print "ERROR: Unable to close DB connection."
         sys.exit(1)
+        
+def calcSpacing(geoPath,fullDomPath):
+    """ Generic function to calculate the high resolution grid spacing and 
+        aggregation factor between the land and hydro grid. 
+    """
+    
+    # Open the geogrid file and pull the DX attribute (meters) from the file. 
+    try:
+        idGeo = Dataset(geoPath,'r')
+        dxLand = float(idGeo.DX)
+        nRowLand = float(idGeo.variables['XLAT_M'].shape[1])
+    except:
+        print "ERROR: Unable to open: " + geoPath + " and extract DX global attribute along with number of rows."
+        sys.exit(1)
+        
+    try:
+        idGeo.close()
+    except:
+        print "ERROR: Unable to close: " + geoPath
+        sys.exit(1)
+        
+    # Open the Fulldom file and extract the resolution from teh "x" coordinate variable.
+    try:
+        idFullDom = Dataset(fullDomPath,'r')
+    except:
+        print "ERROR: Unable to open: " + fullDomPath
+        sys.exit(1)
+    
+    try:
+        nRowHydro = float(idFullDom.variables['y'].shape[0])
+    except:
+        print "ERROR: Unable to extract Fulldom number of rows from y coordinate variable."
+        sys.exit(1)
+        
+    try:
+        idFullDom.close()
+    except:
+        print "ERROR: Unable to close: " + fullDomPath
+    
+    aggFactor = int(nRowHydro/nRowLand)
+    dxHydro = dxLand/aggFactor
+    
+    return dxHydro,aggFactor
         
 if __name__ == "__main__":
     main(sys.argv[1:])

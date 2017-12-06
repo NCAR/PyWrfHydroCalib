@@ -1,5 +1,5 @@
-# Main calling program to initiate a spinup for calibration of the National
-# Water Model. This program can either be used to initiate or restart a 
+# Main calling program to initiate a spinup for calibration of the WRF-Hydro. 
+# This program can either be used to initiate or restart a 
 # spinup if it has crashed unexpectedly. The user will need to provide 
 # a unique Job ID that is stored in the database.
 
@@ -13,7 +13,6 @@ import sys
 import argparse
 import getpass
 import os
-#import subprocess
 import pandas as pd
 import pwd
 import numpy as np
@@ -67,7 +66,7 @@ def main(argv):
     jobData.dbUName = 'WH_Calib_rw'
     
     if not args.hostname:
-        # We will assume localhost for MySQL DB
+        # We will assume localhost for Postgres DB
         hostTmp = 'localhost'
     else:
         hostTmp = str(args.hostname)
@@ -106,13 +105,6 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
-    if jobData.jobRunType == 1:
-        # Extract active jobs for job owner
-        try:
-            statusMod.checkYsJobs(jobData)
-        except:
-            errMod.errOut(jobData)
-            
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here. This is mostly designed to deal
     # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
@@ -276,11 +268,10 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            #try:
-            #    spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
-            #except:
-            #    errMod.errOut(jobData)
+            try:
+                spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            except:
+                errMod.errOut(jobData)
             time.sleep(2)
         
         # Check to see if program requirements have been met.

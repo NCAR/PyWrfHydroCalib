@@ -10,9 +10,9 @@
 # karsten@ucar.edu
 
 import argparse
-#import pwd
 import sys
 import os
+import getpass
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -39,6 +39,8 @@ def main(argv):
     parser.add_argument('contactFlag',metavar='ctFlag',type=int,nargs='+',
                         help='1 = send to job contact, 0 = print to screen.')
     parser.add_argument('--email',nargs='?',help='Optional email to pipe output to.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
                         
     args = parser.parse_args()
     
@@ -56,18 +58,21 @@ def main(argv):
 
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
-    
-    jobData.dbUName = 'NWM_Calib'
-    jobData.dbPwd = 'CalibrateGoodTimes'
-    
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbUName= 'WH_Calib_rw'
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
+        
+    if not args.hostname:
+        # We will assume localhost for Postgres DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+    jobData.host = hostTmp
+
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
@@ -109,7 +114,7 @@ def main(argv):
         iterComplete = 1 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         for iteration in range(0,int(jobData.nIter)):
-            keyStatus = float(statusData[iteration][0])
+            keyStatus = float(statusData[iteration][1])
             if keyStatus == 1.0:
                 if iterComplete == int(jobData.nIter):
                     msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \

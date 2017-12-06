@@ -11,7 +11,6 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
-import sys
 import time
 
 import warnings
@@ -53,13 +52,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     except:
         raise
         
-    if statusData.jobRunType == 1:
+    if statusData.analysisRunType == 1:
         # Generate BSUB file necessary for running R calibration/analysis
         # code.
         try:
             generateBsubCalibScript(statusData,int(gageID),runDir,workDir)
         except:
             raise
+            
+    if statusData.jobRunType == 1:
         
         # If BSUB run script doesn't exist, create it here.
         bsubFile = runDir + "/run_WH.sh"
@@ -80,12 +81,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             generateRestartBsubScript(statusData,int(gageID),runDir)
         except:
             raise
-    if statusData.jobRunType == 2:
+            
+    if statusData.analysisRunType == 2:
         # Generate PBS file necessary to running R calibration/analysis code.
         try:
             generatePbsCalibScript(statusData,int(gageID),runDir,workDir)
         except:
             raise
+            
+    if statusData.jobRunType == 2:
             
         # If PBS run script doesn't exist, create it here.
         pbsFile = runDir + "/run_WH.sh"
@@ -105,12 +109,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             generateRestartPbsScript(statusData,int(gageID),runDir)
         except:
             raise
-    if statusData.jobRunType == 3:
+            
+    if statusData.analysisRunType == 3:
         # Generate Slurm file necessary to run R calibration/analysis code.
         try:
             generateSlurmCalibScript(statusData,int(gageID),runDir,workDir)
         except:
             raise
+            
+    if statusData.jobRunType == 3:
             
         # If PBS run script doesn't exist, create it here.
         pbsFile = runDir + "/run_WH.sh"
@@ -131,7 +138,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
-    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
         # Generate mpiexec/mpirun run script and R submission script for running
         # calibration/analysis code.
         try:
@@ -139,6 +146,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
         # If run script doesn't exist, create it here.
         runFile = runDir + "/run_WH.sh"
         rstFile = runDir + "/run_WH_Restart.sh"
@@ -912,28 +920,28 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         print "FIRING OFF FIRST CALIBRATION CODE"
         # Fire off calibration programs.
-        if statusData.jobRunType == 1:
+        if statusData.analysisRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 2:
+        if statusData.analysisRunType == 2:
             cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.analysisRunType == 3:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -966,28 +974,28 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         print "FIRING OFF CALIB CODE"
         # Fire off calibration program.
-        if statusData.jobRunType == 1:
+        if statusData.analysisRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 2:
+        if statusData.analysisRunType == 2:
             cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.analysisRunType == 3:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -1028,8 +1036,9 @@ def generateRestartBsubScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
@@ -1073,16 +1082,17 @@ def generateRestartPbsScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1118,23 +1128,24 @@ def generateRestartSlurmScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#SBATCH -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH -t 08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
         fileObj.write(inStr)
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'srun -n ' + jobData.nCoresMod + ' ./wrf_hydro.exe\n'
+        inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1198,8 +1209,9 @@ def generateBsubScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
@@ -1216,19 +1228,6 @@ def generateBsubScript(jobData,gageID,runDir):
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        # Commenting this out for now as it's not necessary to remove this files,
-        # and it adds a huge I/O burder on Yellowstone when scaled out to all
-        # RFC regions. 
-        #inStr = 'rm -rf diag_hydro.*\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.err\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.out\n'
-        #fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
@@ -1259,16 +1258,17 @@ def generatePbsScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#PBS -l walltime=08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1277,19 +1277,6 @@ def generatePbsScript(jobData,gageID,runDir):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        # Commenting this out for now as it's not necessary to remove this files,
-        # and it adds a huge I/O burder on Yellowstone when scaled out to all
-        # RFC regions. 
-        #inStr = 'rm -rf diag_hydro.*\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.err\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.out\n'
-        #fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
@@ -1320,40 +1307,28 @@ def generateSlurmScript(jobData,gageID,runDir):
         fileObj.write('#\n')
         inStr = "#SBATCH -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
-        inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
         inStr = "#SBATCH -t 08:00:00\n"
         fileObj.write(inStr)
         if len(jobData.queName.strip()) > 0:
             inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#SBATCH -o WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
         fileObj.write(inStr)
         inStr = "#SBATCH -N " + str(jobData.nNodesMod) + "\n"
         fileObj.write(inStr)
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        # Commenting this out for now as it's not necessary to remove this files,
-        # and it adds a huge I/O burder on Yellowstone when scaled out to all
-        # RFC regions. 
-        #inStr = 'rm -rf diag_hydro.*\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.err\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.out\n'
-        #fileObj.write(inStr)
         inStr = 'for FILE in HYDRO_RST.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = "srun -n " + jobData.nCoresMod + " ./wrf_hydro.exe\n"
+        inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1475,8 +1450,9 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#\n')
             fileObj.write('# LSF Batch Script to Run WRF-Hydro Calibration R Code\n')
             fileObj.write('#\n')
-            inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
-            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
             inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
             fileObj.write(inStr)
             inStr = "#BSUB -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
@@ -1547,13 +1523,14 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#\n')
             fileObj.write('# PBS Batch Script to Run WRF-Hydro Calibration R Code\n')
             fileObj.write('#\n')
-            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
-            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
             inStr = "#PBS -N WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#PBS -o WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            inStr = '#PBS -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#PBS -e WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            inStr = '#PBS -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
             nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
             inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1621,13 +1598,14 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#\n')
             fileObj.write('# Slurm Batch Script to Run WRF-Hydro Calibration R Code\n')
             fileObj.write('#\n')
-            inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
-            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
             inStr = "#SBATCH -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#SBATCH -o WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            inStr = '#SBATCH -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#SBATCH -e WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            inStr = '#SBATCH -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
             inStr = "#SBATCH -N " + str(jobData.nNodesR) + "\n"
             fileObj.write(inStr)
@@ -1690,10 +1668,10 @@ def generateMpiCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#!/bin/bash\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            if jobData.jobRunType == 4:
+            if jobData.analysisRunType == 4:
                 inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./C' + \
                 str(jobData.jobID) + str(gageID) +'\n'
-            if jobData.jobRunType == 5:
+            if jobData.analysisRunType == 5:
                 inStr = 'mpirun -np ' + str(int(jobData.nCoresR)) + ' ./C' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)
