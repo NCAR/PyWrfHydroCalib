@@ -41,6 +41,7 @@ class statusMeta:
         self.nCoresR = []
         self.nNodesR = []
         self.jobRunType = []
+        self.analysisRunType = []
         self.host = []
         self.acctKey = []
         self.queName = []
@@ -85,7 +86,7 @@ class statusMeta:
         
 def checkBasJob(jobData,gageNum):
     """
-    Generic function to check the status of a model run. If we are running BSUB/QSUB,
+    Generic function to check the status of a model run. If we are running BSUB/QSUB/Slurm,
     we will check the que for a specific job name following the format: WH_JOBID_DOMAINID
     where JOBID = Unique job ID pulled from the database and DOMAINID is
     a unique domain ID pulled from the database. If we are running mpiexec/mpirun,
@@ -272,7 +273,6 @@ def walkMod(bDate,eDate,runDir):
     output = []
     for hourModel in range(0,nHours+1):
         dCurrent = bDateOrig + datetime.timedelta(seconds=3600.0*hourModel)
-        #print dCurrent
         lsmRestartPath = runDir + "/RESTART." + dCurrent.strftime('%Y%m%d%H') + "_DOMAIN1"
         hydroRestartPath = runDir + "/HYDRO_RST." + dCurrent.strftime('%Y-%m-%d_%H') + ':00_DOMAIN1'
         
@@ -306,7 +306,7 @@ def checkCalibJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    if jobData.jobRunType == 1:
+    if jobData.analysisRunType == 1:
         csvPath = "./BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -346,7 +346,7 @@ def checkCalibJob(jobData,gageNum):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.jobRunType == 2:
+    if jobData.analysisRunType == 2:
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
@@ -382,7 +382,7 @@ def checkCalibJob(jobData,gageNum):
                 if jobs[1][jobNum].strip() == expName:
                     status = True
                     
-    if jobData.jobRunType == 3:
+    if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -425,7 +425,7 @@ def checkCalibJob(jobData,gageNum):
         if not status:
             print "NO CALIB JOBS FOUND"
     
-    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -615,7 +615,6 @@ def checkBasJobValid(jobData,gageNum,modRun):
                 print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
-            print exeName
             print "NO VALID MODEL JOBS FOUND"
         else:
             print "BASIN VALID JOBS FOUND"
@@ -649,7 +648,7 @@ def checkParmGenJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    if jobData.jobRunType == 1:
+    if jobData.analysisRunType == 1:
         #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
@@ -688,7 +687,7 @@ def checkParmGenJob(jobData,gageNum):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.jobRunType == 3:
+    if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -732,7 +731,7 @@ def checkParmGenJob(jobData,gageNum):
         if not status:
             print "NO EVAL JOBS FOUND"
         
-    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -762,7 +761,7 @@ def checkParmGenJob(jobData,gageNum):
             else:
                 status = True
                 
-    if jobData.jobRunType == 2:
+    if jobData.analysisRunType == 2:
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
@@ -814,7 +813,7 @@ def checkEvalJob(jobData,gageNum):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    if jobData.jobRunType == 1:
+    if jobData.analysisRunType == 1:
         #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
@@ -853,7 +852,7 @@ def checkEvalJob(jobData,gageNum):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.jobRunType == 2:
+    if jobData.analysisRunType == 2:
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
@@ -890,7 +889,7 @@ def checkEvalJob(jobData,gageNum):
                 if jobs[1][jobNum].strip() == expName:
                     status = True
                     
-    if jobData.jobRunType == 3:
+    if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -934,16 +933,14 @@ def checkEvalJob(jobData,gageNum):
         if not status:
             print "NO EVAL JOBS FOUND"
                 
-    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
+    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
         # We are running via mpiexec
         pidActive = []
         exeName = "E" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) 
-        print "LOOKING FOR: " + exeName
         for proc in psutil.process_iter():
-            print proc
             try:
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)

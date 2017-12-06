@@ -17,11 +17,11 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     #       typeFlag = 2 indicates restart.
     # NOTE: genFlag = 0 indicates a spinup - pull all parameter files from 
     #                   gageData
-    #       genFlag = 1 indicartes a calibration - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 1 indicartes a calibration - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from the run directory.
-    #       genFlag = 2 Indicates validation CTRL - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 2 Indicates validation CTRL - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
-    #       genFlag = 3 Indicates validation BEST - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 3 Indicates validation BEST - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
     # Create path for the namelist file
     pathOut = outDir + "/namelist.hrldas"
@@ -170,11 +170,11 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     # General function for creation of a hydro.namelist file.
     # NOTE: genFlag = 0 indicates a spinup - pull all parameter files from 
     #                   gageData
-    #       genFlag = 1 indicartes a calibration - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 1 indicartes a calibration - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from the run directory.
-    #       genFlag = 2 Indicates validation CTRL - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 2 Indicates validation CTRL - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
-    #       genFlag = 3 Indicates validation BEST - pull HYDRO.TBL, Fulldom.nc,
+    #       genFlag = 3 Indicates validation BEST - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
     # Create path for the namelist file.
     pathOut = outDir + "/hydro.namelist"
@@ -221,11 +221,40 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         fileObj.write(inStr)
         fileObj.write('! Specify the spatial hydro parameters file (e.g.: "HYDRO_TBL_2D.nc")\n')
-        fileObj.write('! If you specify a filename and the file does not exist, it will be created for you.\n')
-        fileObj.write(' HYDROTBL_F = "./HYDRO_TBL_2D.nc"\n')
+        if genFlag == 0:
+            # Spinup
+            inStr = ' HYDROTBL_F = "' + str(gageData.hydroSpatial) + '"' + '\n'
+        if genFlag == 1:
+            # Calibration run with updated parameter dataset
+            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                     str(gageData.gage) + "/RUN.CALIB/OUTPUT/HYDRO_TBL_2D.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise Exception()
+            inStr = ' HYDROTBL_F = "' + pthTmp + '"\n'
+        if genFlag == 2:
+            # Control validation simulation
+            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/HYDRO_TBL_2D.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise Exception()
+            inStr = ' HYDROTBL_F = "' + pthTmp + '"\n'
+        if genFlag == 3:
+            # Best validation simulation
+            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                     str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/HYDRO_TBL_2D.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise Exception()
+            inStr = ' HYDROTBL_F = "' + pthTmp + '"\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Specify spatial metadata file for land surface grid.\n')
-        inStr = 'LAND_SPATIAL_META_FLNM = "' + str(gageData.landSpatialMeta) + '"' + '\n'
+        if str(gageData.landSpatialMeta) == '-9999':
+            inStr = 'LAND_SPATIAL_META_FLNM = \'\'' + '\n'
+        else:
+            inStr = 'LAND_SPATIAL_META_FLNM = "' + str(gageData.landSpatialMeta) + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the name of the restart file if starting from restart... comment out with ! if not...\n')
@@ -234,6 +263,9 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             fileObj.write(inStr)
         elif typeFlag == 2: # Calibration
             restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+            if not os.path.isfile(restartFile):
+                jobData.errMsg = "ERROR: Failure to find: " + restartFile
+                raise Exception()
             inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')
@@ -337,11 +369,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('              ! 0 = no output, 1 = output\n')
         fileObj.write('\n')
         fileObj.write('!!!! PHYSICS OPTIONS AND RELATED SETTINGS !!!!\n')
-        fileObj.write('!Switch for terrain adjustment of incoming solar radiation: 0=no, 1=yes\n')
-        fileObj.write('!Note: This option is not yet active in Version 1.0...\n')
-        fileObj.write('!      WRF has this capability so be careful not to double apply the correction!!!!\n')
-        inStr = ' TERADJ_SOLAR = ' + str(jobData.solarAdj) + '\n'
-        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the number of soil layers (integer) and the depth of the bottom of of each layer (meters)...\n')
         fileObj.write('! Notes: In Version 1 of WRF-Hydro these must be the same as in the namelist.input file\n')
@@ -357,10 +384,12 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the grid spacing of the terrain routing grid...(meters)\n')
-        fileObj.write(' DXRT = 250.0\n')
+        inStr = ' DXRT = ' + str(float(gageData.dxHydro)) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the integer multiple between the land model grid and the terrain routing grid...(integer)\n')
-        fileObj.write(' AGGFACTRT = 4\n')
+        inStr = ' AGGFACTRT = ' + str(int(gageData.aggFact)) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Specify the routing model timestep...(seconds)\n')
         inStr = ' DTRT_CH = ' + str(jobData.dtChRt) + '\n'
@@ -386,12 +415,18 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' channel_option = ' + str(jobData.chnRtOpt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        fileObj.write('!Speicy the reach file for reach-based routing options...\n')
-        inStr = ' route_link_f = "' + str(gageData.rtLnk) + '"\n'
+        fileObj.write('!Specify the reach file for reach-based routing options...\n')
+        if str(gageData.rtLnk) == '-9999':
+            inStr = ' route_link_f = \'\'' + '\n'
+        else:
+            inStr = ' route_link_f = "' + str(gageData.rtLnk) + '"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Specify the simulated lakes for NHDPlus reach-based routing\n')
-        inStr = ' route_lake_f = "' + str(gageData.lkFile) + '"\n'
+        if str(gageData.lkFile) == '-9999':
+            inStr = ' route_lake_f = \'\'' + '\n'
+        else:
+            inStr = ' route_lake_f = "' + str(gageData.lkFile) + '"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Switch to activate baseflow bucket model...(0=none, 1=exp. bucket, 2=pass-through\n')
@@ -401,7 +436,10 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('!Groundwater/baseflow mask specified on land surface model grid...\n')
         fileObj.write('!Note: Only required in baseflow bucket model is active\n')
         fileObj.write('!gwbasmskfil will not be used if UDMP_OPT = 1\n')
-        inStr = ' gwbasmskfil = "' + str(gageData.gwMask) + '"\n'
+        if str(gageData.gwMask) == '-9999':
+            inStr = ' gwbasmskfil = \'\'' + '\n'
+        else:
+            inStr = ' gwbasmskfil = "' + str(gageData.gwMask) + '"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Groundwater bucket parameter file (e.g.: "GWBUCKPARM.nc" for netcdf or "GWBUCKPARM.TBL" for text)\n')

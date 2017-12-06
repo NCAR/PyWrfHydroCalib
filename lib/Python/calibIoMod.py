@@ -28,15 +28,19 @@ class gageMeta:
         self.udMap = []
         self.wrfInput = []
         self.soilFile = []
+        self.hydroSpatial = []
         self.forceDir = []
         self.obsFile = []
+        self.dxHydro = []
+        self.aggFact = []
     def pullGageMeta(self,jobData,db,gageName):
         # Function to extract locations of gage-specific spatial files.
         
         tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
-                   'wrfInput':'','soilFile':'','forceDir':'',\
-                   'obsFile':'','gageID':'','comID':'','nCoresMod':''}
+                   'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
+                   'obsFile':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
+                   'aggFactor':''}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:
@@ -54,9 +58,12 @@ class gageMeta:
         self.udMap = tmpMeta['udMap']
         self.wrfInput = tmpMeta['wrfInput']
         self.soilFile = tmpMeta['soilFile']
+        self.hydroSpatial = tmpMeta['hydroSpatial']
         self.forceDir = tmpMeta['forceDir']
         self.obsFile = tmpMeta['obsFile']
         self.comID = tmpMeta['comID']
+        self.dxHydro = tmpMeta['dxHydro']
+        self.aggFact = tmpMeta['aggFactor']
         
 def getGageList(jobData,db):
     # Function for extracting list of gages 
@@ -117,8 +124,8 @@ def copyDefaultParms(jobData,runDir,gage):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    inPath = runDir + "/HYDRO.TBL"
-    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/HYDRO.TBL"
+    inPath = runDir + "/HYDRO_TBL_2D.NC"
+    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/HYDRO_TBL_2D.nc"
     if not os.path.isfile(inPath):
         jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
         raise Exception()
@@ -364,28 +371,6 @@ def setupModels(jobData,db,args,libPathTop):
             jobData.errMsg = "ERROR: Unable to create symbolic link to general parameter table."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/OUTPUT/HYDRO.TBL"
-        try:
-            os.symlink(str(jobData.hydroTbl),link1)
-        except:
-            wipeJobDir(jobData)
-            jobData.errMsg = "ERROR: Unable to create symbolic link to hydro table."
-            raise
-            
-        link1 = gageDir + "/RUN.SPINUP/OUTPUT/LAKEPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/OUTPUT/LAKEPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/LAKEPARM.TBL"
-        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/LAKEPARM.TBL"
-        try:
-            os.symlink(str(jobData.lakeParmTbl),link1)
-            os.symlink(str(jobData.lakeParmTbl),link2)
-            os.symlink(str(jobData.lakeParmTbl),link3)
-            os.symlink(str(jobData.lakeParmTbl),link4)
-        except:
-            wipeJobDir(jobData)
-            jobData.errMsg = "ERROR: Unable to create symbolic link to lake parameter table."
-            raise
-            
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/MPTABLE.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/MPTABLE.TBL"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/MPTABLE.TBL"
@@ -450,7 +435,7 @@ def setupModels(jobData,db,args,libPathTop):
             wipeJobDir(jobData)
             raise
             
-        # Copy original Fulldom, spatial soils, and hydro.tbl file for calibrations.
+        # Copy original Fulldom, spatial soils, and HYDRO_TBL_2D file for calibrations.
         origPath = str(gageData.fullDom)
         newPath = baseParmDir + "/Fulldom.nc"
         try:
@@ -469,13 +454,13 @@ def setupModels(jobData,db,args,libPathTop):
             jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
             raise
             
-        origPath = str(jobData.hydroTbl)
-        newPath = baseParmDir + "/HYDRO.TBL"
+        origPath = str(gageData.hydroSpatial)
+        newPath = baseParmDir + "/HYDRO_TBL_2D.nc"
         try:
             shutil.copy(origPath,newPath)
         except:
             wipeJobDir(jobData)
-            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to : " + newPath
             raise
             
         origPath = str(gageData.gwFile)

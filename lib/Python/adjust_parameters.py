@@ -1,7 +1,7 @@
 # Program to adjust wrfHydro parameter files per output from R calibration 
 # evaluations and adjustments. The following files will be adjusted:
 # 1.) Fulldom.nc
-# 2.) HYDRO.TBL
+# 2.) HYDRO_TBL_2D.nc
 # 3.) soil_properties.nc
 
 # Program is contingent on specific COMPLETE flag begin generated 
@@ -41,7 +41,8 @@ def main(argv):
     
     # Compose input file paths.
     fullDomOrig = workDir + "/BASELINE_PARAMETERS/Fulldom.nc"
-    hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO.TBL"
+    #hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO.TBL"
+    hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO_TBL_2D.nc"
     soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
     gwOrig = workDir + "/BASELINE_PARAMETERS/GWBUCKPARM.nc"
     rCompletePath = workDir + "/R_COMPLETE"
@@ -49,7 +50,8 @@ def main(argv):
     
     # Compose output file paths.
     fullDomOut = runDir + "/Fulldom.nc"
-    hydroOut = runDir + "/HYDRO.TBL"
+    #hydroOut = runDir + "/HYDRO.TBL"
+    hydroOut = runDir + "/HYDRO_TBL_2D.nc"
     soilOut = runDir + "/soil_properties.nc"
     gwOut = runDir + '/GWBUCKPARM.nc'
     outFlag = workDir + "/CALIB_ITER.COMPLETE"
@@ -93,37 +95,37 @@ def main(argv):
     idFullDom = Dataset(fullDomOut,'a')
     idSoil2D = Dataset(soilOut,'a')
     idGw = Dataset(gwOut,'a')
+    idHydroTbl = Dataset(hydroOut,'a')
     
     # Open original HYDRO.TBL.
-    hydroTblDataOrig = file(hydroOrig)
+    #hydroTblDataOrig = file(hydroOrig)
     
     # Open new HYDRO.TBL file for writing.
-    hydroOutObj = open(hydroOut,'w')
-    countTmp = 1
-    for line in hydroTblDataOrig:
-        if countTmp < 33:
-            hydroOutObj.write(line)
-        else:
-            # Modify SATDK and MAXSMC as needed.
-            lineTmp = line
-            lineSplit = lineTmp.split(',')
-            if 'dksat' in paramNames:
-                dksatValue = float(lineSplit[0])*float(newParams.dksat[0])
-            else:
-                dksatValue = float(lineSplit[0])
-            if 'smcmax' in paramNames:
-                smcValue = float(lineSplit[1])*float(newParams.smcmax[0])
-            else:
-                smcValue = float(lineSplit[1])
-            outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
-            lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
-            hydroOutObj.write(outStr)
-        countTmp = countTmp + 1
-    hydroOutObj.close()
+    #hydroOutObj = open(hydroOut,'w')
+    #countTmp = 1
+    #for line in hydroTblDataOrig:
+    #    if countTmp < 33:
+    #        hydroOutObj.write(line)
+    #    else:
+    #        # Modify SATDK and MAXSMC as needed.
+    #        lineTmp = line
+    #        lineSplit = lineTmp.split(',')
+    #        if 'dksat' in paramNames:
+    #            dksatValue = float(lineSplit[0])*float(newParams.dksat[0])
+    #        else:
+    #            dksatValue = float(lineSplit[0])
+    #        if 'smcmax' in paramNames:
+    #            smcValue = float(lineSplit[1])*float(newParams.smcmax[0])
+    #        else:
+    #            smcValue = float(lineSplit[1])
+    #        outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
+    #        lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
+    #        hydroOutObj.write(outStr)
+    #    countTmp = countTmp + 1
+    #hydroOutObj.close()
     
     # Loop through and adjust each parameter accordingly.
     for param in paramNames:
-        print param
         if param == "bexp":
             idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0])
         
@@ -169,10 +171,18 @@ def main(argv):
         if param == "ovroughrtfac":
             idFullDom.variables['OVROUGHRTFAC'][:,:] = float(newParams.ovroughrtfac[0])
             
+        if param == "dksat":
+            idHydroTbl.variables['LKSAT'][:,:] = idHydroTbl.variables['LKSAT'][:,:]*float(newParams.dksat[0])
+            
+        if param == "smcmax":
+            idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[0])       
+        
+            
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
     idGw.close()
+    idHydroTbl.close()
     
     # Remove all model output as we no longer need it in preparation for the next iteration.
     # For V1.2, not going to remove all output, as we only care about RESTART files.

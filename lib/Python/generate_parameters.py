@@ -39,17 +39,20 @@ def main(argv):
     
     # Compose input file paths.
     fullDomOrig = paramDir + "/Fulldom.nc"
-    hydroOrig = paramDir + "/HYDRO.TBL"
+    #hydroOrig = paramDir + "/HYDRO.TBL"
+    hydroOrig = paramDir + "/HYDRO_TBL_2D.nc"
     soilOrig = paramDir + "/soil_properties.nc"
     gwOrig = paramDir + "/GWBUCKPARM.nc"
     
     fullDomDefault = defDir + "/Fulldom.nc"
-    hydroDefault = defDir + "/HYDRO.TBL"
+    #hydroDefault = defDir + "/HYDRO.TBL"
+    hydroDefault = defDir + "/HYDRO_TBL_2D.nc"
     soilDefault = defDir + "/soil_properties.nc"
     gwDefault = defDir + "/GWBUCKPARM.nc"
 
     fullDomBest = bestDir + "/Fulldom.nc"
-    hydroBest = bestDir + "/HYDRO.TBL"
+    #hydroBest = bestDir + "/HYDRO.TBL"
+    hydroBest = bestDir + "/HYDRO_TBL_2D.nc"
     soilBest = bestDir + "/soil_properties.nc"
     gwBest = bestDir + "/GWBUCKPARM.nc"
     
@@ -57,7 +60,8 @@ def main(argv):
     link = ctrlDir + "/Fulldom.nc"
     if not os.path.islink(link):
         os.symlink(fullDomDefault,link)
-    link = ctrlDir + "/HYDRO.TBL"
+    #link = ctrlDir + "/HYDRO.TBL"
+    link = ctrlDir + "/HYDRO_TBL_2D.nc"
     if not os.path.islink(link):
         os.symlink(hydroDefault,link)
     link = ctrlDir + "/soil_properties.nc"
@@ -78,6 +82,7 @@ def main(argv):
         shutil.copy(fullDomOrig,fullDomBest)
         shutil.copy(soilOrig,soilBest)
         shutil.copy(gwOrig,gwBest)
+        shutil.copy(hydroOrig,hydroBest)
     except:
         sys.exit(3)
         
@@ -90,34 +95,35 @@ def main(argv):
     idFullDom = Dataset(fullDomBest,'a')
     idSoil2D = Dataset(soilBest,'a')
     idGw = Dataset(gwBest,'a')
+    idHydroTbl = Dataset(hydroBest,'a')
     
     # Open original HYDRO.TBL.
-    hydroTblDataOrig = file(hydroOrig)
+    #hydroTblDataOrig = file(hydroOrig)
     
     # Open new HYDRO.TBL file for writing.
-    hydroBestObj = open(hydroBest,'w')
-    countTmp = 1
+    #hydroBestObj = open(hydroBest,'w')
+    #countTmp = 1
 
-    for line in hydroTblDataOrig:
-        if countTmp < 33:
-            hydroBestObj.write(line)
-        else:
-            # Modify SATDK and MAXSMC as needed.
-            lineTmp = line
-            lineSplit = lineTmp.split(',')
-            if 'dksat' in paramNames:
-                dksatValue = float(lineSplit[0])*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
-            else:
-                dksatValue = float(lineSplit[0])
-            if 'smcmax' in paramNames:
-                smcValue = float(lineSplit[1])*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
-            else:
-                smcValue = float(lineSplit[1])
-            outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
-            lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
-            hydroBestObj.write(outStr)
-        countTmp = countTmp + 1
-    hydroBestObj.close()
+    #for line in hydroTblDataOrig:
+    #    if countTmp < 33:
+    #        hydroBestObj.write(line)
+    #    else:
+    #        # Modify SATDK and MAXSMC as needed.
+    #        lineTmp = line
+    #        lineSplit = lineTmp.split(',')
+    #        if 'dksat' in paramNames:
+    #            dksatValue = float(lineSplit[0])*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
+    #        else:
+    #            dksatValue = float(lineSplit[0])
+    #        if 'smcmax' in paramNames:
+    #            smcValue = float(lineSplit[1])*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
+    #        else:
+    #            smcValue = float(lineSplit[1])
+    #        outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
+    #        lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
+    #        hydroBestObj.write(outStr)
+    #    countTmp = countTmp + 1
+    #hydroBestObj.close()
 
     # Loop through and adjust each parameter accordingly.
     for param in paramNames:
@@ -166,11 +172,18 @@ def main(argv):
         
         if param == "ovroughrtfac":
             idFullDom.variables['OVROUGHRTFAC'][:,:] = float(paramValues[np.where(paramNames == 'ovroughrtfac')[0][0]])
+        
+        if param == "dksat":
+            idHydroTbl.variables['LKSAT'][:,:] = idHydroTbl.variables['LKSAT'][:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
+            
+        if param == "smcmax":
+            idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
             
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
     idGw.close()
+    idHydroTbl.close()
 
     # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating
     # calibration iteration is complete.

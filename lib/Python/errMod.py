@@ -186,7 +186,7 @@ def scrubParams(jobData,runDir):
     simulation but not the new parameter files needed.
     """
     fullDomFile = runDir + "/Fulldom.nc"
-    hydroTbl = runDir + "/HYDRO.TBL"
+    hydroTbl = runDir + "/HYDRO_TBL_2D.nc"
     soilFile = runDir + "/soil_properties.nc"
     gwFile = runDir + '/GWBUCKPARM.nc'
 

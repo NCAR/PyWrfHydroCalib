@@ -50,12 +50,11 @@ def main(argv):
     args = parser.parse_args()            
 
     # Initialize job using setup.parm and calibration DB.
-    jobData = configMod.createJob(args)
-    #try:
-    #     jobData = configMod.createJob(args)
-    #except:
-    #    print "ERROR: Failure to initialize calibration workflow job."
-    #    sys.exit(1)
+    try:
+         jobData = configMod.createJob(args)
+    except:
+        print "ERROR: Failure to initialize calibration workflow job."
+        sys.exit(1)
         
     # Lookup database username/login credentials based on username
     # running program.
@@ -93,12 +92,30 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
+    # Check to see if this job ID contains any entries in other tables. If it does,
+    # Warn the user that this data will be wiped, and prompt the user to confirm
+    # they want to delete the data from the other tables. 
+    try:
+        statusTmp = db.checkPreviousEntries(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # If any entries in the tables were found, warn the user that tables from an
+    # orphaned ghost job are being deleted. This may be a situation where a previous 
+    # job was ran in the DB, it was removed from Job_Meta, but the remaining tables
+    # weren't cleaned up.
+    if not statusTmp:
+        print "WARNING: Old orphaned table entries from this jobID are being deleted."
+        try:
+            db.cleanupJob(jobData)
+        except:
+            errMod.errOut(jobData)
+        
     # Create DB entries for job name
-    db.enterJobID(jobData)
-    #try:
-    #    db.enterJobID(jobData)
-    #except:
-    #    errMod.errOut(jobData)
+    try:
+        db.enterJobID(jobData)
+    except:
+        errMod.errOut(jobData)
         
     # Pull Job ID from newly created job. Will be used for calibration 
     # parameter DB entries

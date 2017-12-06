@@ -52,13 +52,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     except:
         raise
         
-    if statusData.jobRunType == 1:
+    if statusData.analysisRunType == 1:
         # Generate BSUB file necessary for running R calibration/analysis
         # code.
         try:
             generateBsubCalibScript(statusData,int(gageID),runDir,workDir)
         except:
             raise
+            
+    if statusData.jobRunType == 1:
         
         # If BSUB run script doesn't exist, create it here.
         bsubFile = runDir + "/run_WH.sh"
@@ -79,12 +81,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             generateRestartBsubScript(statusData,int(gageID),runDir)
         except:
             raise
-    if statusData.jobRunType == 2:
+            
+    if statusData.analysisRunType == 2:
         # Generate PBS file necessary to running R calibration/analysis code.
         try:
             generatePbsCalibScript(statusData,int(gageID),runDir,workDir)
         except:
             raise
+            
+    if statusData.jobRunType == 2:
             
         # If PBS run script doesn't exist, create it here.
         pbsFile = runDir + "/run_WH.sh"
@@ -104,12 +109,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             generateRestartPbsScript(statusData,int(gageID),runDir)
         except:
             raise
-    if statusData.jobRunType == 3:
+            
+    if statusData.analysisRunType == 3:
         # Generate Slurm file necessary to run R calibration/analysis code.
         try:
             generateSlurmCalibScript(statusData,int(gageID),runDir,workDir)
         except:
             raise
+            
+    if statusData.jobRunType == 3:
             
         # If PBS run script doesn't exist, create it here.
         pbsFile = runDir + "/run_WH.sh"
@@ -130,7 +138,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
-    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
         # Generate mpiexec/mpirun run script and R submission script for running
         # calibration/analysis code.
         try:
@@ -138,6 +146,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
         # If run script doesn't exist, create it here.
         runFile = runDir + "/run_WH.sh"
         rstFile = runDir + "/run_WH_Restart.sh"
@@ -911,28 +920,28 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         print "FIRING OFF FIRST CALIBRATION CODE"
         # Fire off calibration programs.
-        if statusData.jobRunType == 1:
+        if statusData.analysisRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 2:
+        if statusData.analysisRunType == 2:
             cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.analysisRunType == 3:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -965,28 +974,28 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         print "FIRING OFF CALIB CODE"
         # Fire off calibration program.
-        if statusData.jobRunType == 1:
+        if statusData.analysisRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 2:
+        if statusData.analysisRunType == 2:
             cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.analysisRunType == 3:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -1659,10 +1668,10 @@ def generateMpiCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#!/bin/bash\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            if jobData.jobRunType == 4:
+            if jobData.analysisRunType == 4:
                 inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./C' + \
                 str(jobData.jobID) + str(gageID) +'\n'
-            if jobData.jobRunType == 5:
+            if jobData.analysisRunType == 5:
                 inStr = 'mpirun -np ' + str(int(jobData.nCoresR)) + ' ./C' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)

@@ -1,13 +1,12 @@
 # This is a top-level, self-contained Python program that will create the 
 # necessary database tables necessary to run calibrations. It's up to the 
-# user to establish a MySQL server on their end that the workflow can
+# user to establish a Postgres server on their end that the workflow can
 # communicate with. Please see the documentation for more detailed information.
 
 # Logan Karsten
 # National Center for Atmospheric Research
 # Research Applications Laboratory.
 
-#import MySQLdb
 import psycopg2
 import sys
 import os
@@ -44,15 +43,14 @@ def main(argv):
     # Check to see if this DB has already been created. If it has, throw an 
     # error back to the user. 
     try:
-        #db = MySQLdb.connect('localhost','root',pwdTmp)
-        strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=dbHost"
+        strTmp = "dbname=postgres user=root password=" + pwdTmp + " port=5432 host=localhost"
+        #strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=dbHost"
         db = psycopg2.connect(strTmp)
     except:
         print "ERROR: Unable to connect to postgres as user root. It's possible you entered an incorrect password."
         sys.exit(1)
     db.autocommit = True
     conn = db.cursor()
-    #sqlCmd = 'show databases;'
     sqlCmd = 'SELECT datname FROM pg_database;'
     conn.execute(sqlCmd)
     qResult = conn.fetchall()
@@ -121,7 +119,8 @@ def main(argv):
     
     # Re-connect to the new database created with the user-provided password.
     # Then create the necessary tables. 
-    strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=5432 host=dbHost"
+    strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=5432 host=localhost"
+    #strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=5432 host=dbHost"
     try:
         db = psycopg2.connect(strTmp)
     except:

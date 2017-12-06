@@ -23,7 +23,7 @@ outDir = /home/cuahsi/testCaseData
 jobName = TEST_CALIB
 acctKey =
 optQueName =
-mySQLHost = dbHost
+postgresHost = dbHost
 nCoresModel = 4
 nNodesModel = 1
 nCoresR     = 1
@@ -38,40 +38,41 @@ nNodesR = 1
 # 3 - We will launch with slurm and monitor via squeue command.
 # 4 - Job execution using mpiexec
 # 5 - Job execution using mpirun
-jobRunType = 4
+# jobRunType is how you plan on executing the WRF-Hydro simulations
+jobRunType = 5
+# analysisRunType is how you plan on executing the analysis/calibration R/Python code.
+analysisRunType = 1
 # Specify number of model iterations to calibrate over
-numIter = 5
+numIter = 3
 
 # Specify calibration method (DDS, SCE, etc)
 calibMethod = DDS
 
 # Specify objective function for calibration
-# Define "custom" for custom objective functions
+# Current acceptable values are:
+# 1.) Rmse
+# 2.) Nse
+# 3.) NseLog
+# 4.) NseWt
+# 5.) Kge
+# 6.) Msof
 objectiveFunction = Nse
 
 # DDS specific parameters. Leave blank if not using DDS.
 ddsR = 0.2
 
 # Specify email to send updates/error messages to.
-# Please fill out either email or Slack information. 
-# You must choose one.
 email = john.doe@youremail.com
-slackChannel = 
-slackToken = 
-slackUser = 
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
 wrfExe = /home/cuahsi/wrf_hydro_source/trunk/NDHMS/Run/wrf_hydro.exe
 
 # Specify parameter tables to use for Noah-MP
 genParmTbl = /home/cuahsi/testCaseData/04233300/GENPARM.TBL
-gwParmTbl = /home/cuahsi/testCaseData/04233300/GWBUCKPARM.TBL
-lakeParmTbl = /home/cuahsi/testCaseData/04233300/LAKEPARM.TBL
 mpParmTbl = /home/cuahsi/testCaseData/04233300/MPTABLE.TBL
 urbParmTbl = /home/cuahsi/testCaseData/04233300/URBPARM.TBL
 vegParmTbl = /home/cuahsi/testCaseData/04233300/VEGPARM.TBL
 chanParmTbl = /home/cuahsi/testCaseData/04233300/CHANPARM.TBL
-hydroParmTbl = /home/cuahsi/testCaseData/04233300/HYDRO.TBL
 soilParmTbl = /home/cuahsi/testCaseData/04233300/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
@@ -232,8 +233,6 @@ resetHydroAcc = 1
 streamOrderOut = 1
 
 [hydroPhysics]
-# Option for TERADJ_SOLAR
-solarAdj = 0
 # Channel routing timestep in seconds
 dtChSec = 300
 # Surface and subsurface routing timestep in seconds
