@@ -41,7 +41,6 @@ def main(argv):
     
     # Compose input file paths.
     fullDomOrig = workDir + "/BASELINE_PARAMETERS/Fulldom.nc"
-    #hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO.TBL"
     hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO_TBL_2D.nc"
     soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
     gwOrig = workDir + "/BASELINE_PARAMETERS/GWBUCKPARM.nc"
@@ -50,7 +49,6 @@ def main(argv):
     
     # Compose output file paths.
     fullDomOut = runDir + "/Fulldom.nc"
-    #hydroOut = runDir + "/HYDRO.TBL"
     hydroOut = runDir + "/HYDRO_TBL_2D.nc"
     soilOut = runDir + "/soil_properties.nc"
     gwOut = runDir + '/GWBUCKPARM.nc'
@@ -96,33 +94,6 @@ def main(argv):
     idSoil2D = Dataset(soilOut,'a')
     idGw = Dataset(gwOut,'a')
     idHydroTbl = Dataset(hydroOut,'a')
-    
-    # Open original HYDRO.TBL.
-    #hydroTblDataOrig = file(hydroOrig)
-    
-    # Open new HYDRO.TBL file for writing.
-    #hydroOutObj = open(hydroOut,'w')
-    #countTmp = 1
-    #for line in hydroTblDataOrig:
-    #    if countTmp < 33:
-    #        hydroOutObj.write(line)
-    #    else:
-    #        # Modify SATDK and MAXSMC as needed.
-    #        lineTmp = line
-    #        lineSplit = lineTmp.split(',')
-    #        if 'dksat' in paramNames:
-    #            dksatValue = float(lineSplit[0])*float(newParams.dksat[0])
-    #        else:
-    #            dksatValue = float(lineSplit[0])
-    #        if 'smcmax' in paramNames:
-    #            smcValue = float(lineSplit[1])*float(newParams.smcmax[0])
-    #        else:
-    #            smcValue = float(lineSplit[1])
-    #        outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
-    #        lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
-    #        hydroOutObj.write(outStr)
-    #    countTmp = countTmp + 1
-    #hydroOutObj.close()
     
     # Loop through and adjust each parameter accordingly.
     for param in paramNames:
