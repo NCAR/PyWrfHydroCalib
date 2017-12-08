@@ -41,7 +41,7 @@ nNodesR = 1
 # jobRunType is how you plan on executing the WRF-Hydro simulations
 jobRunType = 5
 # analysisRunType is how you plan on executing the analysis/calibration R/Python code.
-analysisRunType = 1
+analysisRunType = 5
 # Specify number of model iterations to calibrate over
 numIter = 3
 

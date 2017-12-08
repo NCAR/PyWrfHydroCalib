@@ -151,15 +151,15 @@ class Database(object):
                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
                  "sql_host,job_run_type,exe,num_gages,owner,email," + \
-                 "slack_channel,slack_token,slack_user) values " + \
+                 "slack_channel,slack_token,slack_user,analysis_run_type) values " + \
                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
                  jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
                  0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
-                 jobData.host,jobData.jobRunType,jobData.analysisRunType,jobData.exe,len(jobData.gages),\
-                 jobData.owner,emailStr,slStr1,slStr2,slStr3)
+                 jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
+                 jobData.owner,emailStr,slStr1,slStr2,slStr3,jobData.analysisRunType)
         try:
             self.conn.execute(sqlCmd)
             self.db.commit()
@@ -257,8 +257,8 @@ class Database(object):
         tmpMeta['lkFile'] = results[23]
         tmpMeta['forceDir'] = results[24]
         tmpMeta['obsFile'] = results[25]
-        tmpMeta['dxHydro'] = results[29]
-        tmpMeta['aggFactor'] = results[30]
+        tmpMeta['dxHydro'] = results[40]
+        tmpMeta['aggFactor'] = results[41]
         
     def jobStatus(self,jobData):
         """
@@ -305,14 +305,14 @@ class Database(object):
         jobData.nNodesR = int(results[20])
         jobData.host = str(results[21])
         jobData.jobRunType = int(results[22])
-        jobData.analysisRunType = int(results[23])
-        jobData.exe = results[24]
-        jobData.nGages = int(results[25])
-        jobData.owner = results[26]
-        jobData.email = results[27]
-        jobData.slChan = results[28]
-        jobData.slToken = results[29]
-        jobData.slUser = results[30]
+        jobData.exe = results[23]
+        jobData.nGages = int(results[24])
+        jobData.owner = results[25]
+        jobData.email = results[26]
+        jobData.slChan = results[27]
+        jobData.slToken = results[28]
+        jobData.slUser = results[29]
+        jobData.analysisRunType = int(results[30])
         
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
@@ -762,8 +762,6 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            #inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO.TBL"
-            #outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO.TBL"
             inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO_TBL_2D.nc"
             outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO_TBL_2D.nc"
             # Remove existing "best" file.

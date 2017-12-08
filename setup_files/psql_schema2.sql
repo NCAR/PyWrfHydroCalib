@@ -56,8 +56,6 @@ CREATE TABLE "Domain_Meta" (
    "site_name" character varying(512),
    "lat" real DEFAULT NULL,
    "lon" real DEFAULT NULL,
-   "dx_hydro" real DEFAULT NULL,
-   "agg_factor" integer DEFAULT NULL,
    "area_sqmi" real DEFAULT NULL,
    "area_sqkm" real DEFAULT NULL,
    "county_cd" character varying(32),
@@ -68,7 +66,9 @@ CREATE TABLE "Domain_Meta" (
    "huc8" character varying(64),
    "ecol3" character varying(64),
    "ecol4" character varying(64),
-   "rfc" character varying(16)
+   "rfc" character varying(16),
+   "dx_hydro" real DEFAULT NULL,
+   "agg_factor" integer DEFAULT NULL
 );
 ALTER TABLE "Domain_Meta" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Job_Meta";
@@ -96,14 +96,14 @@ CREATE TABLE "Job_Meta" (
    "num_nodes_R" integer DEFAULT NULL,
    "sql_host" character varying(64),
    "job_run_type" integer DEFAULT NULL,
-   "analysis_run_type" integer DEFAULT NULL,
    "exe" character varying(512),
    "num_gages" integer DEFAULT NULL,
    "owner" character varying(64),
    "email" character varying(64),
    "slack_channel" character varying(64),
    "slack_token" character varying(128),
-   "slack_user" character varying(64)
+   "slack_user" character varying(64),
+   "analysis_run_type" integer DEFAULT NULL
 );
 ALTER TABLE "Job_Meta" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Job_Params";
