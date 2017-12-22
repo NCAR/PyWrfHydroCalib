@@ -44,7 +44,6 @@ CREATE TABLE "Domain_Meta" (
    "land_spatial_meta_file" character varying(512),
    "wrfinput_file" character varying(512),
    "soil_file" character varying(512),
-   "hydro_tbl_spatial" character varying(512),
    "fulldom_file" character varying(512),
    "rtlink_file" character varying(512),
    "spweight_file" character varying(512),
@@ -68,7 +67,8 @@ CREATE TABLE "Domain_Meta" (
    "ecol4" character varying(64),
    "rfc" character varying(16),
    "dx_hydro" real DEFAULT NULL,
-   "agg_factor" integer DEFAULT NULL
+   "agg_factor" integer DEFAULT NULL,
+   "hydro_tbl_spatial" character varying(512)
 );
 ALTER TABLE "Domain_Meta" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Job_Meta";
