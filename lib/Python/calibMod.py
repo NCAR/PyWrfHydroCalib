@@ -1464,7 +1464,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             # We are using 2 hours to be safe here. 
             fileObj.write('#BSUB -W 2:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
+                inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1539,7 +1539,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
             # We are using 2 hours to be safe here. 
             fileObj.write('#PBS -l walltime=02:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#PBS -q ' + str(jobData.queName) + '\n'
+                inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1612,7 +1612,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
             # We are using 2 hours to be safe here. 
             fileObj.write('#SBATCH -t 02:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
+                inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
