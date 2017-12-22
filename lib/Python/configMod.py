@@ -24,6 +24,7 @@ class jobMeta:
         self.jobID = []
         self.acctKey = []
         self.queName = []
+        self.queNameAnalysis = []
         self.nCoresMod = []
         self.nNodesMod = []
         self.nCoresR = []
@@ -117,7 +118,8 @@ class jobMeta:
         self.jobName = str(parser.get('logistics','jobName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
-        self.queName = str(parser.get('logistics','optQueName'))
+        self.queName = str(parser.get('logistics','optQueNameModel'))
+        self.queNameAnalysis = str(parser.get('logistics','optQueNameAnalysis'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))

@@ -22,7 +22,8 @@
 outDir = /home/cuahsi/testCaseData
 jobName = TEST_CALIB
 acctKey =
-optQueName =
+optQueNameModel =
+optQueNameAnalysis = 
 postgresHost = dbHost
 nCoresModel = 4
 nNodesModel = 1
