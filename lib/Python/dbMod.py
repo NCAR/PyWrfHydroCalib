@@ -248,7 +248,6 @@ class Database(object):
         tmpMeta['landSpatialMeta'] = results[14]
         tmpMeta['wrfInput'] = results[15]
         tmpMeta['soilFile'] = results[16]
-        tmpMeta['hydroSpatial'] = results[17]
         tmpMeta['fullDomFile'] = results[17]
         tmpMeta['rtLnk'] = results[18]
         tmpMeta['udMap'] = results[19]
