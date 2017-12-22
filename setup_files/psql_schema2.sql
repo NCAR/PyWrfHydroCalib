@@ -103,7 +103,8 @@ CREATE TABLE "Job_Meta" (
    "slack_channel" character varying(64),
    "slack_token" character varying(128),
    "slack_user" character varying(64),
-   "analysis_run_type" integer DEFAULT NULL
+   "analysis_run_type" integer DEFAULT NULL,
+   "que_name_analysis" character varying(64)
 );
 ALTER TABLE "Job_Meta" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Job_Params";

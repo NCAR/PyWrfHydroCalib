@@ -45,6 +45,7 @@ class statusMeta:
         self.host = []
         self.acctKey = []
         self.queName = []
+        self.queNameAnalysis = []
         self.exe = []
         self.errMsg = []
         self.genMsg = []
