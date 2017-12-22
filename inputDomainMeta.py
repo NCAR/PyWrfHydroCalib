@@ -229,14 +229,14 @@ def main(argv):
         # Compose Postgres command
         cmd = "INSERT INTO \"Domain_Meta\" (gage_id,link_id,domain_path,gage_agency,geo_e," + \
               "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
-              "soil_file,hydro_tbl_spatial,fulldom_file,rtlink_file,spweight_file," + \
+              "soil_file,fulldom_file,rtlink_file,spweight_file," + \
               "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
-              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc,dx_hydro,agg_factor) VALUES " + \
+              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc,dx_hydro,agg_factor,hydro_tbl_spatial) VALUES " + \
               "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
-              hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,hydro2d,fullDomPath,routePath,wghtPath,gwPath,\
+              hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
               gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
-              county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor)
+              county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d)
               
         # Make entry into DB
         try:
