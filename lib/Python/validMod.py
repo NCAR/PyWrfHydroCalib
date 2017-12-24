@@ -12,6 +12,7 @@ import statusMod
 import errMod
 import subprocess
 import time
+import socket
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -1405,6 +1406,10 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
             inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')
+        # Temporary handling of Cheyenne/Geyser environment for NCAR.
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
@@ -1483,6 +1488,10 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
         fileObj.write(inStr)
         fileObj.write('\n')
+        # Temporary handling of Cheyenne/Geyser environment for NCAR.
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
@@ -1561,6 +1570,10 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         inStr = "#SBATCH -N 1\n"
         fileObj.write(inStr)
         fileObj.write('\n')
+        # Temporary handling of Cheyenne/Geyser environment for NCAR.
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
@@ -1639,6 +1652,10 @@ def generateBsubParmRunScript(jobData,runDir,gageID):
             inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')
+        # Temporary handling of Cheyenne/Geyser environment for NCAR.
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('./gen_parms.sh\n')
@@ -1677,6 +1694,10 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
         inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
         fileObj.write(inStr)
         fileObj.write('\n')
+        # Temporary handling of Cheyenne/Geyser environment for NCAR.
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('./gen_parms.sh\n')
@@ -1715,6 +1736,10 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
         inStr = "#SBATCH -N 1\n"
         fileObj.write(inStr)
         fileObj.write('\n')
+        # Temporary handling of Cheyenne/Geyser environment for NCAR.
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('./gen_parms.sh\n')

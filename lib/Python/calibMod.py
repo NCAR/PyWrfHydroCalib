@@ -12,6 +12,7 @@ import statusMod
 import errMod
 import subprocess
 import time
+import socket
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -1466,6 +1467,10 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
+            # Temporary handling of Cheyenne/Geyser environment for NCAR.
+            if socket.gethostname()[0:8] == 'cheyenne':
+                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+                fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1541,6 +1546,10 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
+            # Temporary handling of Cheyenne/Geyser environment for NCAR.
+            if socket.gethostname()[0:8] == 'cheyenne':
+                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+                fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1613,6 +1622,10 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
             fileObj.write('#SBATCH -t 02:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+                fileObj.write(inStr)
+            # Temporary handling of Cheyenne/Geyser environment for NCAR.
+            if socket.gethostname()[0:8] == 'cheyenne':
+                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
