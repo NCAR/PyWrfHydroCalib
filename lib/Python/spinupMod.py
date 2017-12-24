@@ -122,7 +122,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 # Model crashed as simulation is not complete but no processes are running.
                 #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
                 #                    " Failed. Attempting to restart."
-                print statusData.genMsg
+                #print statusData.genMsg
                 #errMod.sendMsg(statusData)
                 keySlot[basinNum] = -0.25
                 keyStatus = -0.25

@@ -44,7 +44,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     except:
         raise
     
-    print "JOB ID = " + str(statusData.jobID)
+    #print "JOB ID = " + str(statusData.jobID)
     # Establish directory paths.
     runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/CTRL"
     bestDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST"
@@ -518,7 +518,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 raise
         if statusData.analysisRunType == 2:
             cmd = "qsub " + bestDir + "/run_params.sh"
-            print cmd
             try:
                 subprocess.call(cmd,shell=True)
             except:
@@ -532,9 +531,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
-            print gageMeta.gage
             cmd = bestDir + "/P" + str(statusData.jobID) + str(gageID)
-            print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True)
                 time.sleep(5)
@@ -1064,11 +1061,9 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 raise
         if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
-            print cmd
             try:
                 p2 = subprocess.Popen([str(cmd)],shell=True)
                 time.sleep(20)
-                print 'blah'
                 p2.communicate
             except:
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])

@@ -172,13 +172,13 @@ def checkBasJob(jobData,gageNum):
         status = False
     
         if lenJobs == 0:
-            print "NO JOBS FOUND"
+            print "NO MODEL SIMULATIONS FOUND"
             status = False
         else:
             # Find if any jobs for this basin are being ran.
             for jobNum in range(0,lenJobs):
                 if jobs[1][jobNum].strip() == expName:
-                    print "JOBS FOUND"
+                    print "MODEL SIMULATIONS FOUND"
                     status = True
                     
     if jobData.jobRunType == 3:
@@ -216,13 +216,13 @@ def checkBasJob(jobData,gageNum):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "JOBS FOUND"
+                    print "MODEL SIMULATIONS FOUND"
                     status = True
         else:
             status = False
         
         if not status:
-            print "NO JOBS FOUND"
+            print "NO MODEL SIMULATIONS FOUND"
             
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -239,9 +239,9 @@ def checkBasJob(jobData,gageNum):
                 print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
-            print "NO JOBS FOUND"
+            print "NO MODEL SIMULATIONS FOUND"
         else:
-            print "JOBS FOUND"
+            print "MODEL SIMULATIONS FOUND"
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
