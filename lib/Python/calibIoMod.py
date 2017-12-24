@@ -124,7 +124,7 @@ def copyDefaultParms(jobData,runDir,gage):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    inPath = runDir + "/HYDRO_TBL_2D.NC"
+    inPath = runDir + "/HYDRO_TBL_2D.nc"
     outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/HYDRO_TBL_2D.nc"
     if not os.path.isfile(inPath):
         jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
