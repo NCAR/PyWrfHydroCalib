@@ -171,7 +171,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         
     # Initialize status
     keyStatus = keySlot[basinNum,iteration]
-    print "INITIAL STATUS = " + str(keyStatus)
     
     # Check to see if a model simulation is occurring.
     try:
@@ -205,7 +204,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         return
     # For uncompleted simulations that are still listed as running.
     if keyStatus == 0.5:
-        print "MODEL IS RUNNING"
         # If a model is running for this basin, continue and set keyStatus to 0.5
         if basinStatus:
             keySlot[basinNum,iteration] = 0.5
@@ -227,7 +225,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 #                    " Failed. Attempting to restart."
                 #print statusData.genMsg
                 #errMod.sendMsg(statusData)
-                print "MODEL HAS CRASHED ONCE"
+                #print "MODEL HAS CRASHED ONCE"
                 keySlot[basinNum,iteration] = -0.25
                 keyStatus = -0.25
                 runFlag = True
@@ -250,7 +248,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # For when the model simulation has completed, but the calibration is still 
     # listed as running.
     if keyStatus == 0.90:
-        print "CALIB/PARAM CODE IS RUNNING"
+        #print "CALIB/PARAM CODE IS RUNNING"
         # If the calibration is still running, keep status as 0.90.
         if calibStatus:
             keySlot[basinNum,iteration] = 0.90
@@ -323,7 +321,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 
     # For when the first calibration is running for the first iteration.
     if keyStatus == 0.25:
-        print "FIRST SET OF CALIB/PARAM CODE RUNNING"
+        #print "FIRST SET OF CALIB/PARAM CODE RUNNING"
         # If calibration is still running, keep status as 0.10.
         if calibStatus:
             keySlot[basinNum,iteration] = 0.25
@@ -335,7 +333,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             # to proceed with model simulation. 
             if os.path.isfile(calibCompleteFlag):
                 # Copy parameter files to the DEFAULT directory
-                print calibCompleteFlag
+                #print calibCompleteFlag
                 try:
                     calibIoMod.copyDefaultParms(statusData,runDir,gage)
                 except:
@@ -416,7 +414,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 runCalib = False
             else:
                 if basinStatus:
-                    print "MODEL IS STILL RUNNING"
+                    #print "MODEL IS STILL RUNNING"
                     # Model is still running from previous instance of workflow. Allow it to continue.
                     keySlot[basinNum,iteration] = 0.5
                     keyStatus = 0.5
@@ -504,7 +502,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                     # adjusted already and the simulation for iteration 0 is underway
                     # still from a previous crash. This is a rare situation as statuses
                     # are updated in the DB dynamically. 
-                    print "MODEL IS RUNNING"
+                    #print "MODEL IS RUNNING"
                     keySlot[basinNum,iteration] = 0.5
                     keyStatus = 0.5
                     runFlag = False
@@ -519,7 +517,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                         if calibStatus:
                             # First calibration taking place to prepare parameters for
                             # first iteration.
-                            print "FIRST CALIB CODE IS RUNNING"
+                            #print "FIRST CALIB CODE IS RUNNING"
                             keySlot[basinNum,iteration] = 0.25
                             keyStatus = 0.25
                             runFlag = False
@@ -570,7 +568,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                             if calibStatus:
                                 # First calibration completed, model simulation completed, and second calibration
                                 # underway.
-                                print "CALIB CODE RUNNING"
+                                #print "CALIB CODE RUNNING"
                                 keySlot[basinNum,iteration] = 0.90
                                 keyStatus = 0.90
                                 runFlag = False
@@ -697,7 +695,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # For when the model crashed ONCE
     if keyStatus == -0.5:
         if basinStatus:
-            print "RUNNING MODEL"
+            #print "RUNNING MODEL"
             # Model is running again, upgrade status
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
