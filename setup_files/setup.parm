@@ -29,6 +29,12 @@ nCoresModel = 4
 nNodesModel = 1
 nCoresR     = 1
 nNodesR = 1
+# Flag to turn sensitivity analysis on: 0 - Off, 1 - On.
+runSens = 0 
+sensParmTbl = './foo.tbl'
+# Flag to turn calibration on: 0 - Off, 1 - On.
+runCalib = 0
+calibParmTbl = './calib.tbl'
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
@@ -90,6 +96,21 @@ bCalibEvalDate = 2013-09-16
 bValidDate = 2013-09-15
 eValidDate = 2013-10-01
 bValidEvalDate = 2013-09-16
+
+[Sensitivity]
+# Specify parameter sample size
+sensParmSample = 10
+
+# Sending out all model simulations at the same time 
+# may not be ideal for a given system. This option
+# will break out the sensitivity model runs by batch
+# number of simulations.
+sensBatchNum = 10
+
+# Specify the date range for the sensitivity period.
+bSensDate = 2013-10-01
+eSensDate = 2016-10-01
+bSensEvalDate = 2014-10-01
 
 [gageInfo]
 # Specify USGS GAGES II basins to calibrate on.

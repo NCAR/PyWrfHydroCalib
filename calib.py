@@ -38,11 +38,11 @@ import pandas as pd
 def main(argv):
     # Parse arguments. User must input a job name.
     parser = argparse.ArgumentParser(description='Main program to start or restart ' + \
-             'calibration for the National Water Model')
+             'calibration for WRF-Hydro')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration spinup.')
     parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+                        help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
     
     args = parser.parse_args()
     

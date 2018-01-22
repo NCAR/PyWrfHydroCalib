@@ -12,6 +12,8 @@ import os
 import datetime
 import ast
 import pwd
+import pandas as pd
+import numpy as np
 #from slacker import Slacker
 
 import warnings
@@ -29,6 +31,10 @@ class jobMeta:
         self.nNodesMod = []
         self.nCoresR = []
         self.nNodesR = []
+        self.sensFlag = []
+        self.sensTbl = []
+        self.calibFlag = []
+        self.calibTbl = []
         self.jobRunType = []
         self.analysisRunType = []
         self.host = []
@@ -60,6 +66,12 @@ class jobMeta:
         self.bValidDate = []
         self.eValidDate = []
         self.bValidEvalDate = []
+        self.nSensSample = []
+        self.nSensIter = []
+        self.nSensBatch = []
+        self.bSensDate = []
+        self.eSensDate = []
+        self.bSensEvalDate = []
         self.gSQL = []
         self.gList = []
         self.dynVegOpt = []
@@ -126,6 +138,10 @@ class jobMeta:
         self.nNodesR = int(parser.get('logistics','nNodesR'))
         self.host = str(parser.get('logistics','postgresHost'))
         self.nIter = int(parser.get('logistics','numIter'))
+        self.sensFlag = int(parser.get('logistics','runSens'))
+        self.sensTbl = str(parser.get('logistics','sensParmTbl'))
+        self.calibFlag = int(parser.get('logistics','runCalib'))
+        self.calibTbl = str(parser.get('logistics','calibParmTbl'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.analysisRunType = int(parser.get('logistics','analysisRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
@@ -167,6 +183,14 @@ class jobMeta:
         self.eValidDate = datetime.datetime.strptime(self.eValidDate,'%Y-%m-%d')
         self.bValidEvalDate = parser.get('logistics','bValidEvalDate')
         self.bValidEvalDate = datetime.datetime.strptime(self.bValidEvalDate,'%Y-%m-%d')
+        self.nSensSample = int(parser.get('Sensitivity','sensParmSample'))
+        self.nSensBatch = int(parser.get('Sensitivity','sensBatchNum'))
+        self.bSensDate = parser.get('Sensitivity','bSensDate')
+        self.bSensDate = datetime.datetime.strptime(self.bSensDate,'%Y-%m-%d')
+        self.eSensDate = parser.get('Sensitivity','eSensDate')
+        self.eSensDate = datetime.datetime.strptime(self.eSensDate,'%Y-%m-%d')
+        self.bSensEvalDate = parser.get('Sensitivity','bSensEvalDate')
+        self.bSensEvalDate = datetime.datetime.strptime(self.bSensEvalDate,'%Y-%m-%d')
         self.gSQL = parser.get('gageInfo','gageListSQL')
         self.gList = str(parser.get('gageInfo','gageListFile'))
         self.dynVegOpt = int(parser.get('lsmPhysics','dynVegOption'))
@@ -251,11 +275,6 @@ def createJob(argsUser):
         print "ERROR: Config file not found."
         raise Exception()
 
-    # Check to make sure calibration parameter table exists.
-    if not os.path.isfile(argsUser.parmTbl[0]):
-        print "ERROR: Calibration parameter table: " + str(argsUser.parmTbl[0]) + " not found."
-        raise Exception()
-        
     # Check entries into the config file to make sure they make sense.
     try:
         checkConfig(parser)
@@ -272,6 +291,29 @@ def createJob(argsUser):
     except:
         print "ERROR: Unable to assign values from config file."
         raise
+        
+    # If calibration has been activated, check to make sure a valid parameter table was specified. 
+    if jobMeta.calibFlag == 1:
+        if not os.path.isfile(jobMeta.calibTbl):
+            print "ERROR: Calibration parameter table: " + str(jobMeta.calibTbl) + " not found."
+            raise Exception()
+            
+    # If sensitivity analysis was activated, check to make sure a valid parameter table was specified.
+    if jobMeta.sensFlag == 1:
+        if not os.path.isfile(jobMeta.sensTbl):
+            print "ERROR: Sensitivity parameter table: " + str(jobMeta.sensTbl) + " not found."
+            raise Exception()
+        else:
+            # Read in the sensitivity parameter table and calculate the total number 
+            # of model iterations that will take place. Make sure the total number
+            # is a multiple of the batch number
+            tblTmp = pd.read_csv(jobMeta.sensTbl,sep=',')
+            nIterTmp = jobMeta.nSensSample*(len(np.where(tblTmp.sens_flag == 1)[0])+1)
+            if nIterTmp % jobMeta.nSensBatch != 0:
+                print "ERROR: Invalid number of sensitivity batch runs. Must be compatible with num_sens_params * (sample+1)"
+                raise Exception()
+            else:
+                jobMeta.nSensIter = nIterTmp
         
     # Assign ownership to this job
     jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
@@ -373,6 +415,16 @@ def checkConfig(parser):
         raise Exception()
     if check <= 0:
         print "ERROR: Invalid number of model nodes to use."
+        raise Exception()
+        
+    # Check calibration/sensitivity activation flags.
+    check = int(parser.get('logistics','runSens'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid runSens flag specified."
+        raise Exception()
+    check = int(parser.get('logistics','runCalib'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid runCalib flag specified."
         raise Exception()
         
     # Check to make sure a valid option was passed for running model/R code
@@ -522,6 +574,35 @@ def checkConfig(parser):
         print "ERROR: Must specify the beginning date for validation evaluation date " + \
               " that is before the ending date for validation simulations."
         raise Exception()
+        
+    check = int(parser.get('Logistics','runSens'))
+    # Only check these options if sensitivity analysis has been turned on.
+    if check == 1:
+        check1 = int(parser.get('Sensitivity','sensParmSample'))
+        if check1 <= 0:
+            print "ERROR: Please choose numSensIter greater than 0."
+            raise Exception()
+        check2 = int(parser.get('Sensitivity','sensBatchNum'))
+        if check2 <= 0:
+            print "ERROR: Please choose sensBatchNum greater than 0."
+            raise Exception()
+        bDate = parser.get('Sensitivity','bSensDate')
+        eDate = parser.get('Sensitivity','eSensDate')
+        bEDate = parser.get('Sensitivity','bSensEvalDate')
+        bDate = datetime.datetime.strptime(str(bDate),'%Y-%m-%d')
+        eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
+        bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
+        if bDate >= eDate:
+            print "ERROR: Must specify ending sensitivity date greater than beginning sensitivity date."
+            raise Exception()
+        #if bEDate >= bDate:
+        #    print "ERROR: Must specify the beginning date for sensitivity evaluation date " + \
+        #          " that is before the ending date for sensitivity simulation."
+        #    raise Exception()
+        if bEDate >= eDate:
+            print "ERROR: Must specify the beginning date for sensitivity evaluation date " + \
+                  " that is before the ending date for validation simulations."
+            raise Exception()
     
     # Check gauge information
     check1 = str(parser.get('gageInfo','gageListFile'))
