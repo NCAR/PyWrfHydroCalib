@@ -327,13 +327,13 @@ def setupModels(jobData,db,args,libPathTop):
         # Copy parameter table with parameters to sensitivity directory.
         if jobData.sensFlag == 1:
             origPath = str(jobData.sensTbl)
-            newPath = gageDir + "/RUN_SENSITIVITY/sens_params.tbl"
+            newPath = gageDir + "/RUN.SENSITIVITY/sens_params.tbl"
             if not os.path.isfile(origPath):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Input file: " + origPath + " not found."
                 raise
             try:
-                shutil.copy(origPath.newPath)
+                shutil.copy(origPath,newPath)
             except:
                 wipeJobDir
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath

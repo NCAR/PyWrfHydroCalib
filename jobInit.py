@@ -71,7 +71,7 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
-    # First check to see if unique Job ID already exists. 
+    # First check to see if unique Job ID already exists.
     try:
         db.getJobID(jobData)
     except:
@@ -137,9 +137,34 @@ def main(argv):
     # Create empty table to hold calibrated parameter values that will be 
     # calculated during calibration.
     try:
-        db.populateParmTable(jobData,str(args.parmTbl[0]))
+        db.populateParmTable(jobData)
     except:
         errMod.errOut(jobData)
+        
+    # Create empty table entries into the Calib_Stats/Sens_Stats tables to be filled in as the workflow progresses.
+    # If table entries have already been entered, continue on. This only needs to be done ONCE. Moved this
+    # from calib.py as there's no reason to do this during the spinup program.
+    for basin in range(0,len(jobData.gages)):
+        try:
+            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
+        except:
+            errMod.errOut(jobData)
+
+        if domainID == -9999:
+            jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
+            errMod.errOut(jobData)
+
+        if jobData.calibFlag == 1:
+            try:
+                db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
+            except:
+                errMod.errOut(jobData)
+        
+        if jobData.sensFlag == 1:
+            try:
+                db.populateSensTable(jobData,domainID,str(jobData.gages[basin]))
+            except:
+                errMod.errOut(jobData)
     
     # Disconnect from the calibration database.
     try:

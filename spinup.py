@@ -209,29 +209,6 @@ def main(argv):
                          " From Owner: " + str(jobData.owner)
         errMod.sendMsg(jobData)
         
-    # Create empty table entries into the Calib_Stats/Sens_Stats tables to be filled in as the workflow progresses.
-    # If table entries have already been entered, continue on. This only needs to be done ONCE. Moved this
-    # from calib.py as there's no reason to do this during the spinup program.
-    for basin in range(0,len(jobData.gages)):
-        try:
-            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
-
-        if domainID == -9999:
-            jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
-            errMod.errOut(jobData)
-
-        try:
-            db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
-            
-        try:
-            db.populateSensTable(jobData,domainID,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
-            
     # Begin an "infinite" do loop. This loop will continue to loop through all 
     # the basins until spinups are complete. Basins are allowed ONE failure. A restart
     # will be attempted. If the restart fails again, a LOCK file is placed into the

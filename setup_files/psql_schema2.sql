@@ -120,7 +120,6 @@ CREATE TABLE "Job_Meta" (
    "date_calib_end" timestamp DEFAULT NULL,
    "date_calib_start_eval" timestamp DEFAULT NULL,
    "num_iter" integer DEFAULT NULL,
-   "iter_complete" integer DEFAULT NULL,
    "calib_complete" integer DEFAULT NULL,
    "valid_start_date" timestamp DEFAULT NULL,
    "valid_end_date" timestamp DEFAULT NULL,

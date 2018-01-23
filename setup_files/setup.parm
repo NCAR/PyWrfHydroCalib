@@ -19,7 +19,7 @@
 # Top level directory where output from model runs, etc
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
-outDir = /home/cuahsi/testCaseData
+outDir = /home/cuahsi/calibOut
 jobName = TEST_CALIB
 acctKey =
 optQueNameModel =
@@ -30,11 +30,11 @@ nNodesModel = 1
 nCoresR     = 1
 nNodesR = 1
 # Flag to turn sensitivity analysis on: 0 - Off, 1 - On.
-runSens = 0 
-sensParmTbl = './foo.tbl'
+runSens = 1 
+sensParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/sens_params.tbl
 # Flag to turn calibration on: 0 - Off, 1 - On.
-runCalib = 0
-calibParmTbl = './calib.tbl'
+runCalib = 1
+calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
@@ -72,15 +72,15 @@ ddsR = 0.2
 email = john.doe@youremail.com
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /home/cuahsi/wrf_hydro_source/trunk/NDHMS/Run/wrf_hydro.exe
+wrfExe = /home/cuahsi/wrfHydroCalibration/wrf_hydro_model/trunk/NDHMS/Run/wrf_hydro.exe
 
 # Specify parameter tables to use for Noah-MP
-genParmTbl = /home/cuahsi/testCaseData/04233300/GENPARM.TBL
-mpParmTbl = /home/cuahsi/testCaseData/04233300/MPTABLE.TBL
-urbParmTbl = /home/cuahsi/testCaseData/04233300/URBPARM.TBL
-vegParmTbl = /home/cuahsi/testCaseData/04233300/VEGPARM.TBL
-chanParmTbl = /home/cuahsi/testCaseData/04233300/CHANPARM.TBL
-soilParmTbl = /home/cuahsi/testCaseData/04233300/SOILPARM.TBL
+genParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/GENPARM.TBL
+mpParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/MPTABLE.TBL
+urbParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/URBPARM.TBL
+vegParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/VEGPARM.TBL
+chanParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/CHANPARM.TBL
+soilParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup

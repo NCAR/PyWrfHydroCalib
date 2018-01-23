@@ -149,17 +149,17 @@ class Database(object):
         sqlCmd = "insert into \"Job_Meta\" (\"Job_Directory\",date_su_start,date_su_end," + \
                  "su_complete,sens_flag,sens_table,num_sens_sample,num_sens_iter,sens_batch,date_sens_start,date_sens_end," + \
                  "date_sens_start_eval,sens_complete,calib_flag,calib_table,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
-                 "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
+                 "calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
                  "sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user,analysis_run_type,que_name_analysis) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.sensFlag,jobData.sensTbl,jobData.nSensSample,\
                  jobData.nSensIter,jobData.nSensBatch,jobData.bSensDate.strftime('%Y-%m-%d'),\
-                 jobData.eSensDate('%Y-%m-%d'),jobData.bSensEvalDate.strftime('%Y-%m-%d'),0,\
+                 jobData.eSensDate.strftime('%Y-%m-%d'),jobData.bSensEvalDate.strftime('%Y-%m-%d'),0,\
                  jobData.calibFlag,jobData.calibTbl,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
-                 jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
+                 jobData.nIter,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
                  0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
                  jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
@@ -306,29 +306,28 @@ class Database(object):
         jobData.eCalibDate = datetime.datetime.strptime(str(results[17]),'%Y-%m-%d %H:%M:%S')
         jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[18]),'%Y-%m-%d %H:%M:%S')
         jobData.nIter = int(results[19])
-        jobData.calibIter = int(results[20])
-        jobData.calibComplete = int(results[21])
-        jobData.bValidDate = datetime.datetime.strptime(str(results[22]),'%Y-%m-%d %H:%M:%S')
-        jobData.eValidDate = datetime.datetime.strptime(str(results[23]),'%Y-%m-%d %H:%M:%S')
-        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[24]),'%Y-%m-%d %H:%M:%S')
-        jobData.validComplete = int(results[25])
-        jobData.acctKey = results[26]
-        jobData.queName = results[27]
-        jobData.nCoresMod = int(results[28])
-        jobData.nNodesMod = int(results[29])
-        jobData.nCoresR = int(results[30])
-        jobData.nNodesR = int(results[31])
-        jobData.host = str(results[32])
-        jobData.jobRunType = int(results[33])
-        jobData.exe = results[34]
-        jobData.nGages = int(results[35])
-        jobData.owner = results[36]
-        jobData.email = results[37]
-        jobData.slChan = results[38]
-        jobData.slToken = results[39]
-        jobData.slUser = results[40]
-        jobData.analysisRunType = int(results[41])
-        jobData.queNameAnalysis = results[42]
+        jobData.calibComplete = int(results[20])
+        jobData.bValidDate = datetime.datetime.strptime(str(results[21]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[22]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[23]),'%Y-%m-%d %H:%M:%S')
+        jobData.validComplete = int(results[24])
+        jobData.acctKey = results[25]
+        jobData.queName = results[26]
+        jobData.nCoresMod = int(results[27])
+        jobData.nNodesMod = int(results[28])
+        jobData.nCoresR = int(results[29])
+        jobData.nNodesR = int(results[30])
+        jobData.host = str(results[31])
+        jobData.jobRunType = int(results[32])
+        jobData.exe = results[33]
+        jobData.nGages = int(results[34])
+        jobData.owner = results[35]
+        jobData.email = results[36]
+        jobData.slChan = results[37]
+        jobData.slToken = results[38]
+        jobData.slUser = results[39]
+        jobData.analysisRunType = int(results[40])
+        jobData.queNameAnalysis = results[41]
         
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
@@ -548,7 +547,7 @@ class Database(object):
                 raise Exception()
             
             for entry in range(0,len(tblData)):
-                flag = tblData.calib_flag[entry]
+                flag = tblData.sens_flag[entry]
                 jobID = int(jobData.jobID)
                 paramName = str(tblData.parameter[entry])
                 defaultValue = str(tblData.ini[entry])
@@ -565,7 +564,7 @@ class Database(object):
                         jobData.errMsg = "ERROR: Unable to enter sensitivity parameter information for parameter: " + paramName
                         raise
                         
-    def populateParmTable(self,jobData,calibTbl):
+    def populateParmTable(self,jobData):
         """
         Generic function to create an empty table that will store calibrated and
         sensitivity parameter values (or adjustments) for each basin, 
@@ -631,6 +630,10 @@ class Database(object):
                 for basin in range(0,nBas):
                     for parm in range(0,nParms):
                         # Sens_Params
+                        domainID = int(jobData.gageIDs[basin])
+                        parmName = str(baseParms.parameter[parm])
+                        itStr = str(iteration)
+                        gageStr = str(jobData.gages[basin])
                         # First determine if table row has already been created.
                         sqlCmd = "select * from \"Sens_Params\" where \"jobID\"='" + str(jobID) + "'" + \
                                  " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
@@ -775,6 +778,7 @@ class Database(object):
         sqlCmd = "select iteration,complete from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "';"
         try:
+            print sqlCmd
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
         except:

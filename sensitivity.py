@@ -86,6 +86,12 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
         
+    # If the sensitivity flag is 0, simply exit gracefully as the user specified
+    # not to run calibration.
+    if jobData.sensFlag != 1:
+        print "ERROR: Sensitivity flag was set to 0 for this workflow."
+        sys.exit(1)
+        
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here. This is mostly designed to deal
     # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
@@ -241,10 +247,14 @@ def main(argv):
     # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
+    print jobData.nSensIter
+    print len(jobData.gages)
     keySlot = np.empty([len(jobData.gages),int(jobData.nSensIter)])
     keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages)*int(jobData.nSensIter))
     
+    print keySlot
+    print entryValue
     # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
         try:
@@ -258,14 +268,16 @@ def main(argv):
             
         # We are going to pull all values for one basin, then place them into the array.
         # This is faster then looping over each iteration at a time. 
-        statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
+        statusData = db.sensIterationStatus(jobData,domainID,str(jobData.gages[basin]))
+        print statusData
         statusData = [list(item) for item in statusData]
         for iteration in range(0,int(jobData.nIter)):
             for iteration2 in range(0,int(jobData.nIter)):
                 if statusData[iteration2][0] == iteration+1:
                     keySlot[basin,iteration] = float(statusData[iteration2][1])
-    
-    while not completeStatus:
+    print "ITERATIONS = " + str(jobData.nSensIter)
+    print keySlot
+    #while not completeStatus:
         # Walk through sensitivity directory for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
         # namelist files appropriately. Then, restart the model. Once all
@@ -290,47 +302,47 @@ def main(argv):
         # If output is not complete, the model is still running, status stays at 0.5.
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
-        for basin in range(0,len(jobData.gages)):
-            countTmp = 0
-            statusTmp = False
-            
-            # Calculate the number of "batches" we are going to run
-            numBatches = int(jobData.n)
-            for batchIter in range(0,int(jobData.nSensBatch)):
-                iteration = countTmp*jobData.nSensBatch + batchIter
-                keySlotTmp = np.empty([len(jobData.gages),int(jobData.nSensBatch)])
-                keySlotTmp[:] = keySlot[:,]
-                # Holding onto the status value before the workflow iterates for checking below.
-                keyStatusCheck1 = keySlot[basin,iteration]
-                # If the status is already 1.0, then continue the loop as now work needs to be done.
-                if keyStatusCheck1 == 1.0:
-                    continue
-                if keyStatusCheck1 == 2.0:
-                    continue
-                else:
-                    try:
-                        sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                    except:
-                        errMod.errOut(jobData)
-                #keyStatusCheck2 = keySlot[basin,iteration]
-                #if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
-                #    # Put some spacing between launching model simulations to slow down que geting 
-                #    # overloaded.
-                #    time.sleep(3)
-                #if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
-                #    time.sleep(3)
-            countTmp = countTmp + 1
-                    
-        # Check to see if program requirements have been met.
-        if keySlot.sum() == entryValue:
-            jobData.calibComplete = 1
-            try:
-                db.updateCalibStatus(jobData)
-            except:
-                errMod.errout(jobData)
-            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
-            errMod.sendMsg(jobData)
-            completeStatus = True
+    #    for basin in range(0,len(jobData.gages)):
+    #        countTmp = 0
+    #        statusTmp = False
+    #        
+    #        # Calculate the number of "batches" we are going to run
+    #        numBatches = int(jobData.n)
+    #        for batchIter in range(0,int(jobData.nSensBatch)):
+    #            iteration = countTmp*jobData.nSensBatch + batchIter
+    #            keySlotTmp = np.empty([len(jobData.gages),int(jobData.nSensBatch)])
+    #            keySlotTmp[:] = keySlot[:,]
+    #            # Holding onto the status value before the workflow iterates for checking below.
+    #            keyStatusCheck1 = keySlot[basin,iteration]
+    #            # If the status is already 1.0, then continue the loop as now work needs to be done.
+    #            if keyStatusCheck1 == 1.0:
+    #                continue
+    #            if keyStatusCheck1 == 2.0:
+    #                continue
+    #            else:
+    #                try:
+    #                    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+    #                except:
+    #                    errMod.errOut(jobData)
+    #            #keyStatusCheck2 = keySlot[basin,iteration]
+    #            #if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
+    #            #    # Put some spacing between launching model simulations to slow down que geting 
+    #            #    # overloaded.
+    #            #    time.sleep(3)
+    #            #if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
+    #            #    time.sleep(3)
+    #        countTmp = countTmp + 1
+    #                
+    #    # Check to see if program requirements have been met.
+    #    if keySlot.sum() == entryValue:
+    #        jobData.calibComplete = 1
+    #        try:
+    #            db.updateCalibStatus(jobData)
+    #        except:
+    #            errMod.errout(jobData)
+    #        jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+    #        errMod.sendMsg(jobData)
+    #        completeStatus = True
             
     # Remove LOCK file
     os.remove(lockPath)

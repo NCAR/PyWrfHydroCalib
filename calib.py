@@ -86,6 +86,12 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
         
+    # If the calibration flag is 0, simply exit gracefully as the user specified
+    # not to run calibration.
+    if jobData.calibFlag != 1:
+        print "ERROR: Calibration flag was set to 0 for this workflow."
+        sys.exit(1)
+        
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here. This is mostly designed to deal
     # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.

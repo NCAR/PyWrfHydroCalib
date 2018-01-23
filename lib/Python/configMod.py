@@ -293,27 +293,29 @@ def createJob(argsUser):
         raise
         
     # If calibration has been activated, check to make sure a valid parameter table was specified. 
-    if jobMeta.calibFlag == 1:
-        if not os.path.isfile(jobMeta.calibTbl):
-            print "ERROR: Calibration parameter table: " + str(jobMeta.calibTbl) + " not found."
+    if jobObj.calibFlag == 1:
+        if not os.path.isfile(jobObj.calibTbl):
+            print "ERROR: Calibration parameter table: " + str(jobObj.calibTbl) + " not found."
             raise Exception()
             
     # If sensitivity analysis was activated, check to make sure a valid parameter table was specified.
-    if jobMeta.sensFlag == 1:
-        if not os.path.isfile(jobMeta.sensTbl):
-            print "ERROR: Sensitivity parameter table: " + str(jobMeta.sensTbl) + " not found."
+    if jobObj.sensFlag == 1:
+        if not os.path.isfile(jobObj.sensTbl):
+            print "ERROR: Sensitivity parameter table: " + str(jobObj.sensTbl) + " not found."
             raise Exception()
         else:
             # Read in the sensitivity parameter table and calculate the total number 
             # of model iterations that will take place. Make sure the total number
             # is a multiple of the batch number
-            tblTmp = pd.read_csv(jobMeta.sensTbl,sep=',')
-            nIterTmp = jobMeta.nSensSample*(len(np.where(tblTmp.sens_flag == 1)[0])+1)
-            if nIterTmp % jobMeta.nSensBatch != 0:
+            tblTmp = pd.read_csv(jobObj.sensTbl,sep=',')
+            nIterTmp = jobObj.nSensSample*(len(np.where(tblTmp.sens_flag == 1)[0])+1)
+            if nIterTmp % jobObj.nSensBatch != 0:
                 print "ERROR: Invalid number of sensitivity batch runs. Must be compatible with num_sens_params * (sample+1)"
                 raise Exception()
             else:
-                jobMeta.nSensIter = nIterTmp
+                jobObj.nSensIter = nIterTmp
+    else:
+        jobObj.nSensIter = 0
         
     # Assign ownership to this job
     jobObj.owner = pwd.getpwuid(os.getuid()).pw_name
@@ -575,7 +577,7 @@ def checkConfig(parser):
               " that is before the ending date for validation simulations."
         raise Exception()
         
-    check = int(parser.get('Logistics','runSens'))
+    check = int(parser.get('logistics','runSens'))
     # Only check these options if sensitivity analysis has been turned on.
     if check == 1:
         check1 = int(parser.get('Sensitivity','sensParmSample'))

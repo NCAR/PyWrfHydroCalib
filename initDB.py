@@ -143,12 +143,11 @@ def main(argv):
     conn = db.cursor()
     
     # Load schema file in to create database tables.
-    conn.execute(open(schemaFile2,'r').read())
-    #try:
-    #    conn.execute(open(schemaFile2,'r').read())
-    #except:
-    #    print "ERROR: Unable to load schema table to create tables for wrfHydroCalib_DB."
-    #    sys.exit(1)
+    try:
+        conn.execute(open(schemaFile2,'r').read())
+    except:
+        print "ERROR: Unable to load schema table to create tables for wrfHydroCalib_DB."
+        sys.exit(1)
     
     try:
         conn.close()
