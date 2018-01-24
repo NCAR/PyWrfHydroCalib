@@ -2,7 +2,6 @@
 args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- 'namelist.sensitivity'
 
-#library(rwrfhydro)
 library(data.table)
 library(ggplot2)
 library(plyr)
@@ -73,5 +72,11 @@ write.table(x_all, file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=
 
 # Save and exit
 save.image(paste0(runDir, "/proj_data_SENS.Rdata"))
+
+# Touch an empty COMPLETE file to inform the next step of the process this has completed. 
+fileConn <- file(paste0(runDir, "/R_PRE_COMPLETE"))
+writeLines('', fileConn)
+close(fileConn)
+
 quit("no")
 

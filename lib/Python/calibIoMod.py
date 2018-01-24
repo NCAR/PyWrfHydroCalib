@@ -633,6 +633,7 @@ def setupModels(jobData,db,args,libPathTop):
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
         calibPyProgram = libPathTop + '/Python/adjust_parameters.py'
+        sensPyProgram = libPathTop + '/Python/adjust_parameters_sensitivity.py'
         calibRProgram = libPathTop + '/R/calib_workflow.R'
         calibRUtils = libPathTop + '/R/calib_utils.R'
         if jobData.calibFlag == 1:
@@ -642,6 +643,14 @@ def setupModels(jobData,db,args,libPathTop):
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to link: " + calibPyProgram
+                raise
+                
+            try:
+                link = gageDir + "/RUN.SENSITIVITY/adjust_parameters_sensititivy.py"
+                os.symlink(sensPyProgram,link)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Failure to link: " + sensPyProgram
                 raise
             
             try:

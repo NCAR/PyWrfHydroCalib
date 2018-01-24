@@ -148,16 +148,13 @@ def genRNameList(jobData,workDir,gageMeta,gage):
         jobData.errMsg = "ERROR: Failure to create: " + rNameList
         raise
         
-def generateBsubPreProcScript(jobData,gageID,runDir,workDir):
+def generateBsubPreProcScript(jobData,gageID,runDir,workDir,domainDir):
     """
     Generic Function function to create BSUB script for running R
-    calibration routines. These jobs will be shorter than 
-    the model runs, but still need to be ran through Yellowstone
-    compute nodes. This function also creates the shell script that
-    will execute R and Python to modify parameters.
+    sensitivity pre-processing routines.
     """
     
-    outFile1 = workDir + "/run_WH_CALIB.sh"
+    outFile1 = workDir + "/run_WH_SENS_PREPROC.sh"
     
     if os.path.isfile(outFile1):
         # We are just going to manually over-write the file everytime to be safe.
@@ -173,16 +170,15 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir):
             if len(jobData.acctKey.strip()) > 0:
                 inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
                 fileObj.write(inStr)
-            inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
+            inStr = "#BSUB -n 1\n'
             fileObj.write(inStr)
-            inStr = "#BSUB -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            inStr = "#BSUB -J WH_SENS_PREPROC_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#BSUB -o ' + workDir + '/%J.out\n'
             fileObj.write(inStr)
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
-            # We are using 2 hours to be safe here. 
-            fileObj.write('#BSUB -W 2:00\n')
+            fileObj.write('#BSUB -W 1:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
@@ -193,16 +189,15 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir):
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            fileObj.write('./calibCmd.sh\n')
+            fileObj.write('./sensPreProc.sh\n')
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile1
             raise    
             
-    outFile2 = workDir + "/calibCmd.sh"
+    outFile2 = workDir + "/sensPreProc.sh"
     
-    runRProgram = workDir + "/calib_workflow.R"
-    srcScript = workDir + "/calibScript.R"
+    runRProgram = workDir + "/sens_workflow_pre.R"
         
     if not os.path.isfile(outFile2):
         # This is the file that will run the R code first to generate params_new.txt and
@@ -210,8 +205,8 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
-            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('Rscript ' + runRProgram + '\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + workDir + ' ' + runDir + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -225,16 +220,13 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generatePbsPreProcScript(jobData,gageID,runDir,workDir):
+def generatePbsPreProcScript(jobData,gageID,runDir,workDir,domainDir):
     """
     Generic Function function to create PBS script for running R
-    calibration routines. These jobs will be shorter than 
-    the model runs, but still need to be ran through HPC
-    compute nodes. This function also creates the shell script that
-    will execute R and Python to modify parameters.
+    pre-processing routines.
     """
     
-    outFile1 = workDir + "/run_WH_CALIB.sh"
+    outFile1 = workDir + "/run_WH_SENS_PREPROC.sh"
     
     if os.path.isfile(outFile1):
         # We are just going to manually over-write the file everytime to be safe.
@@ -250,18 +242,16 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir):
             if len(jobData.acctKey.strip()) > 0:
                 inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
                 fileObj.write(inStr)
-            inStr = "#PBS -N WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            inStr = "#PBS -N WH_SENS_PREPROC_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
             inStr = '#PBS -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
             fileObj.write(inStr)
             inStr = '#PBS -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
             nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
-            inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
-                    ":mpiprocs=" + str(nCoresPerNode) + "\n"
+            inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
-            # We are using 2 hours to be safe here. 
-            fileObj.write('#PBS -l walltime=02:00:00\n')
+            fileObj.write('#PBS -l walltime=01:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
@@ -272,16 +262,15 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir):
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            fileObj.write('./calibCmd.sh\n')
+            fileObj.write('./sensPreProc.sh\n')
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile1
             raise    
             
-    outFile2 = workDir + "/calibCmd.sh"
+    outFile2 = workDir + "/sensPreProc.sh"
     
-    runRProgram = workDir + "/calib_workflow.R"
-    srcScript = workDir + "/calibScript.R"
+    runRProgram = workDir + "/sens_workflow_pre.R"
         
     if not os.path.isfile(outFile2):
         # This is the file that will run the R code first to generate params_new.txt and
@@ -289,8 +278,8 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
-            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('Rscript ' + runRProgram + '\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + workDir + ' ' + runDir + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -304,16 +293,13 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateSlurmPreProcScript(jobData,gageID,runDir,workDir):
+def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,domainDir):
     """
     Generic Function function to create Slurm script for running R
-    calibration routines. These jobs will be shorter than 
-    the model runs, but still need to be ran through HPC
-    compute nodes. This function also creates the shell script that
-    will execute R and Python to modify parameters.
+    pre-processing routines. 
     """
     
-    outFile1 = workDir + "/run_WH_CALIB.sh"
+    outFile1 = workDir + "/run_WH_SENS_PREPROC.sh"
     
     if os.path.isfile(outFile1):
         # We are just going to manually over-write the file everytime to be safe.
@@ -329,16 +315,15 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir):
             if len(jobData.acctKey.strip()) > 0:
                 inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
                 fileObj.write(inStr)
-            inStr = "#SBATCH -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+            inStr = "#SBATCH -J WH_SENS_PREPROC_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#SBATCH -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            inStr = '#SBATCH -o ' + workDir + '/WH_SENS_PREPROC_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#SBATCH -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            inStr = '#SBATCH -e ' + workDir + '/WH_SENS_PREPROC_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
-            inStr = "#SBATCH -N " + str(jobData.nNodesR) + "\n"
+            inStr = "#SBATCH -N 1\n"
             fileObj.write(inStr)
-            # We are using 2 hours to be safe here. 
-            fileObj.write('#SBATCH -t 02:00:00\n')
+            fileObj.write('#SBATCH -t 01:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
@@ -349,16 +334,15 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir):
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            fileObj.write('./calibCmd.sh\n')
+            fileObj.write('./sensPreProc.sh\n')
             fileObj.close
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile1
             raise    
             
-    outFile2 = workDir + "/calibCmd.sh"
+    outFile2 = workDir + "/sensPreProc.sh"
     
-    runRProgram = workDir + "/calib_workflow.R"
-    srcScript = workDir + "/calibScript.R"
+    runRProgram = workDir + "/sens_workflow_pre.R"
         
     if not os.path.isfile(outFile2):
         # This is the file that will run the R code first to generate params_new.txt and
@@ -366,8 +350,8 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
-            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('Rscript ' + runRProgram + '\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + workDir + ' ' + runDir + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -381,14 +365,13 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateMpiPreProcScript(jobData,gageID,runDir,workDir):
+def generateMpiPreProcScript(jobData,gageID,runDir,workDir,domainDir):
     """
-    Generic function to create mpiexec/mpirun script for running R calibration
-    routines. This function also creates the shell script that will execute
-    R and Python to modify parameters. 
+    Generic function to create mpiexec/mpirun script for running R pre-processing
+    routines.
     """
     
-    outFile1 = workDir + "/run_WH_CALIB.sh"
+    outFile1 = workDir + "/run_WH_SENS_PREPROC.sh"
     
     if os.path.isfile(outFile1):
         # We are just gonig to manually over-write the file everytime to be safe.
@@ -401,10 +384,10 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir):
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             if jobData.analysisRunType == 4:
-                inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./C' + \
+                inStr = 'mpiexec -n 1 ./C' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             if jobData.analysisRunType == 5:
-                inStr = 'mpirun -np ' + str(int(jobData.nCoresR)) + ' ./C' + \
+                inStr = 'mpirun -np 1 ./SPRE' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)
             fileObj.close
@@ -420,11 +403,10 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile1 + " to an executable."
         raise
             
-    outFile2 = workDir + '/calibCmd.sh'
-    outLink2 = workDir + '/C' + str(jobData.jobID) + str(gageID) 
+    outFile2 = workDir + '/sensPreProc.sh'
+    outLink2 = workDir + '/SPRE' + str(jobData.jobID) + str(gageID) 
     
-    runRProgram = workDir + '/calib_workflow.R'
-    srcScript = workDir + '/calibScript.R'
+    runRProgram = workDir + '/sens_workflow_pre.R'
     
     if not os.path.isfile(outFile2):
         # This is the file that will run R code. First to generate params_new.txt and
@@ -432,8 +414,8 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir):
         try:
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
-            fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('Rscript ' + runRProgram + '\n')
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + workDir + ' ' + runDir + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
