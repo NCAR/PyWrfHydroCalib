@@ -366,8 +366,8 @@ def setupModels(jobData,db,args,libPathTop):
             
         if jobData.sensFlag == 1:
             for i in range(0,jobData.nSensIter):
-                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/W_SENS" + str(i) + \
-                        "_" + str(jobData.jobID) + str(jobData.gageIDs[gage])
+                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/WHS" + \
+                        str(jobData.jobID) + str(jobData.gageIDs[gage]) + str(i)
                 link2 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/wrf_hydro.exe"
                 try:
                     os.symlink(str(jobData.exe),link1)
@@ -646,7 +646,7 @@ def setupModels(jobData,db,args,libPathTop):
                 raise
                 
             try:
-                link = gageDir + "/RUN.SENSITIVITY/adjust_parameters_sensititivy.py"
+                link = gageDir + "/RUN.SENSITIVITY/adjust_parameters_sensitivity.py"
                 os.symlink(sensPyProgram,link)
             except:
                 wipeJobDir(jobData)
@@ -672,6 +672,8 @@ def setupModels(jobData,db,args,libPathTop):
         # Copy Python and R programs necessary to run parameter generation and 
         # sensitivity analysis. 
         sensPreRProgram = libPathTop + "/R/sens_workflow_pre.R"
+        sensCollectRProgram = libPathTop + "/R/Collect_simulated_flow.R"
+        sensPostRProgram = libPathTop + "/R/sens_workflow_post.R"
         if jobData.sensFlag == 1:
             try:
                 link = gageDir + "/RUN.SENSITIVITY/sens_workflow_pre.R"
@@ -687,3 +689,17 @@ def setupModels(jobData,db,args,libPathTop):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to link: " + calibRUtils
                 raise
+            try:
+                link = gageDir + "/RUN.SENSITIVITY/Collect_simulated_flow.R"
+                os.symlink(sensCollectRProgram,link)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Failure to link: " + sensCollectRProgram
+                raise
+            try:
+                link = gageDir + "/RUN.SENSITIVITY/sens_workflow_post.R"
+                os.symlink(sensPostRProgram,link)
+            except:
+                jobData.errMsg = "ERROR: Failure to link: " + sensPostRProgram
+                raise
+            

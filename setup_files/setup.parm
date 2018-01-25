@@ -99,13 +99,13 @@ bValidEvalDate = 2013-09-16
 
 [Sensitivity]
 # Specify parameter sample size
-sensParmSample = 10
+sensParmSample = 1
 
 # Sending out all model simulations at the same time 
 # may not be ideal for a given system. This option
 # will break out the sensitivity model runs by batch
 # number of simulations.
-sensBatchNum = 10
+sensBatchNum = 5
 
 # Specify the date range for the sensitivity period.
 bSensDate = 2013-10-01

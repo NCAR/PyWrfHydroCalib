@@ -29,8 +29,14 @@ def main(argv):
     # Parse arguments. Only input necessary is the run directory.
     parser = argparse.ArgumentParser(description='Main program to adjust input ' + \
              'parameters for the National Water Model')
-    parser.add_argument('domainDir',metavar='domainDir',type=str,nargs='+',
-                        help='Directory containing inputs necessary for adjustments.')
+    parser.add_argument('fullDomOrig',metavar='fullDomOrig',type=str,nargs='+',
+                        help='Original Fulldom.nc file.')
+    parser.add_argument('hydroOrig',metavar='hydroOrig',type=str,nargs='+',
+                        help='Original HYDRO_TBL_2D.nc')
+    parser.add_argument('soilOrig',metavar='soilOrig',type=str,nargs='+',
+                        help='Original soil_properties.nc')
+    parser.add_argument('gwOrig',metavar='GWBUCKPARM.nc',type=str,nargs='+',
+                        help='Original GWBUCKPARM.nc')
     parser.add_argument('workDir',metavar='workDir',type=str,nargs='+',
                         help='Directory containing run subdirectories where final parameter' + \
                              ' files will reside')
@@ -39,15 +45,14 @@ def main(argv):
 
 
     args = parser.parse_args()
-    domainDir = str(args.workDir[0])
-    workDir = str(args.runDir[0])
+    fullDomOrig = str(args.fullDomOrig[0])
+    hydroOrig = str(args.hydroOrig[0])
+    soilOrig = str(args.soilOrig[0])
+    gwOrig = str(args.gwOrig[0])
+    workDir = str(args.workDir[0])
     nIter = int(args.nIter[0])
     
     # Compose input file paths.
-    fullDomOrig = domainDir + "/Fulldom.nc"
-    hydroOrig = domainDir + "/HYDRO_TBL_2D.nc"
-    soilOrig = domainDir + "/soil_properties.nc"
-    gwOrig = domainDir + "/GWBUCKPARM.nc"
     rCompletePath = workDir + "/R_PRE_COMPLETE"
     adjTbl = workDir + "/params_new.txt"
     outFlag = workDir + "/preProc.COMPLETE"
@@ -73,30 +78,41 @@ def main(argv):
     for i in range(0,nIter):
         runDir = workDir + "/OUTPUT_" + str(i)
         
+        print runDir
         if not os.path.isdir(runDir):
             sys.exit(1)
             
         # Copy default parameter files over to the run directory
         try:
             tmpPath = runDir + "/Fulldom.nc"
+            print tmpPath
             shutil.copy(fullDomOrig,tmpPath)
         except:
             sys.exit(1)
         try:
             tmpPath = runDir + "/HYDRO_TBL_2D.nc"
+            print tmpPath
             shutil.copy(hydroOrig,tmpPath)
         except:
             sys.exit(1)
         try:
             tmpPath = runDir + "/soil_properties.nc"
+            print tmpPath
             shutil.copy(soilOrig,tmpPath)
         except:
             sys.exit(1)
         try:
             tmpPath = runDir + "/GWBUCKPARM.nc"
+            print tmpPath
             shutil.copy(gwOrig,tmpPath)
         except:
             sys.exit(1)
+            
+        # Compose output file paths.
+        fullDomOut = runDir + "/Fulldom.nc"
+        hydroOut = runDir + "/HYDRO_TBL_2D.nc"
+        soilOut = runDir + "/soil_properties.nc"
+        gwOut = runDir + '/GWBUCKPARM.nc'
             
         # Open NetCDF parameter files for adjustment.
         idFullDom = Dataset(fullDomOut,'a')

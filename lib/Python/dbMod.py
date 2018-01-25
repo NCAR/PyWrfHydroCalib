@@ -810,6 +810,29 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
                              " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
             raise
+            
+    def updateSensIterationStatus(self,jobData,domainID,iteration,gageName,newStatus):
+        """
+        Generic function to update the status of each basin sensitivity simulation as it progresses.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        iterTmp = iteration + 1
+            
+        sqlCmd = "update \"Sens_Stats\" set complete='" + str(newStatus) + "' " + \
+                 "where \"jobID\"='" + str(jobID) + "'" + " and \"domainID\"='" + str(domainID) + \
+                 "'" + " and iteration='" + str(iterTmp) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Unable to update sensitivity status for job ID: " + str(jobID) + \
+                             " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
+            raise
         
     def logCalibParams(self,jobData,jobID,domainID,calibTbl,iteration):
         """

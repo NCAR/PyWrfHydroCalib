@@ -251,7 +251,7 @@ def main(argv):
     print len(jobData.gages)
     keySlot = np.empty([len(jobData.gages),int(jobData.nSensIter)])
     keySlot[:,:] = 0.0
-    entryValue = float(len(jobData.gages)*int(jobData.nSensIter))
+    entryValue = float(len(jobData.gages)*int(jobData.nSensIter)*2.0)
     
     print keySlot
     print entryValue
@@ -276,7 +276,8 @@ def main(argv):
                 if statusData[iteration2][0] == iteration+1:
                     keySlot[basin,iteration] = float(statusData[iteration2][1])
                     
-    if keySlot.sum() == 0.0:
+    if len(np.where(keySlot != 0.0)[0]) == 0:
+    #if keySlot.sum() == 0.0:
         # We need to either check to see if pre-processing has taken place, or
         # run it.
         preProcStatus = False
@@ -295,6 +296,7 @@ def main(argv):
             # Calculate the number of "batches" we are going to run
             iterPerBatch = int(jobData.nSensIter/jobData.nSensBatch)
             entryValueBatch = float(iterPerBatch)
+            print 'BATCH ENTRY = ' + str(entryValueBatch)
             
             # If we have a pre-processing complete file, set our pre-proc status to True.
             preProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/preProc.COMPLETE"
@@ -302,47 +304,58 @@ def main(argv):
                 preProcStatus = True
                 
             if not preProcStatus:
-                
                 sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 #try:
                 #    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 #except:
                 #    errMod.errOut(jobData)
-            #else:
-            #    # The goal here is to only operate on a fixed number of model runs at a time.
-            #    # If you have a large parameter sample size, it's possible to have hundreds,
-            #    # if not thousands of model permuatations. This worflow allows for 
-            #    # only batches of model runs to be ran at a time as to not bog down the system. 
-            #    for batchIter in range(0,int(jobData.nSensBatch)):
-            #        batchCheck = keySlot[basin,(batchIter*iterPerBatch):((batchIter+1)*iterPerBatch)]
-            #        if batchCheck.sum() != entryValueBatch:
-            #            for iterTmp in range(0,iterPerBatch):
-            #                iteration = batchIter*iterPerBatch + iterTmp
-            #                print iteration
-            #                keyCheck1 = keySlot[basin,iteration]
-            #                if keyCheck1 != 1:
-            #                    # This model iteration has not completed. 
-            #                    try:
-            #                        sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-            #                    except:
-            #                        errMod.errOut(jobData)
-            #                    
-            #                    if keySlot[basin,iteration] == 0.0 and keyCheck1 == 0.5:
-            #                        # Put some spacing between launching model simulations to slow down que geting 
-            #                        # overloaded.
-            #                        time.sleep(3)
-            #                        
-            #                    # Update the temporary status array as it will be checked for this batch of model runs.
-            #                    batchCheck[iterTmp] = keySlot[basin,iteration]
+            else:
+                # The goal here is to only operate on a fixed number of model runs at a time.
+                # If you have a large parameter sample size, it's possible to have hundreds,
+                # if not thousands of model permuatations. This worflow allows for 
+                # only batches of model runs to be ran at a time as to not bog down the system. 
+                for batchIter in range(0,int(jobData.nSensBatch)):
+                    print "BATCH = " + str(batchIter)
+                    batchCheck = keySlot[basin,(batchIter*iterPerBatch):((batchIter+1)*iterPerBatch)]
+                    print batchCheck
+                    if batchCheck.sum() != entryValueBatch:
+                        for iterTmp in range(0,iterPerBatch):
+                            iteration = batchIter*iterPerBatch + iterTmp
+                            print iteration
+                            keyCheck1 = keySlot[basin,iteration]
+                            if keyCheck1 < 1:
+                                # This model iteration has not completed. 
+                                #sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                                #try:
+                                #    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                                #except:
+                                #    errMod.errOut(jobData)
                                 
+                                #if keySlot[basin,iteration] == 0.0 and keyCheck1 == 0.5:
+                                #    # Put some spacing between launching model simulations to slow down que geting 
+                                #    # overloaded.
+                                #    time.sleep(3)
+                                    
+                                # Update the temporary status array as it will be checked for this batch of model runs.
+                                batchCheck[iterTmp] = keySlot[basin,iteration]
+                                
+            # Run post-processing ONLY when all model simulations are finished.
+            #if not postProcStatus and len(np.where(keySlot != 1.0)[0]) != 0:
+            #    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+            #    #try:
+            #    #    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+            #    #except:
+            #    #    errMod.errOut(jobData)
+                                
+            # REMOVE!!!!!!
             completeStatus = True
-            
-        # Check to see if we need to run post-processing.
-        if keySlot.sum() == entryValue and not postProcStatus:
-            try:
-                sensitivityMod.postProc(postProcStatus)
-            except:
-                errMod.errOut(jobData)
+        
+            #postProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/postProc.COMPLETE"
+            #if os.path.isfile(postProcComplete):
+            #    postProcStatus = True
+            #    # Upgrade key status values as necessary
+            #    for iterTmp in range(0,jobData.nSensIter):
+            #        keySlot[basin,iterTmp] = 2.0
             
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue and postProcStatus:
