@@ -19,7 +19,7 @@
 # Top level directory where output from model runs, etc
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
-outDir = /home/cuahsi/testCaseData
+outDir = /home/cuahsi/calibOut
 jobName = TEST_CALIB
 acctKey =
 optQueNameModel =
@@ -29,6 +29,12 @@ nCoresModel = 4
 nNodesModel = 1
 nCoresR     = 1
 nNodesR = 1
+# Flag to turn sensitivity analysis on: 0 - Off, 1 - On.
+runSens = 1 
+sensParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/sens_params.tbl
+# Flag to turn calibration on: 0 - Off, 1 - On.
+runCalib = 1
+calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
@@ -40,9 +46,9 @@ nNodesR = 1
 # 4 - Job execution using mpiexec
 # 5 - Job execution using mpirun
 # jobRunType is how you plan on executing the WRF-Hydro simulations
-jobRunType = 5
+jobRunType = 4
 # analysisRunType is how you plan on executing the analysis/calibration R/Python code.
-analysisRunType = 5
+analysisRunType = 4
 # Specify number of model iterations to calibrate over
 numIter = 3
 
@@ -66,30 +72,45 @@ ddsR = 0.2
 email = john.doe@youremail.com
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /home/cuahsi/wrf_hydro_source/trunk/NDHMS/Run/wrf_hydro.exe
+wrfExe = /home/cuahsi/wrfHydroCalibration/wrf_hydro_model/trunk/NDHMS/Run/wrf_hydro.exe
 
 # Specify parameter tables to use for Noah-MP
-genParmTbl = /home/cuahsi/testCaseData/04233300/GENPARM.TBL
-mpParmTbl = /home/cuahsi/testCaseData/04233300/MPTABLE.TBL
-urbParmTbl = /home/cuahsi/testCaseData/04233300/URBPARM.TBL
-vegParmTbl = /home/cuahsi/testCaseData/04233300/VEGPARM.TBL
-chanParmTbl = /home/cuahsi/testCaseData/04233300/CHANPARM.TBL
-soilParmTbl = /home/cuahsi/testCaseData/04233300/SOILPARM.TBL
+genParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/GENPARM.TBL
+mpParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/MPTABLE.TBL
+urbParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/URBPARM.TBL
+vegParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/VEGPARM.TBL
+chanParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/CHANPARM.TBL
+soilParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
-bSpinDate = 2013-09-01
-eSpinDate = 2013-09-15
+bSpinDate = 2013-06-01
+eSpinDate = 2013-07-01
 
 # Specify date range for calibration period
-bCalibDate = 2013-09-15
-eCalibDate = 2013-10-01
-bCalibEvalDate = 2013-09-16
+bCalibDate = 2013-07-01
+eCalibDate = 2013-08-01
+bCalibEvalDate = 2013-07-05
 
 # Specify date range for validation period
-bValidDate = 2013-09-15
-eValidDate = 2013-10-01
-bValidEvalDate = 2013-09-16
+bValidDate = 2013-07-01
+eValidDate = 2013-08-01
+bValidEvalDate = 2013-07-05
+
+[Sensitivity]
+# Specify parameter sample size
+sensParmSample = 1
+
+# Sending out all model simulations at the same time 
+# may not be ideal for a given system. This option
+# will break out the sensitivity model runs by batch
+# number of simulations.
+sensBatchNum = 1
+
+# Specify the date range for the sensitivity period.
+bSensDate = 2013-07-01
+eSensDate = 2013-08-01
+bSensEvalDate = 2013-07-05
 
 [gageInfo]
 # Specify USGS GAGES II basins to calibrate on.

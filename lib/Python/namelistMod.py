@@ -23,6 +23,8 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
     #       genFlag = 3 Indicates validation BEST - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #       genFlag = 4 Indicates sensitivy analysis - HYDRO_TBL_2D.nc, Fulldom.nc,
+    #                   GWBUCKPARM.nc, and soil_properties.nc from run directory
     # Create path for the namelist file
     pathOut = outDir + "/namelist.hrldas"
     if os.path.isfile(pathOut):
@@ -56,6 +58,12 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/soil_properties.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise Exception()
+            inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
+        if genFlag == 4:
+            pthTmp = outDir + "/soil_properties.nc"
             if not os.path.isfile(pthTmp):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
@@ -176,6 +184,8 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
     #       genFlag = 3 Indicates validation BEST - pull HYDRO_TBL_2D.nc, Fulldom.nc,
     #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #       genFlag = 4 Indicates sensitivy analysis - HYDRO_TBL_2D.nc, Fulldom.nc,
+    #                   GWBUCKPARM.nc, and soil_properties.nc from run directory
     # Create path for the namelist file.
     pathOut = outDir + "/hydro.namelist"
     if os.path.isfile(pathOut):
@@ -219,6 +229,12 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
+        if genFlag == 4:
+            pthTmp = outDir + "/Fulldom.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise Exception()
+            inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('! Specify the spatial hydro parameters file (e.g.: "HYDRO_TBL_2D.nc")\n')
         if genFlag == 0:
@@ -248,6 +264,12 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' HYDROTBL_F = "' + pthTmp + '"\n'
+        if genFlag == 4:
+            pthTmp = outDir + "/HYDRO_TBL_2D.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise Exception()
+            inStr = ' HYDROTBL_F = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Specify spatial metadata file for land surface grid.\n')
@@ -466,6 +488,12 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+        if genFlag == 4:
+            pthTmp = outDir + "/GWBUCKPARM.nc"
+            if not os.path.isfile(pthTmp):
+                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                raise Exception()
+            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! User defined mapping, such NHDPlus\n')

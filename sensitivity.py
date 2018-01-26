@@ -1,5 +1,5 @@
-# Main calling program to initiate a calibration of the National
-# Water Model. Please see comments below on steps involved for the workflow
+# Main calling program to initiate a sensitivity analysis of WRF-Hydro. 
+# Please see comments below on steps involved for the workflow
 # to run. 
 
 # Logan Karsten
@@ -32,15 +32,15 @@ import statusMod
 import dbMod
 import errMod
 import configMod
-import calibMod
+import sensitivityMod
 import pandas as pd
 
 def main(argv):
     # Parse arguments. User must input a job name.
     parser = argparse.ArgumentParser(description='Main program to start or restart ' + \
-             'calibration for WRF-Hydro')
+             'sensitivity analysis for WRF-Hydro')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
-                        help='Job ID specific to calibration spinup.')
+                        help='Job ID specific to your sensitivity/caliration workflow job.')
     parser.add_argument('--hostname',type=str,nargs='?',
                         help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
     
@@ -86,10 +86,10 @@ def main(argv):
         print jobData.errMsg
         sys.exit(1)
         
-    # If the calibration flag is 0, simply exit gracefully as the user specified
+    # If the sensitivity flag is 0, simply exit gracefully as the user specified
     # not to run calibration.
-    if jobData.calibFlag != 1:
-        print "ERROR: Calibration flag was set to 0 for this workflow."
+    if jobData.sensFlag != 1:
+        print "ERROR: Sensitivity flag was set to 0 for this workflow."
         sys.exit(1)
         
     # Establish LOCK file to secure this Python program to make sure
@@ -142,10 +142,10 @@ def main(argv):
         jobData.checkGages(db)
     except:
         errMod.errOut(jobData)
-    
-    # Some house keeping here. If the calibration is already complete, throw an error. 
+        
+    # Some house keeping here. If the sensitivity is already complete, throw an error. 
     # Also ensure the spinup has been entered as complete. This is necessary for the 
-    # calibration to run.
+    # sensitivity to run.
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
     if int(jobData.spinComplete) != 1:
@@ -154,8 +154,8 @@ def main(argv):
                          " to run calibration."
         errMod.errOut(jobData)
         
-    if int(jobData.calibComplete) == 1:
-        jobData.errMsg = "ERROR: Calibration for job ID: " + str(jobData.jobID) + \
+    if int(jobData.sensComplete) == 1:
+        jobData.errMsg = "ERROR: Sensitivity for job ID: " + str(jobData.jobID) + \
                          " has already completed."
         errMod.errOut(jobData)
         
@@ -226,58 +226,35 @@ def main(argv):
         except:
             errMod.errOut(jobData)
             
-    # NOTE: Comented this out for V1.2. This is really an unecessary check on the workflow.
-    # Since the statuses for each basin are being read in from the DB, the workflow should
-    # be able to handle seeing existing jobs running. Keeping this code here for now
-    # in case there is a desire to put this back in the future. 
-    # Loop through each basin in the calibration job. There should always be at least 
-    # ONE job running for a given basin. If any jobs are found, exit gracefully.
-    #for basin in range(0,len(jobData.gages)):
-    #    # First pull the unique ID for the basin. 
-    #    calibStatus = statusMod.checkCalibJob(jobData,basin)
-    #    modelStatus = statusMod.checkBasJob(jobData,basin)
-    #    if calibStatus or modelStatus:
-    #        # Remove LOCK file
-    #        os.remove(lockPath)
-    #        sys.exit(0)
-            
     # Begin an "infinite" do loop. This loop will continue to loop through all 
-    # the basins until calibrations are complete. Basins are allowed ONE failure. A restart
+    # the basins until sensitivity jobs are complete. Basins are allowed ONE failure. A restart
     # will be attempted. If the restart fails again, a LOCK file is placed into the
-    # run directory and an error email is sent to the user. Additionally, if the R calibration
-    # code fails, a seperate LOCK file will be placed into the directory, and the user
-    # will be notified about the failure.
+    # run directory and an error email is sent to the user.
     completeStatus = False
     
     # Create a "key" array. This array is of length [numBasins] and is initialized to 0.0.
     # Each array element can have the following values based on current model status:
     # 0.0 - Initial value
-    # 0.25 - This is a special value for the first iteration. The initial default 
-    #        parameter values specified in the parameter table by the user are being
-    #        applied and entered into the DB. 
-    # 0.5 - Model simulation in progress
-    # 0.75 - The model simulation has completed. We are ready to run the R code to 
-    #        generate the next set of parameter values and enter evaluation statistics
-    #        into the DB. 
-    # 0.90 - The R code is running to generate new parameters estimates. Python is
-    #        also generating new files.
-    # 1.0 - R/Python code is complete and param/stats have been enetered into the DB. Ready to 
-    #       run the next model iteration. 
-    # -0.1 - The R code to generate the initial parameter values has failed. CALIB.LOCK
-    #        is put into place. 
-    # -0.25 - The workflow has found the model simulation to have failed. 
-    # -0.5 - Model simulation failed once and a restart is being ran. 
-    # -0.75 - The R/Python code to generate new parameters/stats has failed. CALIB.LOCK
-    #         is put into place. 
-    # -1.0 - Model has failed twice. A RUN.LOCK file has been created.
+    # 0.10 - Job to generate parameter grids for each model job is being ran.
+    # 0.25 - Job to generate parameter grids is complete. Ready to run models.....
+    # 0.5 - Model simulationa are in progress
+    # 0.75 - Job to read in model output and run sensitivity analysis is ready to be ran. 
+    # 0.90 - Job to read in model output and run sensitivity analysis is running. 
+    # 1.0 - Sensitivity analysis complete
+    # -0.1 - Parameter generation failed. A LOCK file has been created. 
+    # -0.5 - Model simulation failed once and a restart has been attempted
+    # -0.90 - Sensitivity analysis job has failed. A LOCK file has been created. 
+    # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
-    keySlot = np.empty([len(jobData.gages),int(jobData.nIter)])
+    print jobData.nSensIter
+    print len(jobData.gages)
+    keySlot = np.empty([len(jobData.gages),int(jobData.nSensIter)])
     keySlot[:,:] = 0.0
-    # NOTE this is different from the spinup. We have a 2D array of values to account
-    # for all the iterations. 
-    entryValue = float(len(jobData.gages)*int(jobData.nIter))
+    entryValue = float(len(jobData.gages)*int(jobData.nSensIter)*2.0)
     
+    print keySlot
+    print entryValue
     # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
         try:
@@ -291,75 +268,120 @@ def main(argv):
             
         # We are going to pull all values for one basin, then place them into the array.
         # This is faster then looping over each iteration at a time. 
-        statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
+        statusData = db.sensIterationStatus(jobData,domainID,str(jobData.gages[basin]))
+        print statusData
         statusData = [list(item) for item in statusData]
-        for iteration in range(0,int(jobData.nIter)):
-            for iteration2 in range(0,int(jobData.nIter)):
+        print statusData
+        for iteration in range(0,int(jobData.nSensIter)):
+            for iteration2 in range(0,int(jobData.nSensIter)):
                 if statusData[iteration2][0] == iteration+1:
                     keySlot[basin,iteration] = float(statusData[iteration2][1])
+            
+    print "NEW KEY SLOT = " + str(keySlot)
                     
-                
+    if len(np.where(keySlot != 0.0)[0]) == 0:
+    #if keySlot.sum() == 0.0:
+        # We need to either check to see if pre-processing has taken place, or
+        # run it.
+        preProcStatus = False
+        
+    print "ITERATIONS = " + str(jobData.nSensIter)
     while not completeStatus:
-        # Walk through calibration directories for each basin. Determine the status of
-        # the model runs by the files available. If restarting, modify the 
-        # namelist files appropriately. Then, restart the model. If anything goes wrong, notifications
-        # will either be emailed per the user's info, or piped to Slack for group
-        # notification. A simulation is deemed complete when all expected RESTART
-        # files are present and there are no jobs running for the basin. The parameter
-        # estimation is deemed complete when CALIB_ITER.COMPLETE is present and
-        # no calibration jobs for this basin are running. 
-        # Loop through each basin. Perform the following steps:
-        # 1.) If status is -0.5,0.0, or 0.5, check to see if the model is running
-        #     for this basin or if parameter estimation is occurring.
-        # 2.) If the model is not running, check for expected output and perform
-        #     necessary logistics. Continue to parameter estimation. Note that
-        #     for the first iteration, R needs to be ran before the model to get
-        #     initial default parameters. 
-        # 3.) Once the model is complete, the status goes to 0.75.
-        # 4.) Fire off a job to run R/Python code for parameter estimation, generation
-        #     , plot generation, and generation of model eval statistics to be 
-        #     entered into the DB. Status goes to 0.90.
-        # 5.) Once the calibration job is complete, the status goes to 1.0 and the 
-        #     workflow is ready for the next iteration. 
-        # If the status goes to -1.0, a LOCK file is created and must be manually
-        # removed from the user. Once the program detects this, it will restart the
-        # model and the status goes back to 0.5. 
-        # If the status goes to -0.75, a LOCK file is created and needs to be removed
-        # manually by the user before the workflow can continue. 
-
+        # Walk through each basin undergoing sensitivity analysis. 
         for basin in range(0,len(jobData.gages)):
-            for iteration in range(0,int(jobData.nIter)):
-                # Holding onto the status value before the workflow iterates for checking below.
-                keyStatusCheck1 = keySlot[basin,iteration]
-                # If the status is already 1.0, then continue the loop as now work needs to be done.
-                if keyStatusCheck1 == 1.0:
-                    continue
-                else:
-                    try:
-                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                    except:
-                        errMod.errOut(jobData)
-                keyStatusCheck2 = keySlot[basin,iteration]
-                if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
-                    # Put some spacing between launching model simulations to slow down que geting 
-                    # overloaded.
+            # Establish a status value for pre-processing the parameter values from R/Python code. 
+            preProcStatus = False 
+    
+            # Establish a status value for post-processing the model output and running sensitivity
+            # analysis.
+            postProcStatus = False
+            
+            # Calculate the number of "batches" we are going to run
+            nBatches = int(jobData.nSensIter/jobData.nSensBatch)
+            print "NUM BATCHES = " + str(nBatches)
+            entryValueBatch = float(jobData.nSensBatch)
+            print 'BATCH ENTRY = ' + str(entryValueBatch)
+            
+            # If we have a pre-processing complete file, set our pre-proc status to True.
+            preProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/preProc.COMPLETE"
+            if os.path.isfile(preProcComplete):
+                preProcStatus = True
+                print "PRE PROCESSING COMPLETE!"
+            if not preProcStatus:
+                sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                print preProcStatus
+                #try:
+                #    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                #except:
+                #    errMod.errOut(jobData)
+            else:
+                # The goal here is to only operate on a fixed number of model runs at a time.
+                # If you have a large parameter sample size, it's possible to have hundreds,
+                # if not thousands of model permuatations. This worflow allows for 
+                # only batches of model runs to be ran at a time as to not bog down the system. 
+                for batchIter in range(0,nBatches):
+                    print "BATCH = " + str(batchIter)
                     time.sleep(3)
-                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
-                    time.sleep(3)
-                    
+                    batchCheck = keySlot[basin,(batchIter*jobData.nSensBatch):((batchIter+1)*jobData.nSensBatch)]
+                    if batchIter == 0:
+                        batchCheckPrev = 1.0
+                    else:
+                        batchCheckPrev = keySlot[basin,((batchIter-1)*jobData.nSensBatch):(batchIter*jobData.nSensBatch)]
+                        batchCheckPrev = batchCheckPrev.sum()
+                    print batchCheck
+                    if batchCheck.sum() != entryValueBatch and batchCheckPrev == 1.0:
+                        for iterTmp in range(0,jobData.nSensBatch):
+                            iteration = batchIter*jobData.nSensBatch + iterTmp
+                            print iteration
+                            keyCheck1 = keySlot[basin,iteration]
+                            if keyCheck1 < 1:
+                                # This model iteration has not completed. 
+                                sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                                #try:
+                                #    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                                #except:
+                                #    errMod.errOut(jobData)
+                                
+                                if keySlot[basin,iteration] == 0.0 and keyCheck1 == 0.5:
+                                    # Put some spacing between launching model simulations to slow down que geting 
+                                    # overloaded.
+                                    time.sleep(3)
+                                    
+                                # Update the temporary status array as it will be checked for this batch of model runs.
+                                batchCheck[iterTmp] = keySlot[basin,iteration]
+                                
+            #sys.exit(1)
+                                
+            # Run post-processing ONLY when all model simulations are finished.
+            print "LENGTH OF NON FINISHED STUFF = " + str(len(np.where(keySlot != 1.0)[0]))
+            if not postProcStatus and len(np.where(keySlot != 1.0)[0]) == 0:
+                print "READY TO RUN POST-PROCESSING"
+                sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+            #    #try:
+            #    #    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+            #    #except:
+            #    #    errMod.errOut(jobData)
+                                
+            postProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/postProc.COMPLETE"
+            if os.path.isfile(postProcComplete):
+                postProcStatus = True
+                # Upgrade key status values as necessary
+                for iterTmp in range(0,jobData.nSensIter):
+                    keySlot[basin,iterTmp] = 2.0
+            
         # Check to see if program requirements have been met.
-        if keySlot.sum() == entryValue:
-            jobData.calibComplete = 1
+        if keySlot.sum() == entryValue and postProcStatus:
+            jobData.sensComplete = 1
             try:
-                db.updateCalibStatus(jobData)
+                db.updateSensStatus(jobData)
             except:
                 errMod.errout(jobData)
-            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            jobData.genMsg = "SENSITIVITY FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
-        
+            
     # Remove LOCK file
     os.remove(lockPath)
-    
+        
 if __name__ == "__main__":
     main(sys.argv[1:])

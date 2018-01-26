@@ -7,6 +7,15 @@ CREATE TABLE "Calib_Params" (
     "paramValue" real DEFAULT NULL
 );
 ALTER TABLE "Calib_Params" OWNER TO "WH_Calib_rw";
+DROP TABLE IF EXISTS "Sens_Params";
+CREATE TABLE "Sens_Params" (
+    "jobID" integer DEFAULT NULL,
+    "domainID" integer DEFAULT NULL,
+    "iteration" integer DEFAULT NULL,
+    "paramName" character varying(32),
+    "paramValue" real DEFAULT NULL
+);
+ALTER TABLE "Sens_Params" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Calib_Stats";
 CREATE TABLE "Calib_Stats" (
    "jobID" integer DEFAULT NULL,
@@ -25,6 +34,24 @@ CREATE TABLE "Calib_Stats" (
    "complete" float DEFAULT NULL
 );
 ALTER TABLE "Calib_Stats" OWNER TO "WH_Calib_rw";
+DROP TABLE IF EXISTS "Sens_Stats";
+CREATE TABLE "Sens_Stats" (
+   "jobID" integer DEFAULT NULL,
+   "domainID" integer DEFAULT NULL,
+   "iteration" integer DEFAULT NULL,
+   "objfnVal" real DEFAULT NULL,
+   "bias" real DEFAULT NULL,
+   "rmse" real DEFAULT NULL,
+   "cor" real DEFAULT NULL,
+   "nse" real DEFAULT NULL,
+   "nselog" real DEFAULT NULL,
+   "kge" real DEFAULT NULL,
+   "fdcerr" real DEFAULT NULL,
+   "msof" real DEFAULT NULL,
+   "best" integer DEFAULT NULL,
+   "complete" float DEFAULT NULL
+);
+ALTER TABLE "Sens_Stats" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Domain_Meta";
 CREATE TABLE "Domain_Meta" (
    "domainID" SERIAL PRIMARY KEY,
@@ -78,11 +105,21 @@ CREATE TABLE "Job_Meta" (
    "date_su_start" timestamp DEFAULT NULL,
    "date_su_end" timestamp DEFAULT NULL,
    "su_complete" integer DEFAULT NULL,
+   "sens_flag" integer DEFAULT NULL,
+   "sens_table" character varying(512),
+   "num_sens_sample" integer DEFAULT NULL,
+   "num_sens_iter" integer DEFAULT NULL,
+   "sens_batch" integer DEFAULT NULL,
+   "date_sens_start" timestamp DEFAULT NULL,
+   "date_sens_end" timestamp DEFAULT NULL,
+   "date_sens_start_eval" timestamp DEFAULT NULL,
+   "sens_complete" integer DEFAULT NULL,
+   "calib_flag" integer DEFAULT NULL,
+   "calib_table" character varying(512),
    "date_calib_start" timestamp DEFAULT NULL,
    "date_calib_end" timestamp DEFAULT NULL,
    "date_calib_start_eval" timestamp DEFAULT NULL,
    "num_iter" integer DEFAULT NULL,
-   "iter_complete" integer DEFAULT NULL,
    "calib_complete" integer DEFAULT NULL,
    "valid_start_date" timestamp DEFAULT NULL,
    "valid_end_date" timestamp DEFAULT NULL,
@@ -113,7 +150,9 @@ CREATE TABLE "Job_Params" (
    "param" character varying(32),
    "defaultValue" real DEFAULT NULL,
    "min" real DEFAULT NULL,
-   "max" real DEFAULT NULL
+   "max" real DEFAULT NULL,
+   "sens_flag" integer DEFAULT NULL,
+   "calib_flag" integer DEFAULT NULL
 );
 ALTER TABLE "Job_Params" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Valid_Stats";

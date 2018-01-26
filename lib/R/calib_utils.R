@@ -8,53 +8,57 @@ NamedList <- function(theNames) {
   theList
 }
 
-GetNcdfFile <- function(file, variables=NULL, exclude=FALSE, quiet=FALSE, flip2D=TRUE){
-  
-  if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
-
-  if(!quiet) ncdump(file)
-    
+GetNcdfFile <- function (file, variables = NULL, exclude = FALSE, quiet = FALSE,
+          flip2D = TRUE, collapse_degen = TRUE) {
+  if (!file.exists(file))
+    warning(paste0("The file ", file, "does not exist."),
+            immediate. = TRUE)
+  if (!quiet)
+    ncdump(file)
   nc <- ncdf4::nc_open(file)
-  
-  # Deal with variables asked for
   varsInFile <- names(nc$var)
   dimVarsInFile <- names(nc$dim)
-  whDimVarsVals <- plyr::laply(nc$dim, '[[', 'create_dimvar')
-  if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
-  
-  returnVars <- 
-  if(!is.null(variables)) {
+  whDimVarsVals <- plyr::laply(nc$dim, "[[", "create_dimvar")
+  if (any(whDimVarsVals))
+    varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
+  returnVars <- if (!is.null(variables)) {
     varsNotInFile <- setdiff(variables, varsInFile)
-    if(length(varsNotInFile)) 
-      warning(paste0('The following variables were not found in the file', paste(varsNotInFile, collapse=', ')))
-    if(!exclude) intersect(variables, varsInFile) else setdiff(varsInFile, variables)
-  } else varsInFile
-  
-  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar)
-  outList <- plyr::llply(NamedList(returnVars), doGetVar)
-
-  doGetVarAtt <- function(theVar) ncdf4::ncatt_get( nc, varid=theVar )
-  attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
-  
-  natts <- nc$natts
-  if( natts  > 0 ) attList$global <- ncdf4::ncatt_get( nc, 0 )
-
-  ncdf4::nc_close(nc)
-  
-  nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
-  
-  if(flip2D & any(nDims==2)){
-    wh2D <- which(nDims==2)
-    for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
+    if (length(varsNotInFile))
+      warning(paste0("The following variables were not found in the file",
+                     paste(varsNotInFile, collapse = ", ")))
+    if (!exclude)
+      intersect(variables, varsInFile)
+    else setdiff(varsInFile, variables)
   }
-    
-  if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
-  
+  else varsInFile
+  varNDims <- unlist(lapply(nc$var, function(vv) vv$ndims))
+  if (length(whZeroDim <- which(varNDims == 0))) {
+    if (!quiet)
+      cat("The following variables are ommitted because they have zero dimensions: ",
+          names(whZeroDim), "\n")
+    returnVars <- setdiff(returnVars, names(whZeroDim))
+  }
+  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid = theVar,
+                                                collapse_degen = collapse_degen)
+  outList <- plyr::llply(NamedList(returnVars), doGetVar)
+  doGetVarAtt <- function(theVar) ncdf4::ncatt_get(nc, varid = theVar)
+  attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
+  natts <- nc$natts
+  if (natts > 0)
+    attList$global <- ncdf4::ncatt_get(nc, 0)
+  ncdf4::nc_close(nc)
+  nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
+  if (flip2D & any(nDims == 2)) {
+    wh2D <- which(nDims == 2)
+    for (ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
+  }
+  if (!(all(nDims == nDims[1])) | !(all(nDims == 1)))
+    return(outList)
   vecLen <- plyr::laply(outList[-10], length)
-  if( all(vecLen==vecLen[1]) ) outList <- as.data.frame(outList)
-
-  if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
-  
+  if (all(vecLen == vecLen[1]))
+    outList <- as.data.frame(outList)
+  if (natts > 0)
+    attributes(outList) <- c(attributes(outList), attList)
   outList
 }
 
@@ -288,3 +292,17 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   }
 }
 
+#' Create and or name a list with its entries.
+#' 
+#' \code{NamedList} creates a list with names equal to its entries. 
+#' @param theNames Vector to be coerced to character.
+#' @return List with names equal to entries.
+#' @examples 
+#' NamedList(1:5)
+#' @keywords manip
+#' @export
+NamedList <- function(theNames) {
+  theList <- as.list(theNames)
+  names(theList)<- theNames
+  theList
+}

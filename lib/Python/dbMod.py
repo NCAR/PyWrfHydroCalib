@@ -147,15 +147,19 @@ class Database(object):
             
         jobDir = jobData.outDir + "/" + jobData.jobName
         sqlCmd = "insert into \"Job_Meta\" (\"Job_Directory\",date_su_start,date_su_end," + \
-                 "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
-                 "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
+                 "su_complete,sens_flag,sens_table,num_sens_sample,num_sens_iter,sens_batch,date_sens_start,date_sens_end," + \
+                 "date_sens_start_eval,sens_complete,calib_flag,calib_table,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
+                 "calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
                  "sql_host,job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user,analysis_run_type,que_name_analysis) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
-                 jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.bCalibDate.strftime('%Y-%m-%d'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
+                 jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.sensFlag,jobData.sensTbl,jobData.nSensSample,\
+                 jobData.nSensIter,jobData.nSensBatch,jobData.bSensDate.strftime('%Y-%m-%d'),\
+                 jobData.eSensDate.strftime('%Y-%m-%d'),jobData.bSensEvalDate.strftime('%Y-%m-%d'),0,\
+                 jobData.calibFlag,jobData.calibTbl,jobData.bCalibDate.strftime('%Y-%m-%d'),\
                  jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
-                 jobData.nIter,0,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
+                 jobData.nIter,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
                  0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
                  jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
@@ -287,33 +291,43 @@ class Database(object):
         jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d %H:%M:%S')
         jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d %H:%M:%S')
         jobData.spinComplete = int(results[4])
-        jobData.bCalibDate = datetime.datetime.strptime(str(results[5]),'%Y-%m-%d %H:%M:%S')
-        jobData.eCalibDate = datetime.datetime.strptime(str(results[6]),'%Y-%m-%d %H:%M:%S')
-        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[7]),'%Y-%m-%d %H:%M:%S')
-        jobData.nIter = int(results[8])
-        jobData.calibIter = int(results[9])
-        jobData.calibComplete = int(results[10])
-        jobData.bValidDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d %H:%M:%S')
-        jobData.eValidDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d %H:%M:%S')
-        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[13]),'%Y-%m-%d %H:%M:%S')
-        jobData.validComplete = int(results[14])
-        jobData.acctKey = results[15]
-        jobData.queName = results[16]
-        jobData.nCoresMod = int(results[17])
-        jobData.nNodesMod = int(results[18])
-        jobData.nCoresR = int(results[19])
-        jobData.nNodesR = int(results[20])
-        jobData.host = str(results[21])
-        jobData.jobRunType = int(results[22])
-        jobData.exe = results[23]
-        jobData.nGages = int(results[24])
-        jobData.owner = results[25]
-        jobData.email = results[26]
-        jobData.slChan = results[27]
-        jobData.slToken = results[28]
-        jobData.slUser = results[29]
-        jobData.analysisRunType = int(results[30])
-        jobData.queNameAnalysis = results[31]
+        jobData.sensFlag = int(results[5])
+        jobData.sensTbl = str(results[6])
+        jobData.nSensSample = int(results[7])
+        jobData.nSensIter = int(results[8])
+        jobData.nSensBatch = int(results[9])
+        jobData.bSensDate = datetime.datetime.strptime(str(results[10]),'%Y-%m-%d %H:%M:%S')
+        jobData.eSensDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d %H:%M:%S')
+        jobData.bSensEvalDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d %H:%M:%S')
+        jobData.sensComplete = int(results[13])
+        jobData.calibFlag = int(results[14])
+        jobData.calibTbl = str(results[15])
+        jobData.bCalibDate = datetime.datetime.strptime(str(results[16]),'%Y-%m-%d %H:%M:%S')
+        jobData.eCalibDate = datetime.datetime.strptime(str(results[17]),'%Y-%m-%d %H:%M:%S')
+        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[18]),'%Y-%m-%d %H:%M:%S')
+        jobData.nIter = int(results[19])
+        jobData.calibComplete = int(results[20])
+        jobData.bValidDate = datetime.datetime.strptime(str(results[21]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[22]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[23]),'%Y-%m-%d %H:%M:%S')
+        jobData.validComplete = int(results[24])
+        jobData.acctKey = results[25]
+        jobData.queName = results[26]
+        jobData.nCoresMod = int(results[27])
+        jobData.nNodesMod = int(results[28])
+        jobData.nCoresR = int(results[29])
+        jobData.nNodesR = int(results[30])
+        jobData.host = str(results[31])
+        jobData.jobRunType = int(results[32])
+        jobData.exe = results[33]
+        jobData.nGages = int(results[34])
+        jobData.owner = results[35]
+        jobData.email = results[36]
+        jobData.slChan = results[37]
+        jobData.slToken = results[38]
+        jobData.slUser = results[39]
+        jobData.analysisRunType = int(results[40])
+        jobData.queNameAnalysis = results[41]
         
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
@@ -436,6 +450,24 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
             raise
+        
+    def updateSensStatus(self,jobData):
+        """
+        Generic function to update the status of the sensitivity for a particular job.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+        
+        sqlCmd = "update \"Job_Meta\" set sens_complete='" + str(jobData.sensComplete) + \
+                 "' where \"jobID\"='" + str(jobData.jobID) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to update sensitivity status for job ID: " + str(jobData.jobID)
+            raise
             
     def updateCalibStatus(self,jobData):
         """
@@ -473,44 +505,70 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
             raise
     
-    def enterCalibParms(self,jobData,calibTbl):
+    def enterJobParms(self,jobData):
         """
-        Generic function to enter model parameter values being calibrated, along
+        Generic function to enter model parameter values being calibrated/sensitivity analysis, along
         with their default, min, and max values. This is done one time.
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
             
-        # Open parameter table and read values in.
-        tblData = pd.read_csv(calibTbl)
-        if len(tblData) != 14:
-            jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
-            raise Exception()
+        if jobData.calibFlag == 1:
+            # Open parameter table and read values in.
+            tblData = pd.read_csv(jobData.calibTbl)
+            if len(tblData) != 14:
+                jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
+                raise Exception()
             
-        for entry in range(0,len(tblData)):
-            flag = tblData.calib_flag[entry]
-            jobID = int(jobData.jobID)
-            paramName = str(tblData.parameter[entry])
-            defaultValue = str(tblData.ini[entry])
-            minValue = str(tblData.minValue[entry])
-            maxValue = str(tblData.maxValue[entry])
-            if flag == 1:
-                sqlCmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max) " + \
-                         "values ('%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue)
+            for entry in range(0,len(tblData)):
+                flag = tblData.calib_flag[entry]
+                jobID = int(jobData.jobID)
+                paramName = str(tblData.parameter[entry])
+                defaultValue = str(tblData.ini[entry])
+                minValue = str(tblData.minValue[entry])
+                maxValue = str(tblData.maxValue[entry])
+                if flag == 1:
+                    sqlCmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max,sens_flag,calib_flag) " + \
+                             "values ('%s','%s','%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue,0,1)
 
-                try:
-                    self.conn.execute(sqlCmd)
-                    self.db.commit()
-                except:
-                    jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
-                    raise
-                    
-    def populateParmTable(self,jobData,calibTbl):
+                    try:
+                        self.conn.execute(sqlCmd)
+                        self.db.commit()
+                    except:
+                        jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
+                        raise
+                        
+        if jobData.sensFlag == 1:
+            # Open parameter table and read values in.
+            tblData = pd.read_csv(jobData.sensTbl)
+            if len(tblData) != 14:
+                jobData.errMsg = "ERROR: Unexpected sensitivity parameter table format."
+                raise Exception()
+            
+            for entry in range(0,len(tblData)):
+                flag = tblData.sens_flag[entry]
+                jobID = int(jobData.jobID)
+                paramName = str(tblData.parameter[entry])
+                defaultValue = str(tblData.ini[entry])
+                minValue = str(tblData.minValue[entry])
+                maxValue = str(tblData.maxValue[entry])
+                if flag == 1:
+                    sqlCmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max,sens_flag,calib_flag) " + \
+                             "values ('%s','%s','%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue,1,0)
+
+                    try:
+                        self.conn.execute(sqlCmd)
+                        self.db.commit()
+                    except:
+                        jobData.errMsg = "ERROR: Unable to enter sensitivity parameter information for parameter: " + paramName
+                        raise
+                        
+    def populateParmTable(self,jobData):
         """
-        Generic function to create an empty table that will store calibrated parameter
-        values (or adjustments) for each basin, for each calibration iteration,
-        for each parameter.
+        Generic function to create an empty table that will store calibrated and
+        sensitivity parameter values (or adjustments) for each basin, 
+        for each calibration iteration, for each parameter.
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
@@ -520,45 +578,88 @@ class Database(object):
         numIter = int(jobData.nIter)
         nBas = int(len(jobData.gages))
         
-        # Read in CSV file containing parameters being calibrated.
-        baseParms = pd.read_csv(calibTbl)
-        baseParms = baseParms[baseParms['calib_flag'] == 1]
-        baseParms = baseParms.reset_index()
-        nParms = len(baseParms)
+        if jobData.calibFlag == 1:
+            # Read in CSV file containing parameters being calibrated.
+            baseParms = pd.read_csv(jobData.calibTbl)
+            baseParms = baseParms[baseParms['calib_flag'] == 1]
+            baseParms = baseParms.reset_index()
+            nParms = len(baseParms)
         
-        for iteration in range(1,numIter+1):
-            for basin in range(0,nBas):
-                for parm in range(0,nParms):
-                    domainID = int(jobData.gageIDs[basin])
-                    parmName = str(baseParms.parameter[parm])
-                    itStr = str(iteration)
-                    gageStr = str(jobData.gages[basin])
-                    # First determine if table row has already been created.
-                    sqlCmd = "select * from \"Calib_Params\" where \"jobID\"='" + str(jobID) + "'" + \
-                             " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
-                             itStr + "'" + " and \"paramName\"='" + parmName + "';"
-                    try:
-                        self.conn.execute(sqlCmd)
-                        results = self.conn.fetchone()
-                    except:
-                        jobData.errMsg = "ERROR: Unable to extract calibration parameter information for " + \
-                                         "job ID: " + str(jobID) + " gage: " + gageStr + \
-                                         " iteration: " + itStr + " parameter: " + parmName
-                        raise
-                        
-                    if not results:
-                        # Create "empty" entry into table.
-                        sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
-                                 "values (" + str(jobID) + "," + str(domainID) + "," + \
-                                 str(iteration) + ",'" + parmName + "',-9999);"
+            for iteration in range(1,numIter+1):
+                for basin in range(0,nBas):
+                    for parm in range(0,nParms):
+                        domainID = int(jobData.gageIDs[basin])
+                        parmName = str(baseParms.parameter[parm])
+                        itStr = str(iteration)
+                        gageStr = str(jobData.gages[basin])
+                        # Calib_Params
+                        # First determine if table row has already been created.
+                        sqlCmd = "select * from \"Calib_Params\" where \"jobID\"='" + str(jobID) + "'" + \
+                                 " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
+                                 itStr + "'" + " and \"paramName\"='" + parmName + "';"
                         try:
                             self.conn.execute(sqlCmd)
-                            self.db.commit()
+                            results = self.conn.fetchone()
                         except:
-                            jobData.errMsg = "ERROR: Unable to create empty calibration parameter information for " + \
+                            jobData.errMsg = "ERROR: Unable to extract calibration parameter information for " + \
                                              "job ID: " + str(jobID) + " gage: " + gageStr + \
                                              " iteration: " + itStr + " parameter: " + parmName
                             raise
+                        
+                        if not results:
+                            # Create "empty" entry into table.
+                            sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
+                                     "values (" + str(jobID) + "," + str(domainID) + "," + \
+                                     str(iteration) + ",'" + parmName + "',-9999);"
+                            try:
+                                self.conn.execute(sqlCmd)
+                                self.db.commit()
+                            except:
+                                jobData.errMsg = "ERROR: Unable to create empty calibration parameter information for " + \
+                                                 "job ID: " + str(jobID) + " gage: " + gageStr + \
+                                                 " iteration: " + itStr + " parameter: " + parmName
+                                raise
+        if jobData.sensFlag == 1:
+            # Read in CSV file containing parameters being ran through sensitivity analysis.
+            baseParms = pd.read_csv(jobData.sensTbl)
+            baseParms = baseParms[baseParms['sens_flag'] == 1]
+            baseParms = baseParms.reset_index()
+            nParms = len(baseParms)
+        
+            for iteration in range(1,jobData.nSensIter+1):
+                for basin in range(0,nBas):
+                    for parm in range(0,nParms):
+                        # Sens_Params
+                        domainID = int(jobData.gageIDs[basin])
+                        parmName = str(baseParms.parameter[parm])
+                        itStr = str(iteration)
+                        gageStr = str(jobData.gages[basin])
+                        # First determine if table row has already been created.
+                        sqlCmd = "select * from \"Sens_Params\" where \"jobID\"='" + str(jobID) + "'" + \
+                                 " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
+                                 itStr + "'" + " and \"paramName\"='" + parmName + "';"
+                        try:
+                            self.conn.execute(sqlCmd)
+                            results = self.conn.fetchone()
+                        except:
+                            jobData.errMsg = "ERROR: Unable to extract sensitivity parameter information for " + \
+                                             "job ID: " + str(jobID) + " gage: " + gageStr + \
+                                             " iteration: " + itStr + " parameter: " + parmName
+                            raise
+                        
+                        if not results:
+                            # Create "empty" entry into table.
+                            sqlCmd = "insert into \"Sens_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
+                                     "values (" + str(jobID) + "," + str(domainID) + "," + \
+                                     str(iteration) + ",'" + parmName + "',-9999);"
+                            try:
+                                self.conn.execute(sqlCmd)
+                                self.db.commit()
+                            except:
+                                jobData.errMsg = "ERROR: Unable to create empty sensitivity parameter information for " + \
+                                                 "job ID: " + str(jobID) + " gage: " + gageStr + \
+                                                 " iteration: " + itStr + " parameter: " + parmName
+                                raise
                     
     def populateCalibTable(self,jobData,domainID,gageName):
         """
@@ -601,6 +702,47 @@ class Database(object):
                                      " iteration: " + str(iteration)
                     raise
                     
+    def populateSensTable(self,jobData,domainID,gageName):
+        """
+        Generic function to create empty table rows that will store sensitivity 
+        information for each iteration, for each basin, for each job. This information
+        will be updated as the workflow progresses.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        numIter = int(jobData.nSensIter)
+        
+        for iteration in range(1,numIter+1):
+            # First determine if table row has already been created.
+            sqlCmd = "select * from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
+                     " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
+                     str(iteration) + "';"
+            try:
+                self.conn.execute(sqlCmd)
+                results = self.conn.fetchone()
+            except:
+                jobData.errMsg = "ERROR: Unable to extract sensitivity stats for job ID: " + str(jobID) + \
+                                 " domainID: " + str(domainID) + " Iteration: " + str(iteration)
+                raise
+            
+            if not results:
+                # Create "empty" entry into table.
+                sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
+                         "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
+                         "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
+                                     "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                     " iteration: " + str(iteration)
+                    raise
+                    
     def iterationStatus(self,jobData,domainID,gageName):
         """
         Generic function to extract the complete status for a given job/basin. 
@@ -618,6 +760,29 @@ class Database(object):
             results = self.conn.fetchall()
         except:
             jobData.errMsg = "ERROR: Unable to extract calibration status for job ID: " + str(jobID) + \
+                             " domainID: " + str(domainID)
+            raise
+            
+        return results
+    
+    def sensIterationStatus(self,jobData,domainID,gageName):
+        """
+        Generic function to extract the complete status for a given job/basin. 
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        
+        sqlCmd = "select iteration,complete from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
+                 " and \"domainID\"='" + str(domainID) + "';"
+        try:
+            print sqlCmd
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Unable to extract sensitivity status for job ID: " + str(jobID) + \
                              " domainID: " + str(domainID)
             raise
             
@@ -643,6 +808,29 @@ class Database(object):
             self.db.commit()
         except:
             jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
+                             " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
+            raise
+            
+    def updateSensIterationStatus(self,jobData,domainID,iteration,gageName,newStatus):
+        """
+        Generic function to update the status of each basin sensitivity simulation as it progresses.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        jobID = int(jobData.jobID)
+        iterTmp = iteration + 1
+            
+        sqlCmd = "update \"Sens_Stats\" set complete='" + str(newStatus) + "' " + \
+                 "where \"jobID\"='" + str(jobID) + "'" + " and \"domainID\"='" + str(domainID) + \
+                 "'" + " and iteration='" + str(iterTmp) + "';"
+                 
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Unable to update sensitivity status for job ID: " + str(jobID) + \
                              " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
             raise
         
@@ -993,7 +1181,8 @@ class Database(object):
                 
     def checkPreviousEntries(self,jobData):
         """
-        Generic function that will check Calib_Params, Calib_Stats, Job_Params, and Valid_Stats
+        Generic function that will check Calib_Params, Calib_Stats, Job_Params, and Valid_Stats,
+        Sens_Stats, and Sens_Params.
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
@@ -1008,6 +1197,17 @@ class Database(object):
             results = self.conn.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to pull information from Calib_Params"
+            raise            
+        if len(results) != 0:
+            statusTmp = False
+            
+        # Check Sens_Params
+        sqlCmd = "select \"jobID\" from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Failure to pull information from Sens_Params"
             raise            
         if len(results) != 0:
             statusTmp = False
@@ -1045,12 +1245,23 @@ class Database(object):
         if len(results) != 0:
             statusTmp = False
             
+        # Check Sens_Stats
+        sqlCmd = "select \"jobID\" from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
+        try:
+            self.conn.execute(sqlCmd)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Failure to pull information from Sens_Stats"
+            raise            
+        if len(results) != 0:
+            statusTmp = False
+            
         return statusTmp
         
     def cleanupJob(self,jobData):
         """
-        Generic function to cleanup Calib_Params, Calib_Stats, Job_Params, and Valid Stats
-        of an old orphaned job.
+        Generic function to cleanup Calib_Params, Calib_Stats, Job_Params, and Valid Stats,
+        Sens_Stats, and Sens_Params of an old orphaned job.
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
@@ -1065,6 +1276,15 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to remove entries from Calib_Params for job: " + str(jobData.jobID)
             raise Exception()
             
+        # Cleanup Sens_Params
+        sqlCmd = "delete from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
+            raise Exception()
+            
         # Cleanup Calib_Stats
         sqlCmd = "delete from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
@@ -1072,6 +1292,15 @@ class Database(object):
             self.db.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Calib_Stats for job: " + str(jobData.jobID)
+            raise Exception()
+            
+        # Cleanup Sens_Stats
+        sqlCmd = "delete from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
             raise Exception()
             
         # Cleanup Job_Params
@@ -1090,4 +1319,22 @@ class Database(object):
             self.db.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Valid_Stats for job: " + str(jobData.jobID)
+            raise Exception()
+            
+        # Cleanup Sens_Params
+        sqlCmd = "delete from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
+            raise Exception()
+            
+        # Cleanup Sens_Stats
+        sqlCmd = "delete from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        try:
+            self.conn.execute(sqlCmd)
+            self.db.commit()
+        except:
+            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
             raise Exception()
