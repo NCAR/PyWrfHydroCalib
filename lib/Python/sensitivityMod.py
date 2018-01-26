@@ -60,6 +60,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
         #statusData.genMsg = "Pre-Processing for basin: " + gage + " has been locked. " + \
         #                    " Please remove: " + lockFile
         #errMod.sendMsg(statusData)
+        print "PRE_PROC LOCKED"
         preProcStatus = False
         return
     
@@ -148,12 +149,12 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
               str(statusData.jobID) + "_" + str(gageID) + ".out" + \
               ' 2>' + workDir + "/WH_SENS_PREPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         print cmd
-        #try:
-        #    p3 = subprocess.Popen([cmd],shell=True)
-        #    time.sleep(5)
-        #except:
-        #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gage)
-        #    raise
+        try:
+            p3 = subprocess.Popen([cmd],shell=True)
+            time.sleep(5)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gage)
+            raise
     
 def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     """
@@ -169,8 +170,11 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
         
     lockFile = workDir + "/POST_PROC.LOCK"
     errFile = workDir + "/POST_PROC.ERR"
+    runFlag = workDir + "/POST_PROC.RUN"
     completeFlag = workDir + "/postProc.COMPLETE"
+    runStatus = True
         
+    print completeFlag
     # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
     try:
@@ -178,36 +182,90 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     except:
         raise
     
+    print 'blah'
     if os.path.isfile(lockFile) and os.path.isfile(errFile):
+        print "POST PROCESSING LOCKED"
+        # Remove the run flag if it's present.
+        if os.path.isfile(runFlag):
+            try:
+                os.remove(runFlag)
+            except:
+                statusData.errMsg = "ERROR: Unable to remove: " + runFlag
+                raise
         # Post-processing is locked. Return to the main calling program
         #statusData.genMsg = "Post-Processing for basin: " + gage + " has been locked. " + \
         #                    " Please remove: " + lockFile
         #errMod.sendMsg(statusData)
         postProcStatus = False
+        runStatus = False
+        return
+    
+    if not os.path.isfile(errFile) and os.path.isfile(lockFile):
+        # This would be an unusual situation where the ERROR file was removed
+        # but not the LOCK File. Report an error to the user. 
+        # Remove the run flag if it's present.
+        if os.path.isfile(runFlag):
+            try:
+                os.remove(runFlag)
+            except:
+                statusData.errMsg = "ERROR: Unable to remove: " + runFlag
+                raise
+        print "POST PROCESSING LOCKED"
+        #statusData.genMsg = "Post-Processing for basin: " + gage + " has been locked. " + \
+        #                    " Please remove: " + lockFile
+        #errMod.sendMsg(statusData)
+        postProcStatus = False
+        runStatus = False
         return
     
     rNameList = workDir + "/namelist.sensitivity"
     if not os.path.isfile(rNameList):
         statusData.errMsg = "ERROR: Expected namelist: " + rNameList + " not found."
         raise
-    else:
-        # Check to see if the COMPLETE flag is present.
-        if os.path.isfile(completeFlag):
-            # Code successfully completed
-            postProcStatus = True
-            return
-        if not os.path.isfile(lockFile) and os.path.isfile(errFile):
-            # User has removed the LOCK file. We will attempt to run the post-processing code.
+        
+    # Check to see if the COMPLETE flag is present.
+    if os.path.isfile(completeFlag):
+        print "FOUND POST COMPLETE FLAG"
+        # Code successfully completed
+        # Remove the run flag if it's present.
+        if os.path.isfile(runFlag):
             try:
-                os.remove(errFile)
+                os.remove(runFlag)
             except:
-                statusData.errMsg = "ERROR: Unable to remove: " + errFile
-                errMod.errOut(statusData)
-                postProcStatus = False
-        else:
-            # Check to see if a job is running.
-            postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID)
-            if not postRunStatus:
+                statusData.errMsg = "ERROR: Unable to remove: " + runFlag
+                raise
+        postProcStatus = True
+        runStatus = False
+        return
+    if not os.path.isfile(lockFile) and os.path.isfile(errFile):
+        print "ERRORED BUT LOCK REMOVED"
+        # User has removed the LOCK file. We will attempt to run the post-processing code.
+        # Remove the run flag if it's present.
+        if os.path.isfile(runFlag):
+            try:
+                os.remove(runFlag)
+            except:
+                statusData.errMsg = "ERROR: Unable to remove: " + runFlag
+                raise
+        try:
+            os.remove(errFile)
+        except:
+            statusData.errMsg = "ERROR: Unable to remove: " + errFile
+            errMod.errOut(statusData)
+            postProcStatus = False
+        # Remove the run flag if it's present.
+        if os.path.isfile(runFlag):
+            try:
+                os.remove(runFlag)
+            except:
+                statusData.errMsg = "ERROR: Unable to remove: " + runFlag
+                raise
+        runStatus = True
+    if os.path.isfile(runFlag):
+        # Check to see if a job is running.
+        postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID)
+        if not postRunStatus:
+            # Check to see 
                 # This implies the job failed. Report an error to the user and create a LOCK file.
                 try:
                     open(lockFile,'a').close()
@@ -219,58 +277,73 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
                 except:
                     statusData.errMsg = "ERROR: Unable to create: " + errFile
                     raise
+                # Remove the run flag if it's present.
+                if os.path.isfile(runFlag):
+                    try:
+                        os.remove(runFlag)
+                    except:
+                        statusData.errMsg = "ERROR: Unable to remove: " + runFlag
+                        raise
                 statusData.genMsg = "ERROR: Basin - " + str(gageID) + " sensitivity post-processing failed."
                 errMod.sendMsg(statusData)
                 statusData.genMsg = "       Please remove: " + lockFile + " before this basin can continue."
                 errMod.sendMsg(statusData)
                 preProcStatus = False
+                runStatus = False
                 return
-            else:
-                # The job is still running.
-                print "SENS POST PROC SENS RUNNING FOR BASIN: " + str(gageID)
-                preProcStatus = False
-                return
+        else:
+            # The job is still running.
+            print "SENS POST PROC SENS RUNNING FOR BASIN: " + str(gageID)
+            preProcStatus = False
+            runStatus = False
+            return
                 
-    # Generate run script to generate parameters for this basin. Then execute the job.
-    if statusData.analysisRunType == 1:
-        #BSUB
-        generateBsubPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
-        cmd = "bsub < " + workDir + "/run_WH_SENS_POSTPROC.sh"
+    if runStatus == True:
+        # Generate run script to generate parameters for this basin. Then execute the job.
+        if statusData.analysisRunType == 1:
+            #BSUB
+            generateBsubPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
+            cmd = "bsub < " + workDir + "/run_WH_SENS_POSTPROC.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
+                raise
+        if statusData.analysisRunType == 2:
+            #PBS
+            generatePbsPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
+            cmd = "qsub " + workDir + "/run_WH_SENS_POSTPROC.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
+                raise
+        if statusData.analysisRunType == 3:
+            #SLURM
+            generateSlurmPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
+            cmd = "sbatch " + workDir + "/run_WH_SENS_POSTPROC.sh"
+            try:
+                subprocess.call(cmd,shell=True)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
+                raise
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+            #MPIEXEC/MPIRUN
+            generateMpiPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
+            cmd = workDir + "/run_WH_SENS_POSTPROC.sh 1>" + workDir + "/WH_SENS_POSTPROC_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+                  ' 2>' + workDir + "/WH_SENS_POSTPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+            print cmd
+            try:
+                p3 = subprocess.Popen([cmd],shell=True)
+                time.sleep(5)
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gage)
+                raise
         try:
-            subprocess.call(cmd,shell=True)
+            open(runFlag,'a').close()
         except:
-            statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
-            raise
-    if statusData.analysisRunType == 2:
-        #PBS
-        generatePbsPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
-        cmd = "qsub " + workDir + "/run_WH_SENS_POSTPROC.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
-            raise
-    if statusData.analysisRunType == 3:
-        #SLURM
-        generateSlurmPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
-        cmd = "sbatch " + workDir + "/run_WH_SENS_POSTPROC.sh"
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
-            raise
-    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
-        #MPIEXEC/MPIRUN
-        generateMpiPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
-        cmd = workDir + "/run_WH_SENS_POSTPROC.sh 1>" + workDir + "/WH_SENS_PREPROC_" + \
-              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-              ' 2>' + workDir + "/WH_SENS_PREPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        print cmd
-        try:
-            p3 = subprocess.Popen([cmd],shell=True)
-            time.sleep(5)
-        except:
-            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gage)
+            statusData.errMsg = "ERROR: Unable to create: " + lockFile
             raise
             
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
@@ -295,6 +368,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         
     runDir = statusData.jobDir + "/" + gage + "/RUN.SENSITIVITY/OUTPUT_" + str(iteration)
     workDir = statusData.jobDir + "/" + gage + "/RUN.SENSITIVITY"
+    
+    print runDir
+    print workDir
     
     if statusData.jobRunType == 1:
         # If BSUB run script doesn't exist, create it here.
@@ -357,6 +433,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # Model has already completed
         runFlag = False
         return
+        print "MODEL COMPLETE"
         
     # For uncompleted simulations that are still listed as running.
     if keyStatus == 0.5:
@@ -365,6 +442,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
+            print "MODEL IS RUNNING"
         else:
             # Either simulation has completed, or potentially crashed.
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
@@ -377,10 +455,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 #                    " Failed. Attempting to restart."
                 #print statusData.genMsg
                 #errMod.sendMsg(statusData)
+                print "MODEL CRASHED ONCE"
                 keySlot[basinNum,iteration] = -0.25
                 keyStatus = -0.25
             else:
                 # Model has completed!
+                print "MODEL COMPLETE!"
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -391,12 +471,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
+            print "MODEL IS RUNNING"
         else:
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if not runFlag:
+                print "MODEL COMPLETE"
                 # Model simulation completed before workflow was restarted
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
@@ -408,6 +490,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # manually by user.
         if os.path.isfile(lockPath):
             runFlag = False
+            print "MODEL LOCKED"
         else:
             # LOCK file was removed, upgrade status to 0.0 temporarily
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
@@ -415,9 +498,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
+                print "READY TO RUN MODEL"
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
             else:
+                print "MODEL COMPLETE"
                 # Model sucessfully completed.
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
@@ -426,6 +511,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     # For when the model crashed ONCE
     if keyStatus == -0.5:
         if basinStatus:
+            print "MODEL RUNNING"
             # Model is running again, upgrade status
             # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
             keySlot[basinNum,iteration] = 0.5
@@ -450,6 +536,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt.
+                print "MODEL COMPLETE"
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 
@@ -463,6 +550,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if os.path.isfile(check2):
             os.remove(check2)
         
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir)
+        except:
+            raise
+            
         if begDate == staticData.bSpinDate:
             startType = 1
         else:
@@ -482,6 +575,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 raise
                 
         # Fire off model.
+        print "FIRING OFF MODEL"
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
@@ -516,6 +610,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         if os.path.isfile(check2):
             os.remove(check2)
         
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir)
+        except:
+            raise
+            
         if begDate == staticData.bSpinDate:
             startType = 1
         else:
@@ -534,6 +634,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             except:
                 raise
                 
+        print "FIRING OFF MODEL"
         # Fire off model.
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
@@ -580,6 +681,8 @@ def genRNameList(jobData,workDir,gageMeta,gage):
         fileObj.write("\n")
         inStr = "objFn <- \"" + str(jobData.objFunc) + "\"\n"
         fileObj.write(inStr)
+        inStr = "nCores <- " + str(jobData.nCoresR) + "\n"
+        fileObj.write(inStr)
         fileObj.write("\n")
         fileObj.write("# Model run directory\n")
         inStr = "runDir <- \"" + workDir + "\"\n"
@@ -601,7 +704,10 @@ def genRNameList(jobData,workDir,gageMeta,gage):
         fileObj.write(" ### Model Evaluation Parameters ###\n")
         fileObj.write("\n")
         fileObj.write("# Gage ID to extract from the model output and compare against the obs\n")
-        inStr = "sideId <- \"" + str(gageMeta.gage) + "\"\n"
+        inStr = "siteId <- \"" + str(gageMeta.gage) + "\"\n"
+        fileObj.write(inStr)
+        fileObj.write("# feature_id that corresonds to where the gage is at\n")
+        inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
         fileObj.write("\n")
         fileObj.write("# R dataset containing observations\n")
@@ -728,9 +834,9 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 fileObj.write(inStr)
             inStr = "#PBS -N WH_SENS_PREPROC_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#PBS -o ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
+            inStr = '#PBS -o ' + workDir + '/WH_SENS_PREPROC_' + str(jobData.jobID) + '_' + str(gageID) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#PBS -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
+            inStr = '#PBS -e ' + workDir + '/WH_SENS_PREPROC_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
             #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
@@ -872,7 +978,7 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             if jobData.analysisRunType == 4:
-                inStr = 'mpiexec -n 1 ./C' + \
+                inStr = 'mpiexec -n 1 ./SPRE' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             if jobData.analysisRunType == 5:
                 inStr = 'mpirun -np 1 ./SPRE' + \
@@ -953,7 +1059,7 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
         #fileObj.write('#BSUB -R "span[ptile=16]"\n')
-        inStr = "#BSUB -J WHS_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#BSUB -J WHS" + str(jobData.jobID) + str(gageID) + str(iteration) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
         fileObj.write(inStr)
@@ -967,6 +1073,8 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
+        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
+        fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
@@ -997,7 +1105,7 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write('#\n')
         fileObj.write('# PBS Batch Script to Run WH Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = "#PBS -N WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = "#PBS -N WHS" + str(jobData.jobID) + str(gageID) + str(iteration) + '\n'
         fileObj.write(inStr)
         if len(jobData.acctKey.strip()) > 0:
             inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
@@ -1007,9 +1115,9 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta,iteration):
         if len(jobData.queName.strip()) > 0:
             inStr = "#PBS -q " + str(jobData.queName) + "\n"
             fileObj.write(inStr)
-        inStr = "#PBS -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#PBS -o " + runDir + "/WHS" + str(jobData.jobID) + str(gageID) + str(iteration) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#PBS -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#PBS -e " + runDir + "/WHS" + str(jobData.jobID) + str(gageID) + str(iteration) + ".err\n"
         fileObj.write(inStr)
         nCoresPerNode = int(jobData.nCoresMod/jobData.nNodesMod)
         inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(nCoresPerNode) + \
@@ -1019,6 +1127,8 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
+        fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
@@ -1049,7 +1159,7 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write('#\n')
         fileObj.write('# Slurm Batch Script to Run WH Calibration Simulations\n')
         fileObj.write('#\n')
-        inStr = '#SBATCH -J WH_' + str(jobData.jobID) + "_" + str(gageID) + '\n'
+        inStr = '#SBATCH -J WHS_' + str(jobData.jobID) + str(gageID) + str(iteration) + '\n'
         fileObj.write(inStr)
         if len(jobData.acctKey.strip()) > 0:
             inStr = '#SBATCH -A ' + str(jobData.acctKey) + '\n'
@@ -1059,9 +1169,9 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta,iteration):
         if len(jobData.queName.strip()) > 0:
             inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
-        inStr = "#SBATCH -o " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".out\n"
+        inStr = "#SBATCH -o " + runDir + "/WHS_" + str(jobData.jobID) + str(gageID) + str(iteration) + ".out\n"
         fileObj.write(inStr)
-        inStr = "#SBATCH -e " + runDir + "/WH_" + str(jobData.jobID) + "_" + str(gageID) + ".err\n"
+        inStr = "#SBATCH -e " + runDir + "/WHS_" + str(jobData.jobID) + str(gageID) + str(iteration) + ".err\n"
         fileObj.write(inStr)
         inStr = '#SBATCH -N ' + str(jobData.nNodesMod) + '\n'
         fileObj.write(inStr)
@@ -1069,6 +1179,8 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+        fileObj.write(inStr)
+        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
@@ -1100,11 +1212,13 @@ def generateMpiScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         if jobData.jobRunType == 4:
-            inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-                    str(jobData.jobID) + str(gageID) + '\n'
+            inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./WHS' + \
+                    str(jobData.jobID) + str(gageID) + str(iteration) + '\n'
         if jobData.jobRunType == 5:
-            inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-                    str(jobData.jobID) + str(gageID) + '\n'
+            inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./WHS' + \
+                    str(jobData.jobID) + str(gageID) + str(iteration) + '\n'
+        fileObj.write(inStr)
+        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1355,7 +1469,7 @@ def generateMpiPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             if jobData.analysisRunType == 4:
-                inStr = 'mpiexec -n 1 ./C' + \
+                inStr = 'mpiexec -n 1 ./SPOS' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             if jobData.analysisRunType == 5:
                 inStr = 'mpirun -np 1 ./SPOS' + \
@@ -1407,3 +1521,27 @@ def generateMpiPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
         except:
             jobData.errMsg = "ERROR: Failure to create symbolic link: " + outLink2
             raise
+            
+def linkToRst(statusData,gage,runDir):
+    """
+    Generic function to link to necessary restart files from the spinup.
+    This was broken out as a function as sometimes the output directory
+    is scrubbed, and links need to be re-made in preparation for a new 
+    iteration simulation.
+    """
+    # Check to make sure symbolic link to spinup state exists.
+    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    if not os.path.isfile(check1):
+        statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+        raise Exception()
+    if not os.path.isfile(check2):
+        statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+        raise Exception()
+    # Create links if they don't exist
+    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    if not os.path.islink(link1):
+        os.symlink(check1,link1)
+    if not os.path.islink(link2):
+        os.symlink(check2,link2)

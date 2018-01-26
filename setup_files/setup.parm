@@ -46,9 +46,9 @@ calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
 # 4 - Job execution using mpiexec
 # 5 - Job execution using mpirun
 # jobRunType is how you plan on executing the WRF-Hydro simulations
-jobRunType = 5
+jobRunType = 4
 # analysisRunType is how you plan on executing the analysis/calibration R/Python code.
-analysisRunType = 5
+analysisRunType = 4
 # Specify number of model iterations to calibrate over
 numIter = 3
 
@@ -84,18 +84,18 @@ soilParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
-bSpinDate = 2013-09-01
-eSpinDate = 2013-09-15
+bSpinDate = 2013-06-01
+eSpinDate = 2013-07-01
 
 # Specify date range for calibration period
-bCalibDate = 2013-09-15
-eCalibDate = 2013-10-01
-bCalibEvalDate = 2013-09-16
+bCalibDate = 2013-07-01
+eCalibDate = 2013-08-01
+bCalibEvalDate = 2013-07-05
 
 # Specify date range for validation period
-bValidDate = 2013-09-15
-eValidDate = 2013-10-01
-bValidEvalDate = 2013-09-16
+bValidDate = 2013-07-01
+eValidDate = 2013-08-01
+bValidEvalDate = 2013-07-05
 
 [Sensitivity]
 # Specify parameter sample size
@@ -105,12 +105,12 @@ sensParmSample = 1
 # may not be ideal for a given system. This option
 # will break out the sensitivity model runs by batch
 # number of simulations.
-sensBatchNum = 5
+sensBatchNum = 1
 
 # Specify the date range for the sensitivity period.
-bSensDate = 2013-10-01
-eSensDate = 2016-10-01
-bSensEvalDate = 2014-10-01
+bSensDate = 2013-07-01
+eSensDate = 2013-08-01
+bSensEvalDate = 2013-07-05
 
 [gageInfo]
 # Specify USGS GAGES II basins to calibrate on.

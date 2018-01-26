@@ -1,5 +1,4 @@
 #!/usr/bin/env Rscript
-args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- 'namelist.sensitivity'
 
 library(data.table)
@@ -17,7 +16,7 @@ source(namelistFile)
 objFunc <- get(objFn)
 
 # Metrics
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
 
 #########################################################
 # MAIN CODE
@@ -42,7 +41,7 @@ if (SA_method == "DELSA") {
   }
   X0 <- sensitivity::parameterSets(par.ranges, samples = SA_sample_size, method = c(SA_par_gen_method))
   varprior = sapply(par.ranges, diff)^2/12
-  
+ 
   X = do.call(rbind, lapply(1:ncol(X0), function(i) {
     X2i = X0
     X2i[, i] = X2i[, i] * SA_perturb

@@ -1,6 +1,5 @@
 #!/usr/bin/env Rscript
-args <- commandArgs(trailingOnly=TRUE)
-namelistFile <- args[1]
+namelistFile <- 'namelist.sensitivity'
 
 library(data.table)
 library(ggplot2)
@@ -10,25 +9,26 @@ library(boot)
 # SETUP
 #########################################################
 
+source("calib_utils.R")
 source(namelistFile)
 objFunc <- get(objFn)
 
 # Metrics
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
 
 #########################################################
 # MAIN CODE
 #########################################################
 
-if (file.exists("proj_data_SENS.Rdata")) { 
-  load("proj_data_SENS.Rdata")
+if (file.exists(paste0(runDir,"/proj_data_SENS.Rdata"))) { 
+  load(paste0(runDir,"/proj_data_SENS.Rdata"))
 } else {
   message("No proj_data_SENS.Rdata file found")
 }
 
 # Read parameter bounds 
-paramBnds <- read.table(paste0(runDir, "/calib_parms.tbl"), header=TRUE, sep=",", stringsAsFactors=FALSE)
-paramBnds <- subset(paramBnds, paramBnds$calib_flag==1)
+#paramBnds <- read.table(paste0(runDir, "/sens_params.tbl"), header=TRUE, sep=",", stringsAsFactors=FALSE)
+#paramBnds <- subset(paramBnds, paramBnds$sens_flag==1)
 
 # Setup plot directory
 writePlotDir <- paste0(runDir, "/plots")
@@ -36,7 +36,8 @@ dir.create(writePlotDir)
 
 # Load obs so we have them for next iteration
 load(paste0(runDir, "/OBS/obsStrData.Rdata"))
-obsDT <- obsDT[!is.na(obs),]
+#obsDT <- obsDT[!is.na(obs),]
+obsDT <- obsStrData[!is.na(obs),]
 
 # convrt the hourly obs to daily obs
 obsDT$Date <- CalcDateTrunc(obsDT$POSIXct)
@@ -44,9 +45,9 @@ setkey(obsDT, Date)
 obsDT.d <- obsDT[, list(obs = mean(obs, na.rm = TRUE)), by = "Date"]
 
 # Find the index of the gage
-rtLink <- ReadRouteLink(rtlinkFile)
-rtLink <- data.table(rtLink)
-linkId <- which(trimws(rtLink$gages) %in% siteId)
+#rtLink <- ReadRouteLink(rtlinkFile)
+#rtLink <- data.table(rtLink)
+#linkId <- which(trimws(rtLink$gages) %in% siteId)
 
 # Initialize chrtout
 if (!exists("chrt.d.all")) chrt.d.all <- data.table()
@@ -54,9 +55,8 @@ if (!exists("chrt.h.all")) chrt.h.all <- data.table()
 
 for (cyclecount in 1:nrow(x_all)) {
   # Read model out and calculate performance metric
-  outPath <- paste0(runDir, "/OUTPUT_", cyclecount)
-  print(outPath)
-  
+  outPath <- paste0(runDir, "/OUTPUT_", cyclecount-1)
+
   # Read files
   load(paste0(outPath, "/chrt.Rdata"))
   
@@ -82,9 +82,10 @@ for (cyclecount in 1:nrow(x_all)) {
   statNseWt <- NseWt(chrt.h$q_cms, chrt.h$obs)
   statKge <- Kge(chrt.h$q_cms, chrt.h$obs, na.rm=TRUE)
   statMsof <- Msof(chrt.h$q_cms, chrt.h$obs)
-  
+  if (is.na(statMsof)) statMsof <- 0.0 
+ 
   # Archive results
-  x_archive_h[cyclecount,] <- c(x_all[cyclecount,], x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+  x_archive_h[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
   
   ########################## ####### DAILY CALCULATIONS ###################################################### 
   # Convert to daily
@@ -112,13 +113,14 @@ for (cyclecount in 1:nrow(x_all)) {
   statNseWt <- NseWt(chrt.d$q_cms, chrt.d$obs)
   statKge <- Kge(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
   statMsof <- Msof(chrt.d$q_cms, chrt.d$obs)
+  if (is.na(statMsof)) statMsof <- 0.0
   
   # Archive results
-  x_archive[cyclecount,] <- c(x_all[cyclecount.], x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+  x_archive[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
 }
 
 # Interim save
-save.image("proj_data_SENS.Rdata")
+save.image(paste0(runDir,"/proj_data_SENS.Rdata"))
 
 ################################ DELSA Calculations for each Metric at both hourly and daily time step
 
@@ -214,7 +216,7 @@ Quantile <- function(data, indices, SA_quantileFrac = 0.9) {
 
 bootRes <- data.table()
 for (timeStep in c("hourly", "daily")) {
-  for (metric in setdiff(metrics, "fdc")) {
+  for (metric in setdiff(metrics, "msof")) {
     for (param in 1:(ncol(x_all)-1)) {
       results <- boot(data=delsaFirst[[timeStep]][[metric]]$delsafirst[, param],
                       statistic=Quantile, 
@@ -253,8 +255,14 @@ ggsave(filename=paste0(writePlotDir, "/", chrt.d.all$site_no[1], "_hydrograph.pn
        plot=gg, units="in", width=16, height=8, dpi=300)
 
 # Save and exit
-if (parallelFlag) stopCluster(cl)
-save.image("proj_data_SENS.Rdata")
+#if (parallelFlag) stopCluster(cl)
+save.image(paste0(runDir,"/proj_data_SENS.Rdata"))
+
+# Touch an empty COMPLETE file to inform the next step of the process this has completed.
+fileConn <- file(paste0(runDir, "/postProc.COMPLETE"))
+writeLines('', fileConn)
+close(fileConn)
+
 quit("no")
 
 
