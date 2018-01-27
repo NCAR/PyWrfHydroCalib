@@ -689,13 +689,19 @@ def setupModels(jobData,db,args,libPathTop):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to link: " + calibRUtils
                 raise
-            try:
-                link = gageDir + "/RUN.SENSITIVITY/Collect_simulated_flow.R"
-                os.symlink(sensCollectRProgram,link)
-            except:
-                wipeJobDir(jobData)
-                jobData.errMsg = "ERROR: Failure to link: " + sensCollectRProgram
-                raise
+            for i in range(0,jobData.nSensIter):
+                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/Collect_simulated_flow.R"
+                try:
+                    os.symlink(sensCollectRProgram,link1)
+                except:
+                    jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
+                    raise
+                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/calib_utils.R"
+                try:
+                    os.symlink(calibRUtils,link1)
+                except:
+                    jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
+                    raise
             try:
                 link = gageDir + "/RUN.SENSITIVITY/sens_workflow_post.R"
                 os.symlink(sensPostRProgram,link)

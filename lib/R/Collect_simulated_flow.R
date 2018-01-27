@@ -11,8 +11,8 @@
 args <- commandArgs(trailingOnly=TRUE)
 outPath <- args[1]
 
-source('../namelist.sensitivity')
-source('../calib_utils.R')
+source('namelist.sensitivity')
+source('calib_utils.R')
 ncores = 1
 
 
@@ -46,6 +46,8 @@ message("Reading model out files.")
 filesList <- list.files(path = outPath,
                         pattern = glob2rx("*.CHANOBS_DOMAIN1*"),
                         full.names = TRUE)
+print(outPath)
+print(filesList)
 filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
 whFiles <- which(filesListDate >= startDate)
 filesList <- filesList[whFiles]
@@ -56,5 +58,11 @@ setnames(chrt, "streamflow", "q_cms")
 save(chrt, file = paste0(outPath, "/chrt.Rdata"))
 
 # submit removing the CHNOBS file
+system(paste0("rm -rf ",outPath,"/*.CHANOBS*"))
 
+# Touch an empty COMPLETE file to inform the next step of the process this has completed.
+fileConn <- file(paste0(outPath, "/R_COLLECT.COMPLETE"))
+writeLines('', fileConn)
+close(fileConn)
 
+quit("no")
