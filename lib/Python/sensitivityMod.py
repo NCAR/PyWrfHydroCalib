@@ -111,6 +111,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
             else:
                 # The job is still running.
                 print "SENS PRE PROC SENS RUNNING FOR BASIN: " + str(gageID)
+                time.sleep(3)
                 preProcStatus = False
                 return
                 
@@ -346,6 +347,8 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
             statusData.errMsg = "ERROR: Unable to create: " + lockFile
             raise
             
+    time.sleep(3)
+            
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
     Function for running the sensitivity analysis for a given basin. 
@@ -368,6 +371,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         
     runDir = statusData.jobDir + "/" + gage + "/RUN.SENSITIVITY/OUTPUT_" + str(iteration)
     workDir = statusData.jobDir + "/" + gage + "/RUN.SENSITIVITY"
+    collectComplete = runDir + "/R_COLLECT.COMPLETE"
     
     print runDir
     print workDir
@@ -403,6 +407,31 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             except:
                 raise
                 
+    if statusData.analysisRunType == 1:
+        collectScript = runDir + "/run_collection.sh"
+        try:
+            generateBsubCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
+        except:
+            raise
+    if statusData.analysisRunType == 2:
+        collectScript = runDir + "/run_collection.sh"
+        try:
+            generatePbsCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
+        except:
+            raise
+    if statusData.analysisRunType == 3:
+        collectScript = runDir + "/run_collection.sh"
+        try:
+            generateSlurmCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
+        except:
+            raise
+    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+        collectScript = runDir + "/SCOL" + str(statusData.jobID) + str(gageID) + str(iteration)
+        try:
+            generateMpiCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
+        except:
+            raise
+            
     # Calculate datetime objects
     begDate = statusData.bSensDate
     endDate = statusData.eSensDate
@@ -411,12 +440,17 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     keyStatus = keySlot[basinNum,iteration]
     
     try:
-        basinStatus = statusMod.checkBasSensJob(statusData,basinNum,iteration)
+        basinStatus = statusMod.checkBasSensJob(statusData,basinNum,iteration,runDir)
+    except:
+        raise
+    try:
+        collectStatus = statusMod.checkSensCollectJob(statusData,gageID,iteration)
     except:
         raise
         
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
+    collectLock = runDir + "/COLLECT.LOCK"
     
     # If the LOCK file is present, report this and lock things up.
     if os.path.isfile(lockPath):
@@ -427,6 +461,16 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         #statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " sensitivity is locked. " + \
         #                    " for iteration: " + str(iteration) + " " + \
         #                    "Please remove: " + lockPath + " before continuing."
+        #errMod.sendMsg(statusData)
+        
+    if os.path.isfile(collectLock):
+        keySlot[basinNum,iteration] = -0.9
+        keyStatus = -0.9
+        runFlag = False
+        print "COLLECTION IS LOCKED"
+        #statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " collection is locked. " + \
+        #                    " for iteration: " + str(iteration) + " " + \
+        #                    "Please remove: " + collectLock + " before continuing."
         #errMod.sendMsg(statusData)
         
     if keyStatus >= 1.0:
@@ -460,9 +504,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = -0.25
             else:
                 # Model has completed!
-                print "MODEL COMPLETE!"
-                keySlot[basinNum,iteration] = 1.0
-                keyStatus = 1.0
+                print "MODEL COMPLETE! - READY TO COLLECT DATA"
+                keySlot[basinNum,iteration] = 0.75
+                keyStatus = 0.75
                 runFlag = False
     # For simulations that are fresh
     if keyStatus == 0.0:
@@ -472,17 +516,31 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             keyStatus = 0.5
             runFlag = False
             print "MODEL IS RUNNING"
+        elif collectStatus:
+            # Collection code is running. Allow it to continue.
+            keySlot[basinNum,iteration] = 0.9
+            keyStatus = 0.9
+            runFlag = False
+            print "COLLECTION RUNNING"
         else:
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if not runFlag:
-                print "MODEL COMPLETE"
-                # Model simulation completed before workflow was restarted
-                keySlot[basinNum,iteration] = 1.0
-                keyStatus = 1.0
+                # Model has completed!
+                print "MODEL COMPLETE! - READY TO COLLECT DATA"
+                keySlot[basinNum,iteration] = 0.75
+                keyStatus = 0.75
                 runFlag = False
+                # Check to see if the collection complete file and output file
+                # are present. 
+                if collectComplete:
+                    # Collection code also completed.
+                    print "COLLECTION COMPLETE!"
+                    keySlot[basinNum,iteration] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
                 
     # For when the model failed TWICE and is locked.
     if keyStatus == -1.0:
@@ -501,12 +559,41 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 print "READY TO RUN MODEL"
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
+                runFlag = True
             else:
                 print "MODEL COMPLETE"
                 # Model sucessfully completed.
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
+                
+    # For when the collection routines have failed and are locked.
+    if keyStatus == -0.9:
+        # If LOCK file exists, no collection will take place. File must be removed
+        # manually by user.
+        if os.path.isfile(collectLock):
+            runFlag = False
+            print "COLLECTION LOCKED"
+        else:
+            # LOCK file was removed, uprade status to 0.75
+            if collectStatus:
+                print "COLLECTION RUNNING"
+                keySlot[basinNum,iteration] = 0.9
+                keyStatus = 0.9
+                runFlag = False
+            else:
+                # Check for complete flag
+                if os.path.isfile(collectComplete):
+                    print "COLLECTION COMPLETE"
+                    keySlot[basinNum,iteration] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                else:
+                    # Upgrade the status
+                    print "UPGRADING COLLECTION STATUS"
+                    keySlot[basinNum,iteration] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
                 
     # For when the model crashed ONCE
     if keyStatus == -0.5:
@@ -535,10 +622,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = -1.0
                 runFlag = False
             else:
-                # Model sucessfully completed from first failed attempt.
-                print "MODEL COMPLETE"
+                # Model has completed!
+                print "MODEL COMPLETE!"
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
+                runFlag = False
                 
     if keyStatus == -0.25 and runFlag:
         # Restarting model from one crash
@@ -658,6 +746,64 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             
         keyStatus = 0.5
         keySlot[basinNum,iteration] = 0.5
+        
+    # Collection program is running.
+    if keyStatus == 0.9:
+        # Collection routine is running. Check to see if it's completed. If not, lock this 
+        # basin up and require the user to manually remove the LOCK file.
+        if collectStatus:
+            print "COLLECTING DATA"
+            keySlot[basinNum,iteration] = 0.9
+            keyStatus = 0.9
+            runFlag = False
+        else:
+            if os.path.isfile(collectComplete):
+                print "COLLECTION COMPLETE!"
+                keySlot[basinNum,iteration] = 1.0
+                keyStatus = 1.0
+                runFlag = 1.0
+                runFlag = False
+            else:
+                # Collection routine has failed. 
+                statusData.genMsg = "ERROR: SENSITIVITY COLLECTION FOR GAGE: " + statusData.gages[basinNum] + \
+                                    " ITERATION: " + str(iteration) + \
+                                    " HAS FAILED. PLEASE FIX ISSUE AND " + \
+                                    "MANUALLY REMOVE LOCK FILE: " + collectLock
+                errMod.sendMsg(statusData)
+                print statusData.genMsg
+                open(collectLock,'a').close()
+                keySlot[basinNum,iteration] = -0.9
+                keyStatus = -0.9
+                runFlag = False
+                
+    if keyStatus == 0.75 and not runFlag:
+        # Ready to fire off collection program.
+        print "FIRING OFF COLLECTION"
+        # Fire off model.
+        if statusData.analysisRunType == 1:
+            cmd = "bsub < " + runDir + "/" + collectScript
+        if statusData.analysisRunType == 2:
+            cmd = "qsub " + runDir + "/" + collectScript
+        if statusData.analysisRunType == 3:
+            cmd = "sbatch " + runDir + "/" + collectScript
+        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+            cmd = collectScript + " 1>" + runDir + "/SCOL_" + \
+                  str(statusData.jobID) + "_" + str(gageID) + "_" + str(iteration) + ".out" + \
+                  ' 2>' + runDir + "/SCOL_" + str(statusData.jobID) + "_" + \
+                  str(gageID) + "_" + str(iteration) + ".err"
+            print cmd
+        try:
+            if statusData.analysisRunType == 1 or statusData.analysisRunType == 2 or statusData.analysisRunType == 3:
+                subprocess.call(cmd,shell=True)
+            if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+                p = subprocess.Popen([cmd],shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
+                                str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
+            raise
+            
+        keyStatus = 0.9
+        keySlot[basinNum,iteration] = 0.9
         
     # Update job status in the Database table.
     try:
@@ -1073,10 +1219,6 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
-        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
-        fileObj.write(inStr)
-        fileObj.write('\n')
-        inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
         #fileObj.write(inStr)
@@ -1098,7 +1240,7 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta,iteration):
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
         raise Exception()
-    
+        
     try:
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
@@ -1127,10 +1269,6 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
-        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
-        fileObj.write(inStr)
-        fileObj.write('\n')
-        inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
         #fileObj.write(inStr)
@@ -1179,11 +1317,6 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta,iteration):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
-        fileObj.write(inStr)
-        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
-        fileObj.write(inStr)
-        fileObj.write('\n')
-        inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
         #fileObj.write(inStr)
@@ -1522,6 +1655,308 @@ def generateMpiPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             jobData.errMsg = "ERROR: Failure to create symbolic link: " + outLink2
             raise
             
+def generateBsubCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
+    """
+    Generic function to create BSUB script for running an R program to collect
+    data into an Rdataset for sensitivity analysis.
+    """
+    
+    outFile = runDir + "/run_collection.sh"
+    
+    if os.path.isfile(outFile):
+        # We are just going to manually over-write the file to be safe.
+        os.remove(outFile)
+        
+    if not os.path.isfile(outFile): 
+        try:
+            fileObj = open(outFile,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#BSUB -n 1\n"
+            fileObj.write(inStr)
+            inStr = "#BSUB -J WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
+                    str(gageID) + '_' + str(iteration) + '\n'
+            fileObj.write(inStr)
+            inStr = '#BSUB -o ' + runDir + '/%J.out\n'
+            fileObj.write(inStr)
+            inStr = '#BSUB -e ' + runDir + '/%J.err\n'
+            fileObj.write(inStr)
+            fileObj.write('#BSUB -W 3:00\n')
+            if len(jobData.queNameAnalysis.strip()) > 0:
+                inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
+                fileObj.write(inStr)
+            # Temporary handling of Cheyenne/Geyser environment for NCAR.
+            if socket.gethostname()[0:8] == 'cheyenne':
+                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+                fileObj.write(inStr)
+            fileObj.write('\n')
+            inStr = 'cd ' + runDir + '\n'
+            fileObj.write(inStr)
+            fileObj.write('./collectOutput.sh\n')
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile
+            raise    
+            
+    outFile2 = runDir + "/collectOutput.sh"
+    
+    runRProgram = runDir + "/Collect_simulated_flow.R"
+    
+    # Make a link to the R namelist created during pre-processing.
+    nameListR = workDir + "/namelist.sensitivity"
+    link = runDir + "/namelist.sensitivity"
+    
+    if not os.path.isfile(link):
+        if not os.path.isfile(nameListR):
+            jobData.errMsg = "ERROR: Failure to find: " + nameListR
+            raise
+        try:
+            os.symlink(nameListR,link)
+        except:
+            jobData.errMsg = "ERROR: Failure to make link: " + link
+            raise
+    
+    if not os.path.isfile(outFile2):
+        # This is the file that will run R code to collect model output into a single Rdataset
+        try:
+            fileObj = open(outFile2,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('Rscript ' + runRProgram + ' ' + runDir + '\n')
+            fileObj.write('exit\n')
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile2
+            raise
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile2
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
+        raise
+        
+def generatePbsCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
+    """
+    Generic function to create QSUB script for running an R program to collect
+    data into an Rdataset for sensitivity analysis.
+    """
+    
+    outFile = runDir + "/run_collection.sh"
+    
+    if os.path.isfile(outFile):
+        # We are just going to manually over-write the file to be safe.
+        os.remove(outFile)
+        
+    if not os.path.isfile(outFile): 
+        try:
+            fileObj = open(outFile,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#PBS -N WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + str(gageID) + \
+                    "_" + str(iteration) + '\n'
+            fileObj.write(inStr)
+            inStr = '#PBS -o ' + runDir + "WH_SENS_COLLECT_" + str(jobData.jobID) + \
+                    "_" + str(gageID) + "_" + str(iteration) + '.out\n'
+            fileObj.write(inStr)
+            inStr = '#PBS -e ' + runDir + "WH_SENS_COLLECT_" + str(jobData.jobID) + \
+                    "_" + str(gageID) + "_" + str(iteration) + '.err\n'
+            fileObj.write(inStr)
+            #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
+            inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
+            fileObj.write(inStr)
+            fileObj.write('#PBS -l walltime=03:00:00\n')
+            if len(jobData.queNameAnalysis.strip()) > 0:
+                inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
+                fileObj.write(inStr)
+            # Temporary handling of Cheyenne/Geyser environment for NCAR.
+            if socket.gethostname()[0:8] == 'cheyenne':
+                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+                fileObj.write(inStr)
+            fileObj.write('\n')
+            inStr = 'cd ' + runDir + '\n'
+            fileObj.write(inStr)
+            fileObj.write('./collectOutput.sh\n')
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile
+            raise    
+            
+    outFile2 = runDir + "/collectOutput.sh"
+    
+    runRProgram = runDir + "/Collect_simulated_flow.R"
+    
+    # Make a link to the R namelist created during pre-processing.
+    nameListR = workDir + "/namelist.sensitivity"
+    link = runDir + "/namelist.sensitivity"
+    
+    if not os.path.isfile(link):
+        if not os.path.isfile(nameListR):
+            jobData.errMsg = "ERROR: Failure to find: " + nameListR
+            raise
+        try:
+            os.symlink(nameListR,link)
+        except:
+            jobData.errMsg = "ERROR: Failure to make link: " + link
+            raise
+    
+    if not os.path.isfile(outFile2):
+        # This is the file that will run R code to collect model output into a single Rdataset
+        try:
+            fileObj = open(outFile2,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('Rscript ' + runRProgram + ' ' + runDir + '\n')
+            fileObj.write('exit\n')
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile2
+            raise
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile2
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
+        raise
+        
+def generateSlurmCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
+    """
+    Generic function to create Slurm script for running an R program to collect
+    data into an Rdataset for sensitivity analysis.
+    """
+    
+    outFile = runDir + "/run_collection.sh"
+    
+    if os.path.isfile(outFile):
+        # We are just going to manually over-write the file to be safe.
+        os.remove(outFile)
+        
+    if not os.path.isfile(outFile): 
+        try:
+            fileObj = open(outFile,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#SBATCH -J WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
+                    str(gageID) + "_" + str(iteration) + '\n'
+            fileObj.write(inStr)
+            inStr = '#SBATCH -o ' + runDir + '/WH_SENS_COLLECTION_' + str(jobData.jobID) + \
+                    '_' + str(gageID) + "_" + str(iteration) + '.out\n'
+            fileObj.write(inStr)
+            inStr = '#SBATCH -e ' + runDir + '/WH_SENS_COLLECTION_' + str(jobData.jobID) + \
+                    '_' + str(gageID) + "_" + str(iteration) + '.err\n'
+            fileObj.write(inStr)
+            inStr = "#SBATCH -N 1\n"
+            fileObj.write(inStr)
+            fileObj.write('#SBATCH -t 03:00:00\n')
+            if len(jobData.queNameAnalysis.strip()) > 0:
+                inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+                fileObj.write(inStr)
+            # Temporary handling of Cheyenne/Geyser environment for NCAR.
+            if socket.gethostname()[0:8] == 'cheyenne':
+                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+                fileObj.write(inStr)
+            fileObj.write('\n')
+            inStr = 'cd ' + runDir + '\n'
+            fileObj.write(inStr)
+            fileObj.write('./collectOutput.sh\n')
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile
+            raise    
+            
+    outFile2 = runDir + "/collectOutput.sh"
+    
+    runRProgram = runDir + "/Collect_simulated_flow.R"
+    
+    # Make a link to the R namelist created during pre-processing.
+    nameListR = workDir + "/namelist.sensitivity"
+    link = runDir + "/namelist.sensitivity"
+    
+    if not os.path.isfile(link):
+        if not os.path.isfile(nameListR):
+            jobData.errMsg = "ERROR: Failure to find: " + nameListR
+            raise
+        try:
+            os.symlink(nameListR,link)
+        except:
+            jobData.errMsg = "ERROR: Failure to make link: " + link
+            raise
+    
+    if not os.path.isfile(outFile2):
+        # This is the file that will run R code to collect model output into a single Rdataset
+        try:
+            fileObj = open(outFile2,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('Rscript ' + runRProgram + ' ' + runDir + '\n')
+            fileObj.write('exit\n')
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile2
+            raise
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile2
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
+        raise
+        
+def generateMpiCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
+    """
+    Generic function to create MPI script for running an R program to collect
+    data into an Rdataset for sensitivity analysis.
+    """
+    
+    outFile = runDir + "/SCOL" + str(jobData.jobID) + str(gageID) + str(iteration)
+    runRProgram = runDir + "/Collect_simulated_flow.R"
+    
+    # Make a link to the R namelist created during pre-processing.
+    nameListR = workDir + "/namelist.sensitivity"
+    link = runDir + "/namelist.sensitivity"
+    
+    if os.path.isfile(outFile):
+        # We are just going to manually over-write the file to be safe.
+        os.remove(outFile)
+        
+    if not os.path.isfile(link):
+        if not os.path.isfile(nameListR):
+            jobData.errMsg = "ERROR: Failure to find: " + nameListR
+            raise
+        try:
+            os.symlink(nameListR,link)
+        except:
+            jobData.errMsg = "ERROR: Failure to make link: " + link
+            raise
+        
+    if not os.path.isfile(outFile): 
+        try:
+            fileObj = open(outFile,'w')
+            fileObj.write('#!/bin/bash\n')
+            inStr = 'cd ' + runDir + '\n'
+            fileObj.write(inStr)
+            fileObj.write('Rscript ' + runRProgram + ' ' + runDir + '\n')
+            fileObj.write('exit\n')
+            fileObj.close
+        except:
+            jobData.errMsg = "ERROR: Failure to create: " + outFile
+            raise    
+            
+    # Make shell script an executable.
+    cmd = 'chmod +x ' + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
+        raise
+             
 def linkToRst(statusData,gage,runDir):
     """
     Generic function to link to necessary restart files from the spinup.

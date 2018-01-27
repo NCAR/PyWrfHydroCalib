@@ -1307,10 +1307,10 @@ def checkSensPostProcJob(jobData,gageID):
                 raise
             else:
                 status = True
-            
+    
     return status
 
-def checkBasSensJob(jobData,gageNum,iteration):
+def checkBasSensJob(jobData,gageNum,iteration,runDir):
     """
     Generic function to check the status of a sensitivity model run. If we are running BSUB/QSUB/Slurm,
     we will check the que for a specific job name following the format: WH_JOBID_DOMAINID
@@ -1478,5 +1478,171 @@ def checkBasSensJob(jobData,gageNum,iteration):
                 raise
             else:
                 status = True
+                
+    return status
+
+def checkSensCollectJob(jobData,gageID,iteration):
+    """ 
+    Generic function to check for jobs running that are collecting model output
+    into an R dataset
+    """
+    
+    # Get unique PID.
+    pidUnique = os.getpid()
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
+    
+    if userTmp != str(jobData.owner):
+        jobData.errMsg = "ERROR: you are not the owner of this job."
+        raise Exception()
+        
+    if jobData.analysisRunType == 1:
+        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
+        csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+        cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+            raise
+    
+        colNames = ['JOBID','USER','STAT','QUEUE','FROM_HOST','EXEC_HOST','JOB_NAME',\
+                   'SUBMIT_MONTH','SUBMIT_DAY','SUBMIT_HHMM']
+        try:
+            jobs = pd.read_csv(csvPath,delim_whitespace=True,header=None,names=colNames)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        
+        # Delete temporary CSV files
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
+                  str(gageID) + "_" + str(iteration)
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+                  
+        lenJobs = len(jobs.JOBID)
+
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            testDF = jobs.query("JOB_NAME == '" + expName + "'")
+            if len(testDF) != 0:
+                status = True
+                
+    if jobData.analysisRunType == 2:
+        # We are running via qsub
+        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
             
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
+        # Delete temporary CSV fies
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp,shell=True)
+        
+        # Compile expected job name that job should occupy
+        expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
+                  str(gageID) + "_" + str(iteration)
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+                  
+        lenJobs = len(jobs[1])
+        
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            for jobNum in range(0,lenJobs):
+                if jobs[1][jobNum].strip() == expName:
+                    status = True
+                    
+    if jobData.analysisRunType == 3:
+        # We are running via slurm
+        csvPath = "./SLURM_" + str(pidUnique) + ".csv"
+        cmd = "squeue -u " + str(jobData.owner) + \
+              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
+              ' > ' + csvPath
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
+            raise
+            
+        if not os.path.isfile(csvPath):
+            jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
+            raise
+            
+        try:
+            jobs = pd.read_csv(csvPath,delim_whitespace=True)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+            
+        # Delete temporary CSV files.
+        cmdTmp = "rm -rf " + csvPath
+        subprocess.call(cmd,shell=True)
+        
+        # Compile expected job name that the job should occupy.
+        expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
+                  str(gageID) + "_" + str(iteration)
+                  
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
+        if len(jobs.NAME) > 0:
+            for jobNum in range(0,len(jobs.NAME)):
+                if jobs.NAME[jobNum].strip() == expName:
+                    print "SENSITIVITY COLLECTION JOBS FOUND"
+                    status = True
+        else:
+            status = False
+        
+        if not status:
+            print "NO SENSITIVITY COLLECTION JOBS FOUND"
+                
+    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+        
+        # We are running via mpiexec
+        pidActive = []
+        exeName = "SCOL" + str(jobData.jobID) + str(gageID) + str(iteration)
+        for proc in psutil.process_iter():
+            try:
+                if proc.name() == exeName:
+                    pidActive.append(proc.pid)
+            except:
+                print exeName + " Found, but ended before Python could get the PID."
+        if len(pidActive) == 0:
+            status = False
+            print "NO SENSITIVITY COLLECTION JOBS FOUND"
+        else:
+            print "SENSITIVITY COLLECTION JOBS FOUND"
+            # Ensure these are being ran by the proper user.
+            proc_stat_file = os.stat('/proc/%d' % pidActive[0])
+            uid = proc_stat_file.st_uid
+            userCheck = pwd.getpwuid(uid)[0]
+            if userCheck != str(jobData.owner):
+                jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
+                userCheck + " When it should be ran by: " + jobData.owner
+                status = False
+                raise
+            else:
+                status = True
+    
     return status
