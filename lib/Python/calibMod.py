@@ -1466,9 +1466,9 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1545,9 +1545,9 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1622,9 +1622,9 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
