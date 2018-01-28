@@ -1402,9 +1402,9 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
             fileObj.write(inStr)
         fileObj.write('\n')
         # Temporary handling of Cheyenne/Geyser environment for NCAR.
-        #if socket.gethostname()[0:8] == 'cheyenne':
-        #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-        #    fileObj.write(inStr)
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
@@ -1484,9 +1484,9 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         fileObj.write(inStr)
         fileObj.write('\n')
         # Temporary handling of Cheyenne/Geyser environment for NCAR.
-        #if socket.gethostname()[0:8] == 'cheyenne':
-        #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-        #    fileObj.write(inStr)
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
@@ -1566,9 +1566,9 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         fileObj.write(inStr)
         fileObj.write('\n')
         # Temporary handling of Cheyenne/Geyser environment for NCAR.
-        #if socket.gethostname()[0:8] == 'cheyenne':
-        #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-        #    fileObj.write(inStr)
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + validWorkDir + '\n'
         fileObj.write(inStr)
         inStr = "Rscript " + validWorkDir + "/valid_workflow.R " + rScript + "\n"
@@ -1648,9 +1648,9 @@ def generateBsubParmRunScript(jobData,runDir,gageID):
             fileObj.write(inStr)
         fileObj.write('\n')
         # Temporary handling of Cheyenne/Geyser environment for NCAR.
-        #if socket.gethostname()[0:8] == 'cheyenne':
-        #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-        #    fileObj.write(inStr)
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('./gen_parms.sh\n')
@@ -1690,9 +1690,9 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
         fileObj.write(inStr)
         fileObj.write('\n')
         # Temporary handling of Cheyenne/Geyser environment for NCAR.
-        #if socket.gethostname()[0:8] == 'cheyenne':
-        #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-        #    fileObj.write(inStr)
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('./gen_parms.sh\n')
@@ -1732,9 +1732,9 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
         fileObj.write(inStr)
         fileObj.write('\n')
         # Temporary handling of Cheyenne/Geyser environment for NCAR.
-        #if socket.gethostname()[0:8] == 'cheyenne':
-        #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-        #    fileObj.write(inStr)
+        if socket.gethostname()[0:8] == 'cheyenne':
+            inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            fileObj.write(inStr)
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         fileObj.write('./gen_parms.sh\n')
