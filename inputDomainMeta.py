@@ -55,6 +55,8 @@ def main(argv):
                         help='Input CSV file containing information on basins.')
     parser.add_argument('--hostname',type=str,nargs='?',
                         help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--portNumber',type=int,nargs='?',
+                        help='Optional port number to connect. Default is 5432.')
                         
     args = parser.parse_args()
     
@@ -77,9 +79,15 @@ def main(argv):
     else:
         hostTmp = str(args.hostname)
         
+    if not args.portNumber:
+        # We will default to 5432
+        portTmp = '5432'
+    else:
+        portTmp = str(args.portNumber)
+        
     # Connect to the database
     try:
-        strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdTmp + " port=5432 host=" + hostTmp
+        strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdTmp + " port=" + portTmp + " host=" + hostTmp
         db = psycopg2.connect(strTmp)
     except:
         print "ERROR: Unable to connect to wrfHydroCalib_DB. Please check your password you set " + \
