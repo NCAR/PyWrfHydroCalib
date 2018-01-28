@@ -8,7 +8,7 @@
 #import MySQLdb
 import psycopg2
 import datetime
-#from slacker import Slacker
+from slacker import Slacker
 import pandas as pd
 import os
 import shutil
@@ -331,19 +331,19 @@ class Database(object):
         jobData.queNameAnalysis = results[41]
         
         # Initiate Slack if fields are not MISSING
-        #if jobData.slChan != "MISSING":
-        #    #jobData.email = None
-        #    try:
-        #        jobData.slackObj = Slacker(str(jobData.slToken))
-        #    except:
-        #        jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
-        #                         str(jobData.slUser) + " channel: " + str(jobData.slChan)
-        #        raise
-        #else:
-        jobData.slChan = None
-        jobData.slToken = None
-        jobData.slUser = None
-        jobData.slackObj = None
+        if jobData.slChan != "MISSING":
+            #jobData.email = None
+            try:
+                jobData.slackObj = Slacker(str(jobData.slToken))
+            except:
+                jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
+                                 str(jobData.slUser) + " channel: " + str(jobData.slChan)
+                raise
+        else:
+            jobData.slChan = None
+            jobData.slToken = None
+            jobData.slUser = None
+            jobData.slackObj = None
         
     def updateJobOwner(self,jobData,newOwner,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag):
         """
@@ -416,7 +416,7 @@ class Database(object):
                 jobData.slChan = str(newSlackChannel)
                 jobData.slToken = str(newSlackToken)
                 jobData.slUser = str(newSlackUName)
-                #jobData.slackObj = Slacker(str(jobData.slToken))
+                jobData.slackObj = Slacker(str(jobData.slToken))
             else:
                 # Enter in Slack info as MISSING
                 try:
