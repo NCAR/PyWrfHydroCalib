@@ -333,12 +333,12 @@ def main(argv):
                     time.sleep(3)
                     batchCheck = keySlot[basin,(batchIter*jobData.nSensBatch):((batchIter+1)*jobData.nSensBatch)]
                     if batchIter == 0:
-                        batchCheckPrev = 1.0
+                        batchCheckPrev = entryValueBatch
                     else:
                         batchCheckPrev = keySlot[basin,((batchIter-1)*jobData.nSensBatch):(batchIter*jobData.nSensBatch)]
                         batchCheckPrev = batchCheckPrev.sum()
                     print batchCheck
-                    if batchCheck.sum() != entryValueBatch and batchCheckPrev == 1.0:
+                    if batchCheck.sum() != entryValueBatch and batchCheckPrev == entryValueBatch:
                         for iterTmp in range(0,jobData.nSensBatch):
                             iteration = batchIter*jobData.nSensBatch + iterTmp
                             print iteration
