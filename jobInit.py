@@ -44,6 +44,10 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--portNumber',type=int,nargs='?',
+                        help='Optional port number to connect. Default is 5432.')
             
     args = parser.parse_args()            
 
@@ -53,6 +57,20 @@ def main(argv):
     except:
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
+        
+    if not args.hostname:
+        # We will assume localhost for Postgres DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+        
+    if not args.portNumber:
+        # We will default to 5432
+        portTmp = '5432'
+    else:
+        portTmp = str(args.portNumber)
+    jobData.host = hostTmp
+    jobData.port = portTmp
         
     # Lookup database username/login credentials based on username
     # running program.

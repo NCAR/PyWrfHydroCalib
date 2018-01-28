@@ -38,6 +38,7 @@ class jobMeta:
         self.jobRunType = []
         self.analysisRunType = []
         self.host = []
+        self.port = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -136,7 +137,7 @@ class jobMeta:
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
         self.nNodesR = int(parser.get('logistics','nNodesR'))
-        self.host = str(parser.get('logistics','postgresHost'))
+        #self.host = str(parser.get('logistics','postgresHost'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.sensFlag = int(parser.get('logistics','runSens'))
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
@@ -377,10 +378,10 @@ def checkConfig(parser):
     # We won't check the optional que name as it's optional. Even if some 
     # run with a job submission method, they may not need to run with a que.
         
-    check = str(parser.get('logistics','postgresHost'))
-    if len(check) == 0:
-        print "ERROR: Zero length Postgres Host passed length passed to program."
-        raise Exception()
+    #check = str(parser.get('logistics','postgresHost'))
+    #if len(check) == 0:
+    #    print "ERROR: Zero length Postgres Host passed length passed to program."
+    #    raise Exception()
         
     # Either email or Slack must be chosen. If Slack is chosen, user
     # must provide both channel and API token.

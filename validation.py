@@ -47,6 +47,8 @@ def main(argv):
                         help='Job ID specific to calibration validation.')
     parser.add_argument('--hostname',type=str,nargs='?',
                         help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--portNumber',type=int,nargs='?',
+                        help='Optional port number to connect. Default is 5432.')
     
     args = parser.parse_args()
     
@@ -73,6 +75,13 @@ def main(argv):
         hostTmp = 'localhost'
     else:
         hostTmp = str(args.hostname)
+        
+    if not args.portNumber:
+        # We will default to 5432
+        portTmp = '5432'
+    else:
+        portTmp = str(args.portNumber)
+    jobData.port = portTmp
     jobData.host = hostTmp
     
     # Establish database connection.

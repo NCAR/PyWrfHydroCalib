@@ -32,7 +32,9 @@ def main(argv):
     # Optional hostname for the user to pass.
     parser = argparse.ArgumentParser(description='Main program to initialize the wrfHydroCalib_DB')
     parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+                        help='Optional hostname PostgreSQL DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--portNumber',type=int,nargs='?',
+                        help='Optional port number to connect. Default is 5432.')
     args = parser.parse_args()
                     
     if not args.hostname:
@@ -40,6 +42,12 @@ def main(argv):
         hostTmp = 'localhost'
     else:
         hostTmp = str(args.hostname)
+        
+    if not args.portNumber:
+        # We will default to 5432
+        portTmp = '5432'
+    else:
+        portTmp = str(args.portNumber)
                         
     # Obtain root password from user for the MySQL DB. This is necessary to 
     # create the necessary DB and associated tables.
@@ -57,7 +65,7 @@ def main(argv):
     # error back to the user. 
     try:
         #strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=localhost"
-        strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=" + hostTmp
+        strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=" + portTmp + " host=" + hostTmp
         db = psycopg2.connect(strTmp)
     except:
         print "ERROR: Unable to connect to postgres as user root. It's possible you entered an incorrect password."
@@ -133,7 +141,7 @@ def main(argv):
     # Re-connect to the new database created with the user-provided password.
     # Then create the necessary tables. 
     #strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=5432 host=localhost"
-    strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=5432 host=" + hostTmp
+    strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=" + portTmp + " host=" + hostTmp
     try:
         db = psycopg2.connect(strTmp)
     except:
