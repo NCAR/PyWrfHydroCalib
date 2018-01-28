@@ -14,7 +14,7 @@ import ast
 import pwd
 import pandas as pd
 import numpy as np
-#from slacker import Slacker
+from slacker import Slacker
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -150,17 +150,17 @@ class jobMeta:
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
         self.email = str(parser.get('logistics','email'))
-        #self.slChan = str(parser.get('logistics','slackChannel'))
-        #self.slToken = str(parser.get('logistics','slackToken'))
-        #self.slUser = str(parser.get('logistics','slackUser'))
+        self.slChan = str(parser.get('logistics','slackChannel'))
+        self.slToken = str(parser.get('logistics','slackToken'))
+        self.slUser = str(parser.get('logistics','slackUser'))
         # Initiate Slack object if user has specified. Throw an error message
         # if Slack is not successfully inititated.
-        #if len(self.slChan) > 0:
-        #    try:
-        #        self.slackObj = Slacker(str(self.slToken))
-        #    except:
-        #        print "ERROR: Failure to initiate Slack."
-        #        raise
+        if len(self.slChan) > 0:
+            try:
+                self.slackObj = Slacker(str(self.slToken))
+            except:
+                print "ERROR: Failure to initiate Slack."
+                raise
         self.exe = str(parser.get('logistics','wrfExe'))
         self.genParmTbl = str(parser.get('logistics','genParmTbl'))
         self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
@@ -549,7 +549,7 @@ def checkConfig(parser):
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
     bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
     if bDate >= eDate:
-        print "ERROR: Must specify ending spinup date greater than beginning spinup date."
+        print "ERROR: Must specify ending calibration date greater than beginning spinup date."
         raise Exception()
     #if bEDate <= bDate:
     #    print "ERROR: Must specify the beginning date for calibration evaluation date " + \

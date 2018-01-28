@@ -169,47 +169,47 @@ def main(argv):
         errMod.errOut(jobData)
         
     if userTmp != jobData.owner:
-        #print "User: " + userTmp + " is requesting to takeover jobID: " + \
-        #      str(jobData.jobID) + " from owner: " + str(jobData.owner)
-        #strTmp = "Please enter new email address. Leave blank if no email " + \
-        #         "change is desired. NOTE if you leave both email and Slack " + \
-        #         "information blank, no change in contact will occur. Only " + \
-        #         "the owner will be modified:"
-        #newEmail = raw_input(strTmp)
-        #strTmp = "Please enter Slack channel:"
-        #newSlackChannel = raw_input(strTmp)
-        #strTmp = "Please enter Slack token:"
-        #newSlackToken = raw_input(strTmp)
-        #strTmp = "Please enter Slack user name:"
-        #newSlackUName = raw_input(strTmp)
+        print "User: " + userTmp + " is requesting to takeover jobID: " + \
+              str(jobData.jobID) + " from owner: " + str(jobData.owner)
+        strTmp = "Please enter new email address. Leave blank if no email " + \
+                 "change is desired. NOTE if you leave both email and Slack " + \
+                 "information blank, no change in contact will occur. Only " + \
+                 "the owner will be modified:"
+        newEmail = raw_input(strTmp)
+        strTmp = "Please enter Slack channel:"
+        newSlackChannel = raw_input(strTmp)
+        strTmp = "Please enter Slack token:"
+        newSlackToken = raw_input(strTmp)
+        strTmp = "Please enter Slack user name:"
+        newSlackUName = raw_input(strTmp)
         # V1.2 NOTE!!!!!
         # Given the automation of the workflow on Yellowstone, we are simply 
         # keeping contact information the same, but only changing the ownership
         # of the workflow
         changeFlag = 1
-        #if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
-        #    print "ERROR: You must specify an associated Slacker API token."
-        #    sys.exit(1)
-        #if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
-        #    print "ERROR: You must specify an associated Slacker user name."
-        #    sys.exit(1)
-        #if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
-        #    print "ERROR: You must specify an associated Slacker channel name."
-        #    sys.exit(1)
-        #if len(newSlackToken) != 0 and len(newSlackUName) == 0:
-        #    print "ERROR: You must specify an associated Slacker user name."
-        #    sys.exit(1)
-        #if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
-        #    print "ERROR: You must specify an associated Slacker channel name."
-        #    sys.exit(1)
-        #if len(newSlackUName) != 0 and len(newSlackToken) == 0:
-        #    print "ERROR: You must specify an associated Slacker API token."
-        #    sys.exit(1)
-        #if len(newSlackChannel) != 0 and len(newEmail) != 0:
-        #    print "ERROR: You cannot specify both email and Slack for notifications."
-        #    sys.exit(1)
-        #if len(newSlackChannel) == 0 and len(newEmail) == 0:
-        #    changeFlag = 0
+        if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
+            print "ERROR: You must specify an associated Slacker API token."
+            sys.exit(1)
+        if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
+            print "ERROR: You must specify an associated Slacker user name."
+            sys.exit(1)
+        if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
+            print "ERROR: You must specify an associated Slacker channel name."
+            sys.exit(1)
+        if len(newSlackToken) != 0 and len(newSlackUName) == 0:
+            print "ERROR: You must specify an associated Slacker user name."
+            sys.exit(1)
+        if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
+            print "ERROR: You must specify an associated Slacker channel name."
+            sys.exit(1)
+        if len(newSlackUName) != 0 and len(newSlackToken) == 0:
+            print "ERROR: You must specify an associated Slacker API token."
+            sys.exit(1)
+        if len(newSlackChannel) != 0 and len(newEmail) != 0:
+            print "ERROR: You cannot specify both email and Slack for notifications."
+            sys.exit(1)
+        if len(newSlackChannel) == 0 and len(newEmail) == 0:
+            changeFlag = 0
             
         # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
             
@@ -311,11 +311,23 @@ def main(argv):
             entryValueBatch = float(jobData.nSensBatch)
             print 'BATCH ENTRY = ' + str(entryValueBatch)
             
-            # If we have a pre-processing complete file, set our pre-proc status to True.
+            # If we have a pre-processing complete file, set our pre-proc status to True. 
+            # Also, log parameter values generated if the log file hasn't been created. 
             preProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/preProc.COMPLETE"
+            parmsLogged =  jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/PARAMS_LOGGED.COMPLETE"
+            parmTxtFile = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/params_new.txt"
             if os.path.isfile(preProcComplete):
                 preProcStatus = True
                 print "PRE PROCESSING COMPLETE!"
+                if not os.path.isfile(parmsLogged):
+                    # Log parameter values generated by pre-processing.
+                    print "LOGGING PRE-PROC PARAM FILES."
+                    try:
+                        db.insertSensParms(jobData,parmsLogged,parmTxtFile,jobData.gageIDs[basin])
+                    except:
+                        jobData.errMsg = ("WARNING: Unable to log sensitivity parameters for basin: " + basin + \
+                                          " Job: " + jobData.jobId)
+                        errMod.errOut(jobData)
             if not preProcStatus:
                 sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 print preProcStatus
@@ -333,12 +345,12 @@ def main(argv):
                     time.sleep(3)
                     batchCheck = keySlot[basin,(batchIter*jobData.nSensBatch):((batchIter+1)*jobData.nSensBatch)]
                     if batchIter == 0:
-                        batchCheckPrev = 1.0
+                        batchCheckPrev = entryValueBatch
                     else:
                         batchCheckPrev = keySlot[basin,((batchIter-1)*jobData.nSensBatch):(batchIter*jobData.nSensBatch)]
                         batchCheckPrev = batchCheckPrev.sum()
                     print batchCheck
-                    if batchCheck.sum() != entryValueBatch and batchCheckPrev == 1.0:
+                    if batchCheck.sum() != entryValueBatch and batchCheckPrev == entryValueBatch:
                         for iterTmp in range(0,jobData.nSensBatch):
                             iteration = batchIter*jobData.nSensBatch + iterTmp
                             print iteration

@@ -8,7 +8,7 @@
 #import MySQLdb
 import psycopg2
 import datetime
-#from slacker import Slacker
+from slacker import Slacker
 import pandas as pd
 import os
 import shutil
@@ -331,19 +331,19 @@ class Database(object):
         jobData.queNameAnalysis = results[41]
         
         # Initiate Slack if fields are not MISSING
-        #if jobData.slChan != "MISSING":
-        #    #jobData.email = None
-        #    try:
-        #        jobData.slackObj = Slacker(str(jobData.slToken))
-        #    except:
-        #        jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
-        #                         str(jobData.slUser) + " channel: " + str(jobData.slChan)
-        #        raise
-        #else:
-        jobData.slChan = None
-        jobData.slToken = None
-        jobData.slUser = None
-        jobData.slackObj = None
+        if jobData.slChan != "MISSING":
+            #jobData.email = None
+            try:
+                jobData.slackObj = Slacker(str(jobData.slToken))
+            except:
+                jobData.errMsg = "ERROR: Failure to initiate Slack object for user: " + \
+                                 str(jobData.slUser) + " channel: " + str(jobData.slChan)
+                raise
+        else:
+            jobData.slChan = None
+            jobData.slToken = None
+            jobData.slUser = None
+            jobData.slackObj = None
         
     def updateJobOwner(self,jobData,newOwner,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag):
         """
@@ -416,7 +416,7 @@ class Database(object):
                 jobData.slChan = str(newSlackChannel)
                 jobData.slToken = str(newSlackToken)
                 jobData.slUser = str(newSlackUName)
-                #jobData.slackObj = Slacker(str(jobData.slToken))
+                jobData.slackObj = Slacker(str(jobData.slToken))
             else:
                 # Enter in Slack info as MISSING
                 try:
@@ -1339,3 +1339,48 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
             raise Exception()
+            
+    def insertSensParms(self,jobData,parmsLogged,parmTxtFile,gageID):
+        """
+        Function to log sensitivity parameters created during the sensitivity pre-processing
+        stage. These values will be logged into the Sens_Params table.
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        # Read in the parameter table.
+        if not os.path.isfile(parmTxtFile):
+            jobData.errMsg = "ERROR: Sensitivity Parameter Table: " + parmTxtFile + " not found."
+            raise Exception()
+            
+        # Read in stats table.
+        try:
+            tblData = pd.read_csv(parmTxtFile,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + parmTxtFile
+            raise
+            
+        for paramTmp in list(tblData.columns.values):
+            for iteration in range(0,jobData.nSensIter):
+                sqlCmd = "update \"Sens_Params\" set \"paramValue\"='" + \
+                         tblData[paramTmp][iteration] + "' where \"jobID\"='" + \
+                         str(jobData.jobID) + " and \"domainID\"='" + str(gageID) + \
+                         " and iteration='" + str(iteration) + "';"
+                print sqlCmd
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to enter sensitivity parameters for job: " + \
+                                     str(jobData.jobID) + " basin: " + str(gageID) + " iteration: " + str(iteration)
+                    raise Exception()
+                    
+        # Touch a file indicating parameters have been logged 
+        try:
+            open(parmsLogged,'a').close()
+        except:
+            jobData.errMsg = "ERROR: Unable to create empty file: " + parmsLogged
+            raise Exception()
+
+                
