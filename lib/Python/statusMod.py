@@ -54,6 +54,7 @@ class statusMeta:
         self.jobRunType = []
         self.analysisRunType = []
         self.host = []
+        self.port = []
         self.acctKey = []
         self.queName = []
         self.queNameAnalysis = []

@@ -26,6 +26,7 @@ class Database(object):
         self.host = jobData.host
         self.uName = jobData.dbUName
         self.pwd = jobData.dbPwd
+        self.port = jobData.port
         self.dbName = 'wrfHydroCalib_DB'
         self.db = None
     
@@ -39,7 +40,7 @@ class Database(object):
         
         try:
             strTmp = "dbname=" + str(self.dbName) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
-                     " port=5432 host=" + self.host
+                     " port=" + str(self.port) + " host=" + self.host
             db = psycopg2.connect(strTmp)
         except:
             jobData.errMsg = "ERROR: Unable to connect to database: " + self.dbName
