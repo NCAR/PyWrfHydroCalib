@@ -221,7 +221,7 @@ def main(argv):
             print "ERROR: " + obsFile + " not found."
             sys.exit(1)
         if not os.path.isfile(gwMskPath):
-            print "WARNING: " + gwMskPath + " not found. Assuming you are running non NWM routing...."
+            print "WARNING: " + gwMskPath + " not found. Assuming you are running NWM routing...."
             gwMskPath = "-9999"
             
         # Look for a NetCDF lake parameter file first, and use it. If not, use the ASCII table instead.

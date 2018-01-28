@@ -549,7 +549,7 @@ def checkConfig(parser):
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
     bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
     if bDate >= eDate:
-        print "ERROR: Must specify ending spinup date greater than beginning spinup date."
+        print "ERROR: Must specify ending calibration date greater than beginning spinup date."
         raise Exception()
     #if bEDate <= bDate:
     #    print "ERROR: Must specify the beginning date for calibration evaluation date " + \
