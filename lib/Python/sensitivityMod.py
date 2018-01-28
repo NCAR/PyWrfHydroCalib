@@ -781,11 +781,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         print "FIRING OFF COLLECTION"
         # Fire off model.
         if statusData.analysisRunType == 1:
-            cmd = "bsub < " + runDir + "/" + collectScript
+            cmd = "bsub < " + collectScript
         if statusData.analysisRunType == 2:
-            cmd = "qsub " + runDir + "/" + collectScript
+            cmd = "qsub " + collectScript
         if statusData.analysisRunType == 3:
-            cmd = "sbatch " + runDir + "/" + collectScript
+            cmd = "sbatch " + collectScript
         if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = collectScript + " 1>" + runDir + "/SCOL_" + \
                   str(statusData.jobID) + "_" + str(gageID) + "_" + str(iteration) + ".out" + \
@@ -1761,10 +1761,10 @@ def generatePbsCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
             inStr = "#PBS -N WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + str(gageID) + \
                     "_" + str(iteration) + '\n'
             fileObj.write(inStr)
-            inStr = '#PBS -o ' + runDir + "WH_SENS_COLLECT_" + str(jobData.jobID) + \
+            inStr = '#PBS -o ' + runDir + "/WH_SENS_COLLECT_" + str(jobData.jobID) + \
                     "_" + str(gageID) + "_" + str(iteration) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#PBS -e ' + runDir + "WH_SENS_COLLECT_" + str(jobData.jobID) + \
+            inStr = '#PBS -e ' + runDir + "/WH_SENS_COLLECT_" + str(jobData.jobID) + \
                     "_" + str(gageID) + "_" + str(iteration) + '.err\n'
             fileObj.write(inStr)
             #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
