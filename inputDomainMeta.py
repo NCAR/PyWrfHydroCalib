@@ -181,7 +181,7 @@ def main(argv):
         wghtPath = dirBasin + "/spatialweights.nc"
         wrfInPath = dirBasin + "/wrfinput.nc"
         forceDir = dirBasin + "/FORCING"
-        obsFile = dirBasin + "/obsDT.Rdata"
+        obsFile = dirBasin + "/obsStrData.Rdata"
         
         # Double check to make sure input files exist
         if not os.path.isfile(geoPath):
