@@ -644,10 +644,17 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
-        if begDate == staticData.bSpinDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are sensitivity simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
+            
+        if startType == 2:
+            # Clean run directory of any old diagnostics files
+            try:
+                errMod.cleanRunDir(statusData,runDir)
+            except:
+                raise
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,4)
@@ -704,10 +711,17 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         except:
             raise
             
-        if begDate == staticData.bSpinDate:
-            startType = 1
-        else:
-            startType = 2
+        # Since these are sensitivity simulations, we are always going to be 
+        # starting the model rom an existing RESTART file. startType = 1 is for
+        # when we have cold starts. 
+        startType = 2
+            
+        if startType == 2:
+            # Clean run directory of any old diagnostics files
+            try:
+                errMod.cleanRunDir(statusData,runDir)
+            except:
+                raise
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,4)
@@ -1974,8 +1988,8 @@ def linkToRst(statusData,gage,runDir):
         statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
         raise Exception()
     # Create links if they don't exist
-    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    link1 = runDir + "/RESTART." + statusData.bSensDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link2 = runDir + "/HYDRO_RST." + statusData.bSensDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     if not os.path.islink(link1):
         os.symlink(check1,link1)
     if not os.path.islink(link2):
