@@ -1356,14 +1356,17 @@ class Database(object):
             
         print parmTxtFile
         # Read in stats table.
-        try:
-            tblData = pd.read_csv(parmTxtFile,sep=' ')
-        except:
-            jobData.errMsg = "ERROR: Failure to read in table: " + parmTxtFile
-            raise
+        tblData = pd.read_csv(parmTxtFile,sep=' ')
+        #try:
+        #    tblData = pd.read_csv(parmTxtFile,sep=' ')
+        #except:
+        #    jobData.errMsg = "ERROR: Failure to read in table: " + parmTxtFile
+        #    raise
             
         for paramTmp in list(tblData.columns.values):
+            print paramTmp
             for iteration in range(0,jobData.nSensIter):
+                print iteration
                 sqlCmd = "update \"Sens_Params\" set \"paramValue\"='" + \
                          tblData[paramTmp][iteration] + "' where \"jobID\"='" + \
                          str(jobData.jobID) + " and \"domainID\"='" + str(gageID) + \
