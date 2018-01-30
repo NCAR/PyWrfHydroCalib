@@ -1363,13 +1363,14 @@ class Database(object):
         #    jobData.errMsg = "ERROR: Failure to read in table: " + parmTxtFile
         #    raise
             
-        for paramTmp in list(tblData.columns.values):
-            print paramTmp
+        for paramTmp in range(1,len(list(tblData.columns.values))):
+            print list(tblData.columns.values)[paramTmp]
+            parmName = list(tblData.columns.values)[paramTmp]
             for iteration in range(0,jobData.nSensIter):
                 print iteration
-                print tblData[paramTmp][iteration]
+                print tblData[parmName][iteration]
                 sqlCmd = "update \"Sens_Params\" set \"paramValue\"='" + \
-                         tblData[paramTmp][iteration] + "' where \"jobID\"='" + \
+                         tblData[parmName][iteration] + "' where \"jobID\"='" + \
                          str(jobData.jobID) + " and \"domainID\"='" + str(gageID) + \
                          " and iteration='" + str(iteration) + "';"
                 print sqlCmd
