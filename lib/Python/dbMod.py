@@ -460,7 +460,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
         
-        sqlCmd = "update \"Job_Meta\" set sens_complete='" + str(jobData.sensComplete) + \
+        sqlCmd = "update \"Job_Meta\" set \"sens_complete\"='" + str(jobData.sensComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         print sqlCmd
