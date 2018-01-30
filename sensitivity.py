@@ -405,7 +405,8 @@ def main(argv):
                     keySlot[basin,iterTmp] = 2.0
             
         # Check to see if program requirements have been met.
-        if keySlot.sum() == entryValue and postProcStatus and os.path.isfile(sensLogged):
+        if keySlot.sum() == entryValue and postProcStatus:
+        #if keySlot.sum() == entryValue and postProcStatus and os.path.isfile(sensLogged):
             jobData.sensComplete = 1
             try:
                 db.updateSensStatus(jobData)
