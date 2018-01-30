@@ -1430,17 +1430,18 @@ class Database(object):
             tblData[tmpName][pd.isnull(tblData[tmpName])] = -9999.0
         
         # Loop through table and enter information into DB.
-        #for stat in list(tblData.columns.values):
-        #    print stat
-        #    numEntries = len(tblData.id)
-        #    for entry in range(0,numEntries):
-        #        print entry
-        #        if stat != 'id':
-        #            if stat == 'objFn':
-        #                statName = 'objfnVal'
-        #            else:
-        #                statName = stat
-        #                
+        for stat in list(tblData.columns.values):
+            print stat
+            numEntries = len(tblData.id)
+            for entry in range(0,numEntries):
+                print entry
+                if stat != 'id':
+                    if stat == 'objFn':
+                        statName = 'objfnVal'
+                    else:
+                        statName = stat
+                        print statName
+                        
         #            sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
         #                     str(tblData[stat][entry]) + "' where \"jobID\"='" + \
         #                     str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
@@ -1454,9 +1455,9 @@ class Database(object):
         #                jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \
         #                                str(jobData.jobID) + " domainID: " + str(gageID)
                                         
-        ## Touch a file indicating parameters have been logged 
-        #try:
-        #    open(completePath,'a').close()
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to create empty file: " + completePath
-        #    raise Exception()
+        # Touch a file indicating parameters have been logged 
+        try:
+            open(completePath,'a').close()
+        except:
+            jobData.errMsg = "ERROR: Unable to create empty file: " + completePath
+            raise Exception()
