@@ -60,7 +60,6 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
         #statusData.genMsg = "Pre-Processing for basin: " + gage + " has been locked. " + \
         #                    " Please remove: " + lockFile
         #errMod.sendMsg(statusData)
-        print "PRE_PROC LOCKED"
         preProcStatus = False
         return
     
@@ -75,7 +74,6 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
         # Check to see if the COMPLETE flag is present.
         if os.path.isfile(completeFlag):
             # Code successfully completed
-            print "COMPLETE FILE FOUND"
             preProcStatus = True
             return
         if not os.path.isfile(lockFile) and os.path.isfile(errFile):
@@ -110,7 +108,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
                 return
             else:
                 # The job is still running.
-                print "SENS PRE PROC SENS RUNNING FOR BASIN: " + str(gageID)
+                print "SENSITIVITY PRE PROC SENS RUNNING FOR BASIN: " + str(gageID)
                 time.sleep(3)
                 preProcStatus = False
                 return
@@ -149,7 +147,6 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
         cmd = workDir + "/run_WH_SENS_PREPROC.sh 1>" + workDir + "/WH_SENS_PREPROC_" + \
               str(statusData.jobID) + "_" + str(gageID) + ".out" + \
               ' 2>' + workDir + "/WH_SENS_PREPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        print cmd
         try:
             p3 = subprocess.Popen([cmd],shell=True)
             time.sleep(5)
@@ -176,7 +173,6 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     statsFile = workDir + "/stat_sensitivity.txt"
     runStatus = True
         
-    print completeFlag
     # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
     try:
@@ -185,7 +181,6 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
         raise
     
     if os.path.isfile(lockFile) and os.path.isfile(errFile):
-        print "POST PROCESSING LOCKED"
         # Remove the run flag if it's present.
         if os.path.isfile(runFlag):
             try:
@@ -211,7 +206,6 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
             except:
                 statusData.errMsg = "ERROR: Unable to remove: " + runFlag
                 raise
-        print "POST PROCESSING LOCKED"
         #statusData.genMsg = "Post-Processing for basin: " + gage + " has been locked. " + \
         #                    " Please remove: " + lockFile
         #errMod.sendMsg(statusData)
@@ -226,19 +220,11 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
         
     # Check to see if the COMPLETE flag is present.
     if os.path.isfile(completeFlag):
-        print "FOUND POST COMPLETE FLAG"
         # Code successfully completed
         # Ensure the stats file is present.
         if not os.path.isfile(statsFile):
-            print statsFile
             statusData.errMsg = "ERROR: Expected to find: " + statsFile + " but was not found."
             raise
-        # Log sensitivity statistics into the database.
-        #try:
-        #    db.logSensStats(statusData)
-        #except:
-        #    statusData.errMsg = "ERROR: Unable to log sensitivity statistics for basin: " + gageID
-        #    raise
         # Remove the run flag if it's present.
         if os.path.isfile(runFlag):
             try:
@@ -299,13 +285,13 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
                 errMod.sendMsg(statusData)
                 statusData.genMsg = "       Please remove: " + lockFile + " before this basin can continue."
                 errMod.sendMsg(statusData)
-                preProcStatus = False
+                postProcStatus = False
                 runStatus = False
                 return
         else:
             # The job is still running.
             print "SENS POST PROC SENS RUNNING FOR BASIN: " + str(gageID)
-            preProcStatus = False
+            postProcStatus = False
             runStatus = False
             return
                 
@@ -344,7 +330,6 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
             cmd = workDir + "/run_WH_SENS_POSTPROC.sh 1>" + workDir + "/WH_SENS_POSTPROC_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + workDir + "/WH_SENS_POSTPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-            print cmd
             try:
                 p3 = subprocess.Popen([cmd],shell=True)
                 time.sleep(5)
@@ -382,9 +367,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     runDir = statusData.jobDir + "/" + gage + "/RUN.SENSITIVITY/OUTPUT_" + str(iteration)
     workDir = statusData.jobDir + "/" + gage + "/RUN.SENSITIVITY"
     collectComplete = runDir + "/R_COLLECT.COMPLETE"
-    
-    print runDir
-    print workDir
     
     if statusData.jobRunType == 1:
         # If BSUB run script doesn't exist, create it here.
@@ -467,7 +449,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         keySlot[basinNum,iteration] = -1.0
         keyStatus = -1.0
         runFlag = False
-        print "MODEL IS LOCKED"
         #statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " sensitivity is locked. " + \
         #                    " for iteration: " + str(iteration) + " " + \
         #                    "Please remove: " + lockPath + " before continuing."
@@ -477,7 +458,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         keySlot[basinNum,iteration] = -0.9
         keyStatus = -0.9
         runFlag = False
-        print "COLLECTION IS LOCKED"
         #statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " collection is locked. " + \
         #                    " for iteration: " + str(iteration) + " " + \
         #                    "Please remove: " + collectLock + " before continuing."
@@ -487,7 +467,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # Model has already completed
         runFlag = False
         return
-        print "MODEL COMPLETE"
         
     # For uncompleted simulations that are still listed as running.
     if keyStatus == 0.5:
@@ -558,7 +537,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # manually by user.
         if os.path.isfile(lockPath):
             runFlag = False
-            print "MODEL LOCKED"
         else:
             # LOCK file was removed, upgrade status to 0.0 temporarily
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
@@ -566,7 +544,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                print "READY TO RUN MODEL"
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
                 runFlag = True
@@ -583,7 +560,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
         # manually by user.
         if os.path.isfile(collectLock):
             runFlag = False
-            print "COLLECTION LOCKED"
         else:
             # LOCK file was removed, uprade status to 0.75
             if collectStatus:

@@ -1431,10 +1431,8 @@ class Database(object):
         
         # Loop through table and enter information into DB.
         for stat in list(tblData.columns.values):
-            print stat
             numEntries = len(tblData.id)
             for entry in range(0,numEntries):
-                print entry
                 if stat == 'id':
                     continue
                 if stat == 'nsewt':
@@ -1443,22 +1441,18 @@ class Database(object):
                     statName = 'objfnVal'
                 else:
                     statName = stat
-                    print statName
                         
                 sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
                          str(tblData[stat][entry]) + "' where \"jobID\"='" + \
                          str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
                          "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
                          "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
-                print sqlCmd
-                self.conn.execute(sqlCmd)
-                self.db.commit()
-        #            try:
-        #                self.conn.execute(sqlCmd)
-        #                self.db.commit()
-        #            except:
-        #                jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \
-        #                                str(jobData.jobID) + " domainID: " + str(gageID)
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \
+                                     str(jobData.jobID) + " domainID: " + str(gageID)
                                         
         # Touch a file indicating parameters have been logged 
         try:
