@@ -1354,6 +1354,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Sensitivity Parameter Table: " + parmTxtFile + " not found."
             raise Exception()
             
+        print parmTxtFile
         # Read in stats table.
         try:
             tblData = pd.read_csv(parmTxtFile,sep=' ')

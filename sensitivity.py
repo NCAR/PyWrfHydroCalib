@@ -325,8 +325,8 @@ def main(argv):
                     try:
                         db.insertSensParms(jobData,parmsLogged,parmTxtFile,jobData.gageIDs[basin])
                     except:
-                        jobData.errMsg = ("WARNING: Unable to log sensitivity parameters for basin: " + basin + \
-                                          " Job: " + jobData.jobId)
+                        jobData.errMsg = ("WARNING: Unable to log sensitivity parameters for basin: " + str(basin) + \
+                                          " Job: " + str(jobData.jobId))
                         errMod.errOut(jobData)
             if not preProcStatus:
                 sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
