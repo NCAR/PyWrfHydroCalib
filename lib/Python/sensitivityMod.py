@@ -230,6 +230,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
         # Code successfully completed
         # Ensure the stats file is present.
         if not os.path.isfile(statsFile):
+            print statsFile
             statusData.errMsg = "ERROR: Expected to find: " + statsFile + " but was not found."
             raise
         # Log sensitivity statistics into the database.

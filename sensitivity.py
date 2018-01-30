@@ -317,7 +317,7 @@ def main(argv):
             parmsLogged =  jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/PARAMS_LOGGED.COMPLETE"
             parmTxtFile = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/params_new.txt"
             sensLogged = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/SENS_LOGGED.COMPLETE"
-            sensStats = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/stat_sensitivity.txt'"
+            sensStats = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/stat_sensitivity.txt"
             if os.path.isfile(preProcComplete):
                 preProcStatus = True
                 print "PRE PROCESSING COMPLETE!"
