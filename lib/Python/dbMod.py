@@ -1435,21 +1435,24 @@ class Database(object):
             numEntries = len(tblData.id)
             for entry in range(0,numEntries):
                 print entry
-                if stat != 'id' and stat != 'nsewt':
-                    if stat == 'objFn':
-                        statName = 'objfnVal'
-                    else:
-                        statName = stat
-                        print statName
+                if stat == 'id':
+                    continue
+                if stat == 'nsewt':
+                    continue
+                if stat == 'objFn':
+                    statName = 'objfnVal'
+                else:
+                    statName = stat
+                    print statName
                         
-                    sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
-                             str(tblData[stat][entry]) + "' where \"jobID\"='" + \
-                             str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
-                             "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
-                             "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
-                    print sqlCmd
-                    self.conn.execute(sqlCmd)
-                    self.db.commit()
+                sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
+                         str(tblData[stat][entry]) + "' where \"jobID\"='" + \
+                         str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
+                         "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
+                         "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
+                print sqlCmd
+                self.conn.execute(sqlCmd)
+                self.db.commit()
         #            try:
         #                self.conn.execute(sqlCmd)
         #                self.db.commit()
