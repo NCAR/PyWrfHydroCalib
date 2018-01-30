@@ -1436,7 +1436,7 @@ class Database(object):
                 print entry
                 if stat != 'id':
                     sqlCmd = "update \"Sens_Stats\" set \"" + stat + "\"='" + \
-                             tblData[stat][entry] + "\"' where \"jobID\"='" + \
+                             str(tblData[stat][entry]) + "\"' where \"jobID\"='" + \
                              str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
                              "' and iteration='" + str(iteration+1) + "' and " + \
                              "\timeStep\"='" + tblData['timeStep'][entry] + "';"
