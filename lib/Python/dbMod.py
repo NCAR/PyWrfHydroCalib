@@ -735,7 +735,7 @@ class Database(object):
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
                          "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0,'hourly');"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
                 print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
@@ -750,7 +750,7 @@ class Database(object):
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
                          "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0,'daily');"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
                 print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
