@@ -733,7 +733,7 @@ class Database(object):
                 # Create "empty" entry into table.
                 # First for hourly stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,0,0,'hourly');"
                 print sqlCmd
@@ -748,7 +748,7 @@ class Database(object):
                     
                 # Next for daily stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,0,0,'daily');"
                 print sqlCmd
