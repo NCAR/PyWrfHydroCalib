@@ -463,6 +463,7 @@ class Database(object):
         sqlCmd = "update \"Job_Meta\" set sens_complete='" + str(jobData.sensComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
+        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             self.db.commit()
