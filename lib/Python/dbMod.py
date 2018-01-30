@@ -1435,7 +1435,7 @@ class Database(object):
             numEntries = len(tblData.id)
             for entry in range(0,numEntries):
                 print entry
-                if stat != 'id':
+                if stat != 'id' and stat != 'nsewt':
                     if stat == 'objFn':
                         statName = 'objfnVal'
                     else:
