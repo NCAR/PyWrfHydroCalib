@@ -1436,7 +1436,12 @@ class Database(object):
             for entry in range(0,numEntries):
                 print entry
                 if stat != 'id':
-                    sqlCmd = "update \"Sens_Stats\" set \"" + stat + "\"='" + \
+                    if stat == 'objFn':
+                        statName = 'objfnVal'
+                    else:
+                        statName = stat
+                        
+                    sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
                              str(tblData[stat][entry]) + "' where \"jobID\"='" + \
                              str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
                              "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
