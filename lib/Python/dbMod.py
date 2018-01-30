@@ -1371,8 +1371,8 @@ class Database(object):
                 print tblData[parmName][iteration]
                 sqlCmd = "update \"Sens_Params\" set \"paramValue\"='" + \
                          str(tblData[parmName][iteration]) + "' where \"jobID\"='" + \
-                         str(jobData.jobID) + " and \"domainID\"='" + str(gageID) + \
-                         " and iteration='" + str(iteration) + "';"
+                         str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
+                         "' and iteration='" + str(iteration) + "';"
                 print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
