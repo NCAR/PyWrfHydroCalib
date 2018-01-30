@@ -122,6 +122,17 @@ for (cyclecount in 1:nrow(x_all)) {
 # Interim save
 save.image(paste0(runDir,"/proj_data_SENS.Rdata"))
 
+# Saving stat files for the daily and hourly time step. 
+
+stat_daily <- x_archive[, c("id", metrics)]
+stat_daily$timeStep <- "daily"
+stat_hourly <- x_archive_h[, c("id", metrics)]
+stat_hourly$timeStep <- "hourly"
+stat <- rbind(stat_daily, stat_hourly)
+
+
+write.table(stat, file=paste0(runDir, "/stat_sensitivity.txt"), row.names=FALSE, sep=" ")
+
 ################################ DELSA Calculations for each Metric at both hourly and daily time step
 
 if (SA_method == "DELSA") {
