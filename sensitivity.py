@@ -389,9 +389,10 @@ def main(argv):
             if os.path.isfile(postProcComplete):
                 if not os.path.isfile(sensLogged):
                     # Log sensitivity statistics into the database.
+                    print sensStats
                     if not os.path.isfile(sensStats):
                         jobData.errMsg = "ERROR: Expected to find: " + sensStats + " after post-processing. Not found."
-                        errMod.errout(jobData)
+                        errMod.errOut(jobData)
                     else:
                         db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
                         #try:
