@@ -736,6 +736,7 @@ class Database(object):
                          "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,0,0,'hourly');"
+                print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
@@ -750,6 +751,7 @@ class Database(object):
                          "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,0,0,'daily');"
+                print sqlCmd
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
