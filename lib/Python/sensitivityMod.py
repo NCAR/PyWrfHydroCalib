@@ -173,6 +173,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     errFile = workDir + "/POST_PROC.ERR"
     runFlag = workDir + "/POST_PROC.RUN"
     completeFlag = workDir + "/postProc.COMPLETE"
+    statsFile = workDir + "/stat_sensitivity.txt"
     runStatus = True
         
     print completeFlag
@@ -183,7 +184,6 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     except:
         raise
     
-    print 'blah'
     if os.path.isfile(lockFile) and os.path.isfile(errFile):
         print "POST PROCESSING LOCKED"
         # Remove the run flag if it's present.
@@ -228,6 +228,16 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     if os.path.isfile(completeFlag):
         print "FOUND POST COMPLETE FLAG"
         # Code successfully completed
+        # Ensure the stats file is present.
+        if not os.path.isfile(statsFile):
+            statusData.errMsg = "ERROR: Expected to find: " + statsFile + " but was not found."
+            raise
+        # Log sensitivity statistics into the database.
+        #try:
+        #    db.logSensStats(statusData)
+        #except:
+        #    statusData.errMsg = "ERROR: Unable to log sensitivity statistics for basin: " + gageID
+        #    raise
         # Remove the run flag if it's present.
         if os.path.isfile(runFlag):
             try:
@@ -266,7 +276,6 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
         # Check to see if a job is running.
         postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID)
         if not postRunStatus:
-            # Check to see 
                 # This implies the job failed. Report an error to the user and create a LOCK file.
                 try:
                     open(lockFile,'a').close()

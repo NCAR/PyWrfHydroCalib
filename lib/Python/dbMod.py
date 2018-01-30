@@ -1382,5 +1382,47 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Unable to create empty file: " + parmsLogged
             raise Exception()
+    
+    def logSensStats(self,jobData,statsFile,gageID):
+        """
+        Function to log sensitivity error statistics into the DB Sens_Stats table.
+        """
 
-                
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        # Read in the parameter table.
+        if not os.path.isfile(statsFile):
+            jobData.errMsg = "ERROR: Sensitivity Parameter Table: " + statsFile + " not found."
+            raise Exception()                
+
+        # Read in stats table.
+        try:
+            tblData = pd.read_csv(statsFile,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + statsFile
+            raise
+        
+        # Set any missing values to -9999
+        for tmpName in list(tblData.columns.values):
+            tblData[tmpName][pd.isnull(tblData[tmpName])] = -9999.0
+        
+        # Loop through table and enter information into DB.
+        #for stat in range(0,numStats):
+        ##    sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
+        #             "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof) values (" + str(jobID) + \
+        #             "," + str(gageID) + ",'" + tblData.run[stat] + "','" + \
+        #             tblData.period[stat] + "'," + str(tblData.obj[stat]) + "," + \
+        #             str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
+        #             str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
+        #             str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
+        #             str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ");"
+        #             
+        #    try:
+        #        self.conn.execute(sqlCmd)
+        #        self.db.commit()
+        #    except:
+        #        jobData.errMsg = "ERROR: Failure to enter validation statistics for jobID: " + \
+        #                         str(jobID) + " domainID: " + str(gageID)
+        #        raise
