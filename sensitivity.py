@@ -394,11 +394,11 @@ def main(argv):
                         jobData.errMsg = "ERROR: Expected to find: " + sensStats + " after post-processing. Not found."
                         errMod.errOut(jobData)
                     else:
-                        db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
-                        #try:
-                        #    db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
-                        #except:
-                        #    errMod.errOut(jobData)
+                        #db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
+                        try:
+                            db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
+                        except:
+                            errMod.errOut(jobData)
                 postProcStatus = True
                 # Upgrade key status values as necessary
                 for iterTmp in range(0,jobData.nSensIter):
