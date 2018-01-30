@@ -1448,6 +1448,8 @@ class Database(object):
                              "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
                              "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
                     print sqlCmd
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
         #            try:
         #                self.conn.execute(sqlCmd)
         #                self.db.commit()
