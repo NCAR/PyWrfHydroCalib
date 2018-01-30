@@ -1438,7 +1438,7 @@ class Database(object):
                     sqlCmd = "update \"Sens_Stats\" set \"" + stat + "\"='" + \
                              str(tblData[stat][entry]) + "\"' where \"jobID\"='" + \
                              str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
-                             "' and iteration='" + str(iteration+1) + "' and " + \
+                             "' and iteration='" + str(tblData['id'][entry]) + "' and " + \
                              "\timeStep\"='" + tblData['timeStep'][entry] + "';"
                     print sqlCmd
                     try:
