@@ -1442,12 +1442,12 @@ class Database(object):
                         statName = stat
                         print statName
                         
-        #            sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
-        #                     str(tblData[stat][entry]) + "' where \"jobID\"='" + \
-        #                     str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
-        #                     "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
-        #                     "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
-        #            print sqlCmd
+                    sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
+                             str(tblData[stat][entry]) + "' where \"jobID\"='" + \
+                             str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
+                             "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
+                             "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
+                    print sqlCmd
         #            try:
         #                self.conn.execute(sqlCmd)
         #                self.db.commit()
