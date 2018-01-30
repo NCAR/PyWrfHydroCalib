@@ -1367,6 +1367,7 @@ class Database(object):
             print paramTmp
             for iteration in range(0,jobData.nSensIter):
                 print iteration
+                print tblData[paramTmp][iteration]
                 sqlCmd = "update \"Sens_Params\" set \"paramValue\"='" + \
                          tblData[paramTmp][iteration] + "' where \"jobID\"='" + \
                          str(jobData.jobID) + " and \"domainID\"='" + str(gageID) + \
