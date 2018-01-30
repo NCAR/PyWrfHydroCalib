@@ -395,7 +395,7 @@ def main(argv):
                         errMod.errOut(jobData)
                     else:
                         print "blah"
-                        #db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
+                        db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
                         #try:
                         #    db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
                         #except:
