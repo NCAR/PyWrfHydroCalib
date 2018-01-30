@@ -410,7 +410,7 @@ def main(argv):
             try:
                 db.updateSensStatus(jobData)
             except:
-                errMod.errout(jobData)
+                errMod.errOut(jobData)
             jobData.genMsg = "SENSITIVITY FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
