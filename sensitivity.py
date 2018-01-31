@@ -387,6 +387,12 @@ def main(argv):
                         # Upgrade key status values as necessary
                         for iterTmp in range(0,jobData.nSensIter):
                             keySlot[basin,iterTmp] = 2.0
+                elif os.path.isfile(sensLogged):
+                    # Post-processing complete and statistics were sucessfully logged.
+                    postProcStatus = True
+                    # Upgrade key status values as necessary
+                    for iterTmp in range(0,jobData.nSensIter):
+                        keySlot[basin,iterTmp] = 2.0
                 elif os.path.isfile(missingFlag):
                     # Missing obs were found. We will default to making this basin complete.
                     for iterTmp in range(0,jobData.nSensIter):

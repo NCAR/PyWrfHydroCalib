@@ -260,6 +260,8 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
                 statusData.errMsg = "ERROR: Unable to remove: " + runFlag
                 raise
         runStatus = True
+    print runFlag
+    print os.path.isfile(runFlag)
     if os.path.isfile(runFlag):
         # Check to see if a job is running.
         postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID)
