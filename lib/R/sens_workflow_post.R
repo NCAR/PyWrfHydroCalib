@@ -65,6 +65,15 @@ for (cyclecount in 1:nrow(x_all)) {
   setkey(chrt, "site_no", "POSIXct")
   setkey(obsDT, "site_no", "POSIXct")
   chrt.h <- merge(chrt, obsDT, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+
+  # Check for empty output
+   if (nrow(chrt.h) < 1) {
+       write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())
+       fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
+       writeLines('', fileConn)
+       close(fileConn)
+       quit("no")
+  }
   chrt.h$id <- cyclecount
   # chrt.h$tag <- x_all$tag[cyclecount] We do not have any tag anymore
   chrt.h.all <- rbindlist(list(chrt.h.all, chrt.h))
