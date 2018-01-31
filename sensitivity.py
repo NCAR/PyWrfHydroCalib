@@ -110,7 +110,6 @@ def main(argv):
         # Either a job is still running, or was running
         # and was killed.
 
-        print 'LOCK FILE FOUND.'
         # Read in to get PID number
         pidObj = pd.read_csv(lockPath)
         pidCheck = int(pidObj.PID[0])
@@ -128,7 +127,6 @@ def main(argv):
                 fileObj.write(str(os.getpid()))
                 fileObj.close()
     else:
-        print 'LOCK FILE NOT FOUND.'
         # Write a LOCK file for this program.
         fileObj = open(lockPath,'w')
         fileObj.write('\"PID\"\n')
@@ -256,14 +254,10 @@ def main(argv):
     # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
-    print jobData.nSensIter
-    print len(jobData.gages)
     keySlot = np.empty([len(jobData.gages),int(jobData.nSensIter)])
     keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages)*int(jobData.nSensIter)*2.0)
     
-    print keySlot
-    print entryValue
     # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
         try:
@@ -278,26 +272,22 @@ def main(argv):
         # We are going to pull all values for one basin, then place them into the array.
         # This is faster then looping over each iteration at a time. 
         statusData = db.sensIterationStatus(jobData,domainID,str(jobData.gages[basin]))
-        print statusData
         statusData = [list(item) for item in statusData]
-        print statusData
         for iteration in range(0,int(jobData.nSensIter)):
             for iteration2 in range(0,int(jobData.nSensIter)):
                 if statusData[iteration2][0] == iteration+1:
                     keySlot[basin,iteration] = float(statusData[iteration2][1])
             
-    print "NEW KEY SLOT = " + str(keySlot)
-                    
     if len(np.where(keySlot != 0.0)[0]) == 0:
     #if keySlot.sum() == 0.0:
         # We need to either check to see if pre-processing has taken place, or
         # run it.
         preProcStatus = False
         
-    print "ITERATIONS = " + str(jobData.nSensIter)
     while not completeStatus:
         # Walk through each basin undergoing sensitivity analysis. 
         for basin in range(0,len(jobData.gages)):
+            print "GAGE: " + jobData.gages[basin]
             # Establish a status value for pre-processing the parameter values from R/Python code. 
             preProcStatus = False 
     
@@ -307,15 +297,15 @@ def main(argv):
             
             # Calculate the number of "batches" we are going to run
             nBatches = int(jobData.nSensIter/jobData.nSensBatch)
-            print "NUM BATCHES = " + str(nBatches)
             entryValueBatch = float(jobData.nSensBatch)
-            print 'BATCH ENTRY = ' + str(entryValueBatch)
             
             # If we have a pre-processing complete file, set our pre-proc status to True. 
             # Also, log parameter values generated if the log file hasn't been created. 
             preProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/preProc.COMPLETE"
             parmsLogged =  jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/PARAMS_LOGGED.COMPLETE"
             parmTxtFile = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/params_new.txt"
+            sensLogged = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/SENS_LOGGED.COMPLETE"
+            sensStats = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/stat_sensitivity.txt"
             if os.path.isfile(preProcComplete):
                 preProcStatus = True
                 print "PRE PROCESSING COMPLETE!"
@@ -325,8 +315,8 @@ def main(argv):
                     try:
                         db.insertSensParms(jobData,parmsLogged,parmTxtFile,jobData.gageIDs[basin])
                     except:
-                        jobData.errMsg = ("WARNING: Unable to log sensitivity parameters for basin: " + basin + \
-                                          " Job: " + jobData.jobId)
+                        jobData.errMsg = ("WARNING: Unable to log sensitivity parameters for basin: " + str(basin) + \
+                                          " Job: " + str(jobData.jobID))
                         errMod.errOut(jobData)
             if not preProcStatus:
                 sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
@@ -341,7 +331,6 @@ def main(argv):
                 # if not thousands of model permuatations. This worflow allows for 
                 # only batches of model runs to be ran at a time as to not bog down the system. 
                 for batchIter in range(0,nBatches):
-                    print "BATCH = " + str(batchIter)
                     time.sleep(3)
                     batchCheck = keySlot[basin,(batchIter*jobData.nSensBatch):((batchIter+1)*jobData.nSensBatch)]
                     if batchIter == 0:
@@ -353,15 +342,13 @@ def main(argv):
                     if batchCheck.sum() != entryValueBatch and batchCheckPrev == entryValueBatch:
                         for iterTmp in range(0,jobData.nSensBatch):
                             iteration = batchIter*jobData.nSensBatch + iterTmp
-                            print iteration
                             keyCheck1 = keySlot[basin,iteration]
                             if keyCheck1 < 1:
                                 # This model iteration has not completed. 
-                                sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                                #try:
-                                #    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
-                                #except:
-                                #    errMod.errOut(jobData)
+                                try:
+                                    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                                except:
+                                    errMod.errOut(jobData)
                                 
                                 if keySlot[basin,iteration] == 0.0 and keyCheck1 == 0.5:
                                     # Put some spacing between launching model simulations to slow down que geting 
@@ -374,29 +361,37 @@ def main(argv):
             #sys.exit(1)
                                 
             # Run post-processing ONLY when all model simulations are finished.
-            print "LENGTH OF NON FINISHED STUFF = " + str(len(np.where(keySlot != 1.0)[0]))
             if not postProcStatus and len(np.where(keySlot != 1.0)[0]) == 0:
                 print "READY TO RUN POST-PROCESSING"
-                sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
-            #    #try:
-            #    #    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
-            #    #except:
-            #    #    errMod.errOut(jobData)
+                try:
+                    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                except:
+                    errMod.errOut(jobData)
                                 
             postProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/postProc.COMPLETE"
             if os.path.isfile(postProcComplete):
-                postProcStatus = True
-                # Upgrade key status values as necessary
-                for iterTmp in range(0,jobData.nSensIter):
-                    keySlot[basin,iterTmp] = 2.0
+                if not os.path.isfile(sensLogged):
+                    # Log sensitivity statistics into the database.
+                    if not os.path.isfile(sensStats):
+                        jobData.errMsg = "ERROR: Expected to find: " + sensStats + " after post-processing. Not found."
+                        errMod.errOut(jobData)
+                    else:
+                        try:
+                            db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
+                        except:
+                            errMod.errOut(jobData)
+                    postProcStatus = True
+                    # Upgrade key status values as necessary
+                    for iterTmp in range(0,jobData.nSensIter):
+                        keySlot[basin,iterTmp] = 2.0
             
         # Check to see if program requirements have been met.
-        if keySlot.sum() == entryValue and postProcStatus:
+        if keySlot.sum() == entryValue and postProcStatus and os.path.isfile(sensLogged):
             jobData.sensComplete = 1
             try:
                 db.updateSensStatus(jobData)
             except:
-                errMod.errout(jobData)
+                errMod.errOut(jobData)
             jobData.genMsg = "SENSITIVITY FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True

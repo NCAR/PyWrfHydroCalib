@@ -48,7 +48,7 @@ CREATE TABLE "Sens_Stats" (
    "kge" real DEFAULT NULL,
    "fdcerr" real DEFAULT NULL,
    "msof" real DEFAULT NULL,
-   "best" integer DEFAULT NULL,
+   "timeStep" character varying(64),
    "complete" float DEFAULT NULL
 );
 ALTER TABLE "Sens_Stats" OWNER TO "WH_Calib_rw";

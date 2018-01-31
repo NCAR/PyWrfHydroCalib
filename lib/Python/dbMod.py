@@ -460,7 +460,7 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
         
-        sqlCmd = "update \"Job_Meta\" set sens_complete='" + str(jobData.sensComplete) + \
+        sqlCmd = "update \"Job_Meta\" set \"sens_complete\"='" + str(jobData.sensComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
@@ -731,17 +731,32 @@ class Database(object):
             
             if not results:
                 # Create "empty" entry into table.
+                # First for hourly stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
                 except:
                     jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
                                      "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
-                                     " iteration: " + str(iteration)
+                                     " iteration: " + str(iteration) + " for hourly stats."
+                    raise
+                    
+                # Next for daily stats
+                sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
+                         "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
+                                     "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                     " iteration: " + str(iteration) + " for daily stats."
                     raise
                     
     def iterationStatus(self,jobData,domainID,gageName):
@@ -776,10 +791,11 @@ class Database(object):
             
         jobID = int(jobData.jobID)
         
+        # At a minimum, we wil ALWAYS have daily statistics, so use these to pull the 
+        # status values for each basin. 
         sqlCmd = "select iteration,complete from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
-                 " and \"domainID\"='" + str(domainID) + "';"
+                 " and \"domainID\"='" + str(domainID) + "' and \"timeStep\"='daily';"
         try:
-            print sqlCmd
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
         except:
@@ -1361,13 +1377,14 @@ class Database(object):
             jobData.errMsg = "ERROR: Failure to read in table: " + parmTxtFile
             raise
             
-        for paramTmp in list(tblData.columns.values):
+        for paramTmp in range(1,len(list(tblData.columns.values))):
+            parmName = list(tblData.columns.values)[paramTmp]
             for iteration in range(0,jobData.nSensIter):
                 sqlCmd = "update \"Sens_Params\" set \"paramValue\"='" + \
-                         tblData[paramTmp][iteration] + "' where \"jobID\"='" + \
-                         str(jobData.jobID) + " and \"domainID\"='" + str(gageID) + \
-                         " and iteration='" + str(iteration) + "';"
-                print sqlCmd
+                         str(tblData[parmName][iteration]) + "' where \"jobID\"='" + \
+                         str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
+                         "' and iteration='" + str(iteration+1) + "' and " + \
+                         "\"paramName\"='" + parmName + "';"
                 try:
                     self.conn.execute(sqlCmd)
                     self.db.commit()
@@ -1382,5 +1399,60 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Unable to create empty file: " + parmsLogged
             raise Exception()
+    
+    def logSensStats(self,jobData,statsFile,gageID,completePath):
+        """
+        Function to log sensitivity error statistics into the DB Sens_Stats table.
+        """
 
-                
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+            
+        # Read in the parameter table.
+        if not os.path.isfile(statsFile):
+            jobData.errMsg = "ERROR: Sensitivity Parameter Table: " + statsFile + " not found."
+            raise Exception()                
+
+        # Read in stats table.
+        try:
+            tblData = pd.read_csv(statsFile,sep=' ')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in table: " + statsFile
+            raise
+        
+        # Set any missing values to -9999
+        for tmpName in list(tblData.columns.values):
+            tblData[tmpName][pd.isnull(tblData[tmpName])] = -9999.0
+        
+        # Loop through table and enter information into DB.
+        for stat in list(tblData.columns.values):
+            numEntries = len(tblData.id)
+            for entry in range(0,numEntries):
+                if stat == 'id':
+                    continue
+                if stat == 'nsewt':
+                    continue
+                if stat == 'objFn':
+                    statName = 'objfnVal'
+                else:
+                    statName = stat
+                        
+                sqlCmd = "update \"Sens_Stats\" set \"" + statName + "\"='" + \
+                         str(tblData[stat][entry]) + "' where \"jobID\"='" + \
+                         str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
+                         "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
+                         "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
+                try:
+                    self.conn.execute(sqlCmd)
+                    self.db.commit()
+                except:
+                    jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \
+                                     str(jobData.jobID) + " domainID: " + str(gageID)
+                                        
+        # Touch a file indicating parameters have been logged 
+        try:
+            open(completePath,'a').close()
+        except:
+            jobData.errMsg = "ERROR: Unable to create empty file: " + completePath
+            raise Exception()
