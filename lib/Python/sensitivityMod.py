@@ -223,7 +223,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     if os.path.isfile(completeFlag):
         # Code successfully completed
         # Ensure the stats file is present.
-        if not os.path.isfile(statsFile):
+        if not os.path.isfile(statsFile) and not os.path.isfile(missingFlag):
             statusData.errMsg = "ERROR: Expected to find: " + statsFile + " but was not found."
             raise
         # Remove the run flag if it's present.

@@ -381,13 +381,19 @@ def main(argv):
                             db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
                         except:
                             errMod.errOut(jobData)
-                    postProcStatus = True
-                    # Upgrade key status values as necessary
+                    # Check for complete flag on logging sensitivity statistics. 
+                    if os.path.isfile(sensLogged):
+                        postProcStatus = True
+                        # Upgrade key status values as necessary
+                        for iterTmp in range(0,jobData.nSensIter):
+                            keySlot[basin,iterTmp] = 2.0
+                elif os.path.isfile(missingFlag):
+                    # Missing obs were found. We will default to making this basin complete.
                     for iterTmp in range(0,jobData.nSensIter):
                         keySlot[basin,iterTmp] = 2.0
             
         # Check to see if program requirements have been met.
-        if keySlot.sum() == entryValue and postProcStatus and os.path.isfile(sensLogged):
+        if keySlot.sum() == entryValue and postProcStatus:
             jobData.sensComplete = 1
             try:
                 db.updateSensStatus(jobData)
