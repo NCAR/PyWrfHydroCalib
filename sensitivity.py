@@ -368,7 +368,7 @@ def main(argv):
                     errMod.errOut(jobData)
                                 
             postProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/postProc.COMPLETE"
-            if os.path.isfile(postProcComplete) and postProcStatus:
+            if os.path.isfile(postProcComplete):
                 if not os.path.isfile(sensLogged):
                     # Log sensitivity statistics into the database.
                     if not os.path.isfile(sensStats):
