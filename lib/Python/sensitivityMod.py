@@ -170,6 +170,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     errFile = workDir + "/POST_PROC.ERR"
     runFlag = workDir + "/POST_PROC.RUN"
     completeFlag = workDir + "/postProc.COMPLETE"
+    missingFlag = workDir + "/CALC_STATS_MISSING"
     statsFile = workDir + "/stat_sensitivity.txt"
     runStatus = True
         
@@ -263,6 +264,31 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
         # Check to see if a job is running.
         postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID)
         if not postRunStatus:
+            if os.path.isfile(missingFlag):
+                # This is a unique siutation where either an improper COMID (linkID) was passed to
+                # the R program, pulling NA from the model. Or, the observations
+                # file contians too many missing values. For this, convey to the
+                # user through a message, set the status fro all iterations to 1.
+                statusData.genMsg = "WARNING: Either a bad COMID exists for gage: " + \
+                                    str(gage) + " or there are no observations " + \
+                                    " for the evaluation period."
+                errMod.sendMsg(statusData)
+                # Set the status to 1.0, remove the run flag, upgrade the post-processing
+                # status, and touch a complete flag. 
+                try:
+                    os.remove(runFlag)
+                except:
+                    statusData.errMsg = "ERROR: Unable to remove: " + runFlag
+                    raise
+                try:
+                    open(completeFlag,'a').close()
+                except:
+                    statusData.errMsg = "ERROR: Unable to create: " + completeFlag
+                    raise
+                postProcStatus = True
+                runStatus = False
+                return
+            else:
                 # This implies the job failed. Report an error to the user and create a LOCK file.
                 try:
                     open(lockFile,'a').close()

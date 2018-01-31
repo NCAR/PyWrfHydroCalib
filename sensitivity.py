@@ -306,6 +306,7 @@ def main(argv):
             parmTxtFile = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/params_new.txt"
             sensLogged = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/SENS_LOGGED.COMPLETE"
             sensStats = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/stat_sensitivity.txt"
+            missingFlag = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/CALC_STATS_MISSING"
             if os.path.isfile(preProcComplete):
                 preProcStatus = True
                 print "PRE PROCESSING COMPLETE!"
@@ -370,7 +371,7 @@ def main(argv):
                                 
             postProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/postProc.COMPLETE"
             if os.path.isfile(postProcComplete):
-                if not os.path.isfile(sensLogged):
+                if not os.path.isfile(sensLogged) and not os.path.isfile(missingFlag):
                     # Log sensitivity statistics into the database.
                     if not os.path.isfile(sensStats):
                         jobData.errMsg = "ERROR: Expected to find: " + sensStats + " after post-processing. Not found."
