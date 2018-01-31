@@ -463,7 +463,6 @@ class Database(object):
         sqlCmd = "update \"Job_Meta\" set \"sens_complete\"='" + str(jobData.sensComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
-        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             self.db.commit()
@@ -797,7 +796,6 @@ class Database(object):
         sqlCmd = "select iteration,complete from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "' and \"timeStep\"='daily';"
         try:
-            print sqlCmd
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()
         except:

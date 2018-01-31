@@ -287,6 +287,7 @@ def main(argv):
     while not completeStatus:
         # Walk through each basin undergoing sensitivity analysis. 
         for basin in range(0,len(jobData.gages)):
+            print "GAGE: " + jobData.gages[basin]
             # Establish a status value for pre-processing the parameter values from R/Python code. 
             preProcStatus = False 
     
