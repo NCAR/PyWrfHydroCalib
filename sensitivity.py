@@ -321,12 +321,11 @@ def main(argv):
                                           " Job: " + str(jobData.jobID))
                         errMod.errOut(jobData)
             if not preProcStatus:
-                sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
-                print preProcStatus
-                #try:
-                #    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
-                #except:
-                #    errMod.errOut(jobData)
+                #sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                try:
+                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                except:
+                    errMod.errOut(jobData)
             else:
                 # The goal here is to only operate on a fixed number of model runs at a time.
                 # If you have a large parameter sample size, it's possible to have hundreds,
@@ -358,8 +357,6 @@ def main(argv):
                                     
                                 # Update the temporary status array as it will be checked for this batch of model runs.
                                 batchCheck[iterTmp] = keySlot[basin,iteration]
-                                
-            #sys.exit(1)
                                 
             # Run post-processing ONLY when all model simulations are finished.
             if not postProcStatus and len(np.where(keySlot != 1.0)[0]) == 0:
