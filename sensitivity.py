@@ -57,12 +57,13 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    #try:
+    #    pwdTmp = getpass.getpass('Enter Database Password: ')
+    #    jobData.dbPwd = str(pwdTmp)
+    #except:
+    #    print "ERROR: Unable to authenticate credentials for database."
+    #    sys.exit(1)
+    jobData.dbPwd = 'IJustWannaCalibrate'
     
     jobData.dbUName = 'WH_Calib_rw'
     
@@ -332,14 +333,13 @@ def main(argv):
                 # if not thousands of model permuatations. This worflow allows for 
                 # only batches of model runs to be ran at a time as to not bog down the system. 
                 for batchIter in range(0,nBatches):
-                    time.sleep(3)
+                    time.sleep(1)
                     batchCheck = keySlot[basin,(batchIter*jobData.nSensBatch):((batchIter+1)*jobData.nSensBatch)]
                     if batchIter == 0:
                         batchCheckPrev = entryValueBatch
                     else:
                         batchCheckPrev = keySlot[basin,((batchIter-1)*jobData.nSensBatch):(batchIter*jobData.nSensBatch)]
                         batchCheckPrev = batchCheckPrev.sum()
-                    print batchCheck
                     if batchCheck.sum() != entryValueBatch and batchCheckPrev == entryValueBatch:
                         for iterTmp in range(0,jobData.nSensBatch):
                             iteration = batchIter*jobData.nSensBatch + iterTmp
@@ -363,7 +363,6 @@ def main(argv):
                                 
             # Run post-processing ONLY when all model simulations are finished.
             if not postProcStatus and len(np.where(keySlot != 1.0)[0]) == 0:
-                print "READY TO RUN POST-PROCESSING"
                 try:
                     sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 except:

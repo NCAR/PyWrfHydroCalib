@@ -109,7 +109,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
             else:
                 # The job is still running.
                 print "SENSITIVITY PRE PROC SENS RUNNING FOR BASIN: " + str(gageID)
-                time.sleep(3)
+                time.sleep(1)
                 preProcStatus = False
                 return
                 
@@ -149,7 +149,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
               ' 2>' + workDir + "/WH_SENS_PREPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
             p3 = subprocess.Popen([cmd],shell=True)
-            time.sleep(5)
+            time.sleep(1)
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gage)
             raise
@@ -260,8 +260,6 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
                 statusData.errMsg = "ERROR: Unable to remove: " + runFlag
                 raise
         runStatus = True
-    print runFlag
-    print os.path.isfile(runFlag)
     if os.path.isfile(runFlag):
         # Check to see if a job is running.
         postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID)
@@ -360,7 +358,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
                   ' 2>' + workDir + "/WH_SENS_POSTPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
             try:
                 p3 = subprocess.Popen([cmd],shell=True)
-                time.sleep(5)
+                time.sleep(1)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gage)
                 raise
@@ -370,7 +368,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
             statusData.errMsg = "ERROR: Unable to create: " + lockFile
             raise
             
-    time.sleep(3)
+    time.sleep(1)
             
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     """
@@ -504,6 +502,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             keyStatus = 0.5
             runFlag = False
             print "MODEL IS RUNNING"
+            return
         else:
             # Either simulation has completed, or potentially crashed.
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
@@ -512,11 +511,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
-                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                #                    " Failed. Attempting to restart."
-                #print statusData.genMsg
-                #errMod.sendMsg(statusData)
-                print "MODEL CRASHED ONCE"
+                statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                                    " Failed. Attempting to restart."
+                print statusData.genMsg
+                errMod.sendMsg(statusData)
                 keySlot[basinNum,iteration] = -0.25
                 keyStatus = -0.25
             else:
@@ -618,6 +616,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
+            return
         else:
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
@@ -630,7 +629,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                     " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
                                     "MANUALLY REMOVE LOCK FILE: " + lockPath
                 errMod.sendMsg(statusData)
-                print statusData.genMsg
                 open(lockPath,'a').close()
                 keySlot[basinNum,iteration] = -1.0
                 keyStatus = -1.0
@@ -684,7 +682,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 raise
                 
         # Fire off model.
-        print "FIRING OFF MODEL"
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
@@ -750,7 +747,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
             except:
                 raise
                 
-        print "FIRING OFF MODEL"
         # Fire off model.
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
@@ -798,7 +794,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                                     " HAS FAILED. PLEASE FIX ISSUE AND " + \
                                     "MANUALLY REMOVE LOCK FILE: " + collectLock
                 errMod.sendMsg(statusData)
-                print statusData.genMsg
                 open(collectLock,'a').close()
                 keySlot[basinNum,iteration] = -0.9
                 keyStatus = -0.9
@@ -819,7 +814,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                   str(statusData.jobID) + "_" + str(gageID) + "_" + str(iteration) + ".out" + \
                   ' 2>' + runDir + "/SCOL_" + str(statusData.jobID) + "_" + \
                   str(gageID) + "_" + str(iteration) + ".err"
-            print cmd
         try:
             if statusData.analysisRunType == 1 or statusData.analysisRunType == 2 or statusData.analysisRunType == 3:
                 subprocess.call(cmd,shell=True)

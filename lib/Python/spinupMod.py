@@ -120,10 +120,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
-                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                #                    " Failed. Attempting to restart."
-                #print statusData.genMsg
-                #errMod.sendMsg(statusData)
+                statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                                    " Failed. Attempting to restart."
+                print statusData.genMsg
                 keySlot[basinNum] = -0.25
                 keyStatus = -0.25
             else:
@@ -190,7 +189,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                                     " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
                                     "MANUALLY REMOVE LOCK FILE: " + lockPath
                 errMod.sendMsg(statusData)
-                print statusData.genMsg
                 open(lockPath,'a').close()
                 keySlot[basinNum] = -1.0
                 keyStatus = -1.0
