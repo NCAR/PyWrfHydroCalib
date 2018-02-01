@@ -1104,14 +1104,10 @@ def checkSensPreProcJob(jobData,gageID):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "SENSITIVITY PRE_PROC JOBS FOUND"
                     status = True
         else:
             status = False
         
-        if not status:
-            print "NO SENSITIVITY PRE_PROC JOBS FOUND"
-                
     if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
@@ -1128,9 +1124,7 @@ def checkSensPreProcJob(jobData,gageID):
                 print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
-            print "NO SENSITIVITY PRE_PROC JOBS FOUND"
         else:
-            print "SENSITIVITY PRE_PROC JOBS FOUND"
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -1271,14 +1265,10 @@ def checkSensPostProcJob(jobData,gageID):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "SENSITIVITY POST_PROC JOBS FOUND"
                     status = True
         else:
             status = False
         
-        if not status:
-            print "NO SENSITIVITY POST_PROC JOBS FOUND"
-                
     if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
@@ -1294,9 +1284,7 @@ def checkSensPostProcJob(jobData,gageID):
                 print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
-            print "NO SENSITIVITY POST_PROC JOBS FOUND"
         else:
-            print "SENSITIVITY POST_PROC JOBS FOUND"
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -1608,14 +1596,10 @@ def checkSensCollectJob(jobData,gageID,iteration):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "SENSITIVITY COLLECTION JOBS FOUND"
                     status = True
         else:
             status = False
         
-        if not status:
-            print "NO SENSITIVITY COLLECTION JOBS FOUND"
-                
     if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
@@ -1631,9 +1615,7 @@ def checkSensCollectJob(jobData,gageID,iteration):
                 print exeName + " Found, but ended before Python could get the PID."
         if len(pidActive) == 0:
             status = False
-            print "NO SENSITIVITY COLLECTION JOBS FOUND"
         else:
-            print "SENSITIVITY COLLECTION JOBS FOUND"
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid

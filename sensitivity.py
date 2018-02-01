@@ -57,12 +57,13 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    #try:
+    #    pwdTmp = getpass.getpass('Enter Database Password: ')
+    #    jobData.dbPwd = str(pwdTmp)
+    #except:
+    #    print "ERROR: Unable to authenticate credentials for database."
+    #    sys.exit(1)
+    jobData.dbPwd = 'IJustWannaCalibrate'
     
     jobData.dbUName = 'WH_Calib_rw'
     
@@ -306,6 +307,7 @@ def main(argv):
             parmTxtFile = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/params_new.txt"
             sensLogged = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/SENS_LOGGED.COMPLETE"
             sensStats = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/stat_sensitivity.txt"
+            missingFlag = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/CALC_STATS_MISSING"
             if os.path.isfile(preProcComplete):
                 preProcStatus = True
                 print "PRE PROCESSING COMPLETE!"
@@ -319,26 +321,24 @@ def main(argv):
                                           " Job: " + str(jobData.jobID))
                         errMod.errOut(jobData)
             if not preProcStatus:
-                sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
-                print preProcStatus
-                #try:
-                #    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
-                #except:
-                #    errMod.errOut(jobData)
+                #sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                try:
+                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                except:
+                    errMod.errOut(jobData)
             else:
                 # The goal here is to only operate on a fixed number of model runs at a time.
                 # If you have a large parameter sample size, it's possible to have hundreds,
                 # if not thousands of model permuatations. This worflow allows for 
                 # only batches of model runs to be ran at a time as to not bog down the system. 
                 for batchIter in range(0,nBatches):
-                    time.sleep(3)
+                    time.sleep(1)
                     batchCheck = keySlot[basin,(batchIter*jobData.nSensBatch):((batchIter+1)*jobData.nSensBatch)]
                     if batchIter == 0:
                         batchCheckPrev = entryValueBatch
                     else:
                         batchCheckPrev = keySlot[basin,((batchIter-1)*jobData.nSensBatch):(batchIter*jobData.nSensBatch)]
                         batchCheckPrev = batchCheckPrev.sum()
-                    print batchCheck
                     if batchCheck.sum() != entryValueBatch and batchCheckPrev == entryValueBatch:
                         for iterTmp in range(0,jobData.nSensBatch):
                             iteration = batchIter*jobData.nSensBatch + iterTmp
@@ -358,11 +358,8 @@ def main(argv):
                                 # Update the temporary status array as it will be checked for this batch of model runs.
                                 batchCheck[iterTmp] = keySlot[basin,iteration]
                                 
-            #sys.exit(1)
-                                
             # Run post-processing ONLY when all model simulations are finished.
             if not postProcStatus and len(np.where(keySlot != 1.0)[0]) == 0:
-                print "READY TO RUN POST-PROCESSING"
                 try:
                     sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 except:
@@ -370,7 +367,7 @@ def main(argv):
                                 
             postProcComplete = jobData.jobDir + "/" + jobData.gages[basin] + "/RUN.SENSITIVITY/postProc.COMPLETE"
             if os.path.isfile(postProcComplete):
-                if not os.path.isfile(sensLogged):
+                if not os.path.isfile(sensLogged) and not os.path.isfile(missingFlag):
                     # Log sensitivity statistics into the database.
                     if not os.path.isfile(sensStats):
                         jobData.errMsg = "ERROR: Expected to find: " + sensStats + " after post-processing. Not found."
@@ -380,13 +377,25 @@ def main(argv):
                             db.logSensStats(jobData,sensStats,jobData.gageIDs[basin],sensLogged)
                         except:
                             errMod.errOut(jobData)
+                    # Check for complete flag on logging sensitivity statistics. 
+                    if os.path.isfile(sensLogged):
+                        postProcStatus = True
+                        # Upgrade key status values as necessary
+                        for iterTmp in range(0,jobData.nSensIter):
+                            keySlot[basin,iterTmp] = 2.0
+                elif os.path.isfile(sensLogged):
+                    # Post-processing complete and statistics were sucessfully logged.
                     postProcStatus = True
                     # Upgrade key status values as necessary
                     for iterTmp in range(0,jobData.nSensIter):
                         keySlot[basin,iterTmp] = 2.0
+                elif os.path.isfile(missingFlag):
+                    # Missing obs were found. We will default to making this basin complete.
+                    for iterTmp in range(0,jobData.nSensIter):
+                        keySlot[basin,iterTmp] = 2.0
             
         # Check to see if program requirements have been met.
-        if keySlot.sum() == entryValue and postProcStatus and os.path.isfile(sensLogged):
+        if keySlot.sum() == entryValue and postProcStatus:
             jobData.sensComplete = 1
             try:
                 db.updateSensStatus(jobData)

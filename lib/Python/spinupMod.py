@@ -120,10 +120,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
-                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                #                    " Failed. Attempting to restart."
-                #print statusData.genMsg
-                #errMod.sendMsg(statusData)
+                statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
+                                    " Failed. Attempting to restart."
+                print statusData.genMsg
                 keySlot[basinNum] = -0.25
                 keyStatus = -0.25
             else:
@@ -190,7 +189,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                                     " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
                                     "MANUALLY REMOVE LOCK FILE: " + lockPath
                 errMod.sendMsg(statusData)
-                print statusData.genMsg
                 open(lockPath,'a').close()
                 keySlot[basinNum] = -1.0
                 keyStatus = -1.0
@@ -349,6 +347,8 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         fileObj.write(inStr)
+        inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
+        fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -401,6 +401,8 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         fileObj.write(inStr)
+        inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
+        fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -451,6 +453,8 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
+        fileObj.write(inStr)
+        inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
         fileObj.write(inStr)
         fileObj.close        
     except:
