@@ -1432,7 +1432,7 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write(inStr)
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
-            fileObj.write('#BSUB -W 1:00\n')
+            fileObj.write('#BSUB -W 3:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
@@ -1507,7 +1507,7 @@ def generatePbsPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
-            fileObj.write('#PBS -l walltime=01:00:00\n')
+            fileObj.write('#PBS -l walltime=03:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
@@ -1578,7 +1578,7 @@ def generateSlurmPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write(inStr)
             inStr = "#SBATCH -N 1\n"
             fileObj.write(inStr)
-            fileObj.write('#SBATCH -t 01:00:00\n')
+            fileObj.write('#SBATCH -t 03:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
