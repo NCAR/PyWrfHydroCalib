@@ -51,7 +51,7 @@ obsDT.d <- obsDT[, list(obs = mean(obs, na.rm = TRUE)), by = "Date"]
 
 # Initialize chrtout
 if (!exists("chrt.d.all")) chrt.d.all <- data.table()
-if (!exists("chrt.h.all")) chrt.h.all <- data.table()
+#if (!exists("chrt.h.all")) chrt.h.all <- data.table()
 
 for (cyclecount in 1:nrow(x_all)) {
   # Read model out and calculate performance metric
@@ -76,7 +76,7 @@ for (cyclecount in 1:nrow(x_all)) {
   }
   chrt.h$id <- cyclecount
   # chrt.h$tag <- x_all$tag[cyclecount] We do not have any tag anymore
-  chrt.h.all <- rbindlist(list(chrt.h.all, chrt.h))
+#  chrt.h.all <- rbindlist(list(chrt.h.all, chrt.h))
   
   # Calc objective function
   F_new <- objFunc(chrt.h$q_cms, chrt.h$obs)
@@ -193,7 +193,7 @@ gg <- ggplot2::ggplot(data = temp, ggplot2::aes(x = value,
   ggplot2::scale_x_continuous("DELSA results for first order sensitivity") +
   ggplot2::scale_y_continuous("Cum. frequency") +
   ggplot2::labs(title = "CDF of first order sensitivity across parameter space")
-ggsave(filename=paste0(writePlotDir, "/", chrt.d.all$site_no[1], "_CDF_DELSA.png"),
+ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_CDF_DELSA.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
 #plot2
@@ -213,7 +213,7 @@ gg <- ggplot2::ggplot(data = temp) + ggplot2::geom_point(ggplot2::aes(x = value,
   ggplot2::scale_y_continuous(name = "Model output") +
   ggplot2::facet_wrap(~variable, scales = "free") +
   ggplot2::labs(title = "First order sensitivity as related to model response")
-ggsave(filename=paste0(writePlotDir, "/", chrt.d.all$site_no[1], "_DELSA_model_response.png"),
+ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_DELSA_model_response.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
 #plot3
@@ -224,7 +224,7 @@ gg <- ggplot2::ggplot(data = temp) + ggplot2::geom_point(ggplot2::aes(y = value,
   ggplot2::scale_color_continuous(name = "Model response") +
   ggplot2::facet_wrap(~variable, scales = "free") +
   ggplot2::labs(title = "First order sensitivity as as related to parameter value")
-ggsave(filename=paste0(writePlotDir, "/", chrt.d.all$site_no[1], "_DELSA_parameter_value.png"),
+ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_DELSA_parameter_value.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
 # Let s do a bootstrap resampling, I want to do this for all the metrics and both temporal resolutions
@@ -252,13 +252,12 @@ for (timeStep in c("hourly", "daily")) {
 gg <- ggplot(bootRes, aes(parameter, delsaFirst)) + geom_boxplot()+
   facet_grid(metric~timeStep)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave(filename=paste0(writePlotDir, "/", chrt.d.all$site_no[1], "_DELSA_uncertainty_estimate.png"),
+ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_DELSA_uncertainty_estimate.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # Summary plots
-
 # Plot setup
 ggPalette <- gg_color_hue(14)
 
