@@ -359,7 +359,8 @@ def main(argv):
                                 batchCheck[iterTmp] = keySlot[basin,iteration]
                                 
             # Run post-processing ONLY when all model simulations are finished.
-            if not postProcStatus and len(np.where(keySlot != 1.0)[0]) == 0:
+            if not postProcStatus and len(np.where(batchCheck != 1.0)[0]) == 0:
+                print "READY FOR POST PROCESSING"
                 try:
                     sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 except:
