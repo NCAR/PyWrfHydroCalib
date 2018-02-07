@@ -574,11 +574,18 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = 0.0
                 runFlag = True
             else:
-                print "MODEL COMPLETE"
-                # Model sucessfully completed.
-                keySlot[basinNum,iteration] = 1.0
-                keyStatus = 1.0
-                runFlag = False
+                # Check for complete flag
+                if os.path.isfile(collectComplete):
+                    print "COLLECTION COMPLETE"
+                    keySlot[basinNum,iteration] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                else:
+                    # Upgrade the status
+                    print "UPGRADING COLLECTION STATUS"
+                    keySlot[basinNum,iteration] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
                 
     # For when the collection routines have failed and are locked.
     if keyStatus == -0.9:
@@ -634,11 +641,18 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 keyStatus = -1.0
                 runFlag = False
             else:
-                # Model has completed!
-                print "MODEL COMPLETE!"
-                keySlot[basinNum,iteration] = 1.0
-                keyStatus = 1.0
-                runFlag = False
+                # Check for complete flag
+                if os.path.isfile(collectComplete):
+                    print "COLLECTION COMPLETE"
+                    keySlot[basinNum,iteration] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                else:
+                    # Upgrade the status
+                    print "UPGRADING COLLECTION STATUS"
+                    keySlot[basinNum,iteration] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
                 
     if keyStatus == -0.25 and runFlag:
         # Restarting model from one crash

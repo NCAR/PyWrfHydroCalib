@@ -347,8 +347,8 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         fileObj.write(inStr)
-        inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
-        fileObj.write(inStr)
+        #inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
+        #fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -401,8 +401,8 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         fileObj.write(inStr)
-        inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
-        fileObj.write(inStr)
+        #inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
+        #fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -454,8 +454,8 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write(inStr)
         inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
         fileObj.write(inStr)
-        inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
-        fileObj.write(inStr)
+        #inStr = 'rm -rf *.CHANOBS_DOMAIN1\n'
+        #fileObj.write(inStr)
         fileObj.close        
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
