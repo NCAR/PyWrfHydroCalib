@@ -15,6 +15,7 @@ import os
 import time
 import pwd
 import numpy as np
+import socket
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -114,9 +115,12 @@ def main(argv):
         # Read in to get PID number
         pidObj = pd.read_csv(lockPath)
         pidCheck = int(pidObj.PID[0])
+        
+        # Establish the host this is being ran on.
+        hostTmp = socket.gethostname()
         if errMod.check_pid(pidCheck):
                 print "JOB: " + str(pidCheck) + \
-                      " Is still running."
+                      " Is still running on host: " + str(hostTmp)
                 sys.exit(0)
         else:
                 print "JOB: " + str(pidCheck) + \
