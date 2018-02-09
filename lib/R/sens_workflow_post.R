@@ -188,11 +188,12 @@ names(temp) <-  names(x_all)[2:ncol(x_all)]
 temp$id <- 1:nrow(temp)
 temp = reshape2::melt(temp, id.var = "id")
 gg <- ggplot2::ggplot(data = temp, ggplot2::aes(x = value,
-                                                colour = variable)) + 
+                                                colour = variable)) +
   ggplot2::stat_ecdf() +
   ggplot2::scale_x_continuous("DELSA results for first order sensitivity") +
-  ggplot2::scale_y_continuous("Cum. frequency") +
-  ggplot2::labs(title = "CDF of first order sensitivity across parameter space")
+  ggplot2::scale_y_continuous("Cum. frequency") + theme_bw() +
+  ggplot2::labs(title = paste0(chrt.d$site_no[1], " : CDF of first order sensitivity across parameter space"))
+
 ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_CDF_DELSA.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
@@ -208,11 +209,12 @@ temp2$value <- NULL
 temp = merge(temp, temp2)
 
 gg <- ggplot2::ggplot(data = temp) + ggplot2::geom_point(ggplot2::aes(x = value,
-                                                                      y = y)) + 
+                                                                      y = y)) +
   ggplot2::scale_x_continuous(name = "DELSA first order sensitivity") +
   ggplot2::scale_y_continuous(name = "Model output") +
-  ggplot2::facet_wrap(~variable, scales = "free") +
-  ggplot2::labs(title = "First order sensitivity as related to model response")
+  ggplot2::facet_wrap(~variable, scales = "free") + theme_bw() +
+  ggplot2::labs(title = paste0( chrt.d$site_no[1], " : First order sensitivity as related to model response"))
+
 ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_DELSA_model_response.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
@@ -222,8 +224,8 @@ gg <- ggplot2::ggplot(data = temp) + ggplot2::geom_point(ggplot2::aes(y = value,
   ggplot2::scale_y_continuous(name = "DELSA first order sensitivity") +
   ggplot2::scale_x_continuous(name = "Parameter value") +
   ggplot2::scale_color_continuous(name = "Model response") +
-  ggplot2::facet_wrap(~variable, scales = "free") +
-  ggplot2::labs(title = "First order sensitivity as as related to parameter value")
+ ggplot2::facet_wrap(~variable, scales = "free") + theme_bw() +
+  ggplot2::labs(title = paste0( chrt.d$site_no[1], " : First order sensitivity as related to parameter value"))
 ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_DELSA_parameter_value.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
@@ -248,10 +250,13 @@ for (timeStep in c("hourly", "daily")) {
   }
 }
 
-# add the plots 
+# add the plots
+
 gg <- ggplot(bootRes, aes(parameter, delsaFirst)) + geom_boxplot()+
-  facet_grid(metric~timeStep)+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  facet_grid(metric~timeStep)+ theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  ggtitle(paste0( chrt.d$site_no[1], " : Local First Order DELSA Sensitivity Index"))
+
 ggsave(filename=paste0(writePlotDir, "/", chrt.d$site_no[1], "_DELSA_uncertainty_estimate.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
 
@@ -267,8 +272,8 @@ plotGroups <- list(soil=c('bexp', 'dksat', 'smcmax', 'refkdt', 'slope', 'RETDEPR
 # Hydrographs
 gg <- ggplot(data=chrt.d.all) +
   geom_line(aes(x=Date, y=q_cms, color=id, group=id), lwd=0.6) +
-  geom_point(aes(x=Date, y=obs, group=id), color = "black") + 
-  scale_y_log10() +
+  geom_point(aes(x=Date, y=obs, group=id), color = "black") +
+  scale_y_log10() + theme_bw()+ ylab("Streamflow (CMS)") +
   ggtitle(paste0("Model Sensitivity: ", chrt.d.all$site_no[1]))
 ggsave(filename=paste0(writePlotDir, "/", chrt.d.all$site_no[1], "_hydrograph.png"),
        plot=gg, units="in", width=16, height=8, dpi=300)
