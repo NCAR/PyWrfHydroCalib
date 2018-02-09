@@ -336,7 +336,7 @@ def main(argv):
                 # if not thousands of model permuatations. This worflow allows for 
                 # only batches of model runs to be ran at a time as to not bog down the system. 
                 for batchIter in range(0,nBatches):
-                    time.sleep(1)
+                    time.sleep(10)
                     batchCheck = keySlot[basin,(batchIter*jobData.nSensBatch):((batchIter+1)*jobData.nSensBatch)]
                     if batchIter == 0:
                         batchCheckPrev = entryValueBatch
