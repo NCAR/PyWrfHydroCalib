@@ -394,6 +394,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     workDir = statusData.jobDir + "/" + gage + "/RUN.SENSITIVITY"
     collectComplete = runDir + "/R_COLLECT.COMPLETE"
     
+    rNameList = workDir + "/namelist.sensitivity"
+    if not os.path.isfile(rNameList):
+        try:
+            genRNameList(staticData,workDir,gageMeta,gage)
+        except:
+            statusData.errMsg = "ERROR: Unable to generate sensitivity pre-processing R namelist"
+            raise
+    
     if statusData.jobRunType == 1:
         # If BSUB run script doesn't exist, create it here.
         bsubFile = runDir + "/run_WH.sh"
