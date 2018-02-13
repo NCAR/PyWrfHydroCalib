@@ -1511,9 +1511,9 @@ def generatePbsPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 fileObj.write(inStr)
             inStr = "#PBS -N WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
-            inStr = '#PBS -o ' + workDir + "WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + str(gageID) + '.out\n'
+            inStr = '#PBS -o ' + workDir + "/WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + str(gageID) + '.out\n'
             fileObj.write(inStr)
-            inStr = '#PBS -e ' + workDir + "WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + str(gageID) + '.err\n'
+            inStr = '#PBS -e ' + workDir + "/WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + str(gageID) + '.err\n'
             fileObj.write(inStr)
             #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
