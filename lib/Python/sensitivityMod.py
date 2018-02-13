@@ -216,8 +216,11 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
     
     rNameList = workDir + "/namelist.sensitivity"
     if not os.path.isfile(rNameList):
-        statusData.errMsg = "ERROR: Expected namelist: " + rNameList + " not found."
-        raise
+        try:
+            genRNameList(staticData,workDir,gageMeta,gage)
+        except:
+            statusData.errMsg = "ERROR: Unable to generate sensitivity pre-processing R namelist"
+            raise
         
     # Check to see if the COMPLETE flag is present.
     if os.path.isfile(completeFlag):
