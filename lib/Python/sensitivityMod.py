@@ -1032,6 +1032,8 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             inStr = '#PBS -e ' + workDir + '/WH_SENS_PREPROC_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
             #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
+            #inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
+            #        ":mpiprocs=" + str(nCoresPerNode) + "\n"
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=01:00:00\n')
@@ -1039,9 +1041,9 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1516,6 +1518,8 @@ def generatePbsPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             inStr = '#PBS -e ' + workDir + "/WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + str(gageID) + '.err\n'
             fileObj.write(inStr)
             #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
+            #inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
+            #        ":mpiprocs=" + str(nCoresPerNode) + "\n"
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=03:00:00\n')
@@ -1814,17 +1818,19 @@ def generatePbsCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
             inStr = '#PBS -e ' + runDir + "/WH_SENS_COLLECT_" + str(jobData.jobID) + \
                     "_" + str(gageID) + "_" + str(iteration) + '.err\n'
             fileObj.write(inStr)
-            #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
-            inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
+            nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
+            inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
+                    ":mpiprocs=" + str(nCoresPerNode) + "\n"
+            #inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
-            fileObj.write('#PBS -l walltime=03:00:00\n')
+            fileObj.write('#PBS -l walltime=01:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
             fileObj.write(inStr)
