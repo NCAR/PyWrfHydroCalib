@@ -172,7 +172,7 @@ if (cyclecount > 0) {
 
    # Merge
    setkey(chrt.obj, "site_no", "POSIXct")
-   obs.obj[, Date := NULL]
+   if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
    setkey(obs.obj, "site_no", "POSIXct")
    chrt.obj <- merge(chrt.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE)
    # Check for empty output
