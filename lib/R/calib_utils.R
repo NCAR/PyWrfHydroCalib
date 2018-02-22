@@ -87,7 +87,11 @@ Convert2Daily <- function(str) {
    #str$Date <- rwrfhydro::CalcDateTrunc(str$POSIXct)
    str$Date <- CalcDateTrunc(str$POSIXct)
    setkey(str, Date)
-   str.d <- str[, list(q_cms=mean(q_cms, na.rm=TRUE)), by = "Date"]
+   if ("q_cms" %in% names(str)) {
+      str.d <- str[, list(q_cms=mean(q_cms, na.rm=TRUE)), by = "Date"]
+   } else if ("obs" %in% names(str)) {
+      str.d <- str[, list(obs=mean(obs, na.rm=TRUE)), by = "Date"]
+   }
    str.d$POSIXct <- as.POSIXct(paste0(str.d$Date, " 00:00"), tz="UTC")
    str.d
 }
@@ -208,7 +212,7 @@ Kge <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1) {
 # data, scales=c(1,24,72,240,720) means calculate MSOF based on hourly,
 # daily, 3-day, 10-day, and 30-day time scales
 
-Msof <- function(m,o, scales=c(1,10,30))  {
+Msof <- function(m,o, scales=c(1,24))  {
 
    if (sum(scales<1)>0) stop("Scales (number of time steps) must not be less than 1!")
 
@@ -222,8 +226,8 @@ Msof <- function(m,o, scales=c(1,10,30))  {
         m2<-m1; o2<-o1
      } else {
         # compute model and observation at the prescribed scales
-        m2 <- colMeans(matrix(m1,nrow=scales[i]),na.rm=FALSE)
-        o2 <- colMeans(matrix(o1,nrow=scales[i]),na.rm=FALSE)
+        m2 <- colMeans(matrix(m1,nrow=scales[i]),na.rm=TRUE)
+        o2 <- colMeans(matrix(o1,nrow=scales[i]),na.rm=TRUE)
      }
 
      # remove missing values in the averaged time series
@@ -231,9 +235,10 @@ Msof <- function(m,o, scales=c(1,10,30))  {
      idx <- !is.na(m2) & !is.na(o2)
      m2 <- m2[idx]; o2 <- o2[idx]
 
-     sum0 <- sum0 + sum((m2-o2)^2)*var(o)/var(o2)
+     sum0 <- sum0 + sum((m2-o2)^2)*var(o, na.rm=TRUE)/var(o2)
    }
    obj <- sqrt(sum0)
+
 }
 
 

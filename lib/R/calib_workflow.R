@@ -47,9 +47,9 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    if ("q_cms" %in% names(obsStrData)) obsStrData$q_cms <- NULL
 
    # Find the index of the gage
-   rtLink <- ReadRouteLink(rtlinkFile)
-   gageIndx <- which(rtLink$link == linkId)
-   rm(rtLink)
+   #rtLink <- ReadRouteLink(rtlinkFile)
+   #gageIndx <- which(rtLink$link == linkId)
+   #rm(rtLink)
 
    # Setup value lists from paramBnds
    xnames <- paramBnds$parameter
@@ -129,6 +129,7 @@ if (cyclecount > 0) {
    whFiles <- which(filesListDate >= startDate)
    filesList <- filesList[whFiles]
    if (length(filesList) == 0) stop("No matching files in specified directory.")
+
    # Find the index of the gage from the first file in the list.
    idTmp <- nc_open(filesList[1])
    featureIdTmp <- ncvar_get(idTmp,'feature_id')
@@ -154,38 +155,53 @@ if (cyclecount > 0) {
        quit("no")
    }
 
-   # Convert to daily
-   chrt.d <- Convert2Daily(chrt)
-   chrt.d[, site_no := siteId]
-   assign(paste0("chrt.d.", cyclecount), chrt.d)
+   # Convert to daily if needed and tag object
+   if (calcDailyStats) {
+     chrt.d <- Convert2Daily(chrt)
+     chrt.d[, site_no := siteId]
+     assign(paste0("chrt.obj.", cyclecount), chrt.d)
+     chrt.obj <- copy(chrt.d)
+     obs.obj <- Convert2Daily(obsStrData)
+     obs.obj[, site_no := siteId]
+   } else {
+     chrt[, site_no := siteId]
+     assign(paste0("chrt.obj.", cyclecount), chrt)
+     chrt.obj <- copy(chrt)
+     obs.obj <- copy(obsStrData)
+   }
 
    # Merge
-   setkey(chrt.d, "site_no", "POSIXct")
-   setkey(obsStrData, "site_no", "POSIXct")
-   chrt.d <- merge(chrt.d, obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
-
+   setkey(chrt.obj, "site_no", "POSIXct")
+   if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
+   setkey(obs.obj, "site_no", "POSIXct")
+   chrt.obj <- merge(chrt.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE)
    # Check for empty output
-   if (nrow(chrt.d) < 1) {
-       write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())
-       fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
-       writeLines('', fileConn)
-       close(fileConn)
-       quit("no")
+   if (nrow(chrt.obj) < 1) {
+      write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())
+      fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
+      writeLines('', fileConn)
+      close(fileConn)
+      quit("no")
    }
 
    # Calc objective function
-   F_new <- objFunc(chrt.d$q_cms, chrt.d$obs)
+   F_new <- objFunc(chrt.obj$q_cms, chrt.obj$obs)
    if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge")) F_new <- 1 - F_new
 
    # Calc stats
-   statCor <- cor(chrt.d$q_cms, chrt.d$obs)
-   statRmse <- Rmse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-   statBias <- PBias(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-   statNse <- Nse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-   statNseLog <- NseLog(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-   statNseWt <- NseWt(chrt.d$q_cms, chrt.d$obs)
-   statKge <- Kge(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-   statMsof <- Msof(chrt.d$q_cms, chrt.d$obs)
+   chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
+   statCor <- cor(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
+   statRmse <- Rmse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   statBias <- PBias(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   statNse <- Nse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   statNseLog <- NseLog(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   statNseWt <- NseWt(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
+   statKge <- Kge(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   if (calcDailyStats) {
+      statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,10,30))
+   } else {
+      statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,24))
+   }
 
    # Archive results
    x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
@@ -368,28 +384,28 @@ if (any(x_archive$obj > objFunThreshold)) {
 
    # Plot the time series of the observed, control, best calibration result and last calibration iteration
    write("Hydrograph...", stdout())
-   # The first iteration is the control run  called chrt.d.1
-   controlRun <- copy(chrt.d.1)
+   # The first iteration is the control run  called chrt.obj.1
+   controlRun <- copy(chrt.obj.1)
    controlRun [, run := "Control Run"]
    # We have already advanced the cyclescount, so subtract 1 to get last complete
-   lastRun <- copy(get(paste0("chrt.d.", ifelse(lastcycle, cyclecount, cyclecount-1))))
+   lastRun <- copy(get(paste0("chrt.obj.", ifelse(lastcycle, cyclecount, cyclecount-1))))
    lastRun [ , run := "Last Run"]
    # the best iteration should be find
-   bestRun <- copy(get(paste0("chrt.d.", iter_best)))
+   bestRun <- copy(get(paste0("chrt.obj.", iter_best)))
    bestRun [ , run := "Best Run"]
 
-   obsStrDataPlot <- copy(obsStrData)
+   obsStrDataPlot <- copy(obs.obj)
    setnames(obsStrDataPlot, "obs", "q_cms")
    obsStrDataPlot <- obsStrDataPlot[, c("Date", "q_cms", "POSIXct", "site_no"), with=FALSE]
    obsStrDataPlot <- obsStrDataPlot[as.integer(POSIXct) >= min(as.integer(controlRun$POSIXct)) & as.integer(POSIXct) <= max(as.integer(controlRun$POSIXct)),]
    obsStrDataPlot[ , run := "Observation"]
 
-   chrt.d_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
+   chrt.obj_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
    # Cleanup
    rm(controlRun, lastRun, bestRun, obsStrDataPlot)
 
 
-   gg <- ggplot2::ggplot(chrt.d_plot, ggplot2::aes(POSIXct, q_cms, color = run))
+   gg <- ggplot2::ggplot(chrt.obj_plot, ggplot2::aes(POSIXct, q_cms, color = run))
    gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
    gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", siteId))
    #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
@@ -404,8 +420,8 @@ if (any(x_archive$obj > objFunThreshold)) {
 
 # Plot the scatter plot of the best, last and control run.
    write("Scatterplot...", stdout())
-   maxval <- max(chrt.d_plot$q_cms, rm.na = TRUE)
-   gg <- ggplot()+ geom_point(data = merge(chrt.d_plot [run %in% c("Control Run", "Last Run", "Best Run")], obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
+   maxval <- max(chrt.obj_plot$q_cms, rm.na = TRUE)
+   gg <- ggplot()+ geom_point(data = merge(chrt.obj_plot [run %in% c("Control Run", "Last Run", "Best Run")], obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
                               aes (obs, q_cms, color = run), alpha = 0.5)
    gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
                                  limits=c('Control Run', "Best Run", "Last Run"),
