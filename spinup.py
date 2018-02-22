@@ -1,5 +1,5 @@
-# Main calling program to initiate a spinup for calibration of the National
-# Water Model. This program can either be used to initiate or restart a 
+# Main calling program to initiate a spinup for calibration of the WRF-Hydro. 
+# This program can either be used to initiate or restart a 
 # spinup if it has crashed unexpectedly. The user will need to provide 
 # a unique Job ID that is stored in the database.
 
@@ -11,10 +11,9 @@
 
 import sys
 import argparse
-#import getpass
+import getpass
 import os
-#import subprocess
-#import pandas as pd
+import pandas as pd
 import pwd
 import numpy as np
 
@@ -43,6 +42,10 @@ def main(argv):
              'calibration spinup for the National Water Model')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration spinup.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--portNumber',type=int,nargs='?',
+                        help='Optional port number to connect. Default is 5432.')
     
     args = parser.parse_args()
     
@@ -56,16 +59,28 @@ def main(argv):
     # Lookup database username/login credentials based on username
     # running program.
     #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
     #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
     #    jobData.dbPwd = str(pwdTmp)
     #except:
     #    print "ERROR: Unable to authenticate credentials for database."
     #    sys.exit(1)
+    jobData.dbPwd = 'IJustWannaCalibrate'
     
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    jobData.dbUName = 'WH_Calib_rw'
+    
+    if not args.hostname:
+        # We will assume localhost for Postgres DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+        
+    if not args.portNumber:
+        # We will default to 5432
+        portTmp = '5432'
+    else:
+        portTmp = str(args.portNumber)
+    jobData.port = portTmp
+    jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -100,11 +115,37 @@ def main(argv):
     except:
         errMod.errOut(jobData)
     
-    # Extract active jobs for job owner
-    try:
-        statusMod.checkYsJobs(jobData)
-    except:
-        errMod.errOut(jobData)
+    # Establish LOCK file to secure this Python program to make sure
+    # no other instances over-step here. This is mostly designed to deal
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
+    pyLockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    if os.path.isfile(pyLockPath):
+        # Either a job is still running, or was running
+        # and was killed.
+
+        # Read in to get PID number
+        pidObj = pd.read_csv(pyLockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(pyLockPath)
+                fileObj = open(pyLockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
+    else:
+        # Write a LOCK file for this program.
+        fileObj = open(pyLockPath,'w')
+        fileObj.write('\"PID\"\n')
+        fileObj.write(str(os.getpid()))
+        fileObj.close()
     
     # Some house keeping here. If the spinup is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
@@ -178,24 +219,6 @@ def main(argv):
                          " From Owner: " + str(jobData.owner)
         errMod.sendMsg(jobData)
         
-    # Create empty table entries into the Calib_Stats table to be filled in as the workflow progresses.
-    # If table entries have already been entered, continue on. This only needs to be done ONCE. Moved this
-    # from calib.py as there's no reason to do this during the spinup program.
-    for basin in range(0,len(jobData.gages)):
-        try:
-            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
-
-        if domainID == -9999:
-            jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
-            errMod.errOut(jobData)
-
-        try:
-            db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
-            
     # Begin an "infinite" do loop. This loop will continue to loop through all 
     # the basins until spinups are complete. Basins are allowed ONE failure. A restart
     # will be attempted. If the restart fails again, a LOCK file is placed into the
@@ -253,6 +276,9 @@ def main(argv):
             jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
+            
+    # Remove LOCK file
+    os.remove(pyLockPath)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

@@ -3,10 +3,11 @@ args <- commandArgs(trailingOnly=TRUE)
 namelistFile <- args[1]
 #mCurrent <- args[2]
 
-.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
-library(rwrfhydro)
+#.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
+#library(rwrfhydro)
 library(data.table)
 library(ggplot2)
+library(ncdf4)
 library(plyr)
 
 #########################################################
@@ -128,7 +129,18 @@ if (cyclecount > 0) {
    whFiles <- which(filesListDate >= startDate)
    filesList <- filesList[whFiles]
    if (length(filesList) == 0) stop("No matching files in specified directory.")
-   chrt <- as.data.table(plyr::ldply(filesList, ReadChanobsFile, linkId, .parallel = parallelFlag))
+
+   # Find the index of the gage from the first file in the list.
+   idTmp <- nc_open(filesList[1])
+   featureIdTmp <- ncvar_get(idTmp,'feature_id')
+   gageIndx <- which(featureIdTmp == linkId)
+   print(gageIndx)
+   print(whFiles[0])
+   nc_close(idTmp)
+   rm(idTmp)
+   rm(featureIdTmp)
+   
+   chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
    })
 
    # Stop cluster

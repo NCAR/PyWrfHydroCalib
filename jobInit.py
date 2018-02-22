@@ -17,7 +17,7 @@
 import sys
 import argparse
 import os
-#import getpass
+import getpass
 
 # Set the Python path to include package specific functions included with this 
 # package.
@@ -44,8 +44,10 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
-    parser.add_argument('parmTbl',metavar='parmTbl',type=str,nargs='+',
-                        help='Calibration Parameter Table.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--portNumber',type=int,nargs='?',
+                        help='Optional port number to connect. Default is 5432.')
             
     args = parser.parse_args()            
 
@@ -56,19 +58,31 @@ def main(argv):
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
         
+    if not args.hostname:
+        # We will assume localhost for Postgres DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+        
+    if not args.portNumber:
+        # We will default to 5432
+        portTmp = '5432'
+    else:
+        portTmp = str(args.portNumber)
+    jobData.host = hostTmp
+    jobData.port = portTmp
+        
     # Lookup database username/login credentials based on username
     # running program.
     #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
+    #    pwdTmp = getpass.getpass('Enter Calibration Database Password: ')
     #    jobData.dbPwd = str(pwdTmp)
     #except:
     #    print "ERROR: Unable to authenticate credentials for database."
     #    sys.exit(1)
+    jobData.dbPwd = 'IJustWannaCalibrate'
     
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    jobData.dbUName = 'WH_Calib_rw'
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
@@ -76,7 +90,7 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
-    # First check to see if unique Job ID already exists. 
+    # First check to see if unique Job ID already exists.
     try:
         db.getJobID(jobData)
     except:
@@ -95,12 +109,25 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
-    # Create necessary run directories to hold output, analysis, etc.
+    # Check to see if this job ID contains any entries in other tables. If it does,
+    # Warn the user that this data will be wiped, and prompt the user to confirm
+    # they want to delete the data from the other tables. 
     try:
-        calibIoMod.setupModels(jobData,db,args,libPathTop)
+        statusTmp = db.checkPreviousEntries(jobData)
     except:
         errMod.errOut(jobData)
-       
+        
+    # If any entries in the tables were found, warn the user that tables from an
+    # orphaned ghost job are being deleted. This may be a situation where a previous 
+    # job was ran in the DB, it was removed from Job_Meta, but the remaining tables
+    # weren't cleaned up.
+    if not statusTmp:
+        print "WARNING: Old orphaned table entries from this jobID are being deleted."
+        try:
+            db.cleanupJob(jobData)
+        except:
+            errMod.errOut(jobData)
+        
     # Create DB entries for job name
     try:
         db.enterJobID(jobData)
@@ -114,18 +141,49 @@ def main(argv):
     except:
         errMod.errOut(jobData)
         
+    # Create necessary run directories to hold output, analysis, etc.
+    try:
+        calibIoMod.setupModels(jobData,db,args,libPathTop)
+    except:
+        errMod.errOut(jobData)
+        
     # Create DB entries to log the parameters being calibrated.
     try:
-        db.enterCalibParms(jobData,str(args.parmTbl[0]))
+        db.enterJobParms(jobData)
     except:
         errMod.errOut(jobData)
         
     # Create empty table to hold calibrated parameter values that will be 
     # calculated during calibration.
-    #try:
-    #    db.populateParmTable(jobData,str(args.parmTbl[0]))
-    #except:
-    #    errMod.errOut(jobData)
+    try:
+        db.populateParmTable(jobData)
+    except:
+        errMod.errOut(jobData)
+        
+    # Create empty table entries into the Calib_Stats/Sens_Stats tables to be filled in as the workflow progresses.
+    # If table entries have already been entered, continue on. This only needs to be done ONCE. Moved this
+    # from calib.py as there's no reason to do this during the spinup program.
+    for basin in range(0,len(jobData.gages)):
+        try:
+            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
+        except:
+            errMod.errOut(jobData)
+
+        if domainID == -9999:
+            jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
+            errMod.errOut(jobData)
+
+        if jobData.calibFlag == 1:
+            try:
+                db.populateCalibTable(jobData,domainID,str(jobData.gages[basin]))
+            except:
+                errMod.errOut(jobData)
+        
+        if jobData.sensFlag == 1:
+            try:
+                db.populateSensTable(jobData,domainID,str(jobData.gages[basin]))
+            except:
+                errMod.errOut(jobData)
     
     # Disconnect from the calibration database.
     try:

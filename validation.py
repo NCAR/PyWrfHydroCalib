@@ -13,10 +13,9 @@
 
 import sys
 import argparse
-#import getpass
+import getpass
 import os
-#import subprocess
-#import pandas as pd
+import pandas as pd
 import pwd
 import numpy as np
 
@@ -26,6 +25,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
+libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
 
@@ -45,6 +45,10 @@ def main(argv):
              'calibration validation simulation for the National Water Model')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration validation.')
+    parser.add_argument('--hostname',type=str,nargs='?',
+                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--portNumber',type=int,nargs='?',
+                        help='Optional port number to connect. Default is 5432.')
     
     args = parser.parse_args()
     
@@ -57,17 +61,28 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib_rw'
-    jobData.dbPwd = 'IJustWannaCalibrate'    
+    jobData.dbUName = 'WH_Calib_rw'
+    
+    if not args.hostname:
+        # We will assume localhost for Postgres DB
+        hostTmp = 'localhost'
+    else:
+        hostTmp = str(args.hostname)
+        
+    if not args.portNumber:
+        # We will default to 5432
+        portTmp = '5432'
+    else:
+        portTmp = str(args.portNumber)
+    jobData.port = portTmp
+    jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -101,12 +116,46 @@ def main(argv):
         jobData.checkGages(db)
     except:
         errMod.errOut(jobData)
-    
-    # Extract active jobs for job owner
-    try:
-        statusMod.checkYsJobs(jobData)
-    except:
-        errMod.errOut(jobData)
+        
+    # If the calibration flag is 0, simply exit gracefully as the user specified
+    # not to run calibration.
+    if jobData.calibFlag != 1:
+        print "ERROR: Calibration flag was set to 0 for this workflow."
+        sys.exit(1)
+        
+    # Establish LOCK file to secure this Python program to make sure
+    # no other instances over-step here. This is mostly designed to deal
+    # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
+    # Just another check/balance here.
+    lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    if os.path.isfile(lockPath):
+        # Either a job is still running, or was running
+        # and was killed.
+
+        print 'LOCK FILE FOUND.'
+        # Read in to get PID number
+        pidObj = pd.read_csv(lockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(lockPath)
+                fileObj = open(lockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
+    else:
+        print 'LOCK FILE NOT FOUND.'
+        # Write a LOCK file for this program.
+        fileObj = open(lockPath,'w')
+        fileObj.write('\"PID\"\n')
+        fileObj.write(str(os.getpid()))
+        fileObj.close()
     
     # Some house keeping here. If the validation is already complete, throw an error. 
     # also, if this is a re-initiation under a different user, require the new
@@ -129,43 +178,43 @@ def main(argv):
         errMod.errOut(jobData)
         
     if userTmp != jobData.owner:
-        #print "User: " + userTmp + " is requesting to takeover jobID: " + \
-        #      str(jobData.jobID) + " from owner: " + str(jobData.owner)
-        #strTmp = "Please enter new email address. Leave blank if no email " + \
-        #         "change is desired. NOTE if you leave both email and Slack " + \
-        #         "information blank, no change in contact will occur. Only " + \
-        #         "the owner will be modified:"
-        #newEmail = raw_input(strTmp)
-        #strTmp = "Please enter Slack channel:"
-        #newSlackChannel = raw_input(strTmp)
-        #strTmp = "Please enter Slack token:"
-        #newSlackToken = raw_input(strTmp)
-        #strTmp = "Please enter Slack user name:"
-        #newSlackUName = raw_input(strTmp)
+        print "User: " + userTmp + " is requesting to takeover jobID: " + \
+              str(jobData.jobID) + " from owner: " + str(jobData.owner)
+        strTmp = "Please enter new email address. Leave blank if no email " + \
+                 "change is desired. NOTE if you leave both email and Slack " + \
+                 "information blank, no change in contact will occur. Only " + \
+                 "the owner will be modified:"
+        newEmail = raw_input(strTmp)
+        strTmp = "Please enter Slack channel:"
+        newSlackChannel = raw_input(strTmp)
+        strTmp = "Please enter Slack token:"
+        newSlackToken = raw_input(strTmp)
+        strTmp = "Please enter Slack user name:"
+        newSlackUName = raw_input(strTmp)
         changeFlag = 1
-        #if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
-        #    print "ERROR: You must specify an associated Slacker API token."
-        #    sys.exit(1)
-        #if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
-        #    print "ERROR: You must specify an associated Slacker user name."
-        #    sys.exit(1)
-        #if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
-        #    print "ERROR: You must specify an associated Slacker channel name."
-        #    sys.exit(1)
-        #if len(newSlackToken) != 0 and len(newSlackUName) == 0:
-        #    print "ERROR: You must specify an associated Slacker user name."
-        #    sys.exit(1)
-        #if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
-        #    print "ERROR: You must specify an associated Slacker channel name."
-        #    sys.exit(1)
-        #if len(newSlackUName) != 0 and len(newSlackToken) == 0:
-        #    print "ERROR: You must specify an associated Slacker API token."
-        #    sys.exit(1)
-        #if len(newSlackChannel) != 0 and len(newEmail) != 0:
-        #    print "ERROR: You cannot specify both email and Slack for notifications."
-        #    sys.exit(1)
-        #if len(newSlackChannel) == 0 and len(newEmail) == 0:
-        #    changeFlag = 0
+        if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
+            print "ERROR: You must specify an associated Slacker API token."
+            sys.exit(1)
+        if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
+            print "ERROR: You must specify an associated Slacker user name."
+            sys.exit(1)
+        if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
+            print "ERROR: You must specify an associated Slacker channel name."
+            sys.exit(1)
+        if len(newSlackToken) != 0 and len(newSlackUName) == 0:
+            print "ERROR: You must specify an associated Slacker user name."
+            sys.exit(1)
+        if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
+            print "ERROR: You must specify an associated Slacker channel name."
+            sys.exit(1)
+        if len(newSlackUName) != 0 and len(newSlackToken) == 0:
+            print "ERROR: You must specify an associated Slacker API token."
+            sys.exit(1)
+        if len(newSlackChannel) != 0 and len(newEmail) != 0:
+            print "ERROR: You cannot specify both email and Slack for notifications."
+            sys.exit(1)
+        if len(newSlackChannel) == 0 and len(newEmail) == 0:
+            changeFlag = 0
             
         # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
             
@@ -207,8 +256,8 @@ def main(argv):
     # -1.0 - Model has failed twice. A LOCK file has been created.
     # Once all array elements are 1.0, then completeStatus goes to True, an entry into
     # the database occurs, and the program will complete.
-    keySlot = np.empty(len(jobData.gages),2)
-    keySlot[:] = 0.0
+    keySlot = np.empty([len(jobData.gages),2])
+    keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages))*2.0
     
     while not completeStatus:
@@ -233,27 +282,38 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            for run in range(0,2):
-                # First simulation will be the control simulation with default
-                # parameters specified by the user at the beginning of the calibration
-                # process.
-                print keySlot
-                try:
-                    validMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,run)
-                except:
-                    errMod.errOut(jobData)
-                time.sleep(30)
-        
+            # First simulation will be the control simulation with default
+            # parameters specified by the user at the beginning of the calibration
+            # process.
+            print "Running CONTROL"
+            try:
+                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
+            except:
+                errMod.errOut(jobData)
+            time.sleep(3)
+            
+            print "Running BEST"
+            try:
+                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+            except:
+                errMod.errOut(jobData)
+            time.sleep(3)
+            
+            print keySlot
+                
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
-            jobData.spinComplete = 1
+            jobData.validComplete = 1
             try:
-                db.updateSpinupStatus(jobData)
+                db.updateValidationStatus(jobData)
             except:
                 errMod.errout(jobData)
-            jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
+            
+    # Remove LOCK file
+    os.remove(lockPath)
     
 if __name__ == "__main__":
     main(sys.argv[1:])

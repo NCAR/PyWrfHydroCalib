@@ -11,6 +11,7 @@
 import sys
 import argparse
 import os
+import getpass
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -45,17 +46,14 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    uNameTmp = raw_input('Enter Database Username: ')
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= str(uNameTmp)
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
-    jobData.dbUName = 'NWM_Calib'
-    jobData.dbPwd = 'CalibrateGoodTimes'    
+    jobData.dbUName = 'WH_Calib_rw'
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
