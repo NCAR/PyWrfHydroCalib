@@ -1422,6 +1422,11 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         fileObj.write('# Specify number of cores to use\n')
         inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
         fileObj.write(inStr)
+        fileObj.write('# Specify whether to run daily or hourly analysis\n')
+        if jobData.dailyAnalysis == 1:
+            fileObj.write("calcDailyStats <- TRUE\n")
+        else:
+            fileObj.write("calcDailyStats <- FALSE\n")
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outPath
@@ -1466,9 +1471,9 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1545,9 +1550,9 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1622,9 +1627,9 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)

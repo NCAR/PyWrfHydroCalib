@@ -964,9 +964,9 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1115,9 +1115,9 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1450,9 +1450,9 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1598,9 +1598,9 @@ def generateSlurmPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1740,9 +1740,9 @@ def generateBsubCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
             fileObj.write(inStr)
@@ -1913,9 +1913,9 @@ def generateSlurmCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir)
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            if socket.gethostname()[0:8] == 'cheyenne':
-                inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-                fileObj.write(inStr)
+            #if socket.gethostname()[0:8] == 'cheyenne':
+            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
+            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
             fileObj.write(inStr)

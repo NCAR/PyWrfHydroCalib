@@ -51,6 +51,7 @@ class statusMeta:
         self.sensTbl = []
         self.calibFlag = []
         self.calibTbl = []
+        self.dailyAnalysis = []
         self.jobRunType = []
         self.analysisRunType = []
         self.host = []

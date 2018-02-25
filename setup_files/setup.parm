@@ -35,6 +35,11 @@ sensParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/sens_params.tbl
 # Flag to turn calibration on: 0 - Off, 1 - On.
 runCalib = 1
 calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
+# By default, R code will run hourly analysis on model output. This flag will
+# direct the R code to run daily statistics instead. This means hourly output
+# will be aggregated to daily statistics. 
+# 0 - Run hourly stats, 1 - Run daily stats
+dailyStats = 0
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
