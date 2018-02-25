@@ -35,6 +35,7 @@ class jobMeta:
         self.sensTbl = []
         self.calibFlag = []
         self.calibTbl = []
+        self.dailyAnalysis = []
         self.jobRunType = []
         self.analysisRunType = []
         self.host = []
@@ -143,6 +144,7 @@ class jobMeta:
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
         self.calibFlag = int(parser.get('logistics','runCalib'))
         self.calibTbl = str(parser.get('logistics','calibParmTbl'))
+        self.dailyAnalysis = int(parser.get('logistics','dailyStats'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.analysisRunType = int(parser.get('logistics','analysisRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
@@ -451,6 +453,14 @@ def checkConfig(parser):
         raise Exception()
     if check <= 0:
         print "ERROR: Invalid number of R Nodes to use."
+        raise Exception()
+        
+    check = int(parser.get('logistics','dailyStats'))
+    if not check:
+        print "ERROR: dailyStats not specified."
+        raise Exception()
+    if check < 0 or check > 1:
+        print "ERROR: Invalid dailyStats value specified."
         raise Exception()
         
     # Check to make sure calibration method is DDS

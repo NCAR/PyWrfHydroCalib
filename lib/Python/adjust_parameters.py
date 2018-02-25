@@ -146,7 +146,10 @@ def main(argv):
             idHydroTbl.variables['LKSAT'][:,:] = idHydroTbl.variables['LKSAT'][:,:]*float(newParams.dksat[0])
             
         if param == "smcmax":
-            idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[0])       
+            idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[0])
+            
+        if param == "rsurfexp":
+            idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[0])
         
             
     # Close NetCDF files
