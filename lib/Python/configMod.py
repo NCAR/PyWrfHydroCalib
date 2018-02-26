@@ -456,9 +456,6 @@ def checkConfig(parser):
         raise Exception()
         
     check = int(parser.get('logistics','dailyStats'))
-    if not check:
-        print "ERROR: dailyStats not specified."
-        raise Exception()
     if check < 0 or check > 1:
         print "ERROR: Invalid dailyStats value specified."
         raise Exception()
