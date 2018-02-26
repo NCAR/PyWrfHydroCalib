@@ -396,7 +396,7 @@ if (any(x_archive$obj > objFunThreshold)) {
 
    obsStrDataPlot <- copy(obs.obj)
    setnames(obsStrDataPlot, "obs", "q_cms")
-   obsStrDataPlot <- obsStrDataPlot[, c("Date", "q_cms", "POSIXct", "site_no"), with=FALSE]
+   obsStrDataPlot <- obsStrDataPlot[, c("q_cms", "POSIXct", "site_no"), with=FALSE]
    obsStrDataPlot <- obsStrDataPlot[as.integer(POSIXct) >= min(as.integer(controlRun$POSIXct)) & as.integer(POSIXct) <= max(as.integer(controlRun$POSIXct)),]
    obsStrDataPlot[ , run := "Observation"]
 
