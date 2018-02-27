@@ -16,6 +16,7 @@ import time
 import pwd
 import numpy as np
 import socket
+import datetime
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -112,25 +113,44 @@ def main(argv):
         # Either a job is still running, or was running
         # and was killed.
 
+        print 'LOCK FILE FOUND.'
+        # TEMPORARY FOR CHEYENNE - UNCOMMENT LATER
         # Read in to get PID number
-        pidObj = pd.read_csv(lockPath)
-        pidCheck = int(pidObj.PID[0])
-        
-        # Establish the host this is being ran on.
-        hostTmp = socket.gethostname()
-        if errMod.check_pid(pidCheck):
-                print "JOB: " + str(pidCheck) + \
-                      " Is still running on host: " + str(hostTmp)
-                sys.exit(0)
+        #pidObj = pd.read_csv(lockPath)
+        #pidCheck = int(pidObj.PID[0])
+        #if errMod.check_pid(pidCheck):
+        #        print "JOB: " + str(pidCheck) + \
+        #              " Is still running."
+        #        sys.exit(0)
+        #else:
+        #        print "JOB: " + str(pidCheck) + \
+        #              " Has Failed. Removing LOCK " + \
+        #              " file."
+        #        os.remove(lockPath)
+        #        fileObj = open(lockPath,'w')
+        #        fileObj.write('\"PID\"\n')
+        #        fileObj.write(str(os.getpid()))
+        #        fileObj.close()
+        # TEMPORARY FOR CHEYENNE. Since all cron jobs are launched
+        # from an administrative node, we cannot monitor the process at 
+        # all, which is an inconvenience. So.... we will check the last
+        # modified time. If it's more than 30 minutes old, we will assume
+        # the process is no longer running and can continue on with calibration.
+        dtRunCheck = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(lockPath))
+        if dtRunCheck.seconds/60.0 < 30.0:
+            # We are going to assume a previous process is still running on the system. 
+            # exit gracefully.
+            print 'ASSUMING PROCESS STILL RUNNING'
+            sys.exit(0)
         else:
-                print "JOB: " + str(pidCheck) + \
-                      " Has Failed. Removing LOCK " + \
-                      " file."
-                os.remove(lockPath)
-                fileObj = open(lockPath,'w')
-                fileObj.write('\"PID\"\n')
-                fileObj.write(str(os.getpid()))
-                fileObj.close()
+            # We are assuming the process is no longer running on the system. Alow
+            # the workflow to continue. 
+            print 'ALLOWING WORKFLOW TO CONINUE. REMOVING LOCK FILE'
+            os.remove(lockPath)
+            fileObj = open(lockPath,'w')
+            fileObj.write('\"PID\"\n')
+            fileObj.write(str(os.getpid()))
+            fileObj.close()
     else:
         # Write a LOCK file for this program.
         fileObj = open(lockPath,'w')
@@ -409,6 +429,18 @@ def main(argv):
             jobData.genMsg = "SENSITIVITY FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
             completeStatus = True
+            
+        # TEMPORARY FOR CHEYENNE. 
+        # Open the Python LOCK file. Write a blank line to the file and close it.
+        # This action will simply modify the file modification time while only adding
+        # a blank line.
+        try:
+            fileObj = open(lockPath,'a')
+            fileObj.write('\n')
+            fileObj.close()
+        except:
+            jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + lockPath
+            errMod.errOut(jobData)
             
     # Remove LOCK file
     os.remove(lockPath)
