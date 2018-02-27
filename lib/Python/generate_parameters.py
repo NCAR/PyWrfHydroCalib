@@ -179,6 +179,9 @@ def main(argv):
         if param == "smcmax":
             idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
             
+        if param == "rsurfexp":
+            idSoil2D.variables['rsurfexp'][:,:,:] = float(paramValues[np.where(paramNames == 'rsurfexp')[0][0]])
+            
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()

@@ -61,12 +61,13 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    #try:
+    #    pwdTmp = getpass.getpass('Enter Database Password: ')
+    #    jobData.dbPwd = str(pwdTmp)
+    #except:
+    #    print "ERROR: Unable to authenticate credentials for database."
+    #    sys.exit(1)
+    jobData.dbPwd = 'IJustWannaCalibrate'
     
     jobData.dbUName = 'WH_Calib_rw'
     
