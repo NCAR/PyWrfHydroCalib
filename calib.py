@@ -128,6 +128,11 @@ def main(argv):
                 fileObj.write('\"PID\"\n')
                 fileObj.write(str(os.getpid()))
                 fileObj.close()
+        # TEMPORARY FOR CHEYENNE. Since all cron jobs are launched
+        # from an administrative node, we cannot monitor the process at 
+        # all, which is an inconvenience. So.... we will check the last
+        # modified time. If it's more than 30 minutes old, we will assume
+        # the process is no longer running and can continue on with calibration.
     else:
         print 'LOCK FILE NOT FOUND.'
         # Write a LOCK file for this program.
