@@ -176,6 +176,8 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     
 def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     # General function for creation of a hydro.namelist file.
+    # NOTE: typeFlag = 1 indicates cold start.
+    #       typeFlag = 2 indicates restart.
     # NOTE: genFlag = 0 indicates a spinup - pull all parameter files from 
     #                   gageData
     #       genFlag = 1 indicartes a calibration - pull HYDRO_TBL_2D.nc, Fulldom.nc,
@@ -318,7 +320,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Specify baseflow/bucket model initialization...(0=cold start from table, 1=restart file)\n')
-        if genFlag == 0:
+        if typeFlag == 1:
             # For cold-start spinups
             inStr = "GW_RESTART = 0\n"
         else:
