@@ -171,8 +171,9 @@ def checkBasJob(jobData,gageNum):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -387,9 +388,10 @@ def checkCalibJob(jobData,gageNum):
             except:
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
-                
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+               
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -571,8 +573,9 @@ def checkBasJobValid(jobData,gageNum,modRun):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -829,8 +832,9 @@ def checkParmGenJob(jobData,gageNum):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -933,8 +937,9 @@ def checkEvalJob(jobData,gageNum):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -1112,8 +1117,9 @@ def checkSensPreProcJob(jobData,gageID):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -1286,8 +1292,9 @@ def checkSensPostProcJob(jobData,gageID):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -1464,8 +1471,9 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
@@ -1643,8 +1651,9 @@ def checkSensCollectJob(jobData,gageID,iteration):
                 jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
                 raise
                 
-            if os.path.getsize(csvPath) > 0:
-                emptyStatus = False
+            if os.path.isfile(csvPath):
+                if os.path.getsize(csvPath) > 0:
+                    emptyStatus = False
                 
             countTmp = countTmp + 1
             
