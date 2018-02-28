@@ -53,6 +53,9 @@ def main(argv):
     
     args = parser.parse_args()
     
+    # Establish the beginning timestamp for this program.
+    begTimeStamp = datetime.datetime.now()
+    
     # Get current user who is running this program.
     userTmp = pwd.getpwuid(os.getuid()).pw_name
     
@@ -323,6 +326,21 @@ def main(argv):
             time.sleep(3)
             
             print keySlot
+            
+            # TEMPORARY FOR CHEYENNE
+            # Check to make sure program hasn't passed a prescribed time limit. If it has,
+            # exit gracefully.
+            timeCheckStamp = datetime.datetime.now()
+            programDtCheck = timeCheckStamp - begTimeStamp
+            if programDtCheck.seconds/60.0 > 90.0: 
+                # 90-minutes)
+                try:
+                    fileObj = open(lockPath,'a')
+                    fileObj.write('WORKFLOW HAS HIT TIME LIMIT - EXITING....\n')
+                    fileObj.close()
+                except:
+                    jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + lockPath
+                    errMod.errOut(jobData)
                 
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
