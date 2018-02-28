@@ -139,7 +139,7 @@ def main(argv):
         # modified time. If it's more than 30 minutes old, we will assume
         # the process is no longer running and can continue on with calibration.
         dtRunCheck = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(lockPath))
-        if dtRunCheck.seconds/60.0 < 30.0:
+        if dtRunCheck.seconds/60.0 < 15.0:
             # We are going to assume a previous process is still running on the system. 
             # exit gracefully.
             print 'ASSUMING PROCESS STILL RUNNING'
