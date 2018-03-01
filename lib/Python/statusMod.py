@@ -160,33 +160,19 @@ def checkBasJob(jobData,gageNum):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -378,33 +364,18 @@ def checkCalibJob(jobData,gageNum):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -562,33 +533,18 @@ def checkBasJobValid(jobData,gageNum,modRun):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -821,33 +777,18 @@ def checkParmGenJob(jobData,gageNum):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -926,33 +867,18 @@ def checkEvalJob(jobData,gageNum):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -1106,33 +1032,18 @@ def checkSensPreProcJob(jobData,gageID):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -1281,33 +1192,18 @@ def checkSensPostProcJob(jobData,gageID):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
 
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -1460,33 +1356,18 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -1640,33 +1521,18 @@ def checkSensCollectJob(jobData,gageID,iteration):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        # Sometimes the system can produce empty files when there are indeed 
-        # jobs running. We will try to try to accomodate this. 
-        emptyStatus = True
-        countTmp = 0
-        while emptyStatus and countTmp < 5:
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-                raise
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+            raise
                 
-            if os.path.isfile(csvPath):
-                if os.path.getsize(csvPath) > 0:
-                    emptyStatus = False
-                
-            countTmp = countTmp + 1
-            
-        if not emptyStatus:
-            try:
-                jobs = pd.read_csv(csvPath,header=None,sep='=')
-            except:
-                jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-                raise
-            lenJobs = len(jobs[1])
-        else:
-            print "FOUND ZERO LENGTH QSTAT"
-            lenJobs = 0
+        try:
+            jobs = pd.read_csv(csvPath,header=None,sep='=')
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
