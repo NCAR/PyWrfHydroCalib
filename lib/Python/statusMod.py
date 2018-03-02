@@ -160,17 +160,19 @@ def checkBasJob(jobData,gageNum):
         # We are running via qsub
         csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
         cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        
         try:
             subprocess.call(cmd,shell=True)
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -178,8 +180,6 @@ def checkBasJob(jobData,gageNum):
         
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
-        
-        lenJobs = len(jobs[1])
         
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
@@ -369,12 +369,13 @@ def checkCalibJob(jobData,gageNum):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+               
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -386,8 +387,6 @@ def checkCalibJob(jobData,gageNum):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        lenJobs = len(jobs[1])
-        
         if lenJobs == 0:
             status = False
         else:
@@ -539,12 +538,13 @@ def checkBasJobValid(jobData,gageNum,modRun):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -557,8 +557,6 @@ def checkBasJobValid(jobData,gageNum,modRun):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        lenJobs = len(jobs[1])
-        
         if lenJobs == 0:
             status = False
         else:
@@ -784,12 +782,13 @@ def checkParmGenJob(jobData,gageNum):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -801,8 +800,6 @@ def checkParmGenJob(jobData,gageNum):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        lenJobs = len(jobs[1])
-        
         if lenJobs == 0:
             status = False
         else:
@@ -875,12 +872,13 @@ def checkEvalJob(jobData,gageNum):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -893,8 +891,6 @@ def checkEvalJob(jobData,gageNum):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        lenJobs = len(jobs[1])
-        
         if lenJobs == 0:
             status = False
         else:
@@ -1041,12 +1037,13 @@ def checkSensPreProcJob(jobData,gageID):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -1059,8 +1056,6 @@ def checkSensPreProcJob(jobData,gageID):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        lenJobs = len(jobs[1])
-        
         if lenJobs == 0:
             status = False
         else:
@@ -1202,13 +1197,14 @@ def checkSensPostProcJob(jobData,gageID):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
-            
+        lenJobs = len(jobs[1])
+
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
         subprocess.call(cmdTmp,shell=True)
@@ -1220,8 +1216,6 @@ def checkSensPostProcJob(jobData,gageID):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        lenJobs = len(jobs[1])
-        
         if lenJobs == 0:
             status = False
         else:
@@ -1367,12 +1361,13 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -1380,8 +1375,6 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir):
         
         # Compile expected job name that the job should occupy.
         expName = "WHS" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) + str(iteration)
-        
-        lenJobs = len(jobs[1])
         
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
@@ -1533,12 +1526,13 @@ def checkSensCollectJob(jobData,gageID,iteration):
         except:
             jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
             raise
-            
+                
         try:
             jobs = pd.read_csv(csvPath,header=None,sep='=')
         except:
             jobData.errMsg = "ERROR: Failure to read in: " + csvPath
             raise
+        lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
         cmdTmp = 'rm -rf ' + csvPath
@@ -1551,8 +1545,6 @@ def checkSensCollectJob(jobData,gageID,iteration):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        lenJobs = len(jobs[1])
-        
         if lenJobs == 0:
             status = False
         else:
