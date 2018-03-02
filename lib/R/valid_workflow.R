@@ -99,24 +99,35 @@ if (nrow(chrt.valid) < 1) {
        quit("no")
 }
 
-# Convert to daily
-chrt.cont.d <- Convert2Daily(chrt.cont)
-chrt.cont.d[, site_no := siteId]
-
-chrt.valid.d <- Convert2Daily(chrt.valid)
-chrt.valid.d[, site_no := siteId]
+# Convert to daily if needed
+if (calcDailyStats) {
+  chrt.cont.d <- Convert2Daily(chrt.cont)
+  chrt.cont.d[, site_no := siteId]
+  chrt.valid.d <- Convert2Daily(chrt.valid)
+  chrt.valid.d[, site_no := siteId]
+  chrt.cont.obj <- copy(chrt.cont.d)
+  chrt.valid.obj <- copy(chrt.valid.d)
+  obs.obj <- Convert2Daily(obsStrData)
+  obs.obj[, site_no := siteId]
+} else {
+  chrt.cont[, site_no := siteId]
+  chrt.valid[, site_no := siteId]
+  chrt.cont.obj <- copy(chrt.cont)
+  chrt.valid.obj <- copy(chrt.valid)
+  obs.obj <- copy(obsStrData)
+}
 
 # Merge
-setkey(chrt.cont.d, "site_no", "POSIXct")
-setkey(obsStrData, "site_no", "POSIXct")
-chrt.cont.d <- merge(chrt.cont.d, obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+setkey(chrt.cont.obj, "site_no", "POSIXct")
+if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
+setkey(obs.obj, "site_no", "POSIXct")
+chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
 
-setkey(chrt.valid.d, "site_no", "POSIXct")
-setkey(obsStrData, "site_no", "POSIXct")
-chrt.valid.d <- merge(chrt.valid.d, obsStrData, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+setkey(chrt.valid.obj, "site_no", "POSIXct")
+chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
 
 # Check for empty output
-if (nrow(chrt.cont.d) < 1) {
+if (nrow(chrt.cont.obj) < 1) {
     write(paste0("No data found in obs for gage ", siteId, " after start date ", minDate), stdout())
     fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
     writeLines('', fileConn)
@@ -124,7 +135,7 @@ if (nrow(chrt.cont.d) < 1) {
     quit("no")
 }
 
-if (nrow(chrt.valid.d) < 1) {
+if (nrow(chrt.valid.obj) < 1) {
     write(paste0("No data found in obs for gage ", siteId, " after start date ", minDate), stdout())
     fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
     writeLines('', fileConn)
@@ -133,7 +144,7 @@ if (nrow(chrt.valid.d) < 1) {
 }
 
 # Setup for stats loop
-runList <- list(df=c("chrt.cont.d", "chrt.valid.d"), run=c("default", "calibrated"))
+runList <- list(df=c("chrt.cont.obj", "chrt.valid.obj"), run=c("default", "calibrated"))
 dtList <- list(start=c(startCalibDate, startValidDate, minDate), 
                end=c(endCalibDate, endValidDate, maxDate),
                period=c("calib", "valid", "full"))
@@ -147,23 +158,23 @@ loopcnt <- 1
 for (i in 1:length(runList[[1]])) {
    for (j in 1:length(dtList[[1]])) {
       # Subset data
-      chrt.d <- get(runList[["df"]][i])
-      chrt.d <- chrt.d[POSIXct >= dtList[["start"]][j] & POSIXct < dtList[["end"]][j],]
-      chrt.d <- chrt.d[!is.na(q_cms) & !is.na(obs),]
+      chrt.obj <- get(runList[["df"]][i])
+      chrt.obj <- chrt.obj[POSIXct >= dtList[["start"]][j] & POSIXct < dtList[["end"]][j],]
+      chrt.obj <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
 
       # Calc objective function
-      F_new <- objFunc(chrt.d$q_cms, chrt.d$obs)
+      F_new <- objFunc(chrt.obj$q_cms, chrt.obj$obs)
       if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge")) F_new <- 1 - F_new
 
       # Calc stats
-      statCor <- cor(chrt.d$q_cms, chrt.d$obs)
-      statRmse <- Rmse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-      statBias <- PBias(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-      statNse <- Nse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-      statNseLog <- NseLog(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-      statNseWt <- NseWt(chrt.d$q_cms, chrt.d$obs)
-      statKge <- Kge(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
-      statMsof <- Msof(chrt.d$q_cms, chrt.d$obs)
+      statCor <- cor(chrt.obj$q_cms, chrt.obj$obs)
+      statRmse <- Rmse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statBias <- PBias(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statNse <- Nse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statNseLog <- NseLog(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statNseWt <- NseWt(chrt.obj$q_cms, chrt.obj$obs)
+      statKge <- Kge(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs)
 
       # Archive results
       validStats_new <- list(runList[["run"]][i], dtList[["period"]][j], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
@@ -171,7 +182,7 @@ for (i in 1:length(runList[[1]])) {
       loopcnt <- loopcnt + 1
    }
 }
-rm(chrt.d, validStats_new)
+rm(chrt.obj, validStats_new)
 
 
 #########################################################
@@ -183,9 +194,9 @@ dir.create(writePlotDir)
 
 # Hydrographs
 gg <- ggplot() + 
-              geom_line(data=chrt.cont.d, aes(x=POSIXct, y=q_cms, color='default'), lwd=0.6) +
-              geom_line(data=chrt.valid.d, aes(x=POSIXct, y=q_cms, color='calibrated'), lwd=0.6) +
-              geom_line(data=chrt.cont.d, aes(x=POSIXct, y=obs, color='observed'), lwd=0.4) +
+              geom_line(data=chrt.cont.obj, aes(x=POSIXct, y=q_cms, color='default'), lwd=0.6) +
+              geom_line(data=chrt.valid.obj, aes(x=POSIXct, y=q_cms, color='calibrated'), lwd=0.6) +
+              geom_line(data=chrt.cont.obj, aes(x=POSIXct, y=obs, color='observed'), lwd=0.4) +
               geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
               ggtitle(paste0("Model Validation Hydrograph: ", siteId)) +
               scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
@@ -200,10 +211,10 @@ ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_hydrogr_log.png"),
               plot=gg+scale_y_log10(), units="in", width=16, height=8, dpi=300)
 
 # Scatterplots
-maxval <- max(max(chrt.cont.d$q_cms, na.rm=TRUE), max(chrt.valid.d$q_cms, na.rm=TRUE), max(chrt.cont.d$obs, na.rm=TRUE))
+maxval <- max(max(chrt.cont.obj$q_cms, na.rm=TRUE), max(chrt.valid.obj$q_cms, na.rm=TRUE), max(chrt.cont.obj$obs, na.rm=TRUE))
 gg1 <- ggplot() +
-              geom_point(data=chrt.cont.d, aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
-              geom_point(data=chrt.valid.d, aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
+              geom_point(data=chrt.cont.obj, aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
+              geom_point(data=chrt.valid.obj, aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
               geom_abline(intercept=0, slope=1, col='black', lty=1) +
               ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId)) +
@@ -214,8 +225,8 @@ gg1 <- ggplot() +
               theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
               xlim(0,maxval) + ylim(0,maxval)
 gg2 <- ggplot() + 
-              geom_point(data=chrt.cont.d[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
-              geom_point(data=chrt.valid.d[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
+              geom_point(data=chrt.cont.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
+              geom_point(data=chrt.valid.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
               geom_abline(intercept=0, slope=1, col='black', lty=1) +
               ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId)) +
@@ -227,8 +238,8 @@ gg2 <- ggplot() +
               xlim(0,maxval) + ylim(0,maxval) 
 
 gg3 <- ggplot() + 
-              geom_point(data=chrt.cont.d[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
-              geom_point(data=chrt.valid.d[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
+              geom_point(data=chrt.cont.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
+              geom_point(data=chrt.valid.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
               geom_abline(intercept=0, slope=1, col='black', lty=1) +
               ggtitle(paste0("Validation Period (", startValidDate, " to ", endValidDate, "): \n", siteId)) +
