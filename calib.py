@@ -370,6 +370,7 @@ def main(argv):
                 if keyStatusCheck1 == 1.0:
                     continue
                 else:
+                    print "ITERATION = " + str(iteration)
                     try:
                         calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
                     except:
@@ -388,6 +389,8 @@ def main(argv):
                 if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.75:
                     time.sleep(60)
                 if keyStatusCheck1 == 0.75 and keyStatusCheck2 == 0.9:
+                    time.sleep(60)
+                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.9:
                     time.sleep(60)
                 if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
                     time.sleep(60)
