@@ -386,6 +386,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     any model iterations fail, the analysis workflow will lock up and report
     an error back to the user. 
     """
+    
+    # First check to make sure previous iteration's status is 1.0 (unless iteration 0).
+    # This is to prevent the program from doing unecessary work. 
+    if iteration > 0:
+        if keySlot[basinNum,iteration-1] < 1.0:
+            return
+        
     # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
     try:
