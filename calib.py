@@ -375,12 +375,22 @@ def main(argv):
                     except:
                         errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
+                # Put some spacing between launching model simulations to slow down que geting 
+                # overloaded.
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
-                    # Put some spacing between launching model simulations to slow down que geting 
-                    # overloaded.
-                    time.sleep(3)
+                    time.sleep(60)
                 if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
-                    time.sleep(3)
+                    time.sleep(60)
+                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.5:
+                    time.sleep(60)
+                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.25:
+                    time.sleep(60)
+                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.75:
+                    time.sleep(60)
+                if keyStatusCheck1 == 0.75 and keyStatusCheck2 == 0.9:
+                    time.sleep(60)
+                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
+                    time.sleep(60)
                     
                 # TEMPORARY FOR CHEYENNE
                 # Check to make sure program hasn't passed a prescribed time limit. If it has,
