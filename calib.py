@@ -309,6 +309,14 @@ def main(argv):
     # the database occurs, and the program will complete.
     keySlot = np.empty([len(jobData.gages),int(jobData.nIter)])
     keySlot[:,:] = 0.0
+    
+    # Create an array to hold systme job ID values. This will only be used for
+    # PBS as qstat has demonstrated slow behavior when doing a full qstat command. 
+    # We will track job ID values and do a qstat <jobID> and populate this array
+    # to keep track of things. 
+    pbsJobId = np.empty([len(jobData.gages)],np.int)
+    pbsJobId[:] = -9999
+    
     # NOTE this is different from the spinup. We have a 2D array of values to account
     # for all the iterations. 
     entryValue = float(len(jobData.gages)*int(jobData.nIter))
@@ -372,7 +380,8 @@ def main(argv):
                 else:
                     print "ITERATION = " + str(iteration)
                     try:
-                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],
+                                          jobData.gages[basin],keySlot,basin,iteration,pbsJobId)
                     except:
                         errMod.errOut(jobData)
                 keyStatusCheck2 = keySlot[basin,iteration]
@@ -394,6 +403,8 @@ def main(argv):
                     time.sleep(60)
                 if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
                     time.sleep(60)
+                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 1.0:
+                    time.sleep(15)
                     
                 # TEMPORARY FOR CHEYENNE
                 # Check to make sure program hasn't passed a prescribed time limit. If it has,

@@ -17,7 +17,7 @@ import socket
 import warnings
 warnings.filterwarnings("ignore")
 
-def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
+def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbsJobId):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -174,13 +174,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     
     # Check to see if a model simulation is occurring.
     try:
-        basinStatus = statusMod.checkBasJob(statusData,basinNum)
+        basinStatus = statusMod.checkBasJob(statusData,basinNum,pbsJobId)
     except:
         raise
         
     # Check to see if an R script calibration job is occurring.
     try:
-        calibStatus = statusMod.checkCalibJob(statusData,basinNum)
+        calibStatus = statusMod.checkCalibJob(statusData,basinNum,pbsJobId)
     except:
         raise
      
@@ -783,12 +783,19 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH_Restart.sh"
+            #cmd = "qsub " + runDir + "/run_WH_Restart.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH_Restart.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
+                
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH_Restart.sh"
             try:
@@ -863,9 +870,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -927,9 +940,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.analysisRunType == 2:
-            cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
+            #cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -981,9 +1000,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.analysisRunType == 2:
-            cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
+            #cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
