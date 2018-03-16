@@ -17,7 +17,7 @@ import socket
 import warnings
 warnings.filterwarnings("ignore")
 
-def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTop):
+def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTop,pbsJobId):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -198,11 +198,11 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     
     # Pull status values for parameter generation and model simulations. 
     try:
-        basinStatus = statusMod.checkBasJobValid(statusData,basinNum,'CTRL')
+        basinStatus = statusMod.checkBasJobValid(statusData,basinNum,'CTRL',pbsJobId)
     except:
         raise
     try:
-        genParmStatus = statusMod.checkParmGenJob(statusData,basinNum)
+        genParmStatus = statusMod.checkParmGenJob(statusData,basinNum,pbsJobId)
     except:
         raise
      
@@ -414,9 +414,15 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 raise
         if statusData.jobRunType == 2:
             # Fire off model.
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -480,9 +486,15 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 raise
         if statusData.jobRunType == 2:
             # Fire off model.
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -517,9 +529,15 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.analysisRunType == 2:
-            cmd = "qsub " + bestDir + "/run_params.sh"
+            #cmd = "qsub " + bestDir + "/run_params.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',bestDir + '/run_params.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -542,7 +560,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         keyStatus = 0.1
         keySlot[basinNum,0] = 0.1
             
-def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
+def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -719,11 +737,11 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     
     # Pull status values for evaluation jobs and model simulations. 
     try:
-        basinStatus = statusMod.checkBasJobValid(statusData,basinNum,'BEST')
+        basinStatus = statusMod.checkBasJobValid(statusData,basinNum,'BEST',pbsJobId)
     except:
         raise
     try:
-        evalStatus = statusMod.checkEvalJob(statusData,basinNum)
+        evalStatus = statusMod.checkEvalJob(statusData,basinNum,pbsJobId)
     except:
         raise
      
@@ -944,9 +962,15 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -1008,9 +1032,15 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -1046,9 +1076,15 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum):
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.analysisRunType == 2:
-            cmd = "qsub " + validWorkDir + "/run_eval.sh"
+            #cmd = "qsub " + validWorkDir + "/run_eval.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',validWorkDir + '/run_eval.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
