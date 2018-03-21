@@ -1915,11 +1915,11 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
         #subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that job should occupy
-        #expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
-        #          str(gageID) + "_" + str(iteration)
+        expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
+                  str(gageID) + "_" + str(iteration)
                   
         # Assume no jobs for basin are being ran, unless found in the data frame.
-        #status = False
+        status = False
         
         # Run the qstat command on the username IF we are running this command
         # for the first time (restarting workflow, or new workflow instance). 
