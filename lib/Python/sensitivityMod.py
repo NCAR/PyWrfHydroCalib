@@ -126,11 +126,17 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
     if statusData.analysisRunType == 2:
         #PBS
         generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
-        cmd = "qsub " + workDir + "/run_WH_SENS_PREPROC.sh"
+        #cmd = "qsub " + workDir + "/run_WH_SENS_PREPROC.sh"
+        #try:
+        #    subprocess.call(cmd,shell=True)
+        #except:
+        #    statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gage)
+        #    raise
         try:
-            subprocess.call(cmd,shell=True)
+            jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_SENS_PREPROC.sh'])
+            pbsJobId[basinNum] = int(jobTmp.split('.')[0])
         except:
-            statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gage)
+            statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gageMeta.gage[basinNum])
             raise
     if statusData.analysisRunType == 3:
         #SLURM
@@ -338,12 +344,18 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
         if statusData.analysisRunType == 2:
             #PBS
             generatePbsPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
-            cmd = "qsub " + workDir + "/run_WH_SENS_POSTPROC.sh"
+            #cmd = "qsub " + workDir + "/run_WH_SENS_POSTPROC.sh"
+            #try:
+            #    subprocess.call(cmd,shell=True)
+            #except:
+            #    statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
+            #    raise
             try:
-                subprocess.call(cmd,shell=True)
+                jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_SENS_POSTPROC.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
-                statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
-                raise
+                statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gageMeta.gage[basinNum])
+            raise
         if statusData.analysisRunType == 3:
             #SLURM
             generateSlurmPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
@@ -717,7 +729,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            try:
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
+                                    str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
+                raise
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
@@ -725,7 +744,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
+            if statusData.jobRunType == 1 or statusData.jobRunType == 3:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
@@ -783,7 +802,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            try:
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
+                                    str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
+                raise
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
@@ -791,7 +817,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
+            if statusData.jobRunType == 1 or statusData.jobRunType == 3:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
@@ -838,7 +864,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.analysisRunType == 1:
             cmd = "bsub < " + collectScript
         if statusData.analysisRunType == 2:
-            cmd = "qsub " + collectScript
+            #cmd = "qsub " + collectScript
+            try:
+                jobTmp = subprocess.check_output(['qsub',collectScript])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+            except:
+                statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
+                                    str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
+                raise
         if statusData.analysisRunType == 3:
             cmd = "sbatch " + collectScript
         if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
@@ -847,7 +880,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                   ' 2>' + runDir + "/SCOL_" + str(statusData.jobID) + "_" + \
                   str(gageID) + "_" + str(iteration) + ".err"
         try:
-            if statusData.analysisRunType == 1 or statusData.analysisRunType == 2 or statusData.analysisRunType == 3:
+            if statusData.analysisRunType == 1 or statusData.analysisRunType == 3:
                 subprocess.call(cmd,shell=True)
             if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
