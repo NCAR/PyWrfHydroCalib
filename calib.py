@@ -314,7 +314,7 @@ def main(argv):
     # PBS as qstat has demonstrated slow behavior when doing a full qstat command. 
     # We will track job ID values and do a qstat <jobID> and populate this array
     # to keep track of things. 
-    pbsJobId = np.empty([len(jobData.gages)],np.int)
+    pbsJobId = np.empty([len(jobData.gages)],np.int64)
     pbsJobId[:] = -9999
     
     # NOTE this is different from the spinup. We have a 2D array of values to account
