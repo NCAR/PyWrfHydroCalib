@@ -357,7 +357,7 @@ def main(argv):
             if not preProcStatus:
                 #sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 try:
-                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsJobId)
+                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsJobId,basin)
                 except:
                     errMod.errOut(jobData)
             else:
