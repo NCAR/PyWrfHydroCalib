@@ -15,7 +15,7 @@ import subprocess
 import warnings
 warnings.filterwarnings("ignore")
 
-def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
+def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
     """
     Generic function for running the model. Some basic information about
     the run directory, beginning date, ending dates, account keys,
@@ -82,7 +82,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum):
     keyStatus = keySlot[basinNum]
     
     try:
-        basinStatus = statusMod.checkBasJob(statusData,basinNum)
+        basinStatus = statusMod.checkBasJob(statusData,basinNum,pbsJobId)
     except:
         raise
         

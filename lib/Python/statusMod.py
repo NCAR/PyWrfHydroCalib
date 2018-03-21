@@ -1210,7 +1210,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
             
     return status
 
-def checkSensPreProcJob(jobData,gageID,pbsJobId):
+def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
     """ 
     Generic function to check for jobs running that are preparing the input
     parameter datasets for sensitivity analysis.
@@ -1265,24 +1265,24 @@ def checkSensPreProcJob(jobData,gageID,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-            raise
-                
-        try:
-            jobs = pd.read_csv(csvPath,header=None,sep='=')
-        except:
-            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-            raise
-        lenJobs = len(jobs[1])
+        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        #try:
+        #    subprocess.call(cmd,shell=True)
+        #except:
+        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+        #    raise
+        #        
+        #try:
+        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
+        #except:
+        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        #    raise
+        #lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
-        cmdTmp = 'rm -rf ' + csvPath
-        subprocess.call(cmdTmp,shell=True)
+        #cmdTmp = 'rm -rf ' + csvPath
+        #subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that job should occupy
         expName = "WH_SENS_PREPROC_" + str(jobData.jobID) + "_" + \
@@ -1290,14 +1290,61 @@ def checkSensPreProcJob(jobData,gageID,pbsJobId):
                   
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
-                  
-        if lenJobs == 0:
-            status = False
+        
+        # Run the qstat command on the username IF we are running this command
+        # for the first time (restarting workflow, or new workflow instance). 
+        # Once jobs are fired off, we will populate the jobId array with the values
+        # returned by qsub. 
+        if pbsJobId[gageNum] == -9999:
+            # Run qstat for the user.
+            try:
+                jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+            except:
+                jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
+                raise
+            if len(jobsTmp) == 0:
+                # This means no jobs are running for the user. We can safely
+                # assume the status is false.
+                status = False
+            else:
+                numLinesTmp = len(jobsTmp.split('\n'))
+                # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
+                if numLinesTmp < 7:
+                    jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
+                    raise
+                for lineNum in range(5,numLinesTmp):
+                    # This is a CRUDE assumption based on the behavior of qstat 
+                    # on Cheyenne.
+                    lineTmp = jobsTmp.split('\n')[lineNum]
+                    if len(lineTmp) == 0:
+                        continue
+                    else:
+                        expCheck = lineTmp.split()[3]
+                        if expCheck == expName:
+                            # We have a match. This means a job running from a 
+                            # previous instance of the workflow is still running.
+                            # Get the job id and set it into the jobIds array.
+                            pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
         else:
-            # Find if any jobs for this basin are being ran.
-            for jobNum in range(0,lenJobs):
-                if jobs[1][jobNum].strip() == expName:
-                    status = True
+            # We are checking for a job ID that has already been submitted by 
+            # this instance of the workflow. 
+            # Try running qstat for the job ID. If it's unsucessfull, then we
+            # can make a good assumption that the job is no longer running. 
+            try:
+                jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+                status = True
+            except:
+                # This means the job is no longer running.
+                status = False
+                return status
+                  
+        #if lenJobs == 0:
+        #    status = False
+        #else:
+        #    # Find if any jobs for this basin are being ran.
+        #    for jobNum in range(0,lenJobs):
+        #        if jobs[1][jobNum].strip() == expName:
+        #            status = True
                     
     if jobData.analysisRunType == 3:
         # We are running via slurm
@@ -1370,7 +1417,7 @@ def checkSensPreProcJob(jobData,gageID,pbsJobId):
             
     return status
 
-def checkSensPostProcJob(jobData,gageID,pbsJobId):
+def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
     """ 
     Generic function to check for jobs running that are post-processing sensitivity
     model output for analysis. 
@@ -1425,24 +1472,24 @@ def checkSensPostProcJob(jobData,gageID,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-            raise
+        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        #try:
+        #    subprocess.call(cmd,shell=True)
+        #except:
+        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+        #    raise
                 
-        try:
-            jobs = pd.read_csv(csvPath,header=None,sep='=')
-        except:
-            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-            raise
-        lenJobs = len(jobs[1])
+        #try:
+        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
+        #except:
+        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        #    raise
+        #lenJobs = len(jobs[1])
 
         # Delete temporary CSV fies
-        cmdTmp = 'rm -rf ' + csvPath
-        subprocess.call(cmdTmp,shell=True)
+        #cmdTmp = 'rm -rf ' + csvPath
+        #subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that job should occupy
         expName = "WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + \
@@ -1451,13 +1498,60 @@ def checkSensPostProcJob(jobData,gageID,pbsJobId):
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
                   
-        if lenJobs == 0:
-            status = False
+        # Run the qstat command on the username IF we are running this command
+        # for the first time (restarting workflow, or new workflow instance). 
+        # Once jobs are fired off, we will populate the jobId array with the values
+        # returned by qsub. 
+        if pbsJobId[gageNum] == -9999:
+            # Run qstat for the user.
+            try:
+                jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+            except:
+                jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
+                raise
+            if len(jobsTmp) == 0:
+                # This means no jobs are running for the user. We can safely
+                # assume the status is false.
+                status = False
+            else:
+                numLinesTmp = len(jobsTmp.split('\n'))
+                # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
+                if numLinesTmp < 7:
+                    jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
+                    raise
+                for lineNum in range(5,numLinesTmp):
+                    # This is a CRUDE assumption based on the behavior of qstat 
+                    # on Cheyenne.
+                    lineTmp = jobsTmp.split('\n')[lineNum]
+                    if len(lineTmp) == 0:
+                        continue
+                    else:
+                        expCheck = lineTmp.split()[3]
+                        if expCheck == expName:
+                            # We have a match. This means a job running from a 
+                            # previous instance of the workflow is still running.
+                            # Get the job id and set it into the jobIds array.
+                            pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
         else:
-            # Find if any jobs for this basin are being ran.
-            for jobNum in range(0,lenJobs):
-                if jobs[1][jobNum].strip() == expName:
-                    status = True
+            # We are checking for a job ID that has already been submitted by 
+            # this instance of the workflow. 
+            # Try running qstat for the job ID. If it's unsucessfull, then we
+            # can make a good assumption that the job is no longer running. 
+            try:
+                jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+                status = True
+            except:
+                # This means the job is no longer running.
+                status = False
+                return status
+            
+        #if lenJobs == 0:
+        #    status = False
+        #else:
+        #    # Find if any jobs for this basin are being ran.
+        #    for jobNum in range(0,lenJobs):
+        #        if jobs[1][jobNum].strip() == expName:
+        #            status = True
                     
     if jobData.analysisRunType == 3:
         # We are running via slurm
@@ -1746,7 +1840,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                 
     return status
 
-def checkSensCollectJob(jobData,gageID,iteration,pbsJobId):
+def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
     """ 
     Generic function to check for jobs running that are collecting model output
     into an R dataset
@@ -1801,39 +1895,86 @@ def checkSensCollectJob(jobData,gageID,iteration,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        try:
-            subprocess.call(cmd,shell=True)
-        except:
-            jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-            raise
+        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
+        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
+        #try:
+        #    subprocess.call(cmd,shell=True)
+        #except:
+        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
+        #    raise
                 
-        try:
-            jobs = pd.read_csv(csvPath,header=None,sep='=')
-        except:
-            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-            raise
-        lenJobs = len(jobs[1])
+        #try:
+        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
+        #except:
+        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+        #    raise
+        #lenJobs = len(jobs[1])
             
         # Delete temporary CSV fies
-        cmdTmp = 'rm -rf ' + csvPath
-        subprocess.call(cmdTmp,shell=True)
+        #cmdTmp = 'rm -rf ' + csvPath
+        #subprocess.call(cmdTmp,shell=True)
         
         # Compile expected job name that job should occupy
-        expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
-                  str(gageID) + "_" + str(iteration)
+        #expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
+        #          str(gageID) + "_" + str(iteration)
                   
         # Assume no jobs for basin are being ran, unless found in the data frame.
-        status = False
-                  
-        if lenJobs == 0:
-            status = False
+        #status = False
+        
+        # Run the qstat command on the username IF we are running this command
+        # for the first time (restarting workflow, or new workflow instance). 
+        # Once jobs are fired off, we will populate the jobId array with the values
+        # returned by qsub. 
+        if pbsJobId[gageNum] == -9999:
+            # Run qstat for the user.
+            try:
+                jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+            except:
+                jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
+                raise
+            if len(jobsTmp) == 0:
+                # This means no jobs are running for the user. We can safely
+                # assume the status is false.
+                status = False
+            else:
+                numLinesTmp = len(jobsTmp.split('\n'))
+                # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
+                if numLinesTmp < 7:
+                    jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
+                    raise
+                for lineNum in range(5,numLinesTmp):
+                    # This is a CRUDE assumption based on the behavior of qstat 
+                    # on Cheyenne.
+                    lineTmp = jobsTmp.split('\n')[lineNum]
+                    if len(lineTmp) == 0:
+                        continue
+                    else:
+                        expCheck = lineTmp.split()[3]
+                        if expCheck == expName:
+                            # We have a match. This means a job running from a 
+                            # previous instance of the workflow is still running.
+                            # Get the job id and set it into the jobIds array.
+                            pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
         else:
-            # Find if any jobs for this basin are being ran.
-            for jobNum in range(0,lenJobs):
-                if jobs[1][jobNum].strip() == expName:
-                    status = True
+            # We are checking for a job ID that has already been submitted by 
+            # this instance of the workflow. 
+            # Try running qstat for the job ID. If it's unsucessfull, then we
+            # can make a good assumption that the job is no longer running. 
+            try:
+                jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+                status = True
+            except:
+                # This means the job is no longer running.
+                status = False
+                return status
+                  
+        #if lenJobs == 0:
+        #    status = False
+        #else:
+        #    # Find if any jobs for this basin are being ran.
+        #    for jobNum in range(0,lenJobs):
+        #        if jobs[1][jobNum].strip() == expName:
+        #            status = True
                     
     if jobData.analysisRunType == 3:
         # We are running via slurm
