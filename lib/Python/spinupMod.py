@@ -230,7 +230,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            try:
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+                raise
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
@@ -238,7 +244,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
+            if statusData.jobRunType == 1 or statusData.jobRunType == 3:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
@@ -282,7 +288,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            cmd = "qsub " + runDir + "/run_WH.sh"
+            #cmd = "qsub " + runDir + "/run_WH.sh"
+            try:
+                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+            except:
+                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+                raise
         if statusData.jobRunType == 3:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
@@ -290,7 +302,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            if statusData.jobRunType == 1 or statusData.jobRunType == 2 or statusData.jobRunType == 3:
+            if statusData.jobRunType == 1 or statusData.jobRunType == 3:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
