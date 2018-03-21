@@ -286,6 +286,13 @@ def main(argv):
     keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages)*int(jobData.nSensIter)*2.0)
     
+    # Create an array to hold systme job ID values. This will only be used for
+    # PBS as qstat has demonstrated slow behavior when doing a full qstat command. 
+    # We will track job ID values and do a qstat <jobID> and populate this array
+    # to keep track of things. 
+    pbsJobId = np.empty([len(jobData.gages)],np.int)
+    pbsJobId[:] = -9999
+    
     # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
         try:
@@ -350,7 +357,7 @@ def main(argv):
             if not preProcStatus:
                 #sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 try:
-                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsJobId,basin)
                 except:
                     errMod.errOut(jobData)
             else:
@@ -373,7 +380,7 @@ def main(argv):
                             if keyCheck1 < 1:
                                 # This model iteration has not completed. 
                                 try:
-                                    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration)
+                                    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration,pbsJobId)
                                 except:
                                     errMod.errOut(jobData)
                                 
@@ -389,7 +396,7 @@ def main(argv):
             if not postProcStatus and preProcStatus and len(np.where(batchCheck != 1.0)[0]) == 0:
                 print "READY FOR POST PROCESSING"
                 try:
-                    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
+                    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsJobId,basin)
                 except:
                     errMod.errOut(jobData)
                                 

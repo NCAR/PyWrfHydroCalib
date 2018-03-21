@@ -264,6 +264,13 @@ def main(argv):
     keySlot[:] = 0.0
     entryValue = float(len(jobData.gages))
     
+    # Create an array to hold systme job ID values. This will only be used for
+    # PBS as qstat has demonstrated slow behavior when doing a full qstat command. 
+    # We will track job ID values and do a qstat <jobID> and populate this array
+    # to keep track of things. 
+    pbsJobId = np.empty([len(jobData.gages)],np.int)
+    pbsJobId[:] = -9999
+
     while not completeStatus:
         # Walk through spinup directory for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
@@ -287,7 +294,7 @@ def main(argv):
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
             try:
-                spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+                spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobId)
             except:
                 errMod.errOut(jobData)
             time.sleep(2)

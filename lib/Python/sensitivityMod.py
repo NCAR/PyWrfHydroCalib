@@ -17,7 +17,7 @@ import time
 import warnings
 warnings.filterwarnings("ignore")
 
-def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
+def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum):
     """
     Function to run R/Python pre-processing for all the potential permutations
     of the sensivity analysis. The first step is to run R code to generate a 
@@ -87,7 +87,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
                 preProcStatus = False
         else:
             # Check to see if a job is running.
-            preRunStatus = statusMod.checkSensPreProcJob(statusData,gageID)
+            preRunStatus = statusMod.checkSensPreProcJob(statusData,gageID,basinNum,pbsJobId)
             if not preRunStatus:
                 # This implies the job failed. Report an error to the user and create a LOCK file.
                 try:
@@ -154,7 +154,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage):
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gage)
             raise
     
-def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
+def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum):
     """
     Function to run R post-processing for all the potential permutations
     of the sensivity analysis. The first step is to run R code to analyze/read
@@ -265,7 +265,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
         runStatus = True
     if os.path.isfile(runFlag):
         # Check to see if a job is running.
-        postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID)
+        postRunStatus = statusMod.checkSensPostProcJob(statusData,gageID,basinNum,pbsJobId)
         if not postRunStatus:
             if os.path.isfile(missingFlag):
                 # This is a unique siutation where either an improper COMID (linkID) was passed to
@@ -373,7 +373,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage):
             
     time.sleep(1)
             
-def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
+def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbsJobId):
     """
     Function for running the sensitivity analysis for a given basin. 
     This function will loop through all model iterations specified for
@@ -476,11 +476,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration):
     keyStatus = keySlot[basinNum,iteration]
     
     try:
-        basinStatus = statusMod.checkBasSensJob(statusData,basinNum,iteration,runDir)
+        basinStatus = statusMod.checkBasSensJob(statusData,basinNum,iteration,runDir,pbsJobId)
     except:
         raise
     try:
-        collectStatus = statusMod.checkSensCollectJob(statusData,gageID,iteration)
+        collectStatus = statusMod.checkSensCollectJob(statusData,gageID,iteration,basinNum,pbsJobId)
     except:
         raise
         
