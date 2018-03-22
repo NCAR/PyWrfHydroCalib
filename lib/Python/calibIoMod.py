@@ -145,7 +145,18 @@ def copyDefaultParms(jobData,runDir,gage):
     except:
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
-    
+ 	# ADDED BY TML: Copy RouteLink.nc File to DEFAULT_PARAMETER directory    
+    inPath = runDir + "/RouteLink.nc"
+    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/RouteLink.nc"
+    if not os.path.isfile(inPath):
+        jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
+        raise Exception()
+    try:
+        shutil.copy(inPath,outPath)
+    except:
+        jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
+        raise
+    # END TML CHANGE   
         
 def setupModels(jobData,db,args,libPathTop):
     # Function for setting up all model directories,
@@ -471,7 +482,17 @@ def setupModels(jobData,db,args,libPathTop):
             wipeJobDir(jobData)
             jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
             raise
-            
+        # ADDED BY TML: Add RouteLink file to baseline parameter directory
+        origPath = str(gageData.rtLnk)
+        newPath = baseParmDir + "/RouteLink.nc"
+        try:
+            shutil.copy(origPath,newPath)
+        except:
+            wipeJobDir(jobData)
+            jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+            raise
+        # END TML CHANGE
+        
         # Create symbolic link to forcing directory.
         fLink = gageDir + "/FORCING"
         try:
