@@ -44,6 +44,8 @@ def main(argv):
     hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO_TBL_2D.nc"
     soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
     gwOrig = workDir + "/BASELINE_PARAMETERS/GWBUCKPARM.nc"
+    # ADDED BY TML
+    rtOrig = workDir + "/BASELINE_PARAMETERS/RouteLink.nc"
     rCompletePath = workDir + "/R_COMPLETE"
     adjTbl = workDir + "/params_new.txt"
     
@@ -52,6 +54,8 @@ def main(argv):
     hydroOut = runDir + "/HYDRO_TBL_2D.nc"
     soilOut = runDir + "/soil_properties.nc"
     gwOut = runDir + '/GWBUCKPARM.nc'
+    # ADDED BY TML
+    rtOut = runDir + '/RouteLink.nc'
     outFlag = workDir + "/CALIB_ITER.COMPLETE"
     
     # If R COMPLETE flag not present, this implies the R code didn't run
@@ -82,6 +86,8 @@ def main(argv):
         shutil.copy(hydroOrig,hydroOut)
         shutil.copy(soilOrig,soilOut)
         shutil.copy(gwOrig,gwOut)
+        # ADDED BY TML
+        shutil.copy(rtOrig,rtOut)
     except:
         sys.exit(3)
         
@@ -93,6 +99,8 @@ def main(argv):
     idFullDom = Dataset(fullDomOut,'a')
     idSoil2D = Dataset(soilOut,'a')
     idGw = Dataset(gwOut,'a')
+    # ADDED BY TML
+    idRt = Dataset(rtOut,'a')
     idHydroTbl = Dataset(hydroOut,'a')
     
     # Loop through and adjust each parameter accordingly.
@@ -148,11 +156,26 @@ def main(argv):
         if param == "smcmax":
             idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[0])       
         
-            
+        # ADDED BY TML: Adds four possible channel variables to adjust by a multiplication constant.
+        if param == "channk":  
+            idRt.variables['Kchan'][:] = idRt.variables['Kchan'][:]*float(newParams.channk[0])
+
+        if param == "n":  
+            idRt.variables['n'][:] = idRt.variables['n'][:]*float(newParams.n[0])
+
+        if param == "btmwdth":  
+            idRt.variables['BtmWdth'][:] = idRt.variables['BtmWdth'][:]*float(newParams.btmwdth[0])
+
+        if param == "chslp":  
+            idRt.variables['ChSlp'][:] = idRt.variables['ChSlp'][:]*float(newParams.chslp[0])      
+        # END TML CHANGES
+        
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
     idGw.close()
+    # ADDED BY TML
+    idRt.close()
     idHydroTbl.close()
     
     # Remove all model output as we no longer need it in preparation for the next iteration.
