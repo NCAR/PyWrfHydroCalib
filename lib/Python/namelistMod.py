@@ -17,13 +17,17 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     #       typeFlag = 2 indicates restart.
     # NOTE: genFlag = 0 indicates a spinup - pull all parameter files from 
     #                   gageData
-    #       genFlag = 1 indicartes a calibration - pull HYDRO_TBL_2D.nc, Fulldom.nc,
-    #                   GWBUCKPARM.nc, and soil_properties.nc from the run directory.
+    #       genFlag = 1 Indicartes a calibration - pull HYDRO_TBL_2D.nc, Fulldom.nc,
+    #                   GWBUCKPARM.nc, RouteLink.nc and soil_properties.nc from the 
+	#					run directory.
     #       genFlag = 2 Indicates validation CTRL - pull HYDRO_TBL_2D.nc, Fulldom.nc,
-    #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #                   GWBUCKPARM.nc, RouteLink.nc and soil_properties.nc from the 
+	#					run directory.
     #       genFlag = 3 Indicates validation BEST - pull HYDRO_TBL_2D.nc, Fulldom.nc,
-    #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #                   GWBUCKPARM.nc, RouteLink.nc and soil_properties.nc from the 
+	#					run directory.
     # Create path for the namelist file
+    # COMMENTS UPDATED BY TML
     pathOut = outDir + "/namelist.hrldas"
     if os.path.isfile(pathOut):
         os.remove(pathOut)
@@ -171,12 +175,16 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     # NOTE: genFlag = 0 indicates a spinup - pull all parameter files from 
     #                   gageData
     #       genFlag = 1 indicartes a calibration - pull HYDRO_TBL_2D.nc, Fulldom.nc,
-    #                   GWBUCKPARM.nc, and soil_properties.nc from the run directory.
+    #                   GWBUCKPARM.nc, RouteLink.nc and soil_properties.nc from the 
+	#					run directory.
     #       genFlag = 2 Indicates validation CTRL - pull HYDRO_TBL_2D.nc, Fulldom.nc,
-    #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #                   GWBUCKPARM.nc, RouteLink.nc and soil_properties.nc from the 
+	#					run directory.
     #       genFlag = 3 Indicates validation BEST - pull HYDRO_TBL_2D.nc, Fulldom.nc,
-    #                   GWBUCKPARM.nc, and soil_properties.nc from calibration output.
+    #                   GWBUCKPARM.nc, RouteLink.nc and soil_properties.nc from the 
+	#					run directory.
     # Create path for the namelist file.
+	# Updated by TML
     pathOut = outDir + "/hydro.namelist"
     if os.path.isfile(pathOut):
         os.remove(pathOut)
@@ -370,6 +378,10 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('\n')
         fileObj.write('!!!! PHYSICS OPTIONS AND RELATED SETTINGS !!!!\n')
         fileObj.write('\n')
+        # ADDED BY TML; THIS VARIABLE IS NEEDED IN NWM v1.2 WITH CHANNEL LOSS
+        fileObj.write('! Switch for terrain adjustment of incoming solar radiation: 0=no, 1=yes\n')
+        fileObj.write(' TERADJ_SOLAR = 0\n')
+        fileObj.write('\n')
         fileObj.write('!Specify the number of soil layers (integer) and the depth of the bottom of of each layer (meters)...\n')
         fileObj.write('! Notes: In Version 1 of WRF-Hydro these must be the same as in the namelist.input file\n')
         fileObj.write('! Future versions will permit this to be different.\n')
@@ -416,12 +428,36 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the reach file for reach-based routing options...\n')
+        # UPDATED BY TML: Use RouteLink.nc file from run directory instead of default for calibration and validation. 
         if str(gageData.rtLnk) == '-9999':
             inStr = ' route_link_f = \'\'' + '\n'
         else:
-            inStr = ' route_link_f = "' + str(gageData.rtLnk) + '"\n'
+            if genFlag == 0:
+                inStr = ' route_link_f = "' + str(gageData.rtLnk) + '"\n'
+            if genFlag == 1:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.CALIB/OUTPUT/RouteLink.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' route_link_f = "' + pthTmp + '"\n'
+            if genFlag == 2:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/RouteLink.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' route_link_f = "' + pthTmp + '"\n'
+            if genFlag == 3:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/RouteLink.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' route_link_f = "' + pthTmp + '"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
+    	# END TML CHANGE
         fileObj.write('! Specify the simulated lakes for NHDPlus reach-based routing\n')
         if str(gageData.lkFile) == '-9999':
             inStr = ' route_lake_f = \'\'' + '\n'
