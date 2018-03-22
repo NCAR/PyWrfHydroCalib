@@ -155,7 +155,8 @@ if (cyclecount > 0) {
    }
 
    # Convert to daily
-   chrt.d <- Convert2Daily(chrt)
+   #chrt.d <- Convert2Daily(chrt)
+   chrt.d <- chrt # UPDATED BY TML
    chrt.d[, site_no := siteId]
    assign(paste0("chrt.d.", cyclecount), chrt.d)
 
@@ -178,7 +179,15 @@ if (cyclecount > 0) {
    if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge")) F_new <- 1 - F_new
 
    # Calc stats
-   statCor <- cor(chrt.d$q_cms, chrt.d$obs)
+   # UPDATED BY TML: Set Correlation Coefficient to 0.0 for cases where flow is 0 for entire time series
+   if (sd(chrt.d$q_cms, na.rm=TRUE) < 10^(-6)) {
+     statCor <- 0.0
+   } else {
+     statCor <- cor(chrt.d$q_cms, chrt.d$obs)
+   }
+   print(statCor) # ADDED BY TML; Debugging Test
+   print(sd(chrt.d$q_cms, na.rm=TRUE)) # ADDED BY TML; Debugging Test
+   # END TML UPDATE
    statRmse <- Rmse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
    statBias <- PBias(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
    statNse <- Nse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
@@ -380,7 +389,7 @@ if (any(x_archive$obj > objFunThreshold)) {
 
    obsStrDataPlot <- copy(obsStrData)
    setnames(obsStrDataPlot, "obs", "q_cms")
-   obsStrDataPlot <- obsStrDataPlot[, c("Date", "q_cms", "POSIXct", "site_no"), with=FALSE]
+   obsStrDataPlot <- obsStrDataPlot[, c("q_cms", "POSIXct", "site_no"), with=FALSE] # UPDATED BY TML
    obsStrDataPlot <- obsStrDataPlot[as.integer(POSIXct) >= min(as.integer(controlRun$POSIXct)) & as.integer(POSIXct) <= max(as.integer(controlRun$POSIXct)),]
    obsStrDataPlot[ , run := "Observation"]
 
