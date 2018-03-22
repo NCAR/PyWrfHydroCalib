@@ -189,7 +189,16 @@ NseWt <- function (m, o, w=0.5, p=1) {
 # KGE
 Kge <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1) {
   use <- if(na.rm) 'pairwise.complete.obs' else 'everything'
-  r     <- cor(m, o, use=use)
+  # UPDATED BY TML: Set Correlation Coefficient to 0.0 for cases where flow is 0 for entire time series  
+  if (sd(m, na.rm=na.rm) < 10^(-6)) {
+    r     <- 0.0
+  } else {
+    r     <- cor(m, o, use=use)
+  }
+  #print(sd(m, na.rm=na.rm))
+  print(r)
+  #print(mean(m, na.rm=na.rm))
+  # END TML UPDATE
   alpha <- sd(m, na.rm=na.rm) / sd(o, na.rm=na.rm)
   beta  <- mean(m, na.rm=na.rm) / mean(o, na.rm=na.rm)
   eds = sqrt( (s.r*(r-1))^2 + (s.alpha*(alpha-1))^2 + (s.beta*(beta-1))^2 )
