@@ -484,7 +484,8 @@ class Database(object):
             
         # Open parameter table and read values in.
         tblData = pd.read_csv(calibTbl)
-        if len(tblData) != 14:
+        # UPDATED BY TML; len(tblData) should now be 18, not 14.
+        if len(tblData) != 18:
             jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
             raise Exception()
             
@@ -802,6 +803,27 @@ class Database(object):
             except:
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
+            # ADDED BY TML: Copy RouteLink.nc File to FINAL_PARAMETER directory 
+            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/RouteLink.nc"
+            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/RouteLink.nc"
+            # Remove existing "best" file.
+            if os.path.isfile(outFile):
+                try:
+                    os.remove(outFile)
+                except:
+                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    raise
+            # check to ensure existing file exists.
+            if not os.path.isfile(inFile):
+                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                raise Exception()
+            # Copy existing parameter file into place.
+            try:
+                shutil.copy(inFile,outFile)
+            except:
+                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                raise
+			# END TML CHANGE
             
             # First reset iteration where best currently is to 0
             sqlCmd = "update \"Calib_Stats\" set best='0' where best='1' and " + \
