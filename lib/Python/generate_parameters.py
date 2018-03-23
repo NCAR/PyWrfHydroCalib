@@ -109,7 +109,7 @@ def main(argv):
     idSoil2D = Dataset(soilBest,'a')
     idGw = Dataset(gwBest,'a')
     # ADDED BY TML
-    idRt = Dataset(rtOut,'a')
+    idRt = Dataset(rtBest,'a')
     idHydroTbl = Dataset(hydroBest,'a')
 
     # Open original HYDRO.TBL.
