@@ -401,9 +401,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     
     # First check to make sure previous iteration's status is 1.0 (unless iteration 0).
     # This is to prevent the program from doing unecessary work. 
-    if iteration > 0:
-        if keySlot[basinNum,iteration-1] < 1.0:
-            return
+    #if iteration > 0:
+    #    if keySlot[basinNum,iteration-1] < 1.0:
+    #        return
         
     # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
@@ -732,7 +732,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             #cmd = "qsub " + runDir + "/run_WH.sh"
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
@@ -805,7 +805,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             #cmd = "qsub " + runDir + "/run_WH.sh"
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
@@ -867,7 +867,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             #cmd = "qsub " + collectScript
             try:
                 jobTmp = subprocess.check_output(['qsub',collectScript])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
