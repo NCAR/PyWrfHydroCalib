@@ -1712,7 +1712,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
         # for the first time (restarting workflow, or new workflow instance). 
         # Once jobs are fired off, we will populate the jobId array with the values
         # returned by qsub. 
-        if pbsJobId[gageNum] == -9999:
+        if pbsJobId[gageNum,iteration] == -9999:
             # Run qstat for the user.
             try:
                 jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
@@ -1741,14 +1741,14 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                             # We have a match. This means a job running from a 
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
-                            pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            pbsJobId[gageNum,iteration] = int((lineTmp.split()[0]).split('.')[0])
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
             # Try running qstat for the job ID. If it's unsucessfull, then we
             # can make a good assumption that the job is no longer running. 
             try:
-                jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+                jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum,iteration])])
                 status = True
             except:
                 # This means the job is no longer running.
@@ -1925,7 +1925,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
         # for the first time (restarting workflow, or new workflow instance). 
         # Once jobs are fired off, we will populate the jobId array with the values
         # returned by qsub. 
-        if pbsJobId[gageNum] == -9999:
+        if pbsJobId[gageNum,iteration] == -9999:
             # Run qstat for the user.
             try:
                 jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
@@ -1954,14 +1954,14 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                             # We have a match. This means a job running from a 
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
-                            pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            pbsJobId[gageNum,iteration] = int((lineTmp.split()[0]).split('.')[0])
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
             # Try running qstat for the job ID. If it's unsucessfull, then we
             # can make a good assumption that the job is no longer running. 
             try:
-                jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+                jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum,iteration])])
                 status = True
             except:
                 # This means the job is no longer running.

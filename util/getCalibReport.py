@@ -110,6 +110,7 @@ def main(argv):
     iterArray = np.empty([int(jobData.nIter)],np.int)
     completeArray = np.empty([int(jobData.nIter)],np.float)
 
+    meanSum = 0.0
     for basin in range(0,len(jobData.gages)):
 	iterArray[:] = 0
 	completeArray[:] = 0.0

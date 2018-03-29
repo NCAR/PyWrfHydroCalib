@@ -290,8 +290,14 @@ def main(argv):
     # PBS as qstat has demonstrated slow behavior when doing a full qstat command. 
     # We will track job ID values and do a qstat <jobID> and populate this array
     # to keep track of things. 
-    pbsJobId = np.empty([len(jobData.gages)],np.int64)
-    pbsJobId[:] = -9999
+    pbsJobId = np.empty([len(jobData.gages),int(jobData.nSensIter)],np.int64)
+    pbsJobId[:,:] = -9999
+    pbsCollectId = np.empty([len(jobData.gages),int(jobData.nSensIter)],np.int64)
+    pbsCollectId[:,:] = -9999
+    pbsPreId = np.empty([len(jobData.gages)],np.int64)
+    pbsPreId[:] = -9999
+    pbsPostId = np.empty([len(jobData.gages)],np.int64)
+    pbsPostId[:] = -9999
     
     # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
@@ -357,7 +363,7 @@ def main(argv):
             if not preProcStatus:
                 #sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin])
                 try:
-                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsJobId,basin)
+                    sensitivityMod.preProc(preProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsPreId,basin)
                 except:
                     errMod.errOut(jobData)
             else:
@@ -380,7 +386,7 @@ def main(argv):
                             if keyCheck1 < 1:
                                 # This model iteration has not completed. 
                                 try:
-                                    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration,pbsJobId)
+                                    sensitivityMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,iteration,pbsJobId,pbsCollectId)
                                 except:
                                     errMod.errOut(jobData)
                                 
@@ -396,7 +402,7 @@ def main(argv):
             if not postProcStatus and preProcStatus and len(np.where(batchCheck != 1.0)[0]) == 0:
                 print "READY FOR POST PROCESSING"
                 try:
-                    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsJobId,basin)
+                    sensitivityMod.postProc(postProcStatus,jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],pbsPostId,basin)
                 except:
                     errMod.errOut(jobData)
                                 

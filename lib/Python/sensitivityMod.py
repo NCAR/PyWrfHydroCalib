@@ -385,7 +385,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
             
     time.sleep(1)
             
-def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbsJobId):
+def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbsJobId,pbsCollectId):
     """
     Function for running the sensitivity analysis for a given basin. 
     This function will loop through all model iterations specified for
@@ -492,7 +492,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     except:
         raise
     try:
-        collectStatus = statusMod.checkSensCollectJob(statusData,gageID,iteration,basinNum,pbsJobId)
+        collectStatus = statusMod.checkSensCollectJob(statusData,gageID,iteration,basinNum,pbsCollectId)
     except:
         raise
         
