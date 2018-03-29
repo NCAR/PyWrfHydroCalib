@@ -218,6 +218,7 @@ def checkBasJob(jobData,gageNum,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -468,6 +469,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -685,6 +687,7 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -975,6 +978,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -1113,6 +1117,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -1325,6 +1330,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -1532,6 +1538,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -1742,6 +1749,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum,iteration] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
@@ -1955,6 +1963,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[gageNum,iteration] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
         else:
             # We are checking for a job ID that has already been submitted by 
             # this instance of the workflow. 
