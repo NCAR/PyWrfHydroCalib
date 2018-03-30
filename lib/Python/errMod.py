@@ -189,6 +189,8 @@ def scrubParams(jobData,runDir):
     hydroTbl = runDir + "/HYDRO_TBL_2D.nc"
     soilFile = runDir + "/soil_properties.nc"
     gwFile = runDir + '/GWBUCKPARM.nc'
+	#ADDED BY TML:
+    rtFile = runDir + '/RouteLink.nc'
 
     if os.path.isfile(fullDomFile):
         try:
@@ -217,6 +219,14 @@ def scrubParams(jobData,runDir):
         except:
             jobData.errMsg = "ERROR: Failure to remove: " + gwFile
             raise
+    # ADDED BY TML: Removes additional routing file when run directory is scrubbed
+    if os.path.isfile(rtFile):
+        try:
+            os.remove(rtFile)
+        except:
+            jobData.errMsg = "ERROR: Failure to remove: " + rtFile
+            raise
+    # END TML CHANGE
 
 def cleanRunDir(jobData,runDir):
     """
