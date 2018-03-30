@@ -100,10 +100,12 @@ if (nrow(chrt.valid) < 1) {
 }
 
 # Convert to daily
-chrt.cont.d <- Convert2Daily(chrt.cont)
+#chrt.cont.d <- Convert2Daily(chrt.cont)
+chrt.cont.d <- chrt.cont #UPDATED BY TML TO CONSIDER HOURLY STREAMLOW
 chrt.cont.d[, site_no := siteId]
 
-chrt.valid.d <- Convert2Daily(chrt.valid)
+#chrt.valid.d <- Convert2Daily(chrt.valid)
+chrt.valid.d <- chrt.valid #UPDATED BY TML TO CONSIDER HOURLY STREAMLOW
 chrt.valid.d[, site_no := siteId]
 
 # Merge
@@ -156,7 +158,15 @@ for (i in 1:length(runList[[1]])) {
       if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge")) F_new <- 1 - F_new
 
       # Calc stats
-      statCor <- cor(chrt.d$q_cms, chrt.d$obs)
+      # UPDATED BY TML: Set Correlation Coefficient to 0.0 for cases where flow is 0 for entire time series
+      if (sd(chrt.d$q_cms, na.rm=TRUE) < 10^(-6)) {
+        statCor <- 0.0
+      } else {
+        statCor <- cor(chrt.d$q_cms, chrt.d$obs)
+      }
+      print(statCor) # ADDED BY TML; Debugging Test
+      print(sd(chrt.d$q_cms, na.rm=TRUE)) # ADDED BY TML; Debugging Test
+      # END TML UPDATE
       statRmse <- Rmse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
       statBias <- PBias(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
       statNse <- Nse(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
