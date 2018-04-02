@@ -355,7 +355,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gageMeta.gage[basinNum])
-            raise
+                raise
         if statusData.analysisRunType == 3:
             #SLURM
             generateSlurmPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
@@ -867,7 +867,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             #cmd = "qsub " + collectScript
             try:
                 jobTmp = subprocess.check_output(['qsub',collectScript])
-                pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
+                pbsCollectId[basinNum,iteration] = int(jobTmp.split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
