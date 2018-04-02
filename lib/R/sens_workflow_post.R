@@ -35,7 +35,9 @@ writePlotDir <- paste0(runDir, "/plots")
 dir.create(writePlotDir)
 
 # Load obs so we have them for next iteration
-load(paste0(runDir, "/OBS/obsStrData.Rdata"))
+#load(paste0(runDir, "/OBS/obsStrData.Rdata"))
+load(obsFile)
+obsStrData <- as.data.table(obsStrData)
 #obsDT <- obsDT[!is.na(obs),]
 obsDT <- obsStrData[!is.na(obs),]
 
