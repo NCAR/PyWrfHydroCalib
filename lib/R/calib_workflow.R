@@ -27,7 +27,19 @@ metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
 
 # First loop check
 if (file.exists(paste0(runDir, "/proj_data.Rdata"))) { 
+   # If the run directories have changed for any reason, over-write them in the
+   # R Dataset file. This is for when a user may take over a job, and move
+   # the data.  
+   writePlotDirCheck <- paste0(runDir, "/plots")
+   outPathCheck <- paste0(runDir, "/OUTPUT")
+
    load(paste0(runDir, "/proj_data.Rdata"))
+
+   if (writePlotDir != writePlotDirCheck){
+      writePlotDir <- writePlotDirCheck
+      outPath <- outPathCheck
+      rm(writePotDirCheck,outPathCheck)
+   }  
 } else {
    # First run so need to initialize
    #ReadNamelist(paste0(runDir, "/calibScript.R"))
