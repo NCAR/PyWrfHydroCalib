@@ -32,12 +32,14 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    # the data.  
    writePlotDirCheck <- paste0(runDir, "/plots")
    outPathCheck <- paste0(runDir, "/OUTPUT")
+   runDirCheck <- runDir
 
    load(paste0(runDir, "/proj_data.Rdata"))
 
    if (writePlotDir != writePlotDirCheck){
       writePlotDir <- writePlotDirCheck
       outPath <- outPathCheck
+      runDir <- runDirCheck
       rm(writePotDirCheck,outPathCheck)
    }  
 } else {
