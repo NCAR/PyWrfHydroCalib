@@ -70,6 +70,7 @@ class statusMeta:
         self.slToken = None
         self.slUser = None
         self.slackObj = None
+        self.gSQL = []
     def checkGages(self,db):
         # Function to check number of gages in output directory. Function
         # also calls the database module to extract unique ID values for each
@@ -95,6 +96,24 @@ class statusMeta:
                 raise
             gageIDsTmp.append(gageID)
             
+        self.gages = gagesTmp[:]
+        self.gageIDs = gageIDsTmp[:]
+        
+    def checkGages2(self,db):
+        #Function to extract domain ID values based on the SQL command placed into the
+        #configuration file.
+        gagesTmp = []
+        gageIDsTmp = []
+
+        try:
+            gageInfo = db.getDomainID2(self)
+        except:
+            raise
+
+        for gTmp in range(0,len(gageInfo)):
+            gagesTmp.append(gageInfo[gTmp][1])
+            gageIDsTmp.append(gageInfo[gTmp][0])
+
         self.gages = gagesTmp[:]
         self.gageIDs = gageIDsTmp[:]
         

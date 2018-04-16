@@ -117,6 +117,30 @@ class Database(object):
             raise Exception()
         
         return int(result[0])
+    
+    def getDomainID2(self,jobData):
+        """
+        Function to return all domain metadata for this particular workflow, based on
+        the SQL command placed into the configuration file. 
+        """
+        if not self.connected:
+            jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
+            raise Exception()
+
+        try:
+            self.conn.execute(jobData.gSQL)
+            results = self.conn.fetchall()
+        except:
+            jobData.errMsg = "ERROR: Unable to extract Domain metadata for job: " + str(jobData.jobID)
+            raise Exception()
+
+        # Double check to make sure the extracted number of gages matches what's in the DB for this
+        # workflow.
+        if len(results) != jobData.nGages:
+            jobData.errMsg = "ERROR: Expecting to find " + str(jobData.nGages) + " when found " + \
+                             str(len(results)) + " gages for job: " + str(jobData.jobID)
+
+        return results
         
     def enterJobID(self,jobData):
         """
