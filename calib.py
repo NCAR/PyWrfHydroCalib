@@ -172,9 +172,17 @@ def main(argv):
         print "ERROR: Failure to read configuration file: " + configPath
         sys.exit(1)
         
+    # Assign the SQL command from the config file into the jobData structure
+    jobData.gSQL = staticData.gSQL
+        
     # Check gages in directory to match what's in the database
+    #try:
+    #    jobData.checkGages(db)
+    #except:
+    #    errMod.errOut(jobData)
+        
     try:
-        jobData.checkGages(db)
+        jobData.checkGages2(db)
     except:
         errMod.errOut(jobData)
     
