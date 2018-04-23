@@ -37,7 +37,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
     # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
     try:
-        gageMeta.pullGageMeta(staticData,db,gage)
+        gageMeta.pullGageMeta(statusData,db,gage,gageID)
     except:
         raise
     
@@ -183,7 +183,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
     # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
     try:
-        gageMeta.pullGageMeta(staticData,db,gage)
+        gageMeta.pullGageMeta(statusData,db,gage,gageID)
     except:
         raise
     
@@ -408,7 +408,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     # Pull gage metadata for this particular basin.
     gageMeta = calibIoMod.gageMeta()
     try:
-        gageMeta.pullGageMeta(staticData,db,gage)
+        gageMeta.pullGageMeta(statusData,db,gage,gageID)
     except:
         raise
         

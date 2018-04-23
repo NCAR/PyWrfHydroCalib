@@ -39,7 +39,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
-        gageMeta.pullGageMeta(staticData,db,gage)
+        gageMeta.pullGageMeta(statusData,db,gage,gageID)
     except:
         raise
         

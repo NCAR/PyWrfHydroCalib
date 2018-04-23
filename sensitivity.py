@@ -309,10 +309,12 @@ def main(argv):
     
     # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
-        try:
-            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
+        #try:
+        #    domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
+        #except:
+        #    errMod.errOut(jobData)
+            
+        domainID = jobData.gageIDs[basin]
             
         if domainID == -9999:
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])

@@ -33,14 +33,14 @@ class gageMeta:
         self.obsFile = []
         self.dxHydro = []
         self.aggFact = []
-    def pullGageMeta(self,jobData,db,gageName):
+    def pullGageMeta(self,jobData,db,gageName,domainID):
         # Function to extract locations of gage-specific spatial files.
         
         tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
                    'obsFile':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
-                   'aggFactor':''}
+                   'aggFactor':'','domainID':domainID}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:

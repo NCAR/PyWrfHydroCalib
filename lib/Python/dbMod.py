@@ -258,8 +258,10 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd = "select * from \"Domain_Meta\" where gage_id='" + tmpMeta['gageName'] + "';"
+        sqlCmd = "select * from \"Domain_Meta\" where \"domainID\"=" + tmpMeta['domainID'] + "';"
+        #sqlCmd = "select * from \"Domain_Meta\" where gage_id='" + tmpMeta['gageName'] + "';"
         
+        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchone()

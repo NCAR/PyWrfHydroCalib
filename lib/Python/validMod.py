@@ -40,7 +40,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
-        gageMeta.pullGageMeta(staticData,db,gage)
+        gageMeta.pullGageMeta(statusData,db,gage,gageID)
     except:
         raise
     
@@ -590,7 +590,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     # Pull gage metadata
     gageMeta = calibIoMod.gageMeta()
     try:
-        gageMeta.pullGageMeta(staticData,db,gage)
+        gageMeta.pullGageMeta(statusData,db,gage,gageID)
     except:
         raise
     
