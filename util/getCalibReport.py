@@ -86,11 +86,30 @@ def main(argv):
         sys.exit(1)
         
     # Extract job data from database
+    #try:
+    #    db.jobStatus(jobData)
+    #except:
+    #    print jobData.errMsg
+    #    sys.exit(1)
+        
     try:
-        db.jobStatus(jobData)
+        jobData.checkGages2(db)
     except:
-        print jobData.errMsg
+        errMod.errOut(jobData)
+        
+    # Pull extensive meta-data describing the job from the config file.
+    configPath = str(jobData.jobDir) + "/setup.config"
+    if not os.path.isfile(configPath):
+        print "ERROR: Configuration file: " + configPath + " not found."
         sys.exit(1)
+    try:
+        staticData = configMod.readConfig(configPath)
+    except:
+        print "ERROR: Failure to read configuration file: " + configPath
+        sys.exit(1)
+
+    # Assign the SQL command from the config file into the jobData structure
+    jobData.gSQL = staticData.gSQL
         
     # Check gages in directory to match what's in the database
     try:
