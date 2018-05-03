@@ -205,7 +205,7 @@ def main(argv):
             idRt.variables['BtmWdth'][:] = idRt.variables['BtmWdth'][:]*float(paramValues[np.where(paramNames == 'btmwdth')[0][0]])
 
         if param == "chslp":  
-            idRt.variables['ChSlp'][:] = idRt.variables['ChSlp'][:]**float(paramValues[np.where(paramNames == 'chslp')[0][0]])      
+            idRt.variables['ChSlp'][:] = idRt.variables['ChSlp'][:]*float(paramValues[np.where(paramNames == 'chslp')[0][0]])      
         # END TML CHANGES
         
     # Close NetCDF files
