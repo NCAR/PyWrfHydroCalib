@@ -52,7 +52,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         gageMeta.pullGageMeta(statusData,db,gage,gageID)
     except:
         raise
-        
+
     if statusData.analysisRunType == 1:
         # Generate BSUB file necessary for running R calibration/analysis
         # code.

@@ -30,6 +30,7 @@ sys.path.insert(0,libPath)
 import statusMod
 import dbMod
 import errMod
+import configMod
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
@@ -51,7 +52,7 @@ def main(argv):
                '-0.1':'CALIBRATON PROGRAM FOR DEFAULT PARAMETERS LOCKED',
                '0.0':'NOT STARTED','0.25':'CALIBRATION PROGRAM FOR DEFAULT PROGRAM RUNNING',
                '0.5':'MODEL CURRENTLY RUNNING','0.75':'MODEL COMPLETE READY FOR PARAMETER ESTIMATION',
-               '0.9':'PARAMETER ESTIMATION OCCURRING'}
+               '0.9':'PARAMETER ESTIMATION OCCURRING','1.0':'MODEL ITERATION COMPLETE'}
     
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
@@ -86,22 +87,23 @@ def main(argv):
         sys.exit(1)
         
     # Extract job data from database
-    #try:
-    #    db.jobStatus(jobData)
-    #except:
-    #    print jobData.errMsg
-    #    sys.exit(1)
-        
     try:
-        jobData.checkGages2(db)
+        db.jobStatus(jobData)
     except:
-        errMod.errOut(jobData)
+        print jobData.errMsg
+        sys.exit(1)
+        
+    #try:
+    #    jobData.checkGages2(db)
+    #except:
+    #    errMod.errOut(jobData)
         
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
     if not os.path.isfile(configPath):
         print "ERROR: Configuration file: " + configPath + " not found."
         sys.exit(1)
+    staticData = configMod.readConfig(configPath)
     try:
         staticData = configMod.readConfig(configPath)
     except:
@@ -110,13 +112,13 @@ def main(argv):
 
     # Assign the SQL command from the config file into the jobData structure
     jobData.gSQL = staticData.gSQL
-        
+     
     # Check gages in directory to match what's in the database
     try:
-        jobData.checkGages(db)
+        jobData.checkGages2(db)
     except:
         errMod.errOut(jobData)
-        
+       
     # If an optional email was passed to the program, update the job object to 
     # reflect this for information dissemination.
     if args.email:
@@ -136,10 +138,12 @@ def main(argv):
         keyStatus = 0.0
         keyStatusPrev = 0.0
         # First pull the unique ID for the basin. 
-        try:
-            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
+        #try:
+        #    domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
+        #except:
+        #    errMod.errOut(jobData)
+
+	domainID = jobData.gageIDs[basin]
         iterComplete = 1 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         for iteration in range(0,int(jobData.nIter)):
@@ -151,6 +155,7 @@ def main(argv):
 	indComplete = np.where(completeArray == 1)
 	indCheck1 = np.where(completeArray != 1.0)
 	indCheck2 = np.where(completeArray == 0.0)
+	meanSum = meanSum + len(indComplete[0])
 	if len(indComplete[0]) == int(jobData.nIter):
 	    msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                      ": CALIBRATION COMPLETE.\n"
@@ -169,6 +174,7 @@ def main(argv):
 		         ": " + str(msgDict[str(statusCurrent)]) + \
 		         " - ITERATION: " + str(iterCurrent) + "\n"
                   
+    print "MEAN COMPLETENESS = " + str(float(meanSum)/len(jobData.gages))
     jobData.genMsg = msgOut
     if int(args.contactFlag[0]) == 0:
         print jobData.genMsg

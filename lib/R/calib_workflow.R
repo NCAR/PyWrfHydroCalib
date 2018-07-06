@@ -30,17 +30,17 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    # If the run directories have changed for any reason, over-write them in the
    # R Dataset file. This is for when a user may take over a job, and move
    # the data.  
-   writePlotDirCheck <- paste0(runDir, "/plots")
-   outPathCheck <- paste0(runDir, "/OUTPUT")
-   runDirCheck <- runDir
+   writePlotDirCheck3 <- paste0(runDir, "/plots")
+   outPathCheck3 <- paste0(runDir, "/OUTPUT")
+   runDirCheck3 <- runDir
 
    load(paste0(runDir, "/proj_data.Rdata"))
 
-   if (writePlotDir != writePlotDirCheck){
-      writePlotDir <- writePlotDirCheck
+   if (writePlotDir != writePlotDirCheck3){
+      writePlotDir <- writePlotDirCheck3
       outPath <- outPathCheck
       runDir <- runDirCheck
-      rm(writePotDirCheck,outPathCheck)
+      rm(writePlotDirCheck3,outPathCheck)
    }  
 } else {
    # First run so need to initialize

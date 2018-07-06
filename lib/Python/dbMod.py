@@ -258,10 +258,9 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise
             
-        sqlCmd = "select * from \"Domain_Meta\" where \"domainID\"=" + tmpMeta['domainID'] + "';"
+        sqlCmd = "select * from \"Domain_Meta\" where \"domainID\"=" + str(tmpMeta['domainID']) + ";"
         #sqlCmd = "select * from \"Domain_Meta\" where gage_id='" + tmpMeta['gageName'] + "';"
         
-        print sqlCmd
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchone()
@@ -797,6 +796,7 @@ class Database(object):
         
         sqlCmd = "select iteration,complete from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "';"
+	
         try:
             self.conn.execute(sqlCmd)
             results = self.conn.fetchall()

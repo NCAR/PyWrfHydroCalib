@@ -293,7 +293,16 @@ def main(argv):
     keySlot = np.empty([len(jobData.gages),2])
     keySlot[:,:] = 0.0
     entryValue = float(len(jobData.gages))*2.0
-    
+   
+    # Create an array to hold systme job ID values. This will only be used for
+    # PBS as qstat has demonstrated slow behavior when doing a full qstat command. 
+    # We will track job ID values and do a qstat <jobID> and populate this array
+    # to keep track of things. 
+    pbsJobIdCtrl = np.empty([len(jobData.gages)],np.int64)
+    pbsJobIdCtrl[:] = -9999
+    pbsJobIdBest = np.empty([len(jobData.gages)],np.int64)
+    pbsJobIdBest[:] = -9999
+ 
     while not completeStatus:
         # Walk through spinup directory for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
@@ -320,15 +329,16 @@ def main(argv):
             # parameters specified by the user at the beginning of the calibration
             # process.
             print "Running CONTROL"
-            try:
-                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop)
-            except:
-                errMod.errOut(jobData)
+	    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop,pbsJobIdCtrl)
+            #try:
+            #    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop,pbsJobIdCtrl)
+            #except:
+            #    errMod.errOut(jobData)
             time.sleep(3)
             
             print "Running BEST"
             try:
-                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin)
+                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobIdBest)
             except:
                 errMod.errOut(jobData)
             time.sleep(3)

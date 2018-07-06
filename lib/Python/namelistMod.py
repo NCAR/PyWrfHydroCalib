@@ -52,6 +52,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/soil_properties.nc"
             if not os.path.isfile(pthTmp):
+		print pthTmp
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'

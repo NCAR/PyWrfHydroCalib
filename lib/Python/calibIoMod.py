@@ -167,10 +167,10 @@ def setupModels(jobData,db,args,libPathTop):
     except:
         jobData.errMsg = "ERROR: Failure to create directory: " + parentDir
         raise
-        
+    
     # Create gage-specific object that will contain gage-specific information.
     gageData = gageMeta()
-    
+ 
     # Copy config file to the top level directory. This will be used during
     # restarts to extract information about the job. It was decided to do
     # this opposed to attempting to enter the plethura of information 
@@ -347,7 +347,7 @@ def setupModels(jobData,db,args,libPathTop):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to create directory: " + finalParmDir
                 raise
-            
+
         # Create symbolic links necessary for model runs.
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/W" + str(jobData.jobID) + str(jobData.gageIDs[gage])
         link2 = gageDir + "/RUN.CALIB/OUTPUT/W" + str(jobData.jobID) + str(jobData.gageIDs[gage]) 
@@ -538,11 +538,11 @@ def setupModels(jobData,db,args,libPathTop):
                 except:
                     jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
                     raise
-                    
+        
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
         try:
-            gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]))
+            gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]),jobData.gageIDs[gage])
         except:
             wipeJobDir(jobData)
             raise

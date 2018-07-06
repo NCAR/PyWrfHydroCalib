@@ -126,6 +126,25 @@ class jobMeta:
         self.gageIDs = []
         self.dbUName = []
         self.dbPwd = []
+
+    def checkGages2(self,db):
+        #Function to extract domain ID values based on the SQL command placed into the
+        #configuration file.
+        gagesTmp = []
+        gageIDsTmp = []
+
+        try:
+            gageInfo = db.getDomainID2(self)
+        except:
+            raise
+
+        for gTmp in range(0,len(gageInfo)):
+            gagesTmp.append(gageInfo[gTmp][1])
+            gageIDsTmp.append(gageInfo[gTmp][0])
+
+        self.gages = gagesTmp[:]
+        self.gageIDs = gageIDsTmp[:]
+
     def readConfig(self,parser):
         """ Read in and check options passed by the config file.
         """

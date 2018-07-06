@@ -116,7 +116,7 @@ def main(argv):
         statusTmp = db.checkPreviousEntries(jobData)
     except:
         errMod.errOut(jobData)
-        
+
     # If any entries in the tables were found, warn the user that tables from an
     # orphaned ghost job are being deleted. This may be a situation where a previous 
     # job was ran in the DB, it was removed from Job_Meta, but the remaining tables
@@ -140,7 +140,7 @@ def main(argv):
         db.getJobID(jobData)
     except:
         errMod.errOut(jobData)
-        
+    
     # Create necessary run directories to hold output, analysis, etc.
     try:
         calibIoMod.setupModels(jobData,db,args,libPathTop)
@@ -159,15 +159,23 @@ def main(argv):
         db.populateParmTable(jobData)
     except:
         errMod.errOut(jobData)
-        
+ 
+    jobData.nGages = len(jobData.gages) 
+    jobData.checkGages2(db)
+    #try:
+    #    jobData.checkGages2(db)
+    #except:
+    #    errMod.errOut(jobData)
+     
     # Create empty table entries into the Calib_Stats/Sens_Stats tables to be filled in as the workflow progresses.
     # If table entries have already been entered, continue on. This only needs to be done ONCE. Moved this
     # from calib.py as there's no reason to do this during the spinup program.
     for basin in range(0,len(jobData.gages)):
-        try:
-            domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        except:
-            errMod.errOut(jobData)
+        #try:
+        #    domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
+        #except:
+        #    errMod.errOut(jobData)
+	domainID = jobData.gageIDs[basin]
 
         if domainID == -9999:
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
