@@ -74,13 +74,12 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    pwdTmp = getpass.getpass('Enter Calibration Database Password: ')
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
-    jobData.dbPwd = 'IJustWannaCalibrate'
+    try:
+        pwdTmp = getpass.getpass('Enter Calibration Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
     jobData.dbUName = 'WH_Calib_rw'
     # Establish database connection.
@@ -161,22 +160,17 @@ def main(argv):
         errMod.errOut(jobData)
  
     jobData.nGages = len(jobData.gages) 
-    jobData.checkGages2(db)
-    #try:
-    #    jobData.checkGages2(db)
-    #except:
-    #    errMod.errOut(jobData)
+    try:
+        jobData.checkGages2(db)
+    except:
+        errMod.errOut(jobData)
      
     # Create empty table entries into the Calib_Stats/Sens_Stats tables to be filled in as the workflow progresses.
     # If table entries have already been entered, continue on. This only needs to be done ONCE. Moved this
     # from calib.py as there's no reason to do this during the spinup program.
     for basin in range(0,len(jobData.gages)):
-        #try:
-        #    domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        #except:
-        #    errMod.errOut(jobData)
-	domainID = jobData.gageIDs[basin]
-
+        domainID = jobData.gageIDs[basin]
+        
         if domainID == -9999:
             jobData.errMsg = "ERROR: Unable to locate domainID for gage: " + str(jobData.gages[basin])
             errMod.errOut(jobData)

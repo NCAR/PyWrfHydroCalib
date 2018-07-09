@@ -230,7 +230,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            #cmd = "qsub " + runDir + "/run_WH.sh"
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -288,7 +287,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            #cmd = "qsub " + runDir + "/run_WH.sh"
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -337,7 +335,6 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J WH_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'

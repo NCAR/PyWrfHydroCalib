@@ -138,7 +138,6 @@ def checkBasJob(jobData,gageNum,pbsJobId):
         raise Exception()
     
     if jobData.jobRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -177,26 +176,6 @@ def checkBasJob(jobData,gageNum,pbsJobId):
                 
     if jobData.jobRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-                
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
         
@@ -251,16 +230,6 @@ def checkBasJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
     
-        #if lenJobs == 0:
-        #    print "NO MODEL SIMULATIONS FOUND"
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            print "MODEL SIMULATIONS FOUND"
-        #            status = True
-                    
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
@@ -429,25 +398,6 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-               
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that the job should occupy.
         expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
         
@@ -502,14 +452,6 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
                   
-        #if lenJobs == 0:
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            status = True
-                    
     if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
@@ -606,7 +548,6 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
         raise Exception()
     
     if jobData.jobRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -646,25 +587,6 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
                 
     if jobData.jobRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-                
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that the job should occupy.
         expName = "WH_" + str(modRun) + '_' + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
@@ -720,14 +642,6 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
                 status = False
                 return status
                   
-        #if lenJobs == 0:
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            status = True
-                    
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
@@ -824,7 +738,6 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
         raise Exception()
     
     if jobData.analysisRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -938,25 +851,6 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-                
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
                   
@@ -1011,14 +905,6 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
                   
-        #if lenJobs == 0:
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            status = True
-            
     return status
     
 def checkEvalJob(jobData,gageNum,pbsJobId):
@@ -1036,7 +922,6 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
         raise Exception()
     
     if jobData.analysisRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1076,25 +961,6 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-                
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that job should occupy
         expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
@@ -1150,14 +1016,6 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
                   
-        #if lenJobs == 0:
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            status = True
-                    
     if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
@@ -1249,7 +1107,6 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
         raise Exception()
         
     if jobData.analysisRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1289,25 +1146,6 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-        #        
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that job should occupy
         expName = "WH_SENS_PREPROC_" + str(jobData.jobID) + "_" + \
                   str(gageID)
@@ -1363,14 +1201,6 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
                 status = False
                 return status
                   
-        #if lenJobs == 0:
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            status = True
-                    
     if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
@@ -1457,7 +1287,6 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
         raise Exception()
         
     if jobData.analysisRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1497,25 +1326,6 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-                
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that job should occupy
         expName = "WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + \
                   str(gageID)
@@ -1571,14 +1381,6 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                 status = False
                 return status
             
-        #if lenJobs == 0:
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            status = True
-                    
     if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
@@ -1670,7 +1472,6 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
         raise Exception()
     
     if jobData.jobRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1709,25 +1510,6 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                 
     if jobData.jobRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-                
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that the job should occupy.
         expName = "WHS" + str(jobData.jobID) + str(jobData.gageIDs[gageNum]) + str(iteration)
         
@@ -1782,16 +1564,6 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                 status = False
                 return status
     
-        #if lenJobs == 0:
-        #    print "NO MODEL SIMULATIONS FOUND"
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            print "MODEL SIMULATIONS FOUND"
-        #            status = True
-                    
     if jobData.jobRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
@@ -1882,7 +1654,6 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
         raise Exception()
         
     if jobData.analysisRunType == 1:
-        #csvPath = jobData.jobDir + "/BJOBS_" + str(pidUnique) + ".csv"
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1922,25 +1693,6 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 
     if jobData.analysisRunType == 2:
         # We are running via qsub
-        #csvPath = "./QSTAT_" + str(pidUnique) + ".csv"
-        #cmd = "qstat -f | grep 'Job_Name' > " + csvPath
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to pipe QSTAT output to: " + csvPath
-        #    raise
-                
-        #try:
-        #    jobs = pd.read_csv(csvPath,header=None,sep='=')
-        #except:
-        #    jobData.errMsg = "ERROR: Failure to read in: " + csvPath
-        #    raise
-        #lenJobs = len(jobs[1])
-            
-        # Delete temporary CSV fies
-        #cmdTmp = 'rm -rf ' + csvPath
-        #subprocess.call(cmdTmp,shell=True)
-        
         # Compile expected job name that job should occupy
         expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
                   str(gageID) + "_" + str(iteration)
@@ -1996,14 +1748,6 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 status = False
                 return status
                   
-        #if lenJobs == 0:
-        #    status = False
-        #else:
-        #    # Find if any jobs for this basin are being ran.
-        #    for jobNum in range(0,lenJobs):
-        #        if jobs[1][jobNum].strip() == expName:
-        #            status = True
-                    
     if jobData.analysisRunType == 3:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"

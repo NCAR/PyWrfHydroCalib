@@ -41,12 +41,10 @@ def errOut(jobData):
             print msgContent
             print "ERROR: Unable to send email from workflow."
             print "SMTP on a port needs to be activated from this host machine."
-    #elif jobData.slackObj:
-    if jobData.slackObj:
-        msg1 = "ERROR in Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
-        jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
-        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
-        #sys.exit(1)
+    #if jobData.slackObj:
+    #    msg1 = "ERROR in Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
+    #    jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
+    #    jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
     if not jobData.email and not jobData.slackObj:
         print msgContent
     sys.exit(1)
@@ -254,10 +252,10 @@ def sendMsg(jobData):
             print msgContent
             print "ERROR: Unable to send email from workflow."
             print "SMTP on a port needs to be activated from this host machine."
-    if jobData.slackObj:
-        msg1 = "MESSAGE for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
-        jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
-        jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
+    #if jobData.slackObj:
+    #    msg1 = "MESSAGE for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
+    #    jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
+    #    jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
     if not jobData.email and not jobData.slackObj:
         print msgContent
         

@@ -158,24 +158,8 @@ def main(argv):
     idGw.close()
     idHydroTbl.close()
     
-    # Remove all model output as we no longer need it in preparation for the next iteration.
-    # For V1.2, not going to remove all output, as we only care about RESTART files.
-    # This adds I/O burden when scaled out to conus on Yellowstone. 
-    #cmd = 'rm -rf ' + runDir + '/diag_hydro.*'
-    #try:
-    #    subprocess.call(cmd,shell=True)
-    #except:
-    #    sys.exit(1)
-    #cmd = 'rm -rf ' + runDir + '/*.LDASOUT_DOMAIN1'
-    #try:
-    #    subprocess.call(cmd,shell=True)
-    #except:
-    #    sys.exit(1)
-    #cmd = 'rm -rf ' + runDir + '/*.CHRTOUT_DOMAIN1'
-    #try:
-    #    subprocess.call(cmd,shell=True)
-    #except:
-    #    sys.exit(1)
+    # Remove restart files. All other files will be overwritten by the next
+    # model iteration. 
     cmd = 'rm -rf ' + runDir + '/*.err'
     try:
         subprocess.call(cmd,shell=True)

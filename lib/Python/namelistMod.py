@@ -52,7 +52,6 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/soil_properties.nc"
             if not os.path.isfile(pthTmp):
-		print pthTmp
                 jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
@@ -299,10 +298,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(' IGRID = 1\n')
         fileObj.write('\n')
         fileObj.write('!Specify the restart file write frequency...(minutes)\n')
-        # Manually over-writing for now.
-        #inStr = ' rst_dt = ' + str(int(dt.days*24*60.0 + dt.seconds/60.0)) + '\n'
-        inStr = ' rst_dt = -9999\n'
-        #nStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
+        inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n') 
         fileObj.write('! Reset the LSM soil states from the high-res routing restart file (1=overwrite, 0 = no overwrite)\n')

@@ -12,7 +12,6 @@ import statusMod
 import errMod
 import subprocess
 import time
-import socket
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -783,12 +782,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 2:
-            #cmd = "qsub " + runDir + "/run_WH_Restart.sh"
-            #try:
-            #    subprocess.call(cmd,shell=True)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-            #    raise
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH_Restart.sh'])
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -870,12 +863,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.jobRunType == 2:
-            #cmd = "qsub " + runDir + "/run_WH.sh"
-            #try:
-            #    subprocess.call(cmd,shell=True)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-            #    raise
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -940,12 +927,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.analysisRunType == 2:
-            #cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
-            #try:
-            #    subprocess.call(cmd,shell=True)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-            #    raise
             try:
                 jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -1000,12 +981,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
         if statusData.analysisRunType == 2:
-            #cmd = "qsub " + workDir + "/run_WH_CALIB.sh"
-            #try:
-            #    subprocess.call(cmd,shell=True)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-            #    raise
             try:
                 jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -1495,10 +1470,6 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1574,10 +1545,6 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1651,10 +1618,6 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
