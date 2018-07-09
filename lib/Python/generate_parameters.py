@@ -39,19 +39,16 @@ def main(argv):
     
     # Compose input file paths.
     fullDomOrig = paramDir + "/Fulldom.nc"
-    #hydroOrig = paramDir + "/HYDRO.TBL"
     hydroOrig = paramDir + "/HYDRO_TBL_2D.nc"
     soilOrig = paramDir + "/soil_properties.nc"
     gwOrig = paramDir + "/GWBUCKPARM.nc"
     
     fullDomDefault = defDir + "/Fulldom.nc"
-    #hydroDefault = defDir + "/HYDRO.TBL"
     hydroDefault = defDir + "/HYDRO_TBL_2D.nc"
     soilDefault = defDir + "/soil_properties.nc"
     gwDefault = defDir + "/GWBUCKPARM.nc"
 
     fullDomBest = bestDir + "/Fulldom.nc"
-    #hydroBest = bestDir + "/HYDRO.TBL"
     hydroBest = bestDir + "/HYDRO_TBL_2D.nc"
     soilBest = bestDir + "/soil_properties.nc"
     gwBest = bestDir + "/GWBUCKPARM.nc"
@@ -60,7 +57,6 @@ def main(argv):
     link = ctrlDir + "/Fulldom.nc"
     if not os.path.islink(link):
         os.symlink(fullDomDefault,link)
-    #link = ctrlDir + "/HYDRO.TBL"
     link = ctrlDir + "/HYDRO_TBL_2D.nc"
     if not os.path.islink(link):
         os.symlink(hydroDefault,link)
@@ -97,34 +93,6 @@ def main(argv):
     idGw = Dataset(gwBest,'a')
     idHydroTbl = Dataset(hydroBest,'a')
     
-    # Open original HYDRO.TBL.
-    #hydroTblDataOrig = file(hydroOrig)
-    
-    # Open new HYDRO.TBL file for writing.
-    #hydroBestObj = open(hydroBest,'w')
-    #countTmp = 1
-
-    #for line in hydroTblDataOrig:
-    #    if countTmp < 33:
-    #        hydroBestObj.write(line)
-    #    else:
-    #        # Modify SATDK and MAXSMC as needed.
-    #        lineTmp = line
-    #        lineSplit = lineTmp.split(',')
-    #        if 'dksat' in paramNames:
-    #            dksatValue = float(lineSplit[0])*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
-    #        else:
-    #            dksatValue = float(lineSplit[0])
-    #        if 'smcmax' in paramNames:
-    #            smcValue = float(lineSplit[1])*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
-    #        else:
-    #            smcValue = float(lineSplit[1])
-    #        outStr = str(dksatValue) + ",  " + str(smcValue) + ",    " + lineSplit[2] + "," + \
-    #        lineSplit[3] + "," + lineSplit[4] + "," + lineSplit[5]
-    #        hydroBestObj.write(outStr)
-    #    countTmp = countTmp + 1
-    #hydroBestObj.close()
-
     # Loop through and adjust each parameter accordingly.
     for param in paramNames:
         print param

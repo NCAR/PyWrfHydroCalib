@@ -11,7 +11,6 @@ import namelistMod
 import statusMod
 import errMod
 import subprocess
-import socket
 import time
 
 import warnings
@@ -125,13 +124,11 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
             raise
     if statusData.analysisRunType == 2:
         #PBS
-        generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
-        #cmd = "qsub " + workDir + "/run_WH_SENS_PREPROC.sh"
-        #try:
-        #    subprocess.call(cmd,shell=True)
-        #except:
-        #    statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gage)
-        #    raise
+        try:
+            generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+        except:
+            statusData.errMsg = "ERROR: Unable to create PBS script for gage: " + str(gage)
+            raise
         try:
             jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_SENS_PREPROC.sh'])
             pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -343,13 +340,11 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
                 raise
         if statusData.analysisRunType == 2:
             #PBS
-            generatePbsPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
-            #cmd = "qsub " + workDir + "/run_WH_SENS_POSTPROC.sh"
-            #try:
-            #    subprocess.call(cmd,shell=True)
-            #except:
-            #    statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
-            #    raise
+            try:
+                generatePbsPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
+            except:
+                statusData.errMsg = "ERROR: Unable to create PBS script for gage: " + str(gage)
+                raise
             try:
                 jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_SENS_POSTPROC.sh'])
                 pbsJobId[basinNum] = int(jobTmp.split('.')[0])
@@ -729,7 +724,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            #cmd = "qsub " + runDir + "/run_WH.sh"
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
                 pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
@@ -802,7 +796,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 2:
-            #cmd = "qsub " + runDir + "/run_WH.sh"
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
                 pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
@@ -1004,9 +997,6 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1071,19 +1061,12 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write(inStr)
             inStr = '#PBS -e ' + workDir + '/WH_SENS_PREPROC_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
-            #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
-            #inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
-            #        ":mpiprocs=" + str(nCoresPerNode) + "\n"
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=01:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1154,10 +1137,6 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1293,7 +1272,6 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write('#BSUB -x\n')
         inStr = "#BSUB -n " + str(jobData.nCoresMod) + '\n'
         fileObj.write(inStr)
-        #fileObj.write('#BSUB -R "span[ptile=16]"\n')
         inStr = "#BSUB -J WHS" + str(jobData.jobID) + str(gageID) + str(iteration) + '\n'
         fileObj.write(inStr)
         inStr = '#BSUB -o ' + runDir + '/%J.out\n'
@@ -1309,10 +1287,6 @@ def generateBsubScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write(inStr)
         fileObj.write('mpirun.lsf ./wrf_hydro.exe\n')
         fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1359,10 +1333,6 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write(inStr)
         fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
         fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1407,10 +1377,6 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write(inStr)
         inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
-        #inStr = 'rm -rf *.LDASOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
-        #inStr = 'rm -rf *.CHRTOUT_DOMAIN1\n'
-        #fileObj.write(inStr)
         fileObj.close        
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1489,10 +1455,6 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1557,19 +1519,12 @@ def generatePbsPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write(inStr)
             inStr = '#PBS -e ' + workDir + "/WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + str(gageID) + '.err\n'
             fileObj.write(inStr)
-            #nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
-            #inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
-            #        ":mpiprocs=" + str(nCoresPerNode) + "\n"
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=03:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1637,10 +1592,6 @@ def generateSlurmPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
@@ -1779,10 +1730,6 @@ def generateBsubCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
             fileObj.write(inStr)
@@ -1867,10 +1814,6 @@ def generatePbsCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
             fileObj.write(inStr)
@@ -1952,10 +1895,6 @@ def generateSlurmCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir)
             if len(jobData.queNameAnalysis.strip()) > 0:
                 inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
                 fileObj.write(inStr)
-            # Temporary handling of Cheyenne/Geyser environment for NCAR.
-            #if socket.gethostname()[0:8] == 'cheyenne':
-            #    inStr = 'source /glade/u/home/karsten/.profile_yellowstone\n'
-            #    fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
             fileObj.write(inStr)

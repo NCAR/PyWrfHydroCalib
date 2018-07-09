@@ -60,14 +60,13 @@ def main(argv):
 
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbUName= 'WH_Calib_rw'
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
-    jobData.dbPwd = 'IJustWannaCalibrate'
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbUName= 'WH_Calib_rw'
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     jobData.dbUName= 'WH_Calib_rw'
     jobData.port = 5432    
     
@@ -92,11 +91,6 @@ def main(argv):
     except:
         print jobData.errMsg
         sys.exit(1)
-        
-    #try:
-    #    jobData.checkGages2(db)
-    #except:
-    #    errMod.errOut(jobData)
         
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
@@ -133,17 +127,11 @@ def main(argv):
 
     meanSum = 0.0
     for basin in range(0,len(jobData.gages)):
-	iterArray[:] = 0
-	completeArray[:] = 0.0
+        iterArray[:] = 0
+        completeArray[:] = 0.0
         keyStatus = 0.0
         keyStatusPrev = 0.0
-        # First pull the unique ID for the basin. 
-        #try:
-        #    domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        #except:
-        #    errMod.errOut(jobData)
-
-	domainID = jobData.gageIDs[basin]
+        domainID = jobData.gageIDs[basin]
         iterComplete = 1 
         statusData = db.iterationStatus(jobData,domainID,str(jobData.gages[basin]))
         for iteration in range(0,int(jobData.nIter)):

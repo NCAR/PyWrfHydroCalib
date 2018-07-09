@@ -14,7 +14,7 @@ import ast
 import pwd
 import pandas as pd
 import numpy as np
-from slacker import Slacker
+#from slacker import Slacker
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -157,7 +157,6 @@ class jobMeta:
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
         self.nNodesR = int(parser.get('logistics','nNodesR'))
-        #self.host = str(parser.get('logistics','postgresHost'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.sensFlag = int(parser.get('logistics','runSens'))
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
@@ -176,12 +175,12 @@ class jobMeta:
         self.slUser = str(parser.get('logistics','slackUser'))
         # Initiate Slack object if user has specified. Throw an error message
         # if Slack is not successfully inititated.
-        if len(self.slChan) > 0:
-            try:
-                self.slackObj = Slacker(str(self.slToken))
-            except:
-                print "ERROR: Failure to initiate Slack."
-                raise
+        #if len(self.slChan) > 0:
+        #    try:
+        #        self.slackObj = Slacker(str(self.slToken))
+        #    except:
+        #        print "ERROR: Failure to initiate Slack."
+        #        raise
         self.exe = str(parser.get('logistics','wrfExe'))
         self.genParmTbl = str(parser.get('logistics','genParmTbl'))
         self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
@@ -399,11 +398,6 @@ def checkConfig(parser):
     # We won't check the optional que name as it's optional. Even if some 
     # run with a job submission method, they may not need to run with a que.
         
-    #check = str(parser.get('logistics','postgresHost'))
-    #if len(check) == 0:
-    #    print "ERROR: Zero length Postgres Host passed length passed to program."
-    #    raise Exception()
-        
     # Either email or Slack must be chosen. If Slack is chosen, user
     # must provide both channel and API token.
     # FOR NOW WILL RELAX EMAIL CONSTRAINT
@@ -577,10 +571,6 @@ def checkConfig(parser):
     if bDate >= eDate:
         print "ERROR: Must specify ending calibration date greater than beginning spinup date."
         raise Exception()
-    #if bEDate <= bDate:
-    #    print "ERROR: Must specify the beginning date for calibration evaluation date " + \
-    #          " that is after the beginning date for calibration simulations."
-    #    raise Exception()
     if bEDate >= eDate:
         print "ERROR: Must specify the beginning date for calibration evaluation date " + \
               " that is before the ending date for calibration simulations."
@@ -595,10 +585,6 @@ def checkConfig(parser):
     if bDate >= eDate:
         print "ERROR: Must specify ending validation date greater than beginning validation date."
         raise Exception()
-    #if bEDate <= bDate:
-    #    print "ERROR: Must specify the beginning date for validation evaluation date " + \
-    #          " that is after the beginning date for validation simulations."
-    #    raise Exception()
     if bEDate >= eDate:
         print "ERROR: Must specify the beginning date for validation evaluation date " + \
               " that is before the ending date for validation simulations."
@@ -624,10 +610,6 @@ def checkConfig(parser):
         if bDate >= eDate:
             print "ERROR: Must specify ending sensitivity date greater than beginning sensitivity date."
             raise Exception()
-        #if bEDate >= bDate:
-        #    print "ERROR: Must specify the beginning date for sensitivity evaluation date " + \
-        #          " that is before the ending date for sensitivity simulation."
-        #    raise Exception()
         if bEDate >= eDate:
             print "ERROR: Must specify the beginning date for sensitivity evaluation date " + \
                   " that is before the ending date for validation simulations."

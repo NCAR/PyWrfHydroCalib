@@ -62,13 +62,12 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    #try:
-    #    pwdTmp = getpass.getpass('Enter Database Password: ')
-    #    jobData.dbPwd = str(pwdTmp)
-    #except:
-    #    print "ERROR: Unable to authenticate credentials for database."
-    #    sys.exit(1)
-    jobData.dbPwd = 'IJustWannaCalibrate'
+    try:
+        pwdTmp = getpass.getpass('Enter Database Password: ')
+        jobData.dbPwd = str(pwdTmp)
+    except:
+        print "ERROR: Unable to authenticate credentials for database."
+        sys.exit(1)
     
     jobData.dbUName = 'WH_Calib_rw'
     
@@ -117,11 +116,6 @@ def main(argv):
     jobData.gSQL = staticData.gSQL
         
     # Check gages in directory to match what's in the database
-    #try:
-    #    jobData.checkGages(db)
-    #except:
-    #    errMod.errOut(jobData)
-        
     try:
         jobData.checkGages2(db)
     except:
@@ -137,43 +131,42 @@ def main(argv):
         # and was killed.
 
         print 'LOCK FILE FOUND.'
-        # TEMPORARY FOR CHEYENNE - UNCOMMENT LATER
         # Read in to get PID number
-        #pidObj = pd.read_csv(lockPath)
-        #pidCheck = int(pidObj.PID[0])
-        #if errMod.check_pid(pidCheck):
-        #        print "JOB: " + str(pidCheck) + \
-        #              " Is still running."
-        #        sys.exit(0)
-        #else:
-        #        print "JOB: " + str(pidCheck) + \
-        #              " Has Failed. Removing LOCK " + \
-        #              " file."
-        #        os.remove(lockPath)
-        #        fileObj = open(lockPath,'w')
-        #        fileObj.write('\"PID\"\n')
-        #        fileObj.write(str(os.getpid()))
-        #        fileObj.close()
+        pidObj = pd.read_csv(pyLockPath)
+        pidCheck = int(pidObj.PID[0])
+        if errMod.check_pid(pidCheck):
+                print "JOB: " + str(pidCheck) + \
+                      " Is still running."
+                sys.exit(0)
+        else:
+                print "JOB: " + str(pidCheck) + \
+                      " Has Failed. Removing LOCK " + \
+                      " file."
+                os.remove(pyLockPath)
+                fileObj = open(pyLockPath,'w')
+                fileObj.write('\"PID\"\n')
+                fileObj.write(str(os.getpid()))
+                fileObj.close()
         # TEMPORARY FOR CHEYENNE. Since all cron jobs are launched
         # from an administrative node, we cannot monitor the process at 
         # all, which is an inconvenience. So.... we will check the last
-        # modified time. If it's more than 30 minutes old, we will assume
+        # modified time. If it's more than 15 minutes old, we will assume
         # the process is no longer running and can continue on with calibration.
-        dtRunCheck = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(pyLockPath))
-        if dtRunCheck.seconds/60.0 < 15.0:
-            # We are going to assume a previous process is still running on the system. 
-            # exit gracefully.
-            print 'ASSUMING PROCESS STILL RUNNING'
-            sys.exit(0)
-        else:
-            # We are assuming the process is no longer running on the system. Alow
-            # the workflow to continue. 
-            print 'ALLOWING WORKFLOW TO CONINUE. REMOVING LOCK FILE'
-            os.remove(pyLockPath)
-            fileObj = open(pyLockPath,'w')
-            fileObj.write('\"PID\"\n')
-            fileObj.write(str(os.getpid()))
-            fileObj.close()
+        #dtRunCheck = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(pyLockPath))
+        #if dtRunCheck.seconds/60.0 < 15.0:
+        #    # We are going to assume a previous process is still running on the system. 
+        #    # exit gracefully.
+        #    print 'ASSUMING PROCESS STILL RUNNING'
+        #    sys.exit(0)
+        #else:
+        #    # We are assuming the process is no longer running on the system. Alow
+        #    # the workflow to continue. 
+        #    print 'ALLOWING WORKFLOW TO CONINUE. REMOVING LOCK FILE'
+        #    os.remove(pyLockPath)
+        #    fileObj = open(pyLockPath,'w')
+        #    fileObj.write('\"PID\"\n')
+        #    fileObj.write(str(os.getpid()))
+        #    fileObj.close()
     else:
         # Write a LOCK file for this program.
         fileObj = open(pyLockPath,'w')
@@ -190,13 +183,13 @@ def main(argv):
         errMod.errOut(jobData)
         
     if userTmp != jobData.owner:
-        #print "User: " + userTmp + " is requesting to takeover jobID: " + \
-        #      str(jobData.jobID) + " from owner: " + str(jobData.owner)
-        #strTmp = "Please enter new email address. Leave blank if no email " + \
-        #         "change is desired. NOTE if you leave both email and Slack " + \
-        #         "information blank, no change in contact will occur. Only " + \
-        #         "the owner will be modified:"
-        #newEmail = raw_input(strTmp)
+        print "User: " + userTmp + " is requesting to takeover jobID: " + \
+              str(jobData.jobID) + " from owner: " + str(jobData.owner)
+        strTmp = "Please enter new email address. Leave blank if no email " + \
+                 "change is desired. NOTE if you leave both email and Slack " + \
+                 "information blank, no change in contact will occur. Only " + \
+                 "the owner will be modified:"
+        newEmail = raw_input(strTmp)
         #strTmp = "Please enter Slack channel:"
         #newSlackChannel = raw_input(strTmp)
         #strTmp = "Please enter Slack token:"
@@ -305,22 +298,21 @@ def main(argv):
                 spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobId)
             except:
                 errMod.errOut(jobData)
-            time.sleep(2)
             
             # TEMPORARY FOR CHEYENNE
             # Check to make sure program hasn't passed a prescribed time limit. If it has,
             # exit gracefully.
-            timeCheckStamp = datetime.datetime.now()
-            programDtCheck = timeCheckStamp - begTimeStamp
-            if programDtCheck.seconds/60.0 > 90.0: 
-                # 90-minutes)
-                try:
-                    fileObj = open(pyLockPath,'a')
-                    fileObj.write('WORKFLOW HAS HIT TIME LIMIT - EXITING....\n')
-                    fileObj.close()
-                except:
-                    jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + pyLockPath
-                    errMod.errOut(jobData)
+            #timeCheckStamp = datetime.datetime.now()
+            #programDtCheck = timeCheckStamp - begTimeStamp
+            #if programDtCheck.seconds/60.0 > 90.0: 
+            #    # 90-minutes)
+            #    try:
+            #        fileObj = open(pyLockPath,'a')
+            #        fileObj.write('WORKFLOW HAS HIT TIME LIMIT - EXITING....\n')
+            #        fileObj.close()
+            #    except:
+            #        jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + pyLockPath
+            #        errMod.errOut(jobData)
         
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
@@ -333,7 +325,6 @@ def main(argv):
             errMod.sendMsg(jobData)
             completeStatus = True
             
-        # TEMPORARY FOR CHEYENNE. 
         # Open the Python LOCK file. Write a blank line to the file and close it.
         # This action will simply modify the file modification time while only adding
         # a blank line.
