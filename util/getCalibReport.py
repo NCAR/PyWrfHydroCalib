@@ -43,6 +43,7 @@ def main(argv):
     parser.add_argument('--email',nargs='?',help='Optional email to pipe output to.')
     parser.add_argument('--hostname',type=str,nargs='?',
                         help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+    parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
                         
     args = parser.parse_args()
     
@@ -60,13 +61,16 @@ def main(argv):
 
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbUName= 'WH_Calib_rw'
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    if not args.pwd:
+        try:
+            pwdTmp = getpass.getpass('Enter Database Password: ')
+            jobData.dbUName= 'WH_Calib_rw'
+            jobData.dbPwd = str(pwdTmp)
+        except:
+            print "ERROR: Unable to authenticate credentials for database."
+            sys.exit(1)
+    else:
+        jobData.dbPwd = args.pwd
     jobData.dbUName= 'WH_Calib_rw'
     jobData.port = 5432    
     

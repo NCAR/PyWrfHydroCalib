@@ -181,12 +181,14 @@ forceDt = 3600
 lsmDt = 3600
 # Output frequency of NoahMP LDASOUT files in seconds
 lsmOutDt = 8640000
-# Output frequency of NoahMP restart files in seconds
+# Output frequency of NoahMP restart files in seconds.
+# For monthly restart files, please put -9999 here. 
 lsmRstFreq = 86400
 
 # Hydro specific time options
 # Specify timestep in seconds
 # Hydro restart output frequency
+# Place -99999 here for monthly restarts. 
 hydroRstFreq = 86400
 # Hydro output frequency
 hydroOutDt = 3600
@@ -297,3 +299,6 @@ gwBaseSw = 1
 # Specify to how to initialize groundwater bucket model (0:cold start from table,1:restart file)
 gwRestart = 0
 
+# Specify whether to use compound channel. This is for NWM ONLY. Cannot use with gridded routing.
+# (0: Turn off, 1: Turn on)
+compoundChannel = 0

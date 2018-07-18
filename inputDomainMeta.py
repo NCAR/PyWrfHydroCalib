@@ -57,21 +57,25 @@ def main(argv):
                         help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
     parser.add_argument('--portNumber',type=int,nargs='?',
                         help='Optional port number to connect. Default is 5432.')
+    parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
                         
     args = parser.parse_args()
     
     # Obtain the WH_Calib_rw username password. 
     # NOTE YOU MUST INITIALIZE THE POSTGRES DB FIRST BY
     # RUNNING initDB.py BEFORE YOU CAN RUN THIS PROGRAM.
-    try:
-        pwdTmp = getpass.getpass('Enter WH_Calib_rw password: ')
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    if not args.pwd:
+        try:
+            pwdTmp = getpass.getpass('Enter WH_Calib_rw password: ')
+        except:
+            print "ERROR: Unable to authenticate credentials for database."
+            sys.exit(1)
         
-    if not pwdTmp:
-        print "ERROR: Improper WH_Calib_rw password provided."
-        sys.exit(1)
+        if not pwdTmp:
+            print "ERROR: Improper WH_Calib_rw password provided."
+            sys.exit(1)
+    else:
+        pwdTmp = args.pwd
         
     if not args.hostname:
         # We will assume localhost for postgres DB

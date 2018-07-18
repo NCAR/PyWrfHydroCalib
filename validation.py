@@ -50,6 +50,7 @@ def main(argv):
                         help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
     parser.add_argument('--portNumber',type=int,nargs='?',
                         help='Optional port number to connect. Default is 5432.')
+    parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
     
     args = parser.parse_args()
     
@@ -65,12 +66,15 @@ def main(argv):
     
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    if not args.pwd:
+        try:
+            pwdTmp = getpass.getpass('Enter Database Password: ')
+            jobData.dbPwd = str(pwdTmp)
+        except:
+            print "ERROR: Unable to authenticate credentials for database."
+            sys.exit(1)
+    else:
+        jobData.dbPwd = args.pwd
     
     jobData.dbUName = 'WH_Calib_rw'
     

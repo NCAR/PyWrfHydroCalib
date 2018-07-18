@@ -34,6 +34,7 @@ def main(argv):
              'calibration job ID')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
+    parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
             
     args = parser.parse_args()
     
@@ -46,12 +47,15 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    if not args.pwd:
+        try:
+            pwdTmp = getpass.getpass('Enter Database Password: ')
+            jobData.dbPwd = str(pwdTmp)
+        except:
+            print "ERROR: Unable to authenticate credentials for database."
+            sys.exit(1)
+    else:
+        jobData.dbPwd = args.pwd
     
     jobData.dbUName = 'WH_Calib_rw'
     # Establish database connection.

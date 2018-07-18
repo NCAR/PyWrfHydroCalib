@@ -122,6 +122,7 @@ class jobMeta:
         self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
+        self.cmpdChan = []
         self.gages = []
         self.gageIDs = []
         self.dbUName = []
@@ -260,6 +261,7 @@ class jobMeta:
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
+        #self.cmpdChan = int(parser.et('hydroPhysics','compoundChannel'))
         
 def readConfig(configFile):
     """
@@ -742,13 +744,15 @@ def checkConfig(parser):
         
     check = int(parser.get('modelTime','lsmRstFreq'))
     if check < 0:
-        print "ERROR: Invalid LSM restart frequency passed to program."
-        raise Exception()
+        if check != -9999:
+            print "ERROR: Invalid LSM restart frequency passed to program."
+            raise Exception()
         
     check = int(parser.get('modelTime','hydroRstFreq'))
     if check < 0:
-        print "ERROR: Invalid Hydro restart frequency passed to program."
-        raise Exception()
+        if check != -99999:
+            print "ERROR: Invalid Hydro restart frequency passed to program."
+            raise Exception()
         
     check = int(parser.get('modelTime','hydroOutDt'))
     if check < 0:
@@ -881,5 +885,16 @@ def checkConfig(parser):
         print "ERROR: Invalid ground water restart switch passed to program."
         raise Exception()
         
+    check = int(parser.get('hydroPhysics','compoundChannel'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid compoundChannel switch passed to program."
+        raise Exception()
+        
+    # Ensure muskingum cunge routing has been chosen if compound channel is activated.
+    #check1 = int(parser.get('hydroPhysics','compoundChannel'))
+    #check2 = int(parser.get('hydroPhysics','chanRtOpt'))
+    #if check1 == 1 and check2 != 2:
+    #    print "ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing."
+    #    raise Exception()
     
     
