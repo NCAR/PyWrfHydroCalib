@@ -1,17 +1,14 @@
 # This is a top-level, self-contained Python program that will create the 
-# necessary database tables necessary to run calibrations. It's up to the 
-# user to establish a Postgres server on their end that the workflow can
-# communicate with. Please see the documentation for more detailed information.
+# necessary database tables necessary to run calibrations. 
 
 # Logan Karsten
 # National Center for Atmospheric Research
 # Research Applications Laboratory.
 
-import psycopg2
 import sys
 import os
-import getpass
 import argparse
+import sqlite3
 
 # Set the Python path to include package specific functions included with this 
 # package.
@@ -20,6 +17,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
+topDir = libPath
 schemaFile2 = libPath + 'setup_files/psql_schema2.sql'
 libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
@@ -31,136 +29,133 @@ warnings.filterwarnings("ignore")
 def main(argv):
     # Optional hostname for the user to pass.
     parser = argparse.ArgumentParser(description='Main program to initialize the wrfHydroCalib_DB')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname PostgreSQL DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--portNumber',type=int,nargs='?',
-                        help='Optional port number to connect. Default is 5432.')
+    parser.add_argument('--optDbPath',type=str,nargs='?',
+                        help='Optional alternative path to SQLite DB file.')
     args = parser.parse_args()
                     
-    if not args.hostname:
-        # We will assume localhost for Postgres DB
-        hostTmp = 'localhost'
-    else:
-        hostTmp = str(args.hostname)
-        
-    if not args.portNumber:
-        # We will default to 5432
-        portTmp = '5432'
-    else:
-        portTmp = str(args.portNumber)
-                        
-    # Obtain root password from user for the MySQL DB. This is necessary to 
-    # create the necessary DB and associated tables.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Root Password: ')
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
-    
-    if not pwdTmp:
-        print "ERROR: Improper postgres root password provided."
-        sys.exit(1)
-        
-    # Check to see if this DB has already been created. If it has, throw an 
-    # error back to the user. 
-    try:
-        #strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=5432 host=localhost"
-        strTmp = "dbname=postgres user=postgres password=" + pwdTmp + " port=" + portTmp + " host=" + hostTmp
-        db = psycopg2.connect(strTmp)
-    except:
-        print "ERROR: Unable to connect to postgres as user root. It's possible you entered an incorrect password."
-        sys.exit(1)
-    db.autocommit = True
-    conn = db.cursor()
-    sqlCmd = 'SELECT datname FROM pg_database;'
-    conn.execute(sqlCmd)
-    qResult = conn.fetchall()
-    nResults = len(qResult)
-    for i in range(0,nResults):
-        if qResult[i][0] == 'wrfHydroCalib_DB':
-            conn.close()
-            print "ERROR: wrfHydroCalib_DB Database already exists. Please remove before re-running this program."
+    # If the optional SQLite file already exists, throw an error.
+    if args.optDbPath is not None:
+        if os.path.isfile(args.optDbPath):
+            print "ERROR: " + args.optDbPath + " Already Exists."
             sys.exit(1)
-    sqlCmd = 'SELECT usename FROM pg_user;'
-    conn.execute(sqlCmd)
-    qResult = conn.fetchall()
-    nResults = len(qResult)
-    for i in range(0,nResults):
-        if qResult[i][0] == 'WH_Calib_rw':
-            conn.close()
-            print "ERROR: WH_Calib_rw User already exists. Please remove before re-running this program."
+        else:
+            dbPath = args.optDbPath
+    else:
+        dbPath = topDir + "wrfHydroCalib.db"
+        if os.path.isfile(dbPath):
+            print "ERROR: SQLite3 DB file: " + dbPath + " Already Exists."
             sys.exit(1)
             
-    # Prompt user to enter in password for read-write access to DB being created. 
-    # Be sure to let user know that they need to keep the password handy for future
-    # access and calibration.
-    try:
-        pwdUser1 = getpass.getpass('Create New Database Password: ')
-    except:
-        print "ERROR: Error in parsing password."
-        sys.exit(1)
-        
-    if not pwdUser1:
-        print "ERROR: Improper User-Created Password."
-        sys.exit(1)
-        
-    try:
-        pwdUser2 = getpass.getpass('Re-Enter New Database Password: ')
-    except:
-        print "ERROR: Error in parsing password."
-        sys.exit(1)
-        
-    if not pwdUser2:
-        print "ERROR: Improper User-Created Re-Entered Password."
-        sys.exit(1)
-        
-    if pwdUser1 != pwdUser2:
-        print "ERROR: Password Re-Entered Does Not Match First Password Created."
-        sys.exit(1)
-        
-    # STEP 1: Create proper database and user per user input.
-    cmd = "CREATE USER \"WH_Calib_rw\" WITH PASSWORD \'" + pwdUser1 + "\';"
-    try:
-        conn.execute(cmd)
-    except:
-        print "ERROR: Failure to create DB User WH_Calib_rw."
-        sys.exit(1)
-    cmd = "CREATE DATABASE \"wrfHydroCalib_DB\" OWNER \'WH_Calib_rw\' CONNECTION_LIMIT 5;"
-    try:
-        conn.execute(cmd)
-    except:
-        print "ERROR: Failure to create DB wrfHydroCalib_DB."
-        sys.exit(1)
-        
-    try:
-        conn.close()
-    except:
-        print "ERROR: Unable to disconnect from postgres as user postgres."
-        sys.exit(1)
+    # Create a connnection object.
+    dbConn = sqlite3.connect(dbPath)
     
-    # Re-connect to the new database created with the user-provided password.
-    # Then create the necessary tables. 
-    #strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=5432 host=localhost"
-    strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdUser1 + " port=" + portTmp + " host=" + hostTmp
+    # Go through and create tables
     try:
-        db = psycopg2.connect(strTmp)
+        dbConn.execute('''CREATE TABLE Calib_Params
+                       (jobID integer, domainID integer, iteration integer,
+                       paramName text, paramValue real)''')
+        dbConn.commit()
     except:
-        print "ERROR; Failure to establish connection with newly created wrfHydroCalib_DB."
-        sys.exit(1)
-    db.autocommit = True
-    conn = db.cursor()
-    
-    # Load schema file in to create database tables.
+        errOut(dbConn,"Unable to create table: Calib_Params.",dbPath)
+        
     try:
-        conn.execute(open(schemaFile2,'r').read())
+        dbConn.execute('''CREATE TABLE Sens_Params
+                       (jobID integer, domainID integer, iteration integer,
+                       paramName text, paramValue real)''')
     except:
-        print "ERROR: Unable to load schema table to create tables for wrfHydroCalib_DB."
-        sys.exit(1)
+        errOut(dbConn,"Unable to create table: Sens_Params.",dbPath)
     
     try:
-        conn.close()
+        dbConn.execute('''CREATE TABLE Calib_Stats
+                       (jobID integer, domainID integer, iteration integer,
+                       objfnVal real, bias real, rmse real, cor real,
+                       nse real, nselog real, kge real, fdcerr real,
+                       msof real, best integer, complete real)''')
     except:
-        print "ERROR: Unable to disconnect from postgres as user postgres."
+        errOut(dbConn,"Unable to create table: Calib_Stats.",dbPath)
+        
+    try:
+        dbConn.execute('''CREATE TABLE Sens_Stats
+                       (jobID integer, domainID integer, iteration integer,
+                       objfnVal real, bias real, rmse real, cor real,
+                       nse real, nselog real, kge real, fdcerr real,
+                       msof real, timestep text, complete real)''')
+    except:
+        errOut(dbConn,"Unable to create table: Sens_Stats.",dbPath)
+        
+    try:
+        dbConn.execute('''CREATE TABLE Domain_Meta
+                       (domainID INTEGER PRIMARY KEY, gage_id text, link_id integer,
+                       domain_path text, gage_agency text, geo_e integer,
+                       geo_w integer, geo_s integer, geo_n integer,
+                       hyd_e integer, hyd_w integer, hyd_s integer,
+                       hyd_n integer, geo_file text, land_spatial_meta_file text,
+                       wrfinput_file text, soil_file text, fulldom_file text,
+                       rtlink_file text, spweight_file text, gw_file text,
+                       gw_mask text, lake_file text, forcing_dir text, obs_file text,
+                       site_name text, lat real, lon real, area_sqmi real,
+                       area_sqkm real, county_cd text, state text, huc2 text,
+                       huc4 text, huc6 text, huc8 text, ecol3 text, ecol4 text,
+                       rfc text, dx_hydro real, agg_factor integer, hydro_tbl_spatial text)''')
+    except:
+        errOut(dbConn,"Unable to create table: Domain_Meta.",dbPath)
+        
+    try:
+        dbConn.execute('''CREATE TABLE Job_Meta 
+                       (jobID INTEGER PRIMARY KEY, Job_Directory text, date_su_start timestamp,
+                       date_su_end timestamp, su_complete integer, sens_flag integer,
+                       sens_table text, num_sens_sample integer, num_sens_iter integer,
+                       sens_batch integer, date_sens_start timestamp, date_sens_end timestamp,
+                       date_sens_start_eval timestamp, sens_complete integer,
+                       calib_flag integer, calib_table text, date_calib_start timestamp,
+                       date_calib_end timestamp, date_calib_start_eval timestamp,
+                       num_iter integer, calib_complete integer, valid_start_date timestamp,
+                       valid_end_date timestamp, valid_start_date_eval timestamp,
+                       valid_complete integer, acct_key text, que_name text,
+                       num_cores_model integer, num_nodes_model integer,
+                       num_cores_R integer, num_nodes_R integer,
+                       job_run_type integer, exe text, num_gages integer,
+                       owner text, email text, slack_channel text, slack_token text,
+                       slack_user text, analysis_run_type integer, que_name_analysis text)''')
+    except:
+        errOut(dbConn,"Unablet to create table: Job_Meta.",dbPath)
+    
+    try:
+        dbConn.execute('''CREATE TABLE Job_Params
+                       (jobID integer, param text, defaultValue real, min real,
+                       max real, sens_flag integer, calib_flag integer)''')
+    except:
+        errOut(dbConn,"Unable to create table: Job_Params.",dbPath)
+        
+    try:
+        dbConn.execute('''CREATE TABLE Valid_Stats
+                        (jobID integer, domainID integer, simulation text,
+                        evalPeriod text, objfnVal real, bias real, rmse real,
+                        cor real, nse real, nselog real, nseWt real, kge real,
+                        msof real)''')
+    except:
+        errOut(dbConn,"Unable to create table: Valid_Stats.",dbPath)
+    
+    # Close the database file
+    try:
+        dbConn.close()
+    except:
+        errOut(dbConn,'Unable to close file: ' + dbPath,dbPath)
+                        
+def errOut(dbConn,errMsg,dbPath):
+    """"
+    Quick function to close out the DB file and report an error to the user on the screen.
+    """
+    print "ERROR: " + errMsg
+    try:
+        dbConn.close()
+    except:
+        print "ERROR: Unable to close DB file properly. Defaulting to removing the file."
+        
+    try:
+        os.remove(dbPath)
+    except:
+        print "ERROR: Unable to remove the DB file."
         sys.exit(1)
     
 if __name__ == "__main__":

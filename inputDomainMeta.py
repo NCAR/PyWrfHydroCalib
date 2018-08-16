@@ -36,16 +36,23 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-import psycopg2
-import getpass
 import argparse
 import os
 import sys
 import pandas as pd
 from netCDF4 import Dataset
+import sqlite3
 
 import warnings
 warnings.filterwarnings("ignore")
+
+# Establish top-level paths that are used to find the DB file. 
+prPath = os.path.realpath(__file__)
+pathSplit = prPath.split('/')
+libPath = '/'
+for j in range(1,len(pathSplit)-1):
+    libPath = libPath + pathSplit[j] + '/'
+topDir = libPath
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
@@ -53,51 +60,36 @@ def main(argv):
              'domain metadata into wrfHydroCalib_DB')
     parser.add_argument('inCSV',metavar='inCSV',type=str,nargs='+',
                         help='Input CSV file containing information on basins.')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--portNumber',type=int,nargs='?',
-                        help='Optional port number to connect. Default is 5432.')
-    parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
+    parser.add_argument('--optDbPath',type=str,nargs='?',
+                        help='Optional alternative path to SQLite DB file.')
                         
     args = parser.parse_args()
     
-    # Obtain the WH_Calib_rw username password. 
-    # NOTE YOU MUST INITIALIZE THE POSTGRES DB FIRST BY
-    # RUNNING initDB.py BEFORE YOU CAN RUN THIS PROGRAM.
-    if not args.pwd:
-        try:
-            pwdTmp = getpass.getpass('Enter WH_Calib_rw password: ')
-        except:
-            print "ERROR: Unable to authenticate credentials for database."
+    # If the SQLite file does not exist, throw an error.
+    if args.optDbPath is not None:
+        if not os.path.isfile(args.optDbPath):
+            print "ERROR: " + args.optDbPath + " Does Not Exist."
             sys.exit(1)
-        
-        if not pwdTmp:
-            print "ERROR: Improper WH_Calib_rw password provided."
+        else:
+            dbPath = args.optDbPath
+    else:
+        dbPath = topDir + "wrfHydroCalib.db"
+        if not os.path.isfile(dbPath):
+            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
             sys.exit(1)
-    else:
-        pwdTmp = args.pwd
-        
-    if not args.hostname:
-        # We will assume localhost for postgres DB
-        hostTmp = 'localhost'
-    else:
-        hostTmp = str(args.hostname)
-        
-    if not args.portNumber:
-        # We will default to 5432
-        portTmp = '5432'
-    else:
-        portTmp = str(args.portNumber)
-        
-    # Connect to the database
+    
+    # Open the SQLite DB file
     try:
-        strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdTmp + " port=" + portTmp + " host=" + hostTmp
-        db = psycopg2.connect(strTmp)
+        conn = sqlite3.connect(dbPath)
     except:
-        print "ERROR: Unable to connect to wrfHydroCalib_DB. Please check your password you set " + \
-              " or verify the database has been created. Also check your host name...."
+        print "ERROR: Unable to connect to: " + dbPath + ". Please intiialize the DB file."
         sys.exit(1)
-    conn = db.cursor()
+        
+    try:
+        dbCursor = conn.cursor()
+    except:
+        print "ERROR: Unable to establish cursor object for: " + dbPath
+        sys.exit(1)
     
     # Create expected dictionary of column types
     dtype_dic= {'site_no':str,'link':int,'hyd_w':int,'hyd_e':int,'hyd_s':int,'hyd_n':int,
@@ -252,13 +244,16 @@ def main(argv):
               
         # Make entry into DB
         try:
-            conn.execute(cmd)
+            print cmd
+            #conn.execute(cmd)
+            dbCursor.execute(cmd)
         except:
             print "ERROR: Unable to execute postgres command: " + cmd
             sys.exit(1)
             
         try:
-            db.commit()
+            #db.commit()
+            conn.commit()
         except:
             print "ERROR: Unable to commit postgres command: " + cmd
             sys.exit(1)

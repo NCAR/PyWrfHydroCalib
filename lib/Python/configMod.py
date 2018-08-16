@@ -36,10 +36,12 @@ class jobMeta:
         self.calibFlag = []
         self.calibTbl = []
         self.dailyAnalysis = []
+        self.coldStart = []
+        self.optSpinFile = []
         self.jobRunType = []
         self.analysisRunType = []
-        self.host = []
-        self.port = []
+        #self.host = []
+        #self.port = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -125,8 +127,9 @@ class jobMeta:
         self.cmpdChan = []
         self.gages = []
         self.gageIDs = []
-        self.dbUName = []
-        self.dbPwd = []
+        self.dbPath = []
+        #self.dbUName = []
+        #self.dbPwd = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -164,6 +167,8 @@ class jobMeta:
         self.calibFlag = int(parser.get('logistics','runCalib'))
         self.calibTbl = str(parser.get('logistics','calibParmTbl'))
         self.dailyAnalysis = int(parser.get('logistics','dailyStats'))
+        self.coldStart = int(parser.get('logistics','coldStart'))
+        self.optSpinFile = str(parser.get('logistics','optSpinupFile'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.analysisRunType = int(parser.get('logistics','analysisRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
@@ -473,6 +478,16 @@ def checkConfig(parser):
     check = int(parser.get('logistics','dailyStats'))
     if check < 0 or check > 1:
         print "ERROR: Invalid dailyStats value specified."
+        raise Exception()
+        
+    check = int(parser.get('logistics','coldStart'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid coldStart value specified."
+        raise Exception()
+        
+    check = str(parser.get('logistics','optSpinupFile'))
+    if not os.path.isfile(check):
+        print "ERROR: Optional spinup file: " + check + " not found."
         raise Exception()
         
     # Check to make sure calibration method is DDS

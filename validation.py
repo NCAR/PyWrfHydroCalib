@@ -13,7 +13,7 @@
 
 import sys
 import argparse
-import getpass
+#import getpass
 import os
 import pandas as pd
 import pwd
@@ -26,6 +26,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
+topDir = libPath
 libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
@@ -46,13 +47,28 @@ def main(argv):
              'calibration validation simulation for the National Water Model')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration validation.')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--portNumber',type=int,nargs='?',
-                        help='Optional port number to connect. Default is 5432.')
-    parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
+    #parser.add_argument('--hostname',type=str,nargs='?',
+    #                    help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+    #parser.add_argument('--portNumber',type=int,nargs='?',
+    #                    help='Optional port number to connect. Default is 5432.')
+    #parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
+    parser.add_argument('--optDbPath',type=str,nargs='?',
+                        help='Optional alternative path to SQLite DB file.')
     
     args = parser.parse_args()
+    
+    # If the SQLite file does not exist, throw an error.
+    if args.optDbPath is not None:
+        if not os.path.isfile(args.optDbPath):
+            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            sys.exit(1)
+        else:
+            dbPath = args.optDbPath
+    else:
+        dbPath = topDir + "wrfHydroCalib.db"
+        if not os.path.isfile(dbPath):
+            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            sys.exit(1)
     
     # Establish the beginning timestamp for this program.
     begTimeStamp = datetime.datetime.now()
@@ -63,34 +79,35 @@ def main(argv):
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
+    jobData.dbPath = dbPath
     
     # Lookup database username/login credentials based on username
     # running program.
-    if not args.pwd:
-        try:
-            pwdTmp = getpass.getpass('Enter Database Password: ')
-            jobData.dbPwd = str(pwdTmp)
-        except:
-            print "ERROR: Unable to authenticate credentials for database."
-            sys.exit(1)
-    else:
-        jobData.dbPwd = args.pwd
+    #if not args.pwd:
+    #    try:
+    #        pwdTmp = getpass.getpass('Enter Database Password: ')
+    #        jobData.dbPwd = str(pwdTmp)
+    #    except:
+    #        print "ERROR: Unable to authenticate credentials for database."
+    #        sys.exit(1)
+    #else:
+    #    jobData.dbPwd = args.pwd
     
-    jobData.dbUName = 'WH_Calib_rw'
+    #jobData.dbUName = 'WH_Calib_rw'
     
-    if not args.hostname:
-        # We will assume localhost for Postgres DB
-        hostTmp = 'localhost'
-    else:
-        hostTmp = str(args.hostname)
+    #if not args.hostname:
+    #    # We will assume localhost for Postgres DB
+    #    hostTmp = 'localhost'
+    #else:
+    #    hostTmp = str(args.hostname)
         
-    if not args.portNumber:
-        # We will default to 5432
-        portTmp = '5432'
-    else:
-        portTmp = str(args.portNumber)
-    jobData.port = portTmp
-    jobData.host = hostTmp
+    #if not args.portNumber:
+    #    # We will default to 5432
+    #    portTmp = '5432'
+    #else:
+    #    portTmp = str(args.portNumber)
+    #jobData.port = portTmp
+    #jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
