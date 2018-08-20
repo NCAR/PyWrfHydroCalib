@@ -40,6 +40,13 @@ calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
 # will be aggregated to daily statistics. 
 # 0 - Run hourly stats, 1 - Run daily stats
 dailyStats = 0
+# This is a flag for the user to bypass the spinup and run calibrations/validations/sensitivity
+# analysis from cold starts. Note: This is highly discouraged as a spinup allows for
+# stable hydrologic states: 0 - Off, 1 - On.
+coldStart = 0
+# Optional restart file for user to use if model has previously been spunup. This will
+# allow workflow to bypass spinup. Leave blank if none present. 
+optSpinupFile =
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety

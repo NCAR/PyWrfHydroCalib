@@ -190,7 +190,7 @@ def main(argv):
             print "ERROR: " + fullDomPath + " not found."
             sys.exit(1)
         if not os.path.isfile(gwPath):
-            print "ERROR: " + gwPath + "not found."
+            print "ERROR: " + gwPath + " not found."
             sys.exit(1)
         if not os.path.isfile(lakePath1) and not os.path.isfile(lakePath2):
             print "WARNING: No lake parameter files found. Assuming you have setup a domain with no lakes."
