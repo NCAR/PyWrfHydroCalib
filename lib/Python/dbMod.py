@@ -210,7 +210,7 @@ class Database(object):
                  "date_sens_start_eval,sens_complete,calib_flag,calib_table,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
                  "calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
-                 "sql_host,job_run_type,exe,num_gages,owner,email," + \
+                 "job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user,analysis_run_type,que_name_analysis) values " + \
                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.sensFlag,jobData.sensTbl,jobData.nSensSample,\
@@ -444,17 +444,17 @@ class Database(object):
         jobData.nNodesMod = int(results[0][28])
         jobData.nCoresR = int(results[0][29])
         jobData.nNodesR = int(results[0][30])
-        jobData.host = str(results[0][31])
-        jobData.jobRunType = int(results[0][32])
-        jobData.exe = results[0][33]
-        jobData.nGages = int(results[0][34])
-        jobData.owner = results[0][35]
-        jobData.email = results[0][36]
-        jobData.slChan = results[0][37]
-        jobData.slToken = results[0][38]
-        jobData.slUser = results[0][39]
-        jobData.analysisRunType = int(results[0][40])
-        jobData.queNameAnalysis = results[0][41]
+        #jobData.host = str(results[0][31])
+        jobData.jobRunType = int(results[0][31])
+        jobData.exe = results[0][32]
+        jobData.nGages = int(results[0][33])
+        jobData.owner = results[0][34]
+        jobData.email = results[0][35]
+        jobData.slChan = results[0][36]
+        jobData.slToken = results[0][37]
+        jobData.slUser = results[0][38]
+        jobData.analysisRunType = int(results[0][39])
+        jobData.queNameAnalysis = results[0][40]
         
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
