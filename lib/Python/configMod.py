@@ -486,7 +486,7 @@ def checkConfig(parser):
         raise Exception()
         
     check = str(parser.get('logistics','optSpinupFile'))
-    if len(check) == 0:
+    if len(check) != 0:
         if not os.path.isfile(check):
             print "ERROR: Optional spinup file: " + check + " not found."
             raise Exception()
