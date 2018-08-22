@@ -113,8 +113,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to execute postgres command to inquire job ID."
             raise
         
-        if len(result) == 0:
-        #if result is None:
+        if not result:
             # This will be a unique value specific to indicating no Job ID has 
             # been entered for this particular unique job situation.
             jobData.jobID = -9999
@@ -142,8 +141,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to locate ID for gage: " + str(gageName)
             raise
             
-        if len(result) == 0:
-        #if result is None:
+        if not result:
             jobData.errMsg = "ERROR: gage: " + str(gageName) + " not found in database."
             raise Exception()
         
@@ -170,7 +168,9 @@ class Database(object):
 
         # Double check to make sure the extracted number of gages matches what's in the DB for this
         # workflow.
-        if len(results) != jobData.nGages:
+        if not results:
+            jobData.errMsg = "ERROR: No gages for job: " + str(jobData.jobID)
+        elif len(results) != jobData.nGages:
             jobData.errMsg = "ERROR: Expecting to find " + str(jobData.nGages) + " when found " + \
                              str(len(results)) + " gages for job: " + str(jobData.jobID)
 
@@ -252,7 +252,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
             raise
             
-        if len(results) == 0:
+        if not results:
             jobData.errMsg = "ERROR: Gage query returned 0 gages for calibration."
             raise Exception()
             
@@ -283,8 +283,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
             raise
             
-        if len(results) == 0:
-        #if not results:
+        if not results:
             jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
             raise Exception()
         
@@ -308,8 +307,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
             raise
             
-        if len(results) == 0:
-        #if not results:
+        if not results:
             jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
             raise Exception()
             
@@ -369,8 +367,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID)
             raise
             
-        if len(results) == 0:
-        #if not results:
+        if not results:
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID)
             raise Exception()
             
@@ -755,8 +752,7 @@ class Database(object):
                                              " iteration: " + itStr + " parameter: " + parmName
                             raise
                         
-                        if len(results) == 0:
-                        #if not results:
+                        if not results:
                             # Create "empty" entry into table.
                             sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
                                      "values (" + str(jobID) + "," + str(domainID) + "," + \
@@ -801,8 +797,7 @@ class Database(object):
                                              " iteration: " + itStr + " parameter: " + parmName
                             raise
                         
-                        if len(results) == 0:
-                        #if not results:
+                        if not results:
                             # Create "empty" entry into table.
                             sqlCmd = "insert into \"Sens_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
                                      "values (" + str(jobID) + "," + str(domainID) + "," + \
@@ -846,8 +841,7 @@ class Database(object):
                                  " domainID: " + str(domainID) + " Iteration: " + str(iteration)
                 raise
             
-            if len(results) == 0:
-            #if not results:
+            if not results:
                 # Create "empty" entry into table.
                 sqlCmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
                          "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
@@ -892,8 +886,7 @@ class Database(object):
                                  " domainID: " + str(domainID) + " Iteration: " + str(iteration)
                 raise
             
-            if len(results) == 0:
-            #if not results:
+            if not results:
                 # Create "empty" entry into table.
                 # First for hourly stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
@@ -1293,8 +1286,7 @@ class Database(object):
                              str(jobID)
             raise Exception()
             
-        if len(results) == 0:
-        #if not results:
+        if not results:
             outStatus = -99
             return outStatus
         
