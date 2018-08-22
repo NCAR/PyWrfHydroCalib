@@ -31,11 +31,11 @@ def main(argv):
     args = parser.parse_args()
     
     # If the sqllite DB file does not exist, throw an error to the user.
-    if not os.path.isfile(args.inDB):
-        print "ERROR: Unable to locate DB file: " + args.inDB
+    if not os.path.isfile(args.inDB[0]):
+        print "ERROR: Unable to locate DB file: " + args.inDB[0]
         sys.exit(1)
         
-    dbPath = args.inDB
+    dbPath = args.inDB[0]
         
     # Open the SQLite DB file
     try:
@@ -96,24 +96,24 @@ def main(argv):
         print "Groundwater Mask File: " + str(results[gage][21])
         print "Lake Parameter File: " + str(results[gage][22])
         print "Forcing Directory: " + str(results[gage][23])
-        print "Observations File: " + str(results[gage][26])
-        print "Site Name: " + str(results[gage][27])
-        print "Gage Latitude: " + str(results[gage][28])
-        print "Gage Longitude: " + str(results[gage][29])
-        print "Basin Area (sqMi): " + str(results[gage][30])
-        print "Basin Area (sqKm): " + str(results[gage][31])
-        print "County: " + str(results[gage][32])
-        print "State: " + str(results[gage][33])
-        print "HUC2: " + str(results[gage][34])
-        print "HUC4: " + str(results[gage][35])
-        print "HUC6: " + str(results[gage][36])
-        print "HUC8: " + str(results[gage][37])
-        print "Ecological Region Level 3: " + str(results[gage][38])
-        print "Ecological Region Level 4: " + str(results[gage][39])
-        print "River Forecast Center Region: " + str(results[gage][40])
-        print "Hydro Modeling Resolution (meters): " + str(results[gage][41])
-        print "Aggregation Factor from Land Grid to Hydro Grid: " + str(results[gage][42])
-        print "2D Hydro Parameter Table Path: " + str(results[gage][43])
+        print "Observations File: " + str(results[gage][24])
+        print "Site Name: " + str(results[gage][25])
+        print "Gage Latitude: " + str(results[gage][26])
+        print "Gage Longitude: " + str(results[gage][27])
+        print "Basin Area (sqMi): " + str(results[gage][28])
+        print "Basin Area (sqKm): " + str(results[gage][29])
+        print "County: " + str(results[gage][30])
+        print "State: " + str(results[gage][31])
+        print "HUC2: " + str(results[gage][32])
+        print "HUC4: " + str(results[gage][33])
+        print "HUC6: " + str(results[gage][34])
+        print "HUC8: " + str(results[gage][35])
+        print "Ecological Region Level 3: " + str(results[gage][36])
+        print "Ecological Region Level 4: " + str(results[gage][37])
+        print "River Forecast Center Region: " + str(results[gage][38])
+        print "Hydro Modeling Resolution (meters): " + str(results[gage][39])
+        print "Aggregation Factor from Land Grid to Hydro Grid: " + str(results[gage][40])
+        print "2D Hydro Parameter Table Path: " + str(results[gage][41])
         print "--------------------------------------------------"
         
     # Close connection to DB

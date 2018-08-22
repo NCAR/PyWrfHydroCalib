@@ -24,7 +24,6 @@ jobName = TEST_CALIB
 acctKey =
 optQueNameModel =
 optQueNameAnalysis = 
-postgresHost = dbHost
 nCoresModel = 4
 nNodesModel = 1
 nCoresR     = 1

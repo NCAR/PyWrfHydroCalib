@@ -221,7 +221,7 @@ class Database(object):
                  jobData.nIter,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
                  jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
                  0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
-                 jobData.host,jobData.jobRunType,jobData.exe,len(jobData.gages),\
+                 "-9999",jobData.jobRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3,jobData.analysisRunType,jobData.queNameAnalysis)
         try:
             self.dbCursor.execute(sqlCmd)
