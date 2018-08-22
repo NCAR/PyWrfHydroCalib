@@ -75,6 +75,8 @@ def main(argv):
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
         
+    jobData.dbPath = dbPath
+        
     #if not args.hostname:
     #    # We will assume localhost for Postgres DB
     #    hostTmp = 'localhost'
