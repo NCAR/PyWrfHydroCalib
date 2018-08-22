@@ -176,9 +176,9 @@ class jobMeta:
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
         self.email = str(parser.get('logistics','email'))
-        self.slChan = str(parser.get('logistics','slackChannel'))
-        self.slToken = str(parser.get('logistics','slackToken'))
-        self.slUser = str(parser.get('logistics','slackUser'))
+        #self.slChan = str(parser.get('logistics','slackChannel'))
+        #self.slToken = str(parser.get('logistics','slackToken'))
+        #self.slUser = str(parser.get('logistics','slackUser'))
         # Initiate Slack object if user has specified. Throw an error message
         # if Slack is not successfully inititated.
         #if len(self.slChan) > 0:
