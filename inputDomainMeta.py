@@ -251,12 +251,12 @@ def main(argv):
             print "ERROR: Unable to execute postgres command: " + cmd
             sys.exit(1)
             
-        try:
-            #db.commit()
-            conn.commit()
-        except:
-            print "ERROR: Unable to commit postgres command: " + cmd
-            sys.exit(1)
+        #try:
+        #    #db.commit()
+        #    conn.commit()
+        #except:
+        #    print "ERROR: Unable to commit postgres command: " + cmd
+        #    sys.exit(1)
             
     # Close connection to DB
     try:

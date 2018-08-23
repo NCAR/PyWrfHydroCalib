@@ -119,7 +119,7 @@ class Database(object):
             jobData.jobID = -9999
         else:
             #jobData.jobID = result[0]
-            jobData.jobID = result[0][0]
+            jobData.jobID = result[0]
             
     def getDomainID(self,jobData,gageName):
         """
@@ -146,7 +146,7 @@ class Database(object):
             raise Exception()
         
         #return int(result[0])
-        return int(result[0][0])
+        return int(result[0])
     
     def getDomainID2(self,jobData):
         """
@@ -168,7 +168,7 @@ class Database(object):
 
         # Double check to make sure the extracted number of gages matches what's in the DB for this
         # workflow.
-        if not results:
+        if len(results) == 0:
             jobData.errMsg = "ERROR: No gages for job: " + str(jobData.jobID)
         elif len(results) != jobData.nGages:
             jobData.errMsg = "ERROR: Expecting to find " + str(jobData.nGages) + " when found " + \
@@ -252,7 +252,7 @@ class Database(object):
             jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
             raise
             
-        if not results:
+        if len(results) == 0:
             jobData.errMsg = "ERROR: Gage query returned 0 gages for calibration."
             raise Exception()
             
@@ -329,23 +329,23 @@ class Database(object):
         #tmpMeta['aggFactor'] = results[40]
         #tmpMeta['hydroSpatial'] = results[41]
         
-        tmpMeta['gageID'] = results[0][0]
-        tmpMeta['comID'] = results[0][2]
-        tmpMeta['geoFile'] = results[0][13]
-        tmpMeta['landSpatialMeta'] = results[0][14]
-        tmpMeta['wrfInput'] = results[0][15]
-        tmpMeta['soilFile'] = results[0][16]
-        tmpMeta['fullDomFile'] = results[0][17]
-        tmpMeta['rtLnk'] = results[0][18]
-        tmpMeta['udMap'] = results[0][19]
-        tmpMeta['gwFile'] = results[0][20]
-        tmpMeta['gwMask'] = results[0][21]
-        tmpMeta['lkFile'] = results[0][22]
-        tmpMeta['forceDir'] = results[0][23]
-        tmpMeta['obsFile'] = results[0][24]
-        tmpMeta['dxHydro'] = results[0][39]
-        tmpMeta['aggFactor'] = results[0][40]
-        tmpMeta['hydroSpatial'] = results[0][41]
+        tmpMeta['gageID'] = results[0]
+        tmpMeta['comID'] = results[2]
+        tmpMeta['geoFile'] = results[13]
+        tmpMeta['landSpatialMeta'] = results[14]
+        tmpMeta['wrfInput'] = results[15]
+        tmpMeta['soilFile'] = results[16]
+        tmpMeta['fullDomFile'] = results[17]
+        tmpMeta['rtLnk'] = results[18]
+        tmpMeta['udMap'] = results[19]
+        tmpMeta['gwFile'] = results[20]
+        tmpMeta['gwMask'] = results[21]
+        tmpMeta['lkFile'] = results[22]
+        tmpMeta['forceDir'] = results[23]
+        tmpMeta['obsFile'] = results[24]
+        tmpMeta['dxHydro'] = results[39]
+        tmpMeta['aggFactor'] = results[40]
+        tmpMeta['hydroSpatial'] = results[41]
         
     def jobStatus(self,jobData):
         """
@@ -414,47 +414,47 @@ class Database(object):
         #jobData.analysisRunType = int(results[40])
         #jobData.queNameAnalysis = results[41]
         
-        jobData.jobDir = results[0][1]
-        jobData.bSpinDate = datetime.datetime.strptime(str(results[0][2]),'%Y-%m-%d %H:%M:%S')
-        jobData.eSpinDate = datetime.datetime.strptime(str(results[0][3]),'%Y-%m-%d %H:%M:%S')
-        jobData.spinComplete = int(results[0][4])
-        jobData.sensFlag = int(results[0][5])
-        jobData.sensTbl = str(results[0][6])
-        jobData.nSensSample = int(results[0][7])
-        jobData.nSensIter = int(results[0][8])
-        jobData.nSensBatch = int(results[0][9])
-        jobData.bSensDate = datetime.datetime.strptime(str(results[0][10]),'%Y-%m-%d %H:%M:%S')
-        jobData.eSensDate = datetime.datetime.strptime(str(results[0][11]),'%Y-%m-%d %H:%M:%S')
-        jobData.bSensEvalDate = datetime.datetime.strptime(str(results[0][12]),'%Y-%m-%d %H:%M:%S')
-        jobData.sensComplete = int(results[0][13])
-        jobData.calibFlag = int(results[0][14])
-        jobData.calibTbl = str(results[0][15])
-        jobData.bCalibDate = datetime.datetime.strptime(str(results[0][16]),'%Y-%m-%d %H:%M:%S')
-        jobData.eCalibDate = datetime.datetime.strptime(str(results[0][17]),'%Y-%m-%d %H:%M:%S')
-        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[0][18]),'%Y-%m-%d %H:%M:%S')
-        jobData.nIter = int(results[0][19])
-        jobData.calibComplete = int(results[0][20])
-        jobData.bValidDate = datetime.datetime.strptime(str(results[0][21]),'%Y-%m-%d %H:%M:%S')
-        jobData.eValidDate = datetime.datetime.strptime(str(results[0][22]),'%Y-%m-%d %H:%M:%S')
-        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[0][23]),'%Y-%m-%d %H:%M:%S')
-        jobData.validComplete = int(results[0][24])
-        jobData.acctKey = results[0][25]
-        jobData.queName = results[0][26]
-        jobData.nCoresMod = int(results[0][27])
-        jobData.nNodesMod = int(results[0][28])
-        jobData.nCoresR = int(results[0][29])
-        jobData.nNodesR = int(results[0][30])
-        #jobData.host = str(results[0][31])
-        jobData.jobRunType = int(results[0][31])
-        jobData.exe = results[0][32]
-        jobData.nGages = int(results[0][33])
-        jobData.owner = results[0][34]
-        jobData.email = results[0][35]
-        jobData.slChan = results[0][36]
-        jobData.slToken = results[0][37]
-        jobData.slUser = results[0][38]
-        jobData.analysisRunType = int(results[0][39])
-        jobData.queNameAnalysis = results[0][40]
+        jobData.jobDir = results[1]
+        jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d %H:%M:%S')
+        jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d %H:%M:%S')
+        jobData.spinComplete = int(results[4])
+        jobData.sensFlag = int(results[5])
+        jobData.sensTbl = str(results[6])
+        jobData.nSensSample = int(results[7])
+        jobData.nSensIter = int(results[8])
+        jobData.nSensBatch = int(results[9])
+        jobData.bSensDate = datetime.datetime.strptime(str(results[10]),'%Y-%m-%d %H:%M:%S')
+        jobData.eSensDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d %H:%M:%S')
+        jobData.bSensEvalDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d %H:%M:%S')
+        jobData.sensComplete = int(results[13])
+        jobData.calibFlag = int(results[14])
+        jobData.calibTbl = str(results[15])
+        jobData.bCalibDate = datetime.datetime.strptime(str(results[16]),'%Y-%m-%d %H:%M:%S')
+        jobData.eCalibDate = datetime.datetime.strptime(str(results[17]),'%Y-%m-%d %H:%M:%S')
+        jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[18]),'%Y-%m-%d %H:%M:%S')
+        jobData.nIter = int(results[19])
+        jobData.calibComplete = int(results[20])
+        jobData.bValidDate = datetime.datetime.strptime(str(results[21]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidDate = datetime.datetime.strptime(str(results[22]),'%Y-%m-%d %H:%M:%S')
+        jobData.eValidEvalDate = datetime.datetime.strptime(str(results[23]),'%Y-%m-%d %H:%M:%S')
+        jobData.validComplete = int(results[24])
+        jobData.acctKey = results[25]
+        jobData.queName = results[26]
+        jobData.nCoresMod = int(results[27])
+        jobData.nNodesMod = int(results[28])
+        jobData.nCoresR = int(results[29])
+        jobData.nNodesR = int(results[30])
+        #jobData.host = str(results[31])
+        jobData.jobRunType = int(results[31])
+        jobData.exe = results[32]
+        jobData.nGages = int(results[33])
+        jobData.owner = results[34]
+        jobData.email = results[35]
+        jobData.slChan = results[36]
+        jobData.slToken = results[37]
+        jobData.slUser = results[38]
+        jobData.analysisRunType = int(results[39])
+        jobData.queNameAnalysis = results[40]
         
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
@@ -484,20 +484,20 @@ class Database(object):
                   "' where \"jobID\"='" + str(jobData.jobID) + "';"
         sqlCmd2 = "update \"Job_Meta\" set email='" + str(newEmail) + \
                   "' where \"jobID\"='" + str(jobData.jobID) + "';"
-        sqlCmd3 = "update \"Job_Meta\" set slack_channel='" + str(newSlackChannel) + \
-                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
-        sqlCmd4 = "update \"Job_Meta\" set slack_token='" + str(newSlackToken) + \
-                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
-        sqlCmd5 = "update \"Job_Meta\" set slack_user='" + str(newSlackUName) + \
-                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        #sqlCmd3 = "update \"Job_Meta\" set slack_channel='" + str(newSlackChannel) + \
+        #          "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        #sqlCmd4 = "update \"Job_Meta\" set slack_token='" + str(newSlackToken) + \
+        #          "' where \"jobID\"='" + str(jobData.jobID) + "';"
+        #sqlCmd5 = "update \"Job_Meta\" set slack_user='" + str(newSlackUName) + \
+        #          "' where \"jobID\"='" + str(jobData.jobID) + "';"
         sqlCmd6 = "update \"Job_Meta\" set email='MISSING'" + \
                   " where \"jobID\"='" + str(jobData.jobID) + "';"
-        sqlCmd7 = "update \"Job_Meta\" set slack_channel='MISSING'" + \
-                  " where \"jobID\"='" + str(jobData.jobID) + "';"
-        sqlCmd8 = "update \"Job_Meta\" set slack_token='MISSING'" + \
-                  " where \"jobID\"='" + str(jobData.jobID) + "';"
-        sqlCmd9 = "update \"Job_Meta\" set slack_user='MISSING'" + \
-                  " where \"jobID\"='" + str(jobData.jobID) + "';"
+        #sqlCmd7 = "update \"Job_Meta\" set slack_channel='MISSING'" + \
+        #          " where \"jobID\"='" + str(jobData.jobID) + "';"
+        #sqlCmd8 = "update \"Job_Meta\" set slack_token='MISSING'" + \
+        #          " where \"jobID\"='" + str(jobData.jobID) + "';"
+        #sqlCmd9 = "update \"Job_Meta\" set slack_user='MISSING'" + \
+        #          " where \"jobID\"='" + str(jobData.jobID) + "';"
                   
         try:
             # Update the owner of the job, regardless of whatever options were filled.
@@ -1291,7 +1291,7 @@ class Database(object):
             return outStatus
         
         #iterBest = int(results[2])
-        iterBest = int(results[0][2])
+        iterBest = int(results[2])
         
         # Next, find all parameter values, and their associated values from Calib_Params.
         sqlCmd = "select * from \"Calib_Params\" where \"domainID\"='" + str(domainID) + \
