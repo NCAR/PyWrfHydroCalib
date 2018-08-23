@@ -244,7 +244,6 @@ def main(argv):
               
         # Make entry into DB
         try:
-            print cmd
             #conn.execute(cmd)
             dbCursor.execute(cmd)
         except:
