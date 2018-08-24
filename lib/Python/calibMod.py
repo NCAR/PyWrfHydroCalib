@@ -56,7 +56,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Generate BSUB file necessary for running R calibration/analysis
         # code.
         try:
-            generateBsubCalibScript(statusData,int(gageID),runDir,workDir)
+            generateBsubCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
         except:
             raise
             
@@ -85,7 +85,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     if statusData.analysisRunType == 2:
         # Generate PBS file necessary to running R calibration/analysis code.
         try:
-            generatePbsCalibScript(statusData,int(gageID),runDir,workDir)
+            generatePbsCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
         except:
             raise
             
@@ -113,7 +113,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     if statusData.analysisRunType == 3:
         # Generate Slurm file necessary to run R calibration/analysis code.
         try:
-            generateSlurmCalibScript(statusData,int(gageID),runDir,workDir)
+            generateSlurmCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
         except:
             raise
             
@@ -142,7 +142,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Generate mpiexec/mpirun run script and R submission script for running
         # calibration/analysis code.
         try:
-            generateMpiCalibScript(statusData,int(gageID),runDir,workDir)
+            generateMpiCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
         except:
             raise
             
@@ -1432,7 +1432,7 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         jobData.errMsg = "ERROR: Failure to create: " + outPath
         raise        
         
-def generateBsubCalibScript(jobData,gageID,runDir,workDir):
+def generateBsubCalibScript(jobData,gageID,runDir,workDir,gwFlag):
     """
     Generic Function function to create BSUB script for running R
     calibration routines. These jobs will be shorter than 
@@ -1491,7 +1491,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1505,7 +1505,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generatePbsCalibScript(jobData,gageID,runDir,workDir):
+def generatePbsCalibScript(jobData,gageID,runDir,workDir,gwFlag):
     """
     Generic Function function to create PBS script for running R
     calibration routines. These jobs will be shorter than 
@@ -1566,7 +1566,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1580,7 +1580,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
+def generateSlurmCalibScript(jobData,gageID,runDir,workDir,gwFlag):
     """
     Generic Function function to create Slurm script for running R
     calibration routines. These jobs will be shorter than 
@@ -1639,7 +1639,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1653,7 +1653,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateMpiCalibScript(jobData,gageID,runDir,workDir):
+def generateMpiCalibScript(jobData,gageID,runDir,workDir,gwFlag):
     """
     Generic function to create mpiexec/mpirun script for running R calibration
     routines. This function also creates the shell script that will execute
@@ -1705,7 +1705,7 @@ def generateMpiCalibScript(jobData,gageID,runDir,workDir):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1733,21 +1733,25 @@ def linkToRst(statusData,gage,runDir):
     Generic function to link to necessary restart files from the spinup.
     This was broken out as a function as sometimes the output directory
     is scrubbed, and links need to be re-made in preparation for a new 
-    iteration simulation.
+    iteration simulation. If the user has specified a custom restart file, or 
+    to optionally cold start the model through calibration, accomodate here. 
     """
-    # Check to make sure symbolic link to spinup state exists.
-    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.isfile(check1):
-        statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
-        raise Exception()
-    if not os.path.isfile(check2):
-        statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
-        raise Exception()
-    # Create links if they don't exist
-    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.islink(link1):
-        os.symlink(check1,link1)
-    if not os.path.islink(link2):
-        os.symlink(check2,link2)
+    if len(statusData.optSpinFile) == 0 and statusData.coldStart == 0: 
+        # Check to make sure symbolic link to spinup state exists.
+        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        if not os.path.isfile(check1):
+            statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+            raise Exception()
+        if not os.path.isfile(check2):
+            statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        if not os.path.islink(link1):
+            os.symlink(check1,link1)
+        if not os.path.islink(link2):
+            os.symlink(check2,link2)
+    elif len(statusData.optSpinFile) != 0:
+        

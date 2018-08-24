@@ -43,9 +43,10 @@ dailyStats = 0
 # analysis from cold starts. Note: This is highly discouraged as a spinup allows for
 # stable hydrologic states: 0 - Off, 1 - On.
 coldStart = 0
-# Optional restart file for user to use if model has previously been spunup. This will
+# Optional restart files for user to use if model has previously been spunup. This will
 # allow workflow to bypass spinup. Leave blank if none present. 
-optSpinupFile =
+optSpinupLandFile =
+optSpinupHydroFile = 
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety

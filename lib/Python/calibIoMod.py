@@ -113,16 +113,17 @@ def copyDefaultParms(jobData,runDir,gage):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    inPath = runDir + "/GWBUCKPARM.nc"
-    outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
-    if not os.path.isfile(inPath):
-        jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
-        raise Exception()
-    try:
-        shutil.copy(inPath,outPath)
-    except:
-        jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
-        raise
+    if jobData.gwBaseFlag == 1:
+        inPath = runDir + "/GWBUCKPARM.nc"
+        outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
+        if not os.path.isfile(inPath):
+            jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
+            raise Exception()
+        try:
+            shutil.copy(inPath,outPath)
+        except:
+            jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
+            raise
     
     inPath = runDir + "/HYDRO_TBL_2D.nc"
     outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/HYDRO_TBL_2D.nc"
@@ -576,14 +577,15 @@ def setupModels(jobData,db,args,libPathTop):
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to : " + newPath
                 raise
             
-            origPath = str(gageData.gwFile)
-            newPath = baseParmDir + "/GWBUCKPARM.nc"
-            try:
-                shutil.copy(origPath,newPath)
-            except:
-                wipeJobDir(jobData)
-                jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
-                raise
+            if jobData.gwBaseFlag == 1:
+                origPath = str(gageData.gwFile)
+                newPath = baseParmDir + "/GWBUCKPARM.nc"
+                try:
+                    shutil.copy(origPath,newPath)
+                except:
+                    wipeJobDir(jobData)
+                    jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+                    raise
             
         # Create symbolic link to forcing directory.
         fLink = gageDir + "/FORCING"

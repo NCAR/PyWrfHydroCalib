@@ -215,10 +215,20 @@ def main(argv):
                          " has already completed."
         errMod.errOut(jobData)
     if int(jobData.spinComplete) != 1:
-        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
-                         " has NOT completed. Please complete spinup before " + \
-                         " proceeding."
-        errMod.errOut(jobData)
+        # Check to see if optional spinup options were enabled. If so, update the spinup status.
+        if staticData.coldStart == 1 or len(staticData.optSpinFile) != 0:
+            print "Found optional spinup alternatives"
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errOut(jobData)
+        else:
+            jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
+                             " is NOT complete. You must complete the spinup in order" + \
+                             " to run calibration."
+            errMod.errOut(jobData)
+            
     if int(jobData.calibComplete) != 1:
         jobData.errMsg = "ERROR: Calibration for job ID: " + str(jobData.jobID) + \
                          " has NOT completed. Please complete calibration before " + \

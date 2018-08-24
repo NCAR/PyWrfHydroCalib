@@ -1120,25 +1120,26 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
-            outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
-            # Remove existing "best" file.
-            if os.path.isfile(outFile):
+            if jobData.gwBaseFlag == 1:
+                inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
+                outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
+                # Remove existing "best" file.
+                if os.path.isfile(outFile):
+                    try:
+                        os.remove(outFile)
+                    except:
+                        jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                        raise
+                # check to ensure existing file exists.
+                if not os.path.isfile(inFile):
+                    jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                    raise Exception()
+                # Copy existing parameter file into place.
                 try:
-                    os.remove(outFile)
+                    shutil.copy(inFile,outFile)
                 except:
-                    jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                    jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                     raise
-            # check to ensure existing file exists.
-            if not os.path.isfile(inFile):
-                jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
-                raise Exception()
-            # Copy existing parameter file into place.
-            try:
-                shutil.copy(inFile,outFile)
-            except:
-                jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
-                raise
                 
             inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/HYDRO_TBL_2D.nc"
             outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/HYDRO_TBL_2D.nc"

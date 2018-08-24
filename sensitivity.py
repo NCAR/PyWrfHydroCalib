@@ -205,10 +205,19 @@ def main(argv):
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
     if int(jobData.spinComplete) != 1:
-        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
-                         " is NOT complete. You must complete the spinup in order" + \
-                         " to run calibration."
-        errMod.errOut(jobData)
+        # Check to see if optional spinup options were enabled. If so, update the spinup status.
+        if staticData.coldStart == 1 or len(staticData.optSpinFile) != 0:
+            print "Found optional spinup alternatives"
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errOut(jobData)
+        else:
+            jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
+                             " is NOT complete. You must complete the spinup in order" + \
+                             " to run calibration."
+            errMod.errOut(jobData)
         
     if int(jobData.sensComplete) == 1:
         jobData.errMsg = "ERROR: Sensitivity for job ID: " + str(jobData.jobID) + \

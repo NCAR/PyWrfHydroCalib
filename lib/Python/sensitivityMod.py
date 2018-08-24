@@ -115,7 +115,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
     # Generate run script to generate parameters for this basin. Then execute the job.
     if statusData.analysisRunType == 1:
         #BSUB
-        generateBsubPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+        generateBsubPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData.gwBaseFlag)
         cmd = "bsub < " + workDir + "/run_WH_SENS_PREPROC.sh"
         try:
             subprocess.call(cmd,shell=True)
@@ -125,7 +125,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
     if statusData.analysisRunType == 2:
         #PBS
         try:
-            generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+            generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData.gwBaseFlag)
         except:
             statusData.errMsg = "ERROR: Unable to create PBS script for gage: " + str(gage)
             raise
@@ -137,7 +137,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
             raise
     if statusData.analysisRunType == 3:
         #SLURM
-        generateSlurmPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+        generateSlurmPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData.gwBaseFlag)
         cmd = "sbatch " + workDir + "/run_WH_SENS_PREPROC.sh"
         try:
             subprocess.call(cmd,shell=True)
@@ -146,7 +146,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
             raise
     if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
         #MPIEXEC/MPIRUN
-        generateMpiPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+        generateMpiPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData.gwBaseFlag)
         cmd = workDir + "/run_WH_SENS_PREPROC.sh 1>" + workDir + "/WH_SENS_PREPROC_" + \
               str(statusData.jobID) + "_" + str(gageID) + ".out" + \
               ' 2>' + workDir + "/WH_SENS_PREPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -962,7 +962,7 @@ def genRNameList(jobData,workDir,gageMeta,gage):
         jobData.errMsg = "ERROR: Failure to create: " + rNameList
         raise
         
-def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta,gwFlag):
     """
     Generic Function function to create BSUB script for running R
     sensitivity pre-processing routines.
@@ -1019,7 +1019,7 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1033,7 +1033,7 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta,gwFlag):
     """
     Generic Function function to create PBS script for running R
     pre-processing routines.
@@ -1089,7 +1089,7 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1103,7 +1103,7 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta,gwFlag):
     """
     Generic Function function to create Slurm script for running R
     pre-processing routines. 
@@ -1159,7 +1159,7 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1173,7 +1173,7 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta,gwFlag):
     """
     Generic function to create mpiexec/mpirun script for running R pre-processing
     routines.
@@ -1225,7 +1225,7 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + gwFlag + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2

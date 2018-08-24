@@ -34,6 +34,8 @@ def main(argv):
     parser.add_argument('runDir',metavar='runDir',type=str,nargs='+',
                         help='Directory containing model output where final parameter' + \
                              ' files will reside')
+    parser.add_argument('gwFlag',metavar='gwFlag',type=int,nargs='+',
+                        help='Flag to indicate if groundwater bucket model is being used.')
                         
     args = parser.parse_args()
     workDir = str(args.workDir[0])
@@ -81,7 +83,8 @@ def main(argv):
         shutil.copy(fullDomOrig,fullDomOut)
         shutil.copy(hydroOrig,hydroOut)
         shutil.copy(soilOrig,soilOut)
-        shutil.copy(gwOrig,gwOut)
+        if args.gwFlag[0] == 1:
+            shutil.copy(gwOrig,gwOut)
     except:
         sys.exit(3)
         
@@ -92,7 +95,8 @@ def main(argv):
     # Open NetCDF parameter files for adjustment.
     idFullDom = Dataset(fullDomOut,'a')
     idSoil2D = Dataset(soilOut,'a')
-    idGw = Dataset(gwOut,'a')
+    if args.gwFlag[0] == 1:
+        idGw = Dataset(gwOut,'a')
     idHydroTbl = Dataset(hydroOut,'a')
     
     # Loop through and adjust each parameter accordingly.
@@ -109,11 +113,12 @@ def main(argv):
         if param == "lksatfac":
             idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[0])
         
-        if param == "zmax":
-            idGw.variables['Zmax'][:] = float(newParams.zmax[0])
+        if args.gwFlag[0] == 1:
+            if param == "zmax":
+                idGw.variables['Zmax'][:] = float(newParams.zmax[0])
         
-        if param == "expon":
-            idGw.variables['Expon'][:] = float(newParams.expon[0])
+            if param == "expon":
+                idGw.variables['Expon'][:] = float(newParams.expon[0])
         
         if param == "cwpvt":
             idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0])
@@ -155,7 +160,8 @@ def main(argv):
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
-    idGw.close()
+    if args.gwFlag[0] == 1:
+        idGw.close()
     idHydroTbl.close()
     
     # Remove restart files. All other files will be overwritten by the next

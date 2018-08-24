@@ -42,13 +42,16 @@ def main(argv):
                              ' files will reside')
     parser.add_argument('nIter',metavar='nIter',type=int,nargs='+',
                         help='Total number of parameter permutations')
+    parser.add_argument('gwFlag',metavar='gwFlag',type=int,nargs='+',
+                        help='Flag to indicate if groundwater bucket model is being used.')
 
 
     args = parser.parse_args()
     fullDomOrig = str(args.fullDomOrig[0])
     hydroOrig = str(args.hydroOrig[0])
     soilOrig = str(args.soilOrig[0])
-    gwOrig = str(args.gwOrig[0])
+    if args.gwFlag[0] == 1:
+        gwOrig = str(args.gwOrig[0])
     workDir = str(args.workDir[0])
     nIter = int(args.nIter[0])
     
@@ -101,12 +104,13 @@ def main(argv):
             shutil.copy(soilOrig,tmpPath)
         except:
             sys.exit(1)
-        try:
-            tmpPath = runDir + "/GWBUCKPARM.nc"
-            print tmpPath
-            shutil.copy(gwOrig,tmpPath)
-        except:
-            sys.exit(1)
+        if args.gwFlag[0] == 1:
+            try:
+                tmpPath = runDir + "/GWBUCKPARM.nc"
+                print tmpPath
+                shutil.copy(gwOrig,tmpPath)
+            except:
+                sys.exit(1)
             
         # Compose output file paths.
         fullDomOut = runDir + "/Fulldom.nc"
@@ -117,7 +121,8 @@ def main(argv):
         # Open NetCDF parameter files for adjustment.
         idFullDom = Dataset(fullDomOut,'a')
         idSoil2D = Dataset(soilOut,'a')
-        idGw = Dataset(gwOut,'a')
+        if args.gwFlag[0] == 1:
+            idGw = Dataset(gwOut,'a')
         idHydroTbl = Dataset(hydroOut,'a')
         
         # Loop through and adjust each parameter accordingly.
@@ -134,11 +139,12 @@ def main(argv):
             if param == "lksatfac":
                 idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[i])
         
-            if param == "zmax":
-                idGw.variables['Zmax'][:] = float(newParams.zmax[i])
+            if args.gwFlag[0] == 1:
+                if param == "zmax":
+                    idGw.variables['Zmax'][:] = float(newParams.zmax[i])
         
-            if param == "expon":
-                idGw.variables['Expon'][:] = float(newParams.expon[i])
+                if param == "expon":
+                    idGw.variables['Expon'][:] = float(newParams.expon[i])
         
             if param == "cwpvt":
                 idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[i])
@@ -180,7 +186,8 @@ def main(argv):
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
-    idGw.close()
+    if args.gwFlag[0] == 1:
+        idGw.close()
     idHydroTbl.close()
             
     # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating

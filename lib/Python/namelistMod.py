@@ -329,8 +329,13 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             # For cold-start spinups
             inStr = "GW_RESTART = 0\n"
         else:
-            # For all other runs that are not cold-start spinups. 
-            inStr = "GW_RESTART = 1\n"
+            if jobData.gwBaseFlag == 0:
+                # If the user has turned off the ground water buckets, 
+                # turn this option off.
+                inStr = "GW_RESTART = 0\n"
+            else:
+                # For all other runs that are not cold-start spinups. 
+                inStr = "GW_RESTART = 1\n"
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!!!!------------ MODEL OUTPUT CONTROL ---------------!!!\n')
@@ -478,35 +483,39 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Groundwater bucket parameter file (e.g.: "GWBUCKPARM.nc")\n')
-        if genFlag == 0:
-            inStr = ' GWBUCKPARM_file = "' + str(gageData.gwFile) + '"\n'
-        if genFlag == 1:
-            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+        if jobData.gwBaseFlag == 1:
+            if genFlag == 0:
+                inStr = ' GWBUCKPARM_file = "' + str(gageData.gwFile) + '"\n'
+            if genFlag == 1:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
-        if genFlag == 2:
-            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
-        if genFlag == 3:
-            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
-        if genFlag == 4:
-            pthTmp = outDir + "/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"' + '\n'
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+            if genFlag == 2:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+            if genFlag == 3:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+            if genFlag == 4:
+                pthTmp = outDir + "/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"' + '\n'
+        else:
+            # We aren't running with the ground water bucket model.
+            inStr = ' GWBUCKPARM_file = "-9999"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! User defined mapping, such NHDPlus\n')

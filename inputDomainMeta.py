@@ -190,8 +190,8 @@ def main(argv):
             print "ERROR: " + fullDomPath + " not found."
             sys.exit(1)
         if not os.path.isfile(gwPath):
-            print "ERROR: " + gwPath + " not found."
-            sys.exit(1)
+            print "WARNING: " + gwPath + " not found. Assuming you are running without the ground water bucket model."
+            gwPath = "-9999"
         if not os.path.isfile(lakePath1) and not os.path.isfile(lakePath2):
             print "WARNING: No lake parameter files found. Assuming you have setup a domain with no lakes."
             lakePath = '-9999'

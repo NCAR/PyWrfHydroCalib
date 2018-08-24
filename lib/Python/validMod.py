@@ -128,7 +128,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # Generate the shell script to call Python to generate parameter datasets
     # in preparation for model runs.
     try:
-        generateParmScript(statusData,bestDir,gage,parmInDir)
+        generateParmScript(statusData,bestDir,gage,parmInDir,staticData.gwBaseFlag)
     except:
         raise
         
@@ -1250,7 +1250,7 @@ def generateMpiRunScript(jobData,gageID,runDir,gageMeta,modName):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
-def generateParmScript(jobData,bestDir,gage,parmInDir):
+def generateParmScript(jobData,bestDir,gage,parmInDir,gwFlag):
     """
     Generic function to generate the shell script to call Python to
     generate the new parameter datasets.
@@ -1268,7 +1268,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
-                      ctrlRunDir + ' ' + defaultDir + ' \n')
+                      ctrlRunDir + ' ' + defaultDir + ' ' + gwFlag + ' \n')
         fileObj.write('exit\n')
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile

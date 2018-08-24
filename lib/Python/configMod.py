@@ -37,7 +37,8 @@ class jobMeta:
         self.calibTbl = []
         self.dailyAnalysis = []
         self.coldStart = []
-        self.optSpinFile = []
+        self.optSpinLandFile = None
+        self.optSpinHydroFile = None
         self.jobRunType = []
         self.analysisRunType = []
         #self.host = []
@@ -486,10 +487,15 @@ def checkConfig(parser):
         raise Exception()
         
     check = str(parser.get('logistics','optSpinupFile'))
+    check2 = int(parser.get('logistics','coldStart'))
     if len(check) != 0:
         if not os.path.isfile(check):
             print "ERROR: Optional spinup file: " + check + " not found."
             raise Exception()
+    if check2 == 1:
+        if len(check) != 0:
+            print "ERROR: Cannot cold start when specifying an optional spinup file."
+            raise Exception
         
     # Check to make sure calibration method is DDS
     check = str(parser.get('logistics','calibMethod'))

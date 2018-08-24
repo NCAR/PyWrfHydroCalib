@@ -132,6 +132,13 @@ def main(argv):
     except:
         print "ERROR: Failure to read configuration file: " + configPath
         sys.exit(1)
+        
+    if staticData.coldStart == 1:
+        print "ERROR: User has specified a cold-start option for calibration. Exiting...."
+        sys.exit(0)
+    if len(staticData.optSpinFile) == 0:
+        print "ERROR: User has specified an optional spinup file. Exiting...."
+        sys.exit(0)
     
     # Assign the SQL command from the config file into the jobData structure
     jobData.gSQL = staticData.gSQL

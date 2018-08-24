@@ -209,12 +209,13 @@ def scrubParams(jobData,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + soilFile
             raise
             
-    if os.path.isfile(gwFile):
-        try:
-            os.remove(gwFile)
-        except:
-            jobData.errMsg = "ERROR: Failure to remove: " + gwFile
-            raise
+    if jobData.gwBaseFlag == 1:
+        if os.path.isfile(gwFile):
+            try:
+                os.remove(gwFile)
+            except:
+                jobData.errMsg = "ERROR: Failure to remove: " + gwFile
+                raise
 
 def cleanRunDir(jobData,runDir):
     """
