@@ -37,8 +37,7 @@ class jobMeta:
         self.calibTbl = []
         self.dailyAnalysis = []
         self.coldStart = []
-        self.optSpinLandFile = None
-        self.optSpinHydroFile = None
+        self.optSpinFlag = []
         self.jobRunType = []
         self.analysisRunType = []
         #self.host = []
@@ -169,7 +168,7 @@ class jobMeta:
         self.calibTbl = str(parser.get('logistics','calibParmTbl'))
         self.dailyAnalysis = int(parser.get('logistics','dailyStats'))
         self.coldStart = int(parser.get('logistics','coldStart'))
-        self.optSpinFile = str(parser.get('logistics','optSpinupFile'))
+        self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.analysisRunType = int(parser.get('logistics','analysisRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
@@ -486,17 +485,17 @@ def checkConfig(parser):
         print "ERROR: Invalid coldStart value specified."
         raise Exception()
         
-    check = str(parser.get('logistics','optSpinupFile'))
-    check2 = int(parser.get('logistics','coldStart'))
-    if len(check) != 0:
-        if not os.path.isfile(check):
-            print "ERROR: Optional spinup file: " + check + " not found."
-            raise Exception()
-    if check2 == 1:
-        if len(check) != 0:
-            print "ERROR: Cannot cold start when specifying an optional spinup file."
-            raise Exception
+    check = int(parser.get('logistics','optSpinFlag'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid optSpinFlag value specified."
+        raise Exception()
         
+    check1 = int(parser.get('logistics','coldStart'))
+    check2 = int(parser.get('logistics','optSpinFlag'))
+    if check1 == 1 and check2 == 1:
+        print "ERROR: Cannot run cold start calibrations with optional spinup files."
+        raise Exception()
+    
     # Check to make sure calibration method is DDS
     check = str(parser.get('logistics','calibMethod'))
     if check != "DDS":

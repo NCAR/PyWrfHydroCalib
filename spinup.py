@@ -136,7 +136,7 @@ def main(argv):
     if staticData.coldStart == 1:
         print "ERROR: User has specified a cold-start option for calibration. Exiting...."
         sys.exit(0)
-    if len(staticData.optSpinFile) == 0:
+    if staticData.optSpinFlag == 1:
         print "ERROR: User has specified an optional spinup file. Exiting...."
         sys.exit(0)
     

@@ -689,11 +689,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if os.path.isfile(check2):
             os.remove(check2)
         
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
-        except:
-            raise
+        if staticData.coldStart != 0:
+            # Make symbolic links as necssary.
+            try:
+                linkToRst(statusData,gage,runDir,gageMeta)
+            except:
+                raise
             
         # Since these are sensitivity simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
@@ -761,11 +762,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if os.path.isfile(check2):
             os.remove(check2)
         
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
-        except:
-            raise
+        if staticData.coldStart != 0:
+            # Make symbolic links as necssary.
+            try:
+                linkToRst(statusData,gage,runDir,gageMeta)
+            except:
+                raise
             
         # Since these are sensitivity simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
@@ -1989,26 +1991,48 @@ def generateMpiCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
              
-def linkToRst(statusData,gage,runDir):
+def linkToRst(statusData,gage,runDir,gageMeta):
     """
     Generic function to link to necessary restart files from the spinup.
     This was broken out as a function as sometimes the output directory
     is scrubbed, and links need to be re-made in preparation for a new 
     iteration simulation.
     """
-    # Check to make sure symbolic link to spinup state exists.
-    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.isfile(check1):
-        statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
-        raise Exception()
-    if not os.path.isfile(check2):
-        statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
-        raise Exception()
-    # Create links if they don't exist
     link1 = runDir + "/RESTART." + statusData.bSensDate.strftime('%Y%m%d') + "00_DOMAIN1"
     link2 = runDir + "/HYDRO_RST." + statusData.bSensDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.islink(link1):
-        os.symlink(check1,link1)
-    if not os.path.islink(link2):
-        os.symlink(check2,link2)
+    if statusData.optSpinFlag == 0: 
+        # Check to make sure symbolic link to spinup state exists.
+        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        if not os.path.isfile(check1):
+            statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+            raise Exception()
+        if not os.path.isfile(check2):
+            statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        if not os.path.islink(link1):
+            os.symlink(check1,link1)
+        if not os.path.islink(link2):
+            os.symlink(check2,link2)
+    elif statusData.optSpinFlag != 1:
+        # Check to see if file exists, then create symbolic link to it. 
+        if gageMeta.optLandRstFile == "-9999":
+            statusData.errMsg = "ERROR: User has specified to use an optional land " + \
+                                "restart file when none exists."
+            raise Exception()
+        if gageMeta.optHydroRstFile == "-9999":
+            statusData.errMsg = "ERROR: User has specified to use an optional hydro " + \
+                                "restart file when none exists."
+            raise Exception()
+        if not os.path.isfile(gageMeta.optLandRstFile):
+            statusData.errMsg = "ERROR: Spinup state: " + gageMeta.optLandRstFile + " not found."
+            raise Exception()
+        if not os.path.isfile(gageMeta.optHydroRstFile):
+            statusData.errMsg = "ERROR: Spinup state: " + gageMeta.optHydroRstFile + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        if not os.path.islink(link1):
+            os.symlink(gageMeta.optLandRstFile,link1)
+        if not os.path.islink(link2):
+            os.symlink(gageMeta.optHydroRstFile,link2)

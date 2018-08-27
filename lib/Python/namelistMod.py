@@ -82,11 +82,17 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(' START_HOUR = 00\n')
         fileObj.write(' START_MIN = 00\n')
         fileObj.write('\n')
-        if typeFlag == 1:
+        if jobData.coldStart == 1:
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
         else:
-            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
-            inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
+            if jobData.optSpinFlag == 1:
+                inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + gageData.optLandRstFile + "'\n"
+            else:
+                if typeFlag == 1:
+                    inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
+                else:
+                    rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
+                    inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Specification of simulation length in days OR hours\n')
@@ -285,16 +291,23 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the name of the restart file if starting from restart... comment out with ! if not...\n')
-        if typeFlag == 1: # Spinup
+        if jobData.coldStart == 1:
             inStr = ' !RESTART_FILE = ""' + '\n'
             fileObj.write(inStr)
-        elif typeFlag == 2: # Calibration
-            restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-            if not os.path.isfile(restartFile):
-                jobData.errMsg = "ERROR: Failure to find: " + restartFile
-                raise Exception()
-            inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
-            fileObj.write(inStr)
+        else:
+            if jobData.optSpinFlag == 1:
+                inStr = ' RESTART_FILE = \"' + gageData.optHydroRstFile + '\"\n'
+            else:
+                if typeFlag == 1: # Spinup
+                    inStr = ' !RESTART_FILE = ""' + '\n'
+                    fileObj.write(inStr)
+                elif typeFlag == 2: # Calibration
+                    restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+                    if not os.path.isfile(restartFile):
+                        jobData.errMsg = "ERROR: Failure to find: " + restartFile
+                        raise Exception()
+                    inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
+                    fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!!!! ---------------------- MODEL SETUP OPTIONS ---------------------- !!!!\n')
         fileObj.write('\n')

@@ -178,6 +178,8 @@ def main(argv):
         wrfInPath = dirBasin + "/wrfinput.nc"
         forceDir = dirBasin + "/FORCING"
         obsFile = dirBasin + "/OBS/obsStrData.Rdata"
+        optSpinLandFile = dirBasin + "/LandRestartSubstitute.nc"
+        optSpinHydroFile = dirBasin + "/HydroRestartSubstitute.nc"
         
         # Double check to make sure input files exist
         if not os.path.isfile(geoPath):
@@ -219,6 +221,12 @@ def main(argv):
         if not os.path.isfile(gwMskPath):
             print "WARNING: " + gwMskPath + " not found. Assuming you are running NWM routing...."
             gwMskPath = "-9999"
+        if not os.path.isfile(optSpinLandFile):
+            print "WARNING: " + optSpinLandFile + " not found for optional spinup states."
+            optSpinLandFile = "-9999"
+        if not os.path.isfile(optSpinHydroFile):
+            print "WARNING: " + optSpinHydroFile + " not found for optional spinup states."
+            optSpinHydroFile = "-9999"
             
         # Look for a NetCDF lake parameter file first, and use it. If not, use the ASCII table instead.
         if os.path.isfile(lakePath1):
@@ -235,12 +243,14 @@ def main(argv):
               "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
               "soil_file,fulldom_file,rtlink_file,spweight_file," + \
               "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
-              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc,dx_hydro,agg_factor,hydro_tbl_spatial) VALUES " + \
-              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
+              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc," + \
+              "dx_hydro,agg_factor,hydro_tbl_spatial,opt_spin_land_path,opt_spin_hydro_path) VALUES " + \
+              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
               gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
-              county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d)
+              county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d,
+              optSpinLandFile,optSpinHydroFile)
               
         # Make entry into DB
         try:

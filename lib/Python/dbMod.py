@@ -346,6 +346,8 @@ class Database(object):
         tmpMeta['dxHydro'] = results[39]
         tmpMeta['aggFactor'] = results[40]
         tmpMeta['hydroSpatial'] = results[41]
+        tmpMeta['optLandRstFile'] = results[42]
+        tmpMeta['optHydroRstFile'] = results[43]
         
     def jobStatus(self,jobData):
         """

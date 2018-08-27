@@ -33,6 +33,8 @@ class gageMeta:
         self.obsFile = []
         self.dxHydro = []
         self.aggFact = []
+        self.optLandRstFile = []
+        self.optHydroRstFile = []
     def pullGageMeta(self,jobData,db,gageName,domainID):
         # Function to extract locations of gage-specific spatial files.
         
@@ -40,7 +42,8 @@ class gageMeta:
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
                    'obsFile':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
-                   'aggFactor':'','domainID':domainID}
+                   'aggFactor':'','domainID':domainID,'optLandRstFile':'',\
+                   'optHydroRstFile':''}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:
@@ -64,6 +67,8 @@ class gageMeta:
         self.comID = tmpMeta['comID']
         self.dxHydro = tmpMeta['dxHydro']
         self.aggFact = tmpMeta['aggFactor']
+        self.optLandRstFile = tmpMeta['optLandRstFile']
+        self.optHydroRstFile = tmpMeta['optHydroRstFile']
         
 def getGageList(jobData,db):
     # Function for extracting list of gages 

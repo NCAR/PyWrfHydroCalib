@@ -43,10 +43,16 @@ dailyStats = 0
 # analysis from cold starts. Note: This is highly discouraged as a spinup allows for
 # stable hydrologic states: 0 - Off, 1 - On.
 coldStart = 0
-# Optional restart files for user to use if model has previously been spunup. This will
-# allow workflow to bypass spinup. Leave blank if none present. 
-optSpinupLandFile =
-optSpinupHydroFile = 
+# Optional spinup flag for substituting a both land and hydro restart files in place
+# of a spinup. 
+# NOTE: The user must provide BOTH a hydro and land spinup state in the basin domain
+#       directories for ALL basins being used in this experiment. Expected 
+#       file naming conventions for the expected restart files are as follows:
+#       Land:  LandRestartSubstitute.nc
+#       Hydro: HydroRestartSubstitute.nc
+# 0 = No substitute spinup files
+# 1 = Use optional spinup files
+optSpinFlag = 0
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety

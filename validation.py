@@ -216,7 +216,7 @@ def main(argv):
         errMod.errOut(jobData)
     if int(jobData.spinComplete) != 1:
         # Check to see if optional spinup options were enabled. If so, update the spinup status.
-        if staticData.coldStart == 1 or len(staticData.optSpinFile) != 0:
+        if staticData.coldStart == 1 or staticData.optSpinFlag != 0:
             print "Found optional spinup alternatives"
             jobData.spinComplete = 1
             try:

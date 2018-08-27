@@ -114,6 +114,8 @@ def main(argv):
         print "Hydro Modeling Resolution (meters): " + str(results[gage][39])
         print "Aggregation Factor from Land Grid to Hydro Grid: " + str(results[gage][40])
         print "2D Hydro Parameter Table Path: " + str(results[gage][41])
+        print "Optional land restart path: " + str(results[gage[42]])
+        print "Optional hydro restart path: " + str(results[gage[43]])
         print "--------------------------------------------------"
         
     # Close connection to DB
