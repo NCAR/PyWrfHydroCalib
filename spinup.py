@@ -103,8 +103,8 @@ def main(argv):
     #    portTmp = '5432'
     #else:
     #    portTmp = str(args.portNumber)
-    j#obData.port = portTmp
-    j#obData.host = hostTmp
+    #jobData.port = portTmp
+    #jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)
