@@ -213,13 +213,13 @@ class Database(object):
                  "job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user,analysis_run_type,que_name_analysis) values " + \
                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d'),\
-                 jobData.eSpinDate.strftime('%Y-%m-%d'),0,jobData.sensFlag,jobData.sensTbl,jobData.nSensSample,\
-                 jobData.nSensIter,jobData.nSensBatch,jobData.bSensDate.strftime('%Y-%m-%d'),\
-                 jobData.eSensDate.strftime('%Y-%m-%d'),jobData.bSensEvalDate.strftime('%Y-%m-%d'),0,\
-                 jobData.calibFlag,jobData.calibTbl,jobData.bCalibDate.strftime('%Y-%m-%d'),\
-                 jobData.eCalibDate.strftime('%Y-%m-%d'),jobData.bCalibEvalDate.strftime('%Y-%m-%d'),\
-                 jobData.nIter,0,jobData.bValidDate.strftime('%Y-%m-%d'),\
-                 jobData.eValidDate.strftime('%Y-%m-%d'),jobData.bValidEvalDate.strftime('%Y-%m-%d'),\
+                 jobData.eSpinDate.strftime('%Y-%m-%d %H:%M:%S'),0,jobData.sensFlag,jobData.sensTbl,jobData.nSensSample,\
+                 jobData.nSensIter,jobData.nSensBatch,jobData.bSensDate.strftime('%Y-%m-%d %H:%M:%S'),\
+                 jobData.eSensDate.strftime('%Y-%m-%d %H:%M:%S'),jobData.bSensEvalDate.strftime('%Y-%m-%d %H:%M:%S'),0,\
+                 jobData.calibFlag,jobData.calibTbl,jobData.bCalibDate.strftime('%Y-%m-%d %H:%M:%S'),\
+                 jobData.eCalibDate.strftime('%Y-%m-%d %H:%M:%S'),jobData.bCalibEvalDate.strftime('%Y-%m-%d %H:%M:%S'),\
+                 jobData.nIter,0,jobData.bValidDate.strftime('%Y-%m-%d %H:%M:%S'),\
+                 jobData.eValidDate.strftime('%Y-%m-%d %H:%M:%S'),jobData.bValidEvalDate.strftime('%Y-%m-%d %H:%M:%S'),\
                  0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
                  jobData.jobRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3,jobData.analysisRunType,jobData.queNameAnalysis)
