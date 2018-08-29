@@ -76,10 +76,10 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         keySlot[basinNum,1] = 1.0
         return
         
-    if staticData.coldStart != 0:
+    if staticData.coldStart == 0:
         # Make symbolic links as necssary.
         try:
-            linkToRst(statusData,gage,runDir,gageMeta)
+            linkToRst(statusData,gage,runDir,gageMeta,staticData)
         except:
             raise
         
@@ -595,10 +595,10 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         statusData.errMsg = "ERROR: " + validWorkDir + " not found."
         raise Exception()
      
-    if staticData.coldStart != 0:
+    if staticData.coldStart == 0:
         # Make symbolic links as necssary.
         try:
-            linkToRst(statusData,gage,runDir,gageMeta)
+            linkToRst(statusData,gage,runDir,gageMeta,staticData)
         except:
             raise
         
@@ -1778,13 +1778,13 @@ def generateMpiParmRunScript(jobData,runDir,gageID):
             jobData.errMsg = "ERROR: Failure to create symbolic link: " + fileLink
             raise
         
-def linkToRst(statusData,gage,runDir,gageMeta):
+def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     """
     Generic function to link to necessary restart files from the spinup.
     """
     link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
     link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if statusData.optSpinFlag == 0: 
+    if staticData.optSpinFlag == 0: 
         # Check to make sure symbolic link to spinup state exists.
         check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
         check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
@@ -1799,7 +1799,7 @@ def linkToRst(statusData,gage,runDir,gageMeta):
             os.symlink(check1,link1)
         if not os.path.islink(link2):
             os.symlink(check2,link2)
-    elif statusData.optSpinFlag != 1:
+    elif staticData.optSpinFlag != 1:
         # Check to see if file exists, then create symbolic link to it. 
         if gageMeta.optLandRstFile == "-9999":
             statusData.errMsg = "ERROR: User has specified to use an optional land " + \
