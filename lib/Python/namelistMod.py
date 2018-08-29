@@ -502,7 +502,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                          str(gageData.gage) + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
                 if not os.path.isfile(pthTmp):
                     jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
+                    raise Exception()
                 inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
             if genFlag == 2:
                 pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
