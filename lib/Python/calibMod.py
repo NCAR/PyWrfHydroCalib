@@ -235,7 +235,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Clean up any previous iteration calib files if they are around.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,workDir)
+                    errMod.scrubParams(statusData,workDir,staticData.gwBaseFlag)
                 except:
                     raise
                 print "MODEL HAS COMPLETED AND IS READY FOR PARAMETER GENERATION"
@@ -294,7 +294,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Clean everything up.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,runDir)
+                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
                 except:
                     raise
                 keySlot[basinNum,:] = 1.0
@@ -308,7 +308,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,runDir)
+                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
                 except:
                     raise
                 open(calibLockPath,'a').close()
@@ -368,7 +368,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Clean everything up.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,runDir)
+                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
                 except:
                     raise
                 keySlot[basinNum,:] = 1.0
@@ -381,7 +381,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
-                    errMod.scrubParams(statusData,runDir)
+                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
                 except:
                     raise
                 open(calibLockPath,'a').close()
@@ -545,7 +545,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                     # Clean all previous calib files that may be laying around.
                                     try:
                                         errMod.cleanCalib(statusData,workDir,runDir)
-                                        errMod.scrubParams(statusMod,runDir)
+                                        errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
                                     except:
                                         raise
                                     print "READY TO RUN FIRST CALIB CODE"
@@ -578,7 +578,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                 # Clean any previou calib files that may be laying around.
                                 try:
                                     errMod.cleanCalib(statusData,workDir,runDir)
-                                    errMod.scrubParams(statusMod,runDir)
+                                    errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
                                 except:
                                     raise
                                 print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -591,7 +591,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                         # second (main) calibration.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
-                            errMod.scrubParams(statusMod,runDir)
+                            errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
                         except:
                             raise
                         print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -627,7 +627,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Remove any previous calibration files.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusMod,runDir)
+                    errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
                 except:
                     raise
                 print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -644,7 +644,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Cleanup any calibration related files.
             try:
                 errMod.cleanCalib(statusData,workDir,runDir)
-                errMod.scrubParams(statusMod,runDir)
+                errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
             except:
                 raise
             print "CALIB LOCKED"
@@ -656,7 +656,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Cleanup any previous calib files that may be laying around.
             try:
                 errMod.cleanCalib(statusData,workDir,runDir)
-                errMod.scrubParams(statusMod,runDir)
+                errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
             except:
                 raise
             print "READY TO RUN CALIB CODE"
@@ -682,7 +682,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Cleanup any previous calibration files
             try:
                 errMod.cleanCalib(statusData,workDir,runDir)
-                errMod.scrubParams(statusMod,runDir)
+                errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
             except:
                 raise
             print "READY TO RUN FIRST CALIB CODE"
@@ -722,7 +722,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Cleanup any previous calib files.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusMod,runDir)
+                    errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
                 except:
                     raise
                 print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -901,7 +901,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         try:
             errMod.removeOutput(statusData,runDir)
             errMod.cleanCalib(statusData,workDir,runDir)
-            errMod.scrubParams(statusData,runDir)
+            errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
         except:
             raise
             
@@ -963,7 +963,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # already been done per workflow, but this is a fail safe.
         try:
             errMod.cleanCalib(statusData,workDir,runDir)
-            errMod.scrubParams(statusMod,runDir)
+            errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
         except:
             raise
             

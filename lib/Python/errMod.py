@@ -176,7 +176,7 @@ def cleanCalib(jobData,workDir,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
             raise
             
-def scrubParams(jobData,runDir):
+def scrubParams(jobData,runDir,gwFlag):
     """
     Generic function to remove parameter files generated after calibration.
     This is done to remove the risk of a model being ran with the improper
@@ -209,7 +209,7 @@ def scrubParams(jobData,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + soilFile
             raise
             
-    if jobData.gwBaseFlag == 1:
+    if gwFlag == 1:
         if os.path.isfile(gwFile):
             try:
                 os.remove(gwFile)
