@@ -101,7 +101,7 @@ def getGageList(jobData,db):
         except:
             raise
             
-def copyDefaultParms(jobData,runDir,gage):
+def copyDefaultParms(jobData,runDir,gage,gwFlag):
     """
     Generic function to copy the first set of default parameters
     (per user input in the table) to a DEFAULT_PARMS directory.
@@ -118,7 +118,7 @@ def copyDefaultParms(jobData,runDir,gage):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    if jobData.gwBaseFlag == 1:
+    if gwFlag == 1:
         inPath = runDir + "/GWBUCKPARM.nc"
         outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
         if not os.path.isfile(inPath):

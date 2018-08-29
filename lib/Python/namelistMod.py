@@ -293,21 +293,19 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('!Specify the name of the restart file if starting from restart... comment out with ! if not...\n')
         if jobData.coldStart == 1:
             inStr = ' !RESTART_FILE = ""' + '\n'
-            fileObj.write(inStr)
         else:
             if jobData.optSpinFlag == 1:
                 inStr = ' RESTART_FILE = \"' + gageData.optHydroRstFile + '\"\n'
             else:
                 if typeFlag == 1: # Spinup
                     inStr = ' !RESTART_FILE = ""' + '\n'
-                    fileObj.write(inStr)
                 elif typeFlag == 2: # Calibration
                     restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
                     if not os.path.isfile(restartFile):
                         jobData.errMsg = "ERROR: Failure to find: " + restartFile
                         raise Exception()
                     inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
-                    fileObj.write(inStr)
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!!!! ---------------------- MODEL SETUP OPTIONS ---------------------- !!!!\n')
         fileObj.write('\n')

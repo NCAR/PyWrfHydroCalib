@@ -334,7 +334,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Copy parameter files to the DEFAULT directory
                 #print calibCompleteFlag
                 try:
-                    calibIoMod.copyDefaultParms(statusData,runDir,gage)
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage,staticData.gwBaseFlag)
                 except:
                     raise
                 # Enter in parameters for iteration update.
@@ -357,7 +357,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 errMod.sendMsg(statusData)
                 # Copy parameter files to the DEFAULT directory
                 try:
-                    calibIoMod.copyDefaultParms(statusData,runDir,gage)
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage,staticData.gwBaseFlag)
                 except:
                     raise
                 # set the status for all iterations to 1.
