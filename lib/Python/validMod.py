@@ -1270,7 +1270,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir,gwFlag):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
-                      ctrlRunDir + ' ' + defaultDir + ' ' + gwFlag + ' \n')
+                      ctrlRunDir + ' ' + defaultDir + ' ' + str(gwFlag) + ' \n')
         fileObj.write('exit\n')
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
