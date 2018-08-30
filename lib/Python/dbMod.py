@@ -1066,7 +1066,7 @@ class Database(object):
                                      " iteration: " + str(iteration)
                     raise
                 
-    def logCalibStats(self,jobData,jobID,domainID,gage,iteration,statsTbl):
+    def logCalibStats(self,jobData,jobID,domainID,gage,iteration,statsTbl,staticData):
         """
         Generic function for entering calibration statistics into Calib_Stats to
         keep track of performance statistics for each calibration iteration.
@@ -1122,7 +1122,7 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            if jobData.gwBaseFlag == 1:
+            if staticData.gwBaseFlag == 1:
                 inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
                 outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
                 # Remove existing "best" file.
