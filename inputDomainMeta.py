@@ -171,6 +171,7 @@ def main(argv):
         gwMskPath = dirBasin + "/GWBASINS.nc"
         lakePath1 = dirBasin + "/LAKEPARM.nc"
         lakePath2 = dirBasin + "/LAKEPARM.TBL"
+        chanParmPath = dirBasin + "/CHANPARM.TBL"
         routePath = dirBasin + "/RouteLink.nc"
         soilPath = dirBasin + "/soil_properties.nc"
         hydro2d = dirBasin + "/HYDRO_TBL_2D.nc"
@@ -200,6 +201,9 @@ def main(argv):
         if not os.path.isfile(routePath):
             print "WARNING: " + routePath + " not found. Assuming this is for gridded routing....."
             routePath = "-9999"
+        if not os.path.isfile(chanParmPath):
+            print "WARNING: " + chanParmPath + " not found. Assuming this is a basin with reach-based routing...."
+            chanParmPath = "-9999"
         if not os.path.isfile(soilPath):
             print "ERROR: " + soilPath + " not found."
             sys.exit(1)
@@ -245,12 +249,12 @@ def main(argv):
               "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
               "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc," + \
               "dx_hydro,agg_factor,hydro_tbl_spatial,opt_spin_land_path,opt_spin_hydro_path) VALUES " + \
-              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
+              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
               gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
               county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d,
-              optSpinLandFile,optSpinHydroFile)
+              optSpinLandFile,optSpinHydroFile,chanParmPath)
               
         # Make entry into DB
         try:

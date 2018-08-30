@@ -97,7 +97,8 @@ def main(argv):
                        area_sqkm real, county_cd text, state text, huc2 text,
                        huc4 text, huc6 text, huc8 text, ecol3 text, ecol4 text,
                        rfc text, dx_hydro real, agg_factor integer, hydro_tbl_spatial text,
-                       opt_spin_land_path text, opt_spin_hydro_path text)''')
+                       opt_spin_land_path text, opt_spin_hydro_path text,
+                       chan_parm_path text)''')
     except:
         errOut(dbConn,"Unable to create table: Domain_Meta.",dbPath)
         

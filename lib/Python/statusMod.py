@@ -53,8 +53,6 @@ class statusMeta:
         self.calibTbl = []
         self.dailyAnalysis = []
         self.coldStart = []
-        self.optSpinLandFile = []
-        self.optSpinHydroFile = []
         self.jobRunType = []
         self.analysisRunType = []
         #self.host = []

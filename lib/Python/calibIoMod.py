@@ -35,6 +35,7 @@ class gageMeta:
         self.aggFact = []
         self.optLandRstFile = []
         self.optHydroRstFile = []
+        self.chanParmFile = []
     def pullGageMeta(self,jobData,db,gageName,domainID):
         # Function to extract locations of gage-specific spatial files.
         
@@ -43,7 +44,7 @@ class gageMeta:
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
                    'obsFile':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
                    'aggFactor':'','domainID':domainID,'optLandRstFile':'',\
-                   'optHydroRstFile':''}
+                   'optHydroRstFile':'','chanParmFile':''}
         try:
             db.queryGageMeta(jobData,tmpMeta)
         except:
@@ -69,6 +70,7 @@ class gageMeta:
         self.aggFact = tmpMeta['aggFactor']
         self.optLandRstFile = tmpMeta['optLandRstFile']
         self.optHydroRstFile = tmpMeta['optHydroRstFile']
+        self.chanParmFile = tmpMeta['chanParmFile']
         
 def getGageList(jobData,db):
     # Function for extracting list of gages 
@@ -101,7 +103,7 @@ def getGageList(jobData,db):
         except:
             raise
             
-def copyDefaultParms(jobData,runDir,gage,gwFlag):
+def copyDefaultParms(jobData,runDir,gage,staticData):
     """
     Generic function to copy the first set of default parameters
     (per user input in the table) to a DEFAULT_PARMS directory.
@@ -118,7 +120,7 @@ def copyDefaultParms(jobData,runDir,gage,gwFlag):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    if gwFlag == 1:
+    if staticData.gwBaseFlag == 1:
         inPath = runDir + "/GWBUCKPARM.nc"
         outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
         if not os.path.isfile(inPath):
@@ -151,6 +153,19 @@ def copyDefaultParms(jobData,runDir,gage,gwFlag):
     except:
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
+        
+    if staticData.chnRtFlag == 3:
+        # Copy the CHANPARM file.
+        inPath = runDir + "/CHANPARM.TBL"
+        outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/CHANPARM.TBL"
+        if not os.path.isfile(inPath):
+            jobData.errMsg = "ERROR: Expected to find: " + inPath + " but was not found."
+            raise Exception()
+        try:
+            shutil.copy(inPath,outPath)
+        except:
+            jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
+            raise
     
         
 def setupModels(jobData,db,args,libPathTop):
@@ -401,29 +416,29 @@ def setupModels(jobData,db,args,libPathTop):
             jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
             raise
             
-        link1 = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
-        link2 = gageDir + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
-        link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/CHANPARM.TBL"
-        link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/CHANPARM.TBL"
-        try:
-            os.symlink(str(jobData.chanParmTbl),link1)
-            if jobData.calibFlag == 1:
-                os.symlink(str(jobData.chanParmTbl),link2)
-                os.symlink(str(jobData.chanParmTbl),link3)
-                os.symlink(str(jobData.chanParmTbl),link4)
-        except:
-            wipeJobDir(jobData)
-            jobData.errMsg = "ERROR: Unable to create symbolic link to channel parameter table."
-            raise
+        #link1 = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
+        #link2 = gageDir + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
+        #link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/CHANPARM.TBL"
+        #link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/CHANPARM.TBL"
+        #try:
+        #    os.symlink(str(jobData.chanParmTbl),link1)
+        #    if jobData.calibFlag == 1:
+        #        os.symlink(str(jobData.chanParmTbl),link2)
+        #        os.symlink(str(jobData.chanParmTbl),link3)
+        #        os.symlink(str(jobData.chanParmTbl),link4)
+        #except:
+        #    wipeJobDir(jobData)
+        #    jobData.errMsg = "ERROR: Unable to create symbolic link to channel parameter table."
+        #    raise
             
-        if jobData.sensFlag == 1:
-            for i in range(0,jobData.nSensIter):
-                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/CHANPARM.TBL"
-                try:
-                    os.symlink(str(jobData.chanParmTbl),link1)
-                except:
-                    jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
-                    raise
+        #if jobData.sensFlag == 1:
+        #    for i in range(0,jobData.nSensIter):
+        #        link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/CHANPARM.TBL"
+        #        try:
+        #            os.symlink(str(jobData.chanParmTbl),link1)
+        #        except:
+        #            jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
+        #            raise
                     
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/GENPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/GENPARM.TBL"
@@ -553,6 +568,18 @@ def setupModels(jobData,db,args,libPathTop):
             wipeJobDir(jobData)
             raise
             
+        # Make a copy of the CHANPARM table file (if gridded routing) for spinup
+        # purposes.
+        if gageData.chanParmFile != "-9999":
+            link = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
+            try:
+                os.symlink(str(gageMeta.chanParmFile),link)
+            except:
+                wipeJobDir(jobData)
+                jobData.errMsg = "ERROR: Unable to create CHANPARM symlink for spinup for gage: " + \
+                                 str(jobData.gages[gage])
+                raise
+                
         if jobData.calibFlag == 1:
             # Copy original Fulldom, spatial soils, and HYDRO_TBL_2D file for calibrations.
             origPath = str(gageData.fullDom)
@@ -581,6 +608,16 @@ def setupModels(jobData,db,args,libPathTop):
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to : " + newPath
                 raise
+                
+            origPath = str(gageData.chanParmFile)
+            newPath = baseParmDir + "/CHANPARM.TBL"
+            if str(gageData.chanParmFile) != "-9999":
+                try:
+                    shutil.copy(origPath,newPath)
+                except:
+                    wipeJobDir(jobData)
+                    jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
+                    raise
             
             if jobData.gwBaseFlag == 1:
                 origPath = str(gageData.gwFile)

@@ -348,6 +348,7 @@ class Database(object):
         tmpMeta['hydroSpatial'] = results[41]
         tmpMeta['optLandRstFile'] = results[42]
         tmpMeta['optHydroRstFile'] = results[43]
+        tmpMeta['chanParmFile'] = results[44]
         
     def jobStatus(self,jobData):
         """
@@ -1121,6 +1122,28 @@ class Database(object):
             except:
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
+                
+            if staticData.chnRtFlag == 3:
+                # Handle CHANPARM.TBL
+                inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
+                outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/CHANPARM.TBL"
+                # Remove existing "best" file.
+                if os.path.isfile(outFile):
+                    try:
+                        os.remove(outFile)
+                    except:
+                        jobData.errMsg = "ERROR: Failure to remove: " + outFile
+                        raise
+                    # Check to ensure existing file exists.
+                    if not os.path.isfile(inFile):
+                        jobData.errMsg = "ERROR: Expected file: " + inFile + " not found."
+                        raise Exception()
+                    # Copy existing parameter files into place.
+                    try:
+                        shutil.copy(inFile,outFile)
+                    except:
+                        jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
+                        raise
                 
             if staticData.gwBaseFlag == 1:
                 inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"

@@ -56,7 +56,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Generate BSUB file necessary for running R calibration/analysis
         # code.
         try:
-            generateBsubCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
+            generateBsubCalibScript(statusData,int(gageID),runDir,workDir,staticData)
         except:
             raise
             
@@ -85,7 +85,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     if statusData.analysisRunType == 2:
         # Generate PBS file necessary to running R calibration/analysis code.
         try:
-            generatePbsCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
+            generatePbsCalibScript(statusData,int(gageID),runDir,workDir,staticData)
         except:
             raise
             
@@ -113,7 +113,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     if statusData.analysisRunType == 3:
         # Generate Slurm file necessary to run R calibration/analysis code.
         try:
-            generateSlurmCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
+            generateSlurmCalibScript(statusData,int(gageID),runDir,workDir,staticData)
         except:
             raise
             
@@ -142,7 +142,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Generate mpiexec/mpirun run script and R submission script for running
         # calibration/analysis code.
         try:
-            generateMpiCalibScript(statusData,int(gageID),runDir,workDir,staticData.gwBaseFlag)
+            generateMpiCalibScript(statusData,int(gageID),runDir,workDir,staticData)
         except:
             raise
             
@@ -235,7 +235,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Clean up any previous iteration calib files if they are around.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,workDir,staticData.gwBaseFlag)
+                    errMod.scrubParams(statusData,workDir,staticData)
                 except:
                     raise
                 print "MODEL HAS COMPLETED AND IS READY FOR PARAMETER GENERATION"
@@ -294,7 +294,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Clean everything up.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
+                    errMod.scrubParams(statusData,runDir,staticData)
                 except:
                     raise
                 keySlot[basinNum,:] = 1.0
@@ -308,7 +308,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
+                    errMod.scrubParams(statusData,runDir,staticData)
                 except:
                     raise
                 open(calibLockPath,'a').close()
@@ -334,7 +334,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Copy parameter files to the DEFAULT directory
                 #print calibCompleteFlag
                 try:
-                    calibIoMod.copyDefaultParms(statusData,runDir,gage,staticData.gwBaseFlag)
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage,staticData)
                 except:
                     raise
                 # Enter in parameters for iteration update.
@@ -357,7 +357,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 errMod.sendMsg(statusData)
                 # Copy parameter files to the DEFAULT directory
                 try:
-                    calibIoMod.copyDefaultParms(statusData,runDir,gage,staticData.gwBaseFlag)
+                    calibIoMod.copyDefaultParms(statusData,runDir,gage,staticData)
                 except:
                     raise
                 # set the status for all iterations to 1.
@@ -368,7 +368,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Clean everything up.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
+                    errMod.scrubParams(statusData,runDir,staticData)
                 except:
                     raise
                 keySlot[basinNum,:] = 1.0
@@ -381,7 +381,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                     " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
                 # Scrub calib-related files that were created as everything will need to be re-ran.
                 try:
-                    errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
+                    errMod.scrubParams(statusData,runDir,staticData)
                 except:
                     raise
                 open(calibLockPath,'a').close()
@@ -545,7 +545,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                     # Clean all previous calib files that may be laying around.
                                     try:
                                         errMod.cleanCalib(statusData,workDir,runDir)
-                                        errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                                        errMod.scrubParams(statusMod,runDir,staticData)
                                     except:
                                         raise
                                     print "READY TO RUN FIRST CALIB CODE"
@@ -578,7 +578,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                 # Clean any previou calib files that may be laying around.
                                 try:
                                     errMod.cleanCalib(statusData,workDir,runDir)
-                                    errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                                    errMod.scrubParams(statusMod,runDir,staticData)
                                 except:
                                     raise
                                 print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -591,7 +591,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                         # second (main) calibration.
                         try:
                             errMod.cleanCalib(statusData,workDir,runDir)
-                            errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                            errMod.scrubParams(statusMod,runDir,staticData)
                         except:
                             raise
                         print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -627,7 +627,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Remove any previous calibration files.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                    errMod.scrubParams(statusMod,runDir,staticData)
                 except:
                     raise
                 print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -644,7 +644,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Cleanup any calibration related files.
             try:
                 errMod.cleanCalib(statusData,workDir,runDir)
-                errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                errMod.scrubParams(statusMod,runDir,staticData)
             except:
                 raise
             print "CALIB LOCKED"
@@ -656,7 +656,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Cleanup any previous calib files that may be laying around.
             try:
                 errMod.cleanCalib(statusData,workDir,runDir)
-                errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                errMod.scrubParams(statusMod,runDir,staticData)
             except:
                 raise
             print "READY TO RUN CALIB CODE"
@@ -682,7 +682,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Cleanup any previous calibration files
             try:
                 errMod.cleanCalib(statusData,workDir,runDir)
-                errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                errMod.scrubParams(statusMod,runDir,staticData)
             except:
                 raise
             print "READY TO RUN FIRST CALIB CODE"
@@ -722,7 +722,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Cleanup any previous calib files.
                 try:
                     errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+                    errMod.scrubParams(statusMod,runDir,staticData)
                 except:
                     raise
                 print "MODEL COMPLETE, READY TO RUN CALIB CODE"
@@ -901,7 +901,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         try:
             errMod.removeOutput(statusData,runDir)
             errMod.cleanCalib(statusData,workDir,runDir)
-            errMod.scrubParams(statusData,runDir,staticData.gwBaseFlag)
+            errMod.scrubParams(statusData,runDir,staticData)
         except:
             raise
             
@@ -963,7 +963,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # already been done per workflow, but this is a fail safe.
         try:
             errMod.cleanCalib(statusData,workDir,runDir)
-            errMod.scrubParams(statusMod,runDir,staticData.gwBaseFlag)
+            errMod.scrubParams(statusMod,runDir,staticData)
         except:
             raise
             
@@ -1434,7 +1434,7 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         jobData.errMsg = "ERROR: Failure to create: " + outPath
         raise        
         
-def generateBsubCalibScript(jobData,gageID,runDir,workDir,gwFlag):
+def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
     """
     Generic Function function to create BSUB script for running R
     calibration routines. These jobs will be shorter than 
@@ -1493,7 +1493,8 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,gwFlag):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + str(gwFlag) + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtFlag) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1507,7 +1508,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,gwFlag):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generatePbsCalibScript(jobData,gageID,runDir,workDir,gwFlag):
+def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
     """
     Generic Function function to create PBS script for running R
     calibration routines. These jobs will be shorter than 
@@ -1568,7 +1569,9 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,gwFlag):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + str(gwFlag) + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
+                          runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
+                          str(staticData.chnRtFlag) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1582,7 +1585,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,gwFlag):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateSlurmCalibScript(jobData,gageID,runDir,workDir,gwFlag):
+def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
     """
     Generic Function function to create Slurm script for running R
     calibration routines. These jobs will be shorter than 
@@ -1641,7 +1644,9 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,gwFlag):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + str(gwFlag) + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
+                          ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
+                          str(staticData.chnRtFlag) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1655,7 +1660,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,gwFlag):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateMpiCalibScript(jobData,gageID,runDir,workDir,gwFlag):
+def generateMpiCalibScript(jobData,gageID,runDir,workDir,staticData):
     """
     Generic function to create mpiexec/mpirun script for running R calibration
     routines. This function also creates the shell script that will execute
@@ -1707,7 +1712,9 @@ def generateMpiCalibScript(jobData,gageID,runDir,workDir,gwFlag):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + str(gwFlag) + ' \n')
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
+                          ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
+                          str(staticData.chnRtFlag) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
