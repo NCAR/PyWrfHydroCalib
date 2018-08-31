@@ -49,15 +49,23 @@ def errOut(jobData):
         print msgContent
     sys.exit(1)
         
-def wipeJobDir(jobData):
+def wipeJobDir(jobData,db):
     # Generic function to remove job directory that was not successfully 
-    # created during initialization routines.
+    # created during initialization routines. This function also calls the DB 
+    # to remove any table entries that were made for this failed attempt to iniitalize
+    # an experiment.
     jobDir = jobData.outDir + "/" + jobData.jobName
     try:
         shutil.rmtree(jobDir)
     except:
         print "ERROR: Failure to remove: " + jobDir + " Please remove manually."
         raise
+        
+    # Remove the DB entries that were made.
+    try:
+        db.cleanupJob(jobData)
+    except:
+        print "ERROR: Failure to delete entries for job ID: " + str(jobData.jobID)
         
 def removeOutput(jobData,runDir):
     """
