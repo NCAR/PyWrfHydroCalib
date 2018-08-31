@@ -248,7 +248,8 @@ def main(argv):
               "soil_file,fulldom_file,rtlink_file,spweight_file," + \
               "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
               "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc," + \
-              "dx_hydro,agg_factor,hydro_tbl_spatial,opt_spin_land_path,opt_spin_hydro_path) VALUES " + \
+              "dx_hydro,agg_factor,hydro_tbl_spatial,opt_spin_land_path," + \
+              "opt_spin_hydro_path,chan_parm_path) VALUES " + \
               "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
