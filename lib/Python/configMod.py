@@ -60,7 +60,7 @@ class jobMeta:
         self.mpParmTbl = []
         self.urbParmTbl = []
         self.vegParmTbl = []
-        self.chanParmTbl = []
+        #self.chanParmTbl = []
         self.soilParmTbl = []
         self.bSpinDate = []
         self.eSpinDate = []
@@ -192,7 +192,7 @@ class jobMeta:
         self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
         self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
         self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
-        self.chanParmTbl = str(parser.get('logistics','chanParmTbl'))
+        #self.chanParmTbl = str(parser.get('logistics','chanParmTbl'))
         self.soilParmTbl = str(parser.get('logistics','soilParmTbl'))
         self.bSpinDate = parser.get('logistics','bSpinDate')
         self.bSpinDate = datetime.datetime.strptime(self.bSpinDate,'%Y-%m-%d')
@@ -560,13 +560,13 @@ def checkConfig(parser):
         print "ERROR: File: " + check + " not found."
         raise Exception()
         
-    check = str(parser.get('logistics','chanParmTbl'))
-    if len(check) == 0:
-        print "ERROR: Zero length channel parameter table provided."
-        raise Exception()
-    if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
-        raise Exception()
+    #check = str(parser.get('logistics','chanParmTbl'))
+    #if len(check) == 0:
+    #    print "ERROR: Zero length channel parameter table provided."
+    #    raise Exception()
+    #if not os.path.isfile(check):
+    #    print "ERROR: File: " + check + " not found."
+    #    raise Exception()
         
     check = str(parser.get('logistics','soilParmTbl'))
     if len(check) == 0:
