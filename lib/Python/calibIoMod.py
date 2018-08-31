@@ -573,7 +573,7 @@ def setupModels(jobData,db,args,libPathTop):
         if gageData.chanParmFile != "-9999":
             link = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
             try:
-                os.symlink(str(gageMeta.chanParmFile),link)
+                os.symlink(str(gageData.chanParmFile),link)
             except:
                 wipeJobDir(jobData)
                 jobData.errMsg = "ERROR: Unable to create CHANPARM symlink for spinup for gage: " + \
