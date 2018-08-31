@@ -116,7 +116,7 @@ def main(argv):
         print "2D Hydro Parameter Table Path: " + str(results[gage][41])
         print "Optional land restart path: " + str(results[gage][42])
         print "Optional hydro restart path: " + str(results[gage][43])
-        print "CHANPARM path: " + str(results[gage[44]])
+        print "CHANPARM path: " + str(results[gage][44])
         print "--------------------------------------------------"
         
     # Close connection to DB
