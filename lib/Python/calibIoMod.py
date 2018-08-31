@@ -154,7 +154,7 @@ def copyDefaultParms(jobData,runDir,gage,staticData):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
         
-    if staticData.chnRtFlag == 3:
+    if staticData.chnRtOpt == 3:
         # Copy the CHANPARM file.
         inPath = runDir + "/CHANPARM.TBL"
         outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/CHANPARM.TBL"

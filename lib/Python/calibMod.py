@@ -1494,7 +1494,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
-                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1571,7 +1571,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
                           runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
-                          str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1646,7 +1646,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
-                          str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1714,7 +1714,7 @@ def generateMpiCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
-                          str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2

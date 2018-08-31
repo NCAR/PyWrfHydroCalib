@@ -1022,7 +1022,7 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData)
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
-                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1093,7 +1093,7 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
-                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1164,7 +1164,7 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
-                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1231,7 +1231,7 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
-                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1484,7 +1484,7 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
-                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtFlag) + ' \n')
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2

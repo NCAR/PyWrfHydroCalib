@@ -218,7 +218,7 @@ def scrubParams(jobData,runDir,staticData):
                 jobData.errMsg = "ERROR: Failure to remove: " + gwFile
                 raise
                 
-    if staticData.chnRtFlag == 3:
+    if staticData.chnRtOpt == 3:
         # We are running gridded routing. Go ahead and remove CHANPARM
         if os.path.isfile(chanParmFile):
             try:

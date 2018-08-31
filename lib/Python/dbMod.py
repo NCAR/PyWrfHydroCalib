@@ -1123,7 +1123,7 @@ class Database(object):
                 jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                 raise
                 
-            if staticData.chnRtFlag == 3:
+            if staticData.chnRtOpt == 3:
                 # Handle CHANPARM.TBL
                 inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
                 outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/CHANPARM.TBL"
