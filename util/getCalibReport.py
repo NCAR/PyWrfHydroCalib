@@ -40,13 +40,20 @@ def main(argv):
                         help='Job ID specific to calibration spinup.')
     parser.add_argument('contactFlag',metavar='ctFlag',type=int,nargs='+',
                         help='1 = send to job contact, 0 = print to screen.')
+    parser.add_argument('inDB',metavar='inDB',type=str,nargs='+',
+                        help='Required path to sqllite3 DB file.')
     parser.add_argument('--email',nargs='?',help='Optional email to pipe output to.')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
+    #parser.add_argument('--hostname',type=str,nargs='?',
+    #                    help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
+    #parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
                         
     args = parser.parse_args()
     
+    # If the sqllite DB file does not exist, throw an error to the user.
+    if not os.path.isfile(args.inDB[0]):
+        print "ERROR: Unable to locate DB file: " + args.inDB[0]
+        sys.exit(1)
+        
     # Create dictionary of specified status messages.
     msgDict = {'-1.0':'MODEL RUN LOCKED.','-0.75':'MAIN CALIBRATION PROGRAM LOCKED',
                '-0.5':'MODEL FAILED ONCE - RUNNING AGAIN','-0.25':'MODEL FAILED ONCE - WAITING',
@@ -58,28 +65,29 @@ def main(argv):
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
+    jobData.dbPath = args.inDB[0]
 
     # Lookup database username/login credentials based on username
     # running program.
-    if not args.pwd:
-        try:
-            pwdTmp = getpass.getpass('Enter Database Password: ')
-            jobData.dbUName= 'WH_Calib_rw'
-            jobData.dbPwd = str(pwdTmp)
-        except:
-            print "ERROR: Unable to authenticate credentials for database."
-            sys.exit(1)
-    else:
-        jobData.dbPwd = args.pwd
-    jobData.dbUName= 'WH_Calib_rw'
-    jobData.port = 5432    
+    #if not args.pwd:
+    #    try:
+    #        pwdTmp = getpass.getpass('Enter Database Password: ')
+    #        jobData.dbUName= 'WH_Calib_rw'
+    #        jobData.dbPwd = str(pwdTmp)
+    #    except:
+    #        print "ERROR: Unable to authenticate credentials for database."
+    #        sys.exit(1)
+    #else:
+    #    jobData.dbPwd = args.pwd
+    #jobData.dbUName= 'WH_Calib_rw'
+    #jobData.port = 5432    
     
-    if not args.hostname:
-        # We will assume localhost for Postgres DB
-        hostTmp = 'localhost'
-    else:
-        hostTmp = str(args.hostname)
-    jobData.host = hostTmp
+    #if not args.hostname:
+    #    # We will assume localhost for Postgres DB
+    #    hostTmp = 'localhost'
+    #else:
+    #    hostTmp = str(args.hostname)
+    #jobData.host = hostTmp
 
     # Establish database connection.
     db = dbMod.Database(jobData)
