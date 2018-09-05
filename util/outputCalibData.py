@@ -154,7 +154,8 @@ def main(argv):
             if os.path.isfile(outPath):
                 os.remove(outPath)
             sys.exit(1)
-        idOut.variables['gage'][i,:] = gageIdTmp[0]
+        for j in range(0,len(gageIdTmp[0])):
+            idOut.variables['gage'][i,j] = gageIdTmp[0][j]
         
     # Create the statistic variables that will contain data for each gage, for all iterations.
     idOut.createVariable("calibBias","f8",("numGages","numIterations"),fill_value=-9999)
