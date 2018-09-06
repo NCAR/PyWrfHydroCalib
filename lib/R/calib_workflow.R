@@ -169,6 +169,9 @@ if (cyclecount > 0) {
        quit("no")
    }
 
+   # Convert the observation dataset to a data.table if it hasn't already.
+   obsStrData <- as.data.table(obsStrData)
+
    # Convert to daily if needed and tag object
    if (calcDailyStats) {
      chrt.d <- Convert2Daily(chrt)
