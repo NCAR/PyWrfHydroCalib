@@ -55,16 +55,12 @@ class statusMeta:
         self.coldStart = []
         self.jobRunType = []
         self.analysisRunType = []
-        #self.host = []
-        #self.port = []
         self.acctKey = []
         self.queName = []
         self.queNameAnalysis = []
         self.exe = []
         self.errMsg = []
         self.genMsg = []
-        #self.dbUName = []
-        #self.dbPwd = []
         self.owner = []
         self.email = None
         self.slChan = None

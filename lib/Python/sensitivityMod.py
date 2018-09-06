@@ -859,7 +859,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.analysisRunType == 1:
             cmd = "bsub < " + collectScript
         if statusData.analysisRunType == 2:
-            #cmd = "qsub " + collectScript
             try:
                 jobTmp = subprocess.check_output(['qsub',collectScript])
                 pbsCollectId[basinNum,iteration] = int(jobTmp.split('.')[0])

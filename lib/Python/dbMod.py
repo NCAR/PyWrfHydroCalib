@@ -5,8 +5,6 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-#import MySQLdb
-#import psycopg2
 import sqlite3
 import datetime
 #from slacker import Slacker
@@ -24,10 +22,6 @@ class Database(object):
         etc
         """
         self.connected = False
-        #self.host = jobData.host
-        #self.uName = jobData.dbUName
-        #self.pwd = jobData.dbPwd
-        #self.port = jobData.port
         self.dbName = 'wrfHydroCalib_DB'
         self.db = None
         self.conn = None
@@ -40,14 +34,6 @@ class Database(object):
         if self.connected:
             jobData.errMsg = "ERROR: Connection to DB already established."
             raise Exception()
-        
-        #try:
-        #    strTmp = "dbname=" + str(self.dbName) + " user=" + str(self.uName) + " password=" + str(self.pwd) + \
-        #             " port=" + str(self.port) + " host=" + self.host
-        #    db = psycopg2.connect(strTmp)
-        #except:
-        #    jobData.errMsg = "ERROR: Unable to connect to database: " + self.dbName
-        #    raise
         
         try:
             self.conn = sqlite3.connect(jobData.dbPath)
@@ -68,8 +54,6 @@ class Database(object):
             self.db = None
             raise
             
-        #self.db = db
-        #self.conn = db.cursor()
         self.connected = True
         
     def disconnect(self,jobData):
@@ -105,9 +89,7 @@ class Database(object):
         sqlCmd = "select \"jobID\" from \"Job_Meta\" where \"Job_Directory\"='%s'" % (jobDir) + ";"
         
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #result = self.conn.fetchone()
             result = self.dbCursor.fetchone()
         except:
             jobData.errMsg = "ERROR: Unable to execute postgres command to inquire job ID."
@@ -118,7 +100,6 @@ class Database(object):
             # been entered for this particular unique job situation.
             jobData.jobID = -9999
         else:
-            #jobData.jobID = result[0]
             jobData.jobID = result[0]
             
     def getDomainID(self,jobData,gageName):
@@ -133,9 +114,7 @@ class Database(object):
         sqlCmd = "select \"domainID\" from \"Domain_Meta\" where \"gage_id\"='%s'" % (str(gageName)) + ";"
         
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #result = self.conn.fetchone()
             result = self.dbCursor.fetchone()
         except:
             jobData.errMsg = "ERROR: Unable to locate ID for gage: " + str(gageName)
@@ -145,7 +124,6 @@ class Database(object):
             jobData.errMsg = "ERROR: gage: " + str(gageName) + " not found in database."
             raise Exception()
         
-        #return int(result[0])
         return int(result[0])
     
     def getDomainID2(self,jobData):
@@ -158,9 +136,7 @@ class Database(object):
             raise Exception()
 
         try:
-            #self.conn.execute(jobData.gSQL)
             self.dbCursor.execute(jobData.gSQL)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Unable to extract Domain metadata for job: " + str(jobData.jobID)
@@ -226,8 +202,6 @@ class Database(object):
         try:
             self.dbCursor.execute(sqlCmd)
             self.conn.commit()
-            #self.conn.execute(sqlCmd)
-            #self.db.commit()
         except:
             jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
             raise
@@ -244,9 +218,7 @@ class Database(object):
             raise Exception()
             
         try:
-            #self.conn.execute(str(jobData.gSQL))
             self.dbCursor.execute(str(jobData.gSQL))
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
@@ -299,9 +271,7 @@ class Database(object):
         sqlCmd = "select * from \"Domain_Meta\" where \"domainID\"=" + str(tmpMeta['domainID']) + ";"
         
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchone()
             results = self.dbCursor.fetchone()
         except:
             jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
@@ -311,24 +281,6 @@ class Database(object):
             jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
             raise Exception()
             
-        #tmpMeta['gageID'] = results[0]
-        #tmpMeta['comID'] = results[2]
-        #tmpMeta['geoFile'] = results[13]
-        #tmpMeta['landSpatialMeta'] = results[14]
-        #tmpMeta['wrfInput'] = results[15]
-        #tmpMeta['soilFile'] = results[16]
-        #tmpMeta['fullDomFile'] = results[17]
-        #tmpMeta['rtLnk'] = results[18]
-        #tmpMeta['udMap'] = results[19]
-        #tmpMeta['gwFile'] = results[20]
-        #tmpMeta['gwMask'] = results[21]
-        #tmpMeta['lkFile'] = results[22]
-        #tmpMeta['forceDir'] = results[23]
-        #tmpMeta['obsFile'] = results[24]
-        #tmpMeta['dxHydro'] = results[39]
-        #tmpMeta['aggFactor'] = results[40]
-        #tmpMeta['hydroSpatial'] = results[41]
-        
         tmpMeta['gageID'] = results[0]
         tmpMeta['comID'] = results[2]
         tmpMeta['geoFile'] = results[13]
@@ -362,9 +314,7 @@ class Database(object):
         sqlCmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(jobData.jobID) + "';"
         
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchone()
             results = self.dbCursor.fetchone()
         except:
             jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID)
@@ -374,49 +324,6 @@ class Database(object):
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID)
             raise Exception()
             
-        # Fill jobData object with metadata on job and status.
-        #jobData.jobDir = results[1]
-        #jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d %H:%M:%S')
-        #jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d %H:%M:%S')
-        #jobData.spinComplete = int(results[4])
-        #jobData.sensFlag = int(results[5])
-        #jobData.sensTbl = str(results[6])
-        #jobData.nSensSample = int(results[7])
-        #jobData.nSensIter = int(results[8])
-        #jobData.nSensBatch = int(results[9])
-        #jobData.bSensDate = datetime.datetime.strptime(str(results[10]),'%Y-%m-%d %H:%M:%S')
-        #jobData.eSensDate = datetime.datetime.strptime(str(results[11]),'%Y-%m-%d %H:%M:%S')
-        #jobData.bSensEvalDate = datetime.datetime.strptime(str(results[12]),'%Y-%m-%d %H:%M:%S')
-        #jobData.sensComplete = int(results[13])
-        #jobData.calibFlag = int(results[14])
-        #jobData.calibTbl = str(results[15])
-        #jobData.bCalibDate = datetime.datetime.strptime(str(results[16]),'%Y-%m-%d %H:%M:%S')
-        #jobData.eCalibDate = datetime.datetime.strptime(str(results[17]),'%Y-%m-%d %H:%M:%S')
-        #jobData.bCalibEvalDate = datetime.datetime.strptime(str(results[18]),'%Y-%m-%d %H:%M:%S')
-        #jobData.nIter = int(results[19])
-        #jobData.calibComplete = int(results[20])
-        #jobData.bValidDate = datetime.datetime.strptime(str(results[21]),'%Y-%m-%d %H:%M:%S')
-        #jobData.eValidDate = datetime.datetime.strptime(str(results[22]),'%Y-%m-%d %H:%M:%S')
-        #jobData.eValidEvalDate = datetime.datetime.strptime(str(results[23]),'%Y-%m-%d %H:%M:%S')
-        #jobData.validComplete = int(results[24])
-        #jobData.acctKey = results[25]
-        #jobData.queName = results[26]
-        #jobData.nCoresMod = int(results[27])
-        #jobData.nNodesMod = int(results[28])
-        #jobData.nCoresR = int(results[29])
-        #jobData.nNodesR = int(results[30])
-        #jobData.host = str(results[31])
-        #jobData.jobRunType = int(results[32])
-        #jobData.exe = results[33]
-        #jobData.nGages = int(results[34])
-        #jobData.owner = results[35]
-        #jobData.email = results[36]
-        #jobData.slChan = results[37]
-        #jobData.slToken = results[38]
-        #jobData.slUser = results[39]
-        #jobData.analysisRunType = int(results[40])
-        #jobData.queNameAnalysis = results[41]
-        
         jobData.jobDir = results[1]
         jobData.bSpinDate = datetime.datetime.strptime(str(results[2]),'%Y-%m-%d %H:%M:%S')
         jobData.eSpinDate = datetime.datetime.strptime(str(results[3]),'%Y-%m-%d %H:%M:%S')
@@ -447,7 +354,6 @@ class Database(object):
         jobData.nNodesMod = int(results[28])
         jobData.nCoresR = int(results[29])
         jobData.nNodesR = int(results[30])
-        #jobData.host = str(results[31])
         jobData.jobRunType = int(results[31])
         jobData.exe = results[32]
         jobData.nGages = int(results[33])
@@ -504,9 +410,7 @@ class Database(object):
                   
         try:
             # Update the owner of the job, regardless of whatever options were filled.
-            #self.conn.execute(sqlCmd1)
             self.dbCursosr.execute(sqlCmd1)
-            #self.db.commit()
             self.conn.commit()
             jobData.owner = str(newOwner)
         except:
@@ -517,8 +421,6 @@ class Database(object):
             if len(newEmail) != 0:
                 try:
                     self.dbCursor.execute(sqlCmd2)
-                    #self.conn.execute(sqlCmd2)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner)
@@ -528,8 +430,6 @@ class Database(object):
                 # Enter in MISSING for email
                 try:
                     self.dbCursor.execute(sqlCmd6)
-                    #self.conn.execute(sqlCmd6)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner) + " to MISSING"
@@ -580,9 +480,7 @@ class Database(object):
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
@@ -600,9 +498,7 @@ class Database(object):
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to update sensitivity status for job ID: " + str(jobData.jobID)
@@ -620,9 +516,7 @@ class Database(object):
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to update calibration status for job ID: " + str(jobData.jobID)
@@ -640,9 +534,7 @@ class Database(object):
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
                  
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
@@ -676,9 +568,7 @@ class Database(object):
                              "values ('%s','%s','%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue,0,1)
 
                     try:
-                        #self.conn.execute(sqlCmd)
                         self.dbCursor.execute(sqlCmd)
-                        #self.db.commit()
                         self.conn.commit()
                     except:
                         jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
@@ -703,9 +593,7 @@ class Database(object):
                              "values ('%s','%s','%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue,1,0)
 
                     try:
-                        #self.conn.execute(sqlCmd)
                         self.dbCursor.execute(sqlCmd)
-                        #self.db.commit()
                         self.conn.commit()
                     except:
                         jobData.errMsg = "ERROR: Unable to enter sensitivity parameter information for parameter: " + paramName
@@ -745,9 +633,7 @@ class Database(object):
                                  " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                                  itStr + "'" + " and \"paramName\"='" + parmName + "';"
                         try:
-                            #self.conn.execute(sqlCmd)
                             self.dbCursor.execute(sqlCmd)
-                            #results = self.conn.fetchone()
                             results = self.dbCursor.fetchone()
                         except:
                             jobData.errMsg = "ERROR: Unable to extract calibration parameter information for " + \
@@ -761,9 +647,7 @@ class Database(object):
                                      "values (" + str(jobID) + "," + str(domainID) + "," + \
                                      str(iteration) + ",'" + parmName + "',-9999);"
                             try:
-                                #self.conn.execute(sqlCmd)
                                 self.dbCursor.execute(sqlCmd)
-                                #self.db.commit()
                                 self.conn.commit()
                             except:
                                 jobData.errMsg = "ERROR: Unable to create empty calibration parameter information for " + \
@@ -790,9 +674,7 @@ class Database(object):
                                  " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                                  itStr + "'" + " and \"paramName\"='" + parmName + "';"
                         try:
-                            #self.conn.execute(sqlCmd)
                             self.dbCursor.execute(sqlCmd)
-                            #results = self.conn.fetchone()
                             results = self.dbCursor.fetchone()
                         except:
                             jobData.errMsg = "ERROR: Unable to extract sensitivity parameter information for " + \
@@ -806,9 +688,7 @@ class Database(object):
                                      "values (" + str(jobID) + "," + str(domainID) + "," + \
                                      str(iteration) + ",'" + parmName + "',-9999);"
                             try:
-                                #self.conn.execute(sqlCmd)
                                 self.dbCursor.execute(sqlCmd)
-                                #self.db.commit()
                                 self.conn.commit()
                             except:
                                 jobData.errMsg = "ERROR: Unable to create empty sensitivity parameter information for " + \
@@ -835,9 +715,7 @@ class Database(object):
                      " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                      str(iteration) + "';"
             try:
-                #self.conn.execute(sqlCmd)
                 self.dbCursor.execute(sqlCmd)
-                #results = self.conn.fetchone()
                 results = self.dbCursor.fetchone()
             except:
                 jobData.errMsg = "ERROR: Unable to extract calib stats for job ID: " + str(jobID) + \
@@ -851,9 +729,7 @@ class Database(object):
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
                 try:
-                    #self.conn.execute(sqlCmd)
                     self.dbCursor.execute(sqlCmd)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Unable to create empty table entry into Calib_Stats for " + \
@@ -880,9 +756,7 @@ class Database(object):
                      " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                      str(iteration) + "';"
             try:
-                #self.conn.execute(sqlCmd)
                 self.dbCursor.execute(sqlCmd)
-                #results = self.conn.fetchone()
                 results = self.dbCursor.fetchone()
             except:
                 jobData.errMsg = "ERROR: Unable to extract sensitivity stats for job ID: " + str(jobID) + \
@@ -897,9 +771,7 @@ class Database(object):
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
                 try:
-                    #self.conn.execute(sqlCmd)
                     self.dbCursor.execute(sqlCmd)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
@@ -913,9 +785,7 @@ class Database(object):
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
                 try:
-                    #self.conn.execute(sqlCmd)
                     self.dbCursor.execute(sqlCmd)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
@@ -937,9 +807,7 @@ class Database(object):
                  " and \"domainID\"='" + str(domainID) + "';"
 	
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Unable to extract calibration status for job ID: " + str(jobID) + \
@@ -963,9 +831,7 @@ class Database(object):
         sqlCmd = "select iteration,complete from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "' and \"timeStep\"='daily';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Unable to extract sensitivity status for job ID: " + str(jobID) + \
@@ -990,9 +856,7 @@ class Database(object):
                  "'" + " and iteration='" + str(iterTmp) + "';"
                  
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
@@ -1015,9 +879,7 @@ class Database(object):
                  "'" + " and iteration='" + str(iterTmp) + "';"
                  
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Unable to update sensitivity status for job ID: " + str(jobID) + \
@@ -1057,9 +919,7 @@ class Database(object):
                          "' and \"iteration\"='" + str(iteration) + "' and \"paramName\"='" + \
                          str(paramName) + "';"
                 try:
-                    #self.conn.execute(sqlCmd)
                     self.dbCursor.execute(sqlCmd)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
@@ -1212,9 +1072,7 @@ class Database(object):
                      "';"
             
             try:
-                #self.conn.execute(sqlCmd)
                 self.dbCursor.execute(sqlCmd)
-                #self.db.commit()
                 self.conn.commit()
             except:
                 jobData.errMsg = "ERROR: Failure to downgrade 'best' status of previous " + \
@@ -1228,9 +1086,7 @@ class Database(object):
                      str(jobID) + "' and \"domainID\"='" + str(domainID) + "' and " + \
                      "iteration='" + str(iteration) + "';"
             try:
-                #self.conn.execute(sqlCmd)
                 self.dbCursor.execute(sqlCmd)
-                #self.db.commit()
                 self.conn.commit()
             except:
                 jobData.errMsg = "ERROR: Failure to upgrade 'best' status for jobID: " + \
@@ -1250,9 +1106,7 @@ class Database(object):
                  "';"
             
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
@@ -1275,9 +1129,7 @@ class Database(object):
                  str(jobID) + "' and \"domainID\"='" + str(domainID) + "';"
         
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to fill basin status to 1 for missing data " + \
@@ -1302,9 +1154,7 @@ class Database(object):
         sqlCmd = "select * from \"Calib_Stats\" where \"domainID\"='" + str(domainID) + \
                  "' and \"jobID\"='" + str(jobID) + "' and best='1';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchone()
             results = self.dbCursor.fetchone()
         except:
             jobData.errMsg = "ERROR: Failure to extract the best iteration value " + \
@@ -1316,7 +1166,6 @@ class Database(object):
             outStatus = -99
             return outStatus
         
-        #iterBest = int(results[2])
         iterBest = int(results[2])
         
         # Next, find all parameter values, and their associated values from Calib_Params.
@@ -1324,9 +1173,7 @@ class Database(object):
                  "' and \"jobID\"='" + str(jobID) + "' and iteration='" + \
                  str(iterBest) + "' and \"paramValue\"!='-9999';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to extract best parameters for domainID: " + \
@@ -1401,8 +1248,6 @@ class Database(object):
                      
             try:
                 self.dbCursor.execute(sqlCmd)
-                #self.conn.execute(sqlCmd)
-                #self.db.commit()
                 self.conn.commit()
             except:
                 jobData.errMsg = "ERROR: Failure to enter validation statistics for jobID: " + \
@@ -1423,9 +1268,7 @@ class Database(object):
         # Check Calib_Params        
         sqlCmd = "select \"jobID\" from \"Calib_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to pull information from Calib_Params"
@@ -1436,9 +1279,7 @@ class Database(object):
         # Check Sens_Params
         sqlCmd = "select \"jobID\" from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to pull information from Sens_Params"
@@ -1449,9 +1290,7 @@ class Database(object):
         # Check Calib_Stats        
         sqlCmd = "select \"jobID\" from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to pull information from Calib_Stats"
@@ -1462,9 +1301,7 @@ class Database(object):
         # Check Job_Params        
         sqlCmd = "select \"jobID\" from \"Job_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to pull information from Job_Params"
@@ -1475,9 +1312,7 @@ class Database(object):
         # Check Valid_Stats        
         sqlCmd = "select \"jobID\" from \"Valid_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to pull information from Valid_Stats"
@@ -1488,9 +1323,7 @@ class Database(object):
         # Check Sens_Stats
         sqlCmd = "select \"jobID\" from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #results = self.conn.fetchall()
             results = self.dbCursor.fetchall()
         except:
             jobData.errMsg = "ERROR: Failure to pull information from Sens_Stats"
@@ -1512,9 +1345,7 @@ class Database(object):
         # Cleanup Calib_Params
         sqlCmd = "delete from \"Calib_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Calib_Params for job: " + str(jobData.jobID)
@@ -1523,9 +1354,7 @@ class Database(object):
         # Cleanup Sens_Params
         sqlCmd = "delete from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
@@ -1534,9 +1363,7 @@ class Database(object):
         # Cleanup Calib_Stats
         sqlCmd = "delete from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Calib_Stats for job: " + str(jobData.jobID)
@@ -1545,9 +1372,7 @@ class Database(object):
         # Cleanup Sens_Stats
         sqlCmd = "delete from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit(sqlCmd)
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
@@ -1556,9 +1381,7 @@ class Database(object):
         # Cleanup Job_Params
         sqlCmd = "delete from \"Job_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit(sqlCmd)
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Job_Params for job: " + str(jobData.jobID)
@@ -1567,9 +1390,7 @@ class Database(object):
         # Cleanup Valid_Stats
         sqlCmd = "delete from \"Valid_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Valid_Stats for job: " + str(jobData.jobID)
@@ -1578,9 +1399,7 @@ class Database(object):
         # Cleanup Sens_Params
         sqlCmd = "delete from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
@@ -1589,9 +1408,7 @@ class Database(object):
         # Cleanup Sens_Stats
         sqlCmd = "delete from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
         try:
-            #self.conn.execute(sqlCmd)
             self.dbCursor.execute(sqlCmd)
-            #self.db.commit()
             self.conn.commit()
         except:
             jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
@@ -1627,9 +1444,7 @@ class Database(object):
                          "' and iteration='" + str(iteration+1) + "' and " + \
                          "\"paramName\"='" + parmName + "';"
                 try:
-                    #self.conn.execute(sqlCmd)
                     self.dbCursor.execute(sqlCmd)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to enter sensitivity parameters for job: " + \
@@ -1687,9 +1502,7 @@ class Database(object):
                          "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
                          "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
                 try:
-                    #self.conn.execute(sqlCmd)
                     self.dbCursor.execute(sqlCmd)
-                    #self.db.commit()
                     self.conn.commit()
                 except:
                     jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \

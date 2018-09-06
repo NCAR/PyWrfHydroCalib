@@ -10,7 +10,6 @@
 
 import sys
 import argparse
-#import getpass
 import os
 import time
 import pwd
@@ -43,11 +42,6 @@ def main(argv):
              'sensitivity analysis for WRF-Hydro')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to your sensitivity/caliration workflow job.')
-    #parser.add_argument('--hostname',type=str,nargs='?',
-    #                    help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
-    #parser.add_argument('--portNumber',type=int,nargs='?',
-    #                    help='Optional port number to connect. Default is 5432.')
-    #parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
     parser.add_argument('--optDbPath',type=str,nargs='?',
                         help='Optional alternative path to SQLite DB file.')
     
@@ -76,34 +70,6 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
     jobData.dbPath = dbPath
-    
-    # Lookup database username/login credentials based on username
-    # running program.
-    #if not args.pwd:
-    #    try:
-    #        pwdTmp = getpass.getpass('Enter Database Password: ')
-    #        jobData.dbPwd = str(pwdTmp)
-    #    except:
-    #        print "ERROR: Unable to authenticate credentials for database."
-    #        sys.exit(1)
-    #else:
-    #    jobData.dbPwd = args.pwd
-    
-    #jobData.dbUName = 'WH_Calib_rw'
-    
-    #if not args.hostname:
-    #    # We will assume localhost for Postgres DB
-    #    hostTmp = 'localhost'
-    #else:
-    #    hostTmp = str(args.hostname)
-        
-    #if not args.portNumber:
-    #    # We will default to 5432
-    #    portTmp = '5432'
-    #else:
-    #    portTmp = str(args.portNumber)
-    #jobData.port = portTmp
-    #jobData.host = hostTmp
     
     # Establish database connection.
     db = dbMod.Database(jobData)

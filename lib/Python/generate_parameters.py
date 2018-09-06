@@ -91,8 +91,8 @@ def main(argv):
         shutil.copy(soilOrig,soilBest)
         if args.gwFlag[0] == 1:
             shutil.copy(gwOrig,gwBest)
-        #if args.chRtFlag[0] == 3:
-        #    shutil.copy(chanParmOrig,chanParmBest)
+        if args.chRtFlag[0] == 3:
+            shutil.copy(chanParmOrig,chanParmBest)
         shutil.copy(hydroOrig,hydroBest)
     except:
         sys.exit(3)

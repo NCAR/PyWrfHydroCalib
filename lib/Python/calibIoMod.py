@@ -416,30 +416,6 @@ def setupModels(jobData,db,args,libPathTop):
             jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
             raise
             
-        #link1 = gageDir + "/RUN.SPINUP/OUTPUT/CHANPARM.TBL"
-        #link2 = gageDir + "/RUN.CALIB/OUTPUT/CHANPARM.TBL"
-        #link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/CHANPARM.TBL"
-        #link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/CHANPARM.TBL"
-        #try:
-        #    os.symlink(str(jobData.chanParmTbl),link1)
-        #    if jobData.calibFlag == 1:
-        #        os.symlink(str(jobData.chanParmTbl),link2)
-        #        os.symlink(str(jobData.chanParmTbl),link3)
-        #        os.symlink(str(jobData.chanParmTbl),link4)
-        #except:
-        #    wipeJobDir(jobData)
-        #    jobData.errMsg = "ERROR: Unable to create symbolic link to channel parameter table."
-        #    raise
-            
-        #if jobData.sensFlag == 1:
-        #    for i in range(0,jobData.nSensIter):
-        #        link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/CHANPARM.TBL"
-        #        try:
-        #            os.symlink(str(jobData.chanParmTbl),link1)
-        #        except:
-        #            jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
-        #            raise
-                    
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/GENPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/GENPARM.TBL"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/GENPARM.TBL"

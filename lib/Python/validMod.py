@@ -4,7 +4,6 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-#import datetime
 import os
 import calibIoMod
 import namelistMod

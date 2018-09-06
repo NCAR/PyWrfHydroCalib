@@ -4,7 +4,6 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-#import datetime
 import os
 import calibIoMod
 import namelistMod
@@ -1000,7 +999,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-            print cmd
             try:
                 p3 = subprocess.Popen([cmd],shell=True)
                 time.sleep(5)

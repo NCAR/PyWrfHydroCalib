@@ -40,8 +40,6 @@ class jobMeta:
         self.optSpinFlag = []
         self.jobRunType = []
         self.analysisRunType = []
-        #self.host = []
-        #self.port = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -60,7 +58,6 @@ class jobMeta:
         self.mpParmTbl = []
         self.urbParmTbl = []
         self.vegParmTbl = []
-        #self.chanParmTbl = []
         self.soilParmTbl = []
         self.bSpinDate = []
         self.eSpinDate = []
@@ -128,8 +125,6 @@ class jobMeta:
         self.gages = []
         self.gageIDs = []
         self.dbPath = []
-        #self.dbUName = []
-        #self.dbPwd = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -192,7 +187,6 @@ class jobMeta:
         self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
         self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
         self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
-        #self.chanParmTbl = str(parser.get('logistics','chanParmTbl'))
         self.soilParmTbl = str(parser.get('logistics','soilParmTbl'))
         self.bSpinDate = parser.get('logistics','bSpinDate')
         self.bSpinDate = datetime.datetime.strptime(self.bSpinDate,'%Y-%m-%d')
@@ -266,7 +260,7 @@ class jobMeta:
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
-        #self.cmpdChan = int(parser.et('hydroPhysics','compoundChannel'))
+        self.cmpdChan = int(parser.et('hydroPhysics','compoundChannel'))
         
 def readConfig(configFile):
     """
@@ -559,14 +553,6 @@ def checkConfig(parser):
     if not os.path.isfile(check):
         print "ERROR: File: " + check + " not found."
         raise Exception()
-        
-    #check = str(parser.get('logistics','chanParmTbl'))
-    #if len(check) == 0:
-    #    print "ERROR: Zero length channel parameter table provided."
-    #    raise Exception()
-    #if not os.path.isfile(check):
-    #    print "ERROR: File: " + check + " not found."
-    #    raise Exception()
         
     check = str(parser.get('logistics','soilParmTbl'))
     if len(check) == 0:
@@ -912,10 +898,10 @@ def checkConfig(parser):
         raise Exception()
         
     # Ensure muskingum cunge routing has been chosen if compound channel is activated.
-    #check1 = int(parser.get('hydroPhysics','compoundChannel'))
-    #check2 = int(parser.get('hydroPhysics','chanRtOpt'))
-    #if check1 == 1 and check2 != 2:
-    #    print "ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing."
-    #    raise Exception()
+    check1 = int(parser.get('hydroPhysics','compoundChannel'))
+    check2 = int(parser.get('hydroPhysics','chanRtOpt'))
+    if check1 == 1 and check2 != 2:
+        print "ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing."
+        raise Exception()
     
     
