@@ -24,7 +24,6 @@ jobName = TEST_CALIB
 acctKey =
 optQueNameModel =
 optQueNameAnalysis = 
-postgresHost = dbHost
 nCoresModel = 4
 nNodesModel = 1
 nCoresR     = 1
@@ -40,6 +39,20 @@ calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
 # will be aggregated to daily statistics. 
 # 0 - Run hourly stats, 1 - Run daily stats
 dailyStats = 0
+# This is a flag for the user to bypass the spinup and run calibrations/validations/sensitivity
+# analysis from cold starts. Note: This is highly discouraged as a spinup allows for
+# stable hydrologic states: 0 - Off, 1 - On.
+coldStart = 0
+# Optional spinup flag for substituting a both land and hydro restart files in place
+# of a spinup. 
+# NOTE: The user must provide BOTH a hydro and land spinup state in the basin domain
+#       directories for ALL basins being used in this experiment. Expected 
+#       file naming conventions for the expected restart files are as follows:
+#       Land:  LandRestartSubstitute.nc
+#       Hydro: HydroRestartSubstitute.nc
+# 0 = No substitute spinup files
+# 1 = Use optional spinup files
+optSpinFlag = 0
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
@@ -84,7 +97,6 @@ genParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/GENPARM.TBL
 mpParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/MPTABLE.TBL
 urbParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/URBPARM.TBL
 vegParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/VEGPARM.TBL
-chanParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/CHANPARM.TBL
 soilParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
@@ -181,12 +193,14 @@ forceDt = 3600
 lsmDt = 3600
 # Output frequency of NoahMP LDASOUT files in seconds
 lsmOutDt = 8640000
-# Output frequency of NoahMP restart files in seconds
+# Output frequency of NoahMP restart files in seconds.
+# For monthly restart files, please put -9999 here. 
 lsmRstFreq = 86400
 
 # Hydro specific time options
 # Specify timestep in seconds
 # Hydro restart output frequency
+# Place -99999 here for monthly restarts. 
 hydroRstFreq = 86400
 # Hydro output frequency
 hydroOutDt = 3600
@@ -297,3 +311,6 @@ gwBaseSw = 1
 # Specify to how to initialize groundwater bucket model (0:cold start from table,1:restart file)
 gwRestart = 0
 
+# Specify whether to use compound channel. This is for NWM ONLY. Cannot use with gridded routing.
+# (0: Turn off, 1: Turn on)
+compoundChannel = 0

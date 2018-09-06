@@ -34,8 +34,18 @@ def main(argv):
              'calibration job ID')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
+    parser.add_argument('inDB',metavar='inDB',type=str,nargs='+',
+                        help='Required path to sqllite3 DB file.')
+    #parser.add_argument('--pwd',metavar='pwd',type=str,nargs='?',help='Password to the Database.')
             
     args = parser.parse_args()
+    
+    # If the sqllite DB file does not exist, throw an error to the user.
+    if not os.path.isfile(args.inDB[0]):
+        print "ERROR: Unable to locate DB file: " + args.inDB[0]
+        sys.exit(1)
+        
+    dbPath = args.inDB[0]
     
     # Initialize job using setup.parm and calibration DB.
     try:
@@ -46,14 +56,17 @@ def main(argv):
         
     # Lookup database username/login credentials based on username
     # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
+    #if not args.pwd:
+    #    try:
+    #        pwdTmp = getpass.getpass('Enter Database Password: ')
+    #        jobData.dbPwd = str(pwdTmp)
+    #    except:
+    #        print "ERROR: Unable to authenticate credentials for database."
+    #        sys.exit(1)
+    #else:
+    #    jobData.dbPwd = args.pwd
     
-    jobData.dbUName = 'WH_Calib_rw'
+    #jobData.dbUName = 'WH_Calib_rw'
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:

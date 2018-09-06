@@ -34,6 +34,10 @@ def main(argv):
     parser.add_argument('runDir',metavar='runDir',type=str,nargs='+',
                         help='Directory containing model output where final parameter' + \
                              ' files will reside')
+    parser.add_argument('gwFlag',metavar='gwFlag',type=int,nargs='+',
+                        help='Flag to indicate if groundwater bucket model is being used.')
+    parser.add_argument('chRtFlag',metavar='chRtFlag',type=int,nargs='+',
+                        help='Flag to indicate the type of channel routing.')
                         
     args = parser.parse_args()
     workDir = str(args.workDir[0])
@@ -44,6 +48,7 @@ def main(argv):
     hydroOrig = workDir + "/BASELINE_PARAMETERS/HYDRO_TBL_2D.nc"
     soilOrig = workDir + "/BASELINE_PARAMETERS/soil_properties.nc"
     gwOrig = workDir + "/BASELINE_PARAMETERS/GWBUCKPARM.nc"
+    chanParmOrig = workDir + "/BASELINE_PARAMETERS/CHANPARM.TBL"
     rCompletePath = workDir + "/R_COMPLETE"
     adjTbl = workDir + "/params_new.txt"
     
@@ -52,6 +57,7 @@ def main(argv):
     hydroOut = runDir + "/HYDRO_TBL_2D.nc"
     soilOut = runDir + "/soil_properties.nc"
     gwOut = runDir + '/GWBUCKPARM.nc'
+    chanParmOut = runDir + "/CHANPARM.TBL"
     outFlag = workDir + "/CALIB_ITER.COMPLETE"
     
     # If R COMPLETE flag not present, this implies the R code didn't run
@@ -81,7 +87,11 @@ def main(argv):
         shutil.copy(fullDomOrig,fullDomOut)
         shutil.copy(hydroOrig,hydroOut)
         shutil.copy(soilOrig,soilOut)
-        shutil.copy(gwOrig,gwOut)
+        if args.gwFlag[0] == 1:
+            shutil.copy(gwOrig,gwOut)
+        if args.chRtFlag[0] == 3:
+            # Gridded routing
+            shutil.copy(chanParmOrig,chanParmOut)
     except:
         sys.exit(3)
         
@@ -89,10 +99,46 @@ def main(argv):
     newParams = pd.read_csv(adjTbl,sep=' ')
     paramNames = list(newParams.columns.values)
     
+    if args.chRtFlag[0] == 3:
+        # Open the original CHANPARM.TBL
+        chanParmTblDataOrig = file(chanParmOrig)
+        
+        # Open the new CHANPARM.TBL for writing
+        chanParmOutObj = open(chanParmOut,'w')
+        countTmp = 1
+        for line in chanParmTblDataOrig:
+            if countTmp < 4:
+                chanParmOutObj.write(line)
+            else:
+                lineTmp = line
+                lineSplit = lineTmp.split(',')
+                if "Bw" in paramNames:
+                    bwValue = float(lineSplit[1])*float(newParams.Bw[0])
+                else:
+                    bwValue = float(lineSplit[1])
+                if "HLINK" in paramNames:
+                    hlinkValue = float(lineSplit[2])*float(newParams.HLINK[0])
+                else:
+                    hlinkValue = float(lineSplit[2])
+                if "ChSSlp" in paramNames:
+                    chsslpValue = float(lineSplit[3])*float(newParams.ChSSlp[0])
+                else:
+                    chsslpValue = float(lineSplit[3])
+                if "MannN" in paramNames:
+                    mannValue = float(lineSplit[4])*float(newParams.MannN[0])
+                else:
+                    mannValue = float(lineSplit[4])
+                outStr = lineSplit[0] + ", " + str(bwValue) + ", " + str(hlinkValue) + \
+                         ", " + str(chsslpValue) + ", " + str(mannValue) + "\n"
+                chanParmOutObj.write(outStr)
+            countTmp = countTmp + 1
+        chanParmOutObj.close()
+        
     # Open NetCDF parameter files for adjustment.
     idFullDom = Dataset(fullDomOut,'a')
     idSoil2D = Dataset(soilOut,'a')
-    idGw = Dataset(gwOut,'a')
+    if args.gwFlag[0] == 1:
+        idGw = Dataset(gwOut,'a')
     idHydroTbl = Dataset(hydroOut,'a')
     
     # Loop through and adjust each parameter accordingly.
@@ -109,11 +155,12 @@ def main(argv):
         if param == "lksatfac":
             idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[0])
         
-        if param == "zmax":
-            idGw.variables['Zmax'][:] = float(newParams.zmax[0])
+        if args.gwFlag[0] == 1:
+            if param == "zmax":
+                idGw.variables['Zmax'][:] = float(newParams.zmax[0])
         
-        if param == "expon":
-            idGw.variables['Expon'][:] = float(newParams.expon[0])
+            if param == "expon":
+                idGw.variables['Expon'][:] = float(newParams.expon[0])
         
         if param == "cwpvt":
             idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0])
@@ -155,7 +202,8 @@ def main(argv):
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
-    idGw.close()
+    if args.gwFlag[0] == 1:
+        idGw.close()
     idHydroTbl.close()
     
     # Remove restart files. All other files will be overwritten by the next

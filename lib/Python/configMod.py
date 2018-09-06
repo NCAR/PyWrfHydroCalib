@@ -36,10 +36,10 @@ class jobMeta:
         self.calibFlag = []
         self.calibTbl = []
         self.dailyAnalysis = []
+        self.coldStart = []
+        self.optSpinFlag = []
         self.jobRunType = []
         self.analysisRunType = []
-        self.host = []
-        self.port = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -58,7 +58,6 @@ class jobMeta:
         self.mpParmTbl = []
         self.urbParmTbl = []
         self.vegParmTbl = []
-        self.chanParmTbl = []
         self.soilParmTbl = []
         self.bSpinDate = []
         self.eSpinDate = []
@@ -122,10 +121,10 @@ class jobMeta:
         self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
+        self.cmpdChan = []
         self.gages = []
         self.gageIDs = []
-        self.dbUName = []
-        self.dbPwd = []
+        self.dbPath = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -163,6 +162,8 @@ class jobMeta:
         self.calibFlag = int(parser.get('logistics','runCalib'))
         self.calibTbl = str(parser.get('logistics','calibParmTbl'))
         self.dailyAnalysis = int(parser.get('logistics','dailyStats'))
+        self.coldStart = int(parser.get('logistics','coldStart'))
+        self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
         self.analysisRunType = int(parser.get('logistics','analysisRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
@@ -170,9 +171,9 @@ class jobMeta:
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
         self.email = str(parser.get('logistics','email'))
-        self.slChan = str(parser.get('logistics','slackChannel'))
-        self.slToken = str(parser.get('logistics','slackToken'))
-        self.slUser = str(parser.get('logistics','slackUser'))
+        #self.slChan = str(parser.get('logistics','slackChannel'))
+        #self.slToken = str(parser.get('logistics','slackToken'))
+        #self.slUser = str(parser.get('logistics','slackUser'))
         # Initiate Slack object if user has specified. Throw an error message
         # if Slack is not successfully inititated.
         #if len(self.slChan) > 0:
@@ -186,7 +187,6 @@ class jobMeta:
         self.mpParmTbl = str(parser.get('logistics','mpParmTbl'))
         self.urbParmTbl = str(parser.get('logistics','urbParmTbl'))
         self.vegParmTbl = str(parser.get('logistics','vegParmTbl'))
-        self.chanParmTbl = str(parser.get('logistics','chanParmTbl'))
         self.soilParmTbl = str(parser.get('logistics','soilParmTbl'))
         self.bSpinDate = parser.get('logistics','bSpinDate')
         self.bSpinDate = datetime.datetime.strptime(self.bSpinDate,'%Y-%m-%d')
@@ -260,6 +260,7 @@ class jobMeta:
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
+        self.cmpdChan = int(parser.get('hydroPhysics','compoundChannel'))
         
 def readConfig(configFile):
     """
@@ -473,6 +474,22 @@ def checkConfig(parser):
         print "ERROR: Invalid dailyStats value specified."
         raise Exception()
         
+    check = int(parser.get('logistics','coldStart'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid coldStart value specified."
+        raise Exception()
+        
+    check = int(parser.get('logistics','optSpinFlag'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid optSpinFlag value specified."
+        raise Exception()
+        
+    check1 = int(parser.get('logistics','coldStart'))
+    check2 = int(parser.get('logistics','optSpinFlag'))
+    if check1 == 1 and check2 == 1:
+        print "ERROR: Cannot run cold start calibrations with optional spinup files."
+        raise Exception()
+    
     # Check to make sure calibration method is DDS
     check = str(parser.get('logistics','calibMethod'))
     if check != "DDS":
@@ -532,14 +549,6 @@ def checkConfig(parser):
     check = str(parser.get('logistics','vegParmTbl'))
     if len(check) == 0:
         print "ERROR: Zero length vegetation parameter table provided."
-        raise Exception()
-    if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
-        raise Exception()
-        
-    check = str(parser.get('logistics','chanParmTbl'))
-    if len(check) == 0:
-        print "ERROR: Zero length channel parameter table provided."
         raise Exception()
     if not os.path.isfile(check):
         print "ERROR: File: " + check + " not found."
@@ -742,13 +751,15 @@ def checkConfig(parser):
         
     check = int(parser.get('modelTime','lsmRstFreq'))
     if check < 0:
-        print "ERROR: Invalid LSM restart frequency passed to program."
-        raise Exception()
+        if check != -9999:
+            print "ERROR: Invalid LSM restart frequency passed to program."
+            raise Exception()
         
     check = int(parser.get('modelTime','hydroRstFreq'))
     if check < 0:
-        print "ERROR: Invalid Hydro restart frequency passed to program."
-        raise Exception()
+        if check != -99999:
+            print "ERROR: Invalid Hydro restart frequency passed to program."
+            raise Exception()
         
     check = int(parser.get('modelTime','hydroOutDt'))
     if check < 0:
@@ -881,5 +892,16 @@ def checkConfig(parser):
         print "ERROR: Invalid ground water restart switch passed to program."
         raise Exception()
         
+    check = int(parser.get('hydroPhysics','compoundChannel'))
+    if check < 0 or check > 1:
+        print "ERROR: Invalid compoundChannel switch passed to program."
+        raise Exception()
+        
+    # Ensure muskingum cunge routing has been chosen if compound channel is activated.
+    check1 = int(parser.get('hydroPhysics','compoundChannel'))
+    check2 = int(parser.get('hydroPhysics','chanRtOpt'))
+    if check1 == 1 and check2 != 2:
+        print "ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing."
+        raise Exception()
     
     

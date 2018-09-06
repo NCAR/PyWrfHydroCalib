@@ -10,7 +10,6 @@
 
 import sys
 import argparse
-import getpass
 import os
 import time
 import pwd
@@ -23,6 +22,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
+topDir = libPath
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
 
@@ -42,12 +42,23 @@ def main(argv):
              'sensitivity analysis for WRF-Hydro')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to your sensitivity/caliration workflow job.')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--portNumber',type=int,nargs='?',
-                        help='Optional port number to connect. Default is 5432.')
+    parser.add_argument('--optDbPath',type=str,nargs='?',
+                        help='Optional alternative path to SQLite DB file.')
     
     args = parser.parse_args()
+    
+    # If the SQLite file does not exist, throw an error.
+    if args.optDbPath is not None:
+        if not os.path.isfile(args.optDbPath):
+            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            sys.exit(1)
+        else:
+            dbPath = args.optDbPath
+    else:
+        dbPath = topDir + "wrfHydroCalib.db"
+        if not os.path.isfile(dbPath):
+            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            sys.exit(1)
     
     # Establish the beginning timestamp for this program.
     begTimeStamp = datetime.datetime.now()
@@ -58,31 +69,7 @@ def main(argv):
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
-    
-    # Lookup database username/login credentials based on username
-    # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
-    
-    jobData.dbUName = 'WH_Calib_rw'
-    
-    if not args.hostname:
-        # We will assume localhost for Postgres DB
-        hostTmp = 'localhost'
-    else:
-        hostTmp = str(args.hostname)
-        
-    if not args.portNumber:
-        # We will default to 5432
-        portTmp = '5432'
-    else:
-        portTmp = str(args.portNumber)
-    jobData.port = portTmp
-    jobData.host = hostTmp
+    jobData.dbPath = dbPath
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -184,10 +171,19 @@ def main(argv):
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
     if int(jobData.spinComplete) != 1:
-        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
-                         " is NOT complete. You must complete the spinup in order" + \
-                         " to run calibration."
-        errMod.errOut(jobData)
+        # Check to see if optional spinup options were enabled. If so, update the spinup status.
+        if staticData.coldStart == 1 or staticData.optSpinFlag != 0:
+            print "Found optional spinup alternatives"
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errOut(jobData)
+        else:
+            jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
+                             " is NOT complete. You must complete the spinup in order" + \
+                             " to run calibration."
+            errMod.errOut(jobData)
         
     if int(jobData.sensComplete) == 1:
         jobData.errMsg = "ERROR: Sensitivity for job ID: " + str(jobData.jobID) + \

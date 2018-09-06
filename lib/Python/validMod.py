@@ -4,7 +4,6 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-#import datetime
 import os
 import calibIoMod
 import namelistMod
@@ -76,11 +75,12 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         keySlot[basinNum,1] = 1.0
         return
         
-    # Make symbolic links as necssary.
-    try:
-        linkToRst(statusData,gage,runDir)
-    except:
-        raise
+    if staticData.coldStart == 0:
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir,gageMeta,staticData)
+        except:
+            raise
         
     # Create symbolic links to Python/R code to generate parameters and evaluate
     # model output if it hasn't already been created.
@@ -128,7 +128,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     # Generate the shell script to call Python to generate parameter datasets
     # in preparation for model runs.
     try:
-        generateParmScript(statusData,bestDir,gage,parmInDir)
+        generateParmScript(statusData,bestDir,gage,parmInDir,staticData)
     except:
         raise
         
@@ -593,12 +593,13 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     if not os.path.isdir(validWorkDir):
         statusData.errMsg = "ERROR: " + validWorkDir + " not found."
         raise Exception()
-        
-    # Make symbolic links as necssary.
-    try:
-        linkToRst(statusData,gage,runDir)
-    except:
-        raise
+     
+    if staticData.coldStart == 0:
+        # Make symbolic links as necssary.
+        try:
+            linkToRst(statusData,gage,runDir,gageMeta,staticData)
+        except:
+            raise
         
     # Create two run scripts:
     # 1.) Job script to run the model with best parameters.
@@ -1250,7 +1251,7 @@ def generateMpiRunScript(jobData,gageID,runDir,gageMeta,modName):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
-def generateParmScript(jobData,bestDir,gage,parmInDir):
+def generateParmScript(jobData,bestDir,gage,parmInDir,staticData):
     """
     Generic function to generate the shell script to call Python to
     generate the new parameter datasets.
@@ -1268,7 +1269,8 @@ def generateParmScript(jobData,bestDir,gage,parmInDir):
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
         fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
-                      ctrlRunDir + ' ' + defaultDir + ' \n')
+                      ctrlRunDir + ' ' + defaultDir + ' ' + str(staticData.gwBaseFlag) + \
+                      ' ' + str(staticData.chnRtOpt) + ' \n')
         fileObj.write('exit\n')
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1776,23 +1778,45 @@ def generateMpiParmRunScript(jobData,runDir,gageID):
             jobData.errMsg = "ERROR: Failure to create symbolic link: " + fileLink
             raise
         
-def linkToRst(statusData,gage,runDir):
+def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     """
     Generic function to link to necessary restart files from the spinup.
     """
-    # Check to make sure symbolic link to spinup state exists.
-    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.isfile(check1):
-        statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
-        raise Exception()
-    if not os.path.isfile(check2):
-        statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
-        raise Exception()
-    # Create links if they don't exist
     link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
     link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.islink(link1):
-        os.symlink(check1,link1)
-    if not os.path.islink(link2):
-        os.symlink(check2,link2)
+    if staticData.optSpinFlag == 0: 
+        # Check to make sure symbolic link to spinup state exists.
+        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        if not os.path.isfile(check1):
+            statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+            raise Exception()
+        if not os.path.isfile(check2):
+            statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        if not os.path.islink(link1):
+            os.symlink(check1,link1)
+        if not os.path.islink(link2):
+            os.symlink(check2,link2)
+    elif staticData.optSpinFlag != 1:
+        # Check to see if file exists, then create symbolic link to it. 
+        if gageMeta.optLandRstFile == "-9999":
+            statusData.errMsg = "ERROR: User has specified to use an optional land " + \
+                                "restart file when none exists."
+            raise Exception()
+        if gageMeta.optHydroRstFile == "-9999":
+            statusData.errMsg = "ERROR: User has specified to use an optional hydro " + \
+                                "restart file when none exists."
+            raise Exception()
+        if not os.path.isfile(gageMeta.optLandRstFile):
+            statusData.errMsg = "ERROR: Spinup state: " + gageMeta.optLandRstFile + " not found."
+            raise Exception()
+        if not os.path.isfile(gageMeta.optHydroRstFile):
+            statusData.errMsg = "ERROR: Spinup state: " + gageMeta.optHydroRstFile + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        if not os.path.islink(link1):
+            os.symlink(gageMeta.optLandRstFile,link1)
+        if not os.path.islink(link2):
+            os.symlink(gageMeta.optHydroRstFile,link2)

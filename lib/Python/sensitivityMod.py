@@ -115,7 +115,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
     # Generate run script to generate parameters for this basin. Then execute the job.
     if statusData.analysisRunType == 1:
         #BSUB
-        generateBsubPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+        generateBsubPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         cmd = "bsub < " + workDir + "/run_WH_SENS_PREPROC.sh"
         try:
             subprocess.call(cmd,shell=True)
@@ -125,7 +125,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
     if statusData.analysisRunType == 2:
         #PBS
         try:
-            generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+            generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         except:
             statusData.errMsg = "ERROR: Unable to create PBS script for gage: " + str(gage)
             raise
@@ -137,7 +137,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
             raise
     if statusData.analysisRunType == 3:
         #SLURM
-        generateSlurmPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+        generateSlurmPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         cmd = "sbatch " + workDir + "/run_WH_SENS_PREPROC.sh"
         try:
             subprocess.call(cmd,shell=True)
@@ -146,7 +146,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
             raise
     if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
         #MPIEXEC/MPIRUN
-        generateMpiPreProcScript(statusData,gageID,workDir,workDir,gageMeta)
+        generateMpiPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         cmd = workDir + "/run_WH_SENS_PREPROC.sh 1>" + workDir + "/WH_SENS_PREPROC_" + \
               str(statusData.jobID) + "_" + str(gageID) + ".out" + \
               ' 2>' + workDir + "/WH_SENS_PREPROC_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -689,11 +689,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if os.path.isfile(check2):
             os.remove(check2)
         
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
-        except:
-            raise
+        if staticData.coldStart == 0:
+            # Make symbolic links as necssary.
+            try:
+                linkToRst(statusData,gage,runDir,gageMeta,staticData)
+            except:
+                raise
             
         # Since these are sensitivity simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
@@ -761,11 +762,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if os.path.isfile(check2):
             os.remove(check2)
         
-        # Make symbolic links as necssary.
-        try:
-            linkToRst(statusData,gage,runDir)
-        except:
-            raise
+        if staticData.coldStart == 0:
+            # Make symbolic links as necssary.
+            try:
+                linkToRst(statusData,gage,runDir,gageMeta,staticData)
+            except:
+                raise
             
         # Since these are sensitivity simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
@@ -857,7 +859,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.analysisRunType == 1:
             cmd = "bsub < " + collectScript
         if statusData.analysisRunType == 2:
-            #cmd = "qsub " + collectScript
             try:
                 jobTmp = subprocess.check_output(['qsub',collectScript])
                 pbsCollectId[basinNum,iteration] = int(jobTmp.split('.')[0])
@@ -962,7 +963,7 @@ def genRNameList(jobData,workDir,gageMeta,gage):
         jobData.errMsg = "ERROR: Failure to create: " + rNameList
         raise
         
-def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
     """
     Generic Function function to create BSUB script for running R
     sensitivity pre-processing routines.
@@ -1019,7 +1020,8 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1033,7 +1035,7 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
     """
     Generic Function function to create PBS script for running R
     pre-processing routines.
@@ -1089,7 +1091,8 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1103,7 +1106,7 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
     """
     Generic Function function to create Slurm script for running R
     pre-processing routines. 
@@ -1159,7 +1162,8 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1173,7 +1177,7 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile2 + " to an executable."
         raise
         
-def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
     """
     Generic function to create mpiexec/mpirun script for running R pre-processing
     routines.
@@ -1225,7 +1229,8 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1421,7 +1426,7 @@ def generateMpiScript(jobData,gageID,runDir,gageMeta,iteration):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
         
-def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
+def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
     """
     Generic Function function to create BSUB script for running R
     sensitivity post-processing routines.
@@ -1477,7 +1482,8 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' \n')
+                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1989,26 +1995,48 @@ def generateMpiCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
         jobData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
         raise
              
-def linkToRst(statusData,gage,runDir):
+def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     """
     Generic function to link to necessary restart files from the spinup.
     This was broken out as a function as sometimes the output directory
     is scrubbed, and links need to be re-made in preparation for a new 
     iteration simulation.
     """
-    # Check to make sure symbolic link to spinup state exists.
-    check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.isfile(check1):
-        statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
-        raise Exception()
-    if not os.path.isfile(check2):
-        statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
-        raise Exception()
-    # Create links if they don't exist
     link1 = runDir + "/RESTART." + statusData.bSensDate.strftime('%Y%m%d') + "00_DOMAIN1"
     link2 = runDir + "/HYDRO_RST." + statusData.bSensDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-    if not os.path.islink(link1):
-        os.symlink(check1,link1)
-    if not os.path.islink(link2):
-        os.symlink(check2,link2)
+    if staticData.optSpinFlag == 0: 
+        # Check to make sure symbolic link to spinup state exists.
+        check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
+        check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        if not os.path.isfile(check1):
+            statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
+            raise Exception()
+        if not os.path.isfile(check2):
+            statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        if not os.path.islink(link1):
+            os.symlink(check1,link1)
+        if not os.path.islink(link2):
+            os.symlink(check2,link2)
+    elif staticData.optSpinFlag != 1:
+        # Check to see if file exists, then create symbolic link to it. 
+        if gageMeta.optLandRstFile == "-9999":
+            statusData.errMsg = "ERROR: User has specified to use an optional land " + \
+                                "restart file when none exists."
+            raise Exception()
+        if gageMeta.optHydroRstFile == "-9999":
+            statusData.errMsg = "ERROR: User has specified to use an optional hydro " + \
+                                "restart file when none exists."
+            raise Exception()
+        if not os.path.isfile(gageMeta.optLandRstFile):
+            statusData.errMsg = "ERROR: Spinup state: " + gageMeta.optLandRstFile + " not found."
+            raise Exception()
+        if not os.path.isfile(gageMeta.optHydroRstFile):
+            statusData.errMsg = "ERROR: Spinup state: " + gageMeta.optHydroRstFile + " not found."
+            raise Exception()
+        # Create links if they don't exist
+        if not os.path.islink(link1):
+            os.symlink(gageMeta.optLandRstFile,link1)
+        if not os.path.islink(link2):
+            os.symlink(gageMeta.optHydroRstFile,link2)

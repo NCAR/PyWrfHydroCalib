@@ -17,7 +17,6 @@
 import sys
 import argparse
 import os
-import getpass
 
 # Set the Python path to include package specific functions included with this 
 # package.
@@ -26,6 +25,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
+topDir = libPath
 libPathTop = libPath + 'lib'
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
@@ -44,12 +44,23 @@ def main(argv):
              'calibration for the National Water Model')
     parser.add_argument('configFile',metavar='config',type=str,nargs='+',
                         help='Config file to initialize job.')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--portNumber',type=int,nargs='?',
-                        help='Optional port number to connect. Default is 5432.')
+    parser.add_argument('--optDbPath',type=str,nargs='?',
+                        help='Optional alternative path to SQLite DB file.')
             
-    args = parser.parse_args()            
+    args = parser.parse_args()       
+
+    # If the SQLite file does not exist, throw an error.
+    if args.optDbPath is not None:
+        if not os.path.isfile(args.optDbPath):
+            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            sys.exit(1)
+        else:
+            dbPath = args.optDbPath
+    else:
+        dbPath = topDir + "wrfHydroCalib.db"
+        if not os.path.isfile(dbPath):
+            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            sys.exit(1)     
 
     # Initialize job using setup.parm and calibration DB.
     try:
@@ -58,30 +69,8 @@ def main(argv):
         print "ERROR: Failure to initialize calibration workflow job."
         sys.exit(1)
         
-    if not args.hostname:
-        # We will assume localhost for Postgres DB
-        hostTmp = 'localhost'
-    else:
-        hostTmp = str(args.hostname)
+    jobData.dbPath = dbPath
         
-    if not args.portNumber:
-        # We will default to 5432
-        portTmp = '5432'
-    else:
-        portTmp = str(args.portNumber)
-    jobData.host = hostTmp
-    jobData.port = portTmp
-        
-    # Lookup database username/login credentials based on username
-    # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Calibration Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
-    
-    jobData.dbUName = 'WH_Calib_rw'
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:

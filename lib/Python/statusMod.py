@@ -52,18 +52,15 @@ class statusMeta:
         self.calibFlag = []
         self.calibTbl = []
         self.dailyAnalysis = []
+        self.coldStart = []
         self.jobRunType = []
         self.analysisRunType = []
-        self.host = []
-        self.port = []
         self.acctKey = []
         self.queName = []
         self.queNameAnalysis = []
         self.exe = []
         self.errMsg = []
         self.genMsg = []
-        self.dbUName = []
-        self.dbPwd = []
         self.owner = []
         self.email = None
         self.slChan = None
@@ -71,6 +68,7 @@ class statusMeta:
         self.slUser = None
         self.slackObj = None
         self.gSQL = []
+        self.dbPath = []
     def checkGages(self,db):
         # Function to check number of gages in output directory. Function
         # also calls the database module to extract unique ID values for each

@@ -36,16 +36,23 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-import psycopg2
-import getpass
 import argparse
 import os
 import sys
 import pandas as pd
 from netCDF4 import Dataset
+import sqlite3
 
 import warnings
 warnings.filterwarnings("ignore")
+
+# Establish top-level paths that are used to find the DB file. 
+prPath = os.path.realpath(__file__)
+pathSplit = prPath.split('/')
+libPath = '/'
+for j in range(1,len(pathSplit)-1):
+    libPath = libPath + pathSplit[j] + '/'
+topDir = libPath
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
@@ -53,47 +60,36 @@ def main(argv):
              'domain metadata into wrfHydroCalib_DB')
     parser.add_argument('inCSV',metavar='inCSV',type=str,nargs='+',
                         help='Input CSV file containing information on basins.')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname MySQL DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--portNumber',type=int,nargs='?',
-                        help='Optional port number to connect. Default is 5432.')
+    parser.add_argument('--optDbPath',type=str,nargs='?',
+                        help='Optional alternative path to SQLite DB file.')
                         
     args = parser.parse_args()
     
-    # Obtain the WH_Calib_rw username password. 
-    # NOTE YOU MUST INITIALIZE THE POSTGRES DB FIRST BY
-    # RUNNING initDB.py BEFORE YOU CAN RUN THIS PROGRAM.
-    try:
-        pwdTmp = getpass.getpass('Enter WH_Calib_rw password: ')
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
-        
-    if not pwdTmp:
-        print "ERROR: Improper WH_Calib_rw password provided."
-        sys.exit(1)
-        
-    if not args.hostname:
-        # We will assume localhost for postgres DB
-        hostTmp = 'localhost'
+    # If the SQLite file does not exist, throw an error.
+    if args.optDbPath is not None:
+        if not os.path.isfile(args.optDbPath):
+            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            sys.exit(1)
+        else:
+            dbPath = args.optDbPath
     else:
-        hostTmp = str(args.hostname)
-        
-    if not args.portNumber:
-        # We will default to 5432
-        portTmp = '5432'
-    else:
-        portTmp = str(args.portNumber)
-        
-    # Connect to the database
+        dbPath = topDir + "wrfHydroCalib.db"
+        if not os.path.isfile(dbPath):
+            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            sys.exit(1)
+    
+    # Open the SQLite DB file
     try:
-        strTmp = "dbname=wrfHydroCalib_DB user=WH_Calib_rw password=" + pwdTmp + " port=" + portTmp + " host=" + hostTmp
-        db = psycopg2.connect(strTmp)
+        conn = sqlite3.connect(dbPath)
     except:
-        print "ERROR: Unable to connect to wrfHydroCalib_DB. Please check your password you set " + \
-              " or verify the database has been created. Also check your host name...."
+        print "ERROR: Unable to connect to: " + dbPath + ". Please intiialize the DB file."
         sys.exit(1)
-    conn = db.cursor()
+        
+    try:
+        dbCursor = conn.cursor()
+    except:
+        print "ERROR: Unable to establish cursor object for: " + dbPath
+        sys.exit(1)
     
     # Create expected dictionary of column types
     dtype_dic= {'site_no':str,'link':int,'hyd_w':int,'hyd_e':int,'hyd_s':int,'hyd_n':int,
@@ -175,6 +171,7 @@ def main(argv):
         gwMskPath = dirBasin + "/GWBASINS.nc"
         lakePath1 = dirBasin + "/LAKEPARM.nc"
         lakePath2 = dirBasin + "/LAKEPARM.TBL"
+        chanParmPath = dirBasin + "/CHANPARM.TBL"
         routePath = dirBasin + "/RouteLink.nc"
         soilPath = dirBasin + "/soil_properties.nc"
         hydro2d = dirBasin + "/HYDRO_TBL_2D.nc"
@@ -182,6 +179,8 @@ def main(argv):
         wrfInPath = dirBasin + "/wrfinput.nc"
         forceDir = dirBasin + "/FORCING"
         obsFile = dirBasin + "/OBS/obsStrData.Rdata"
+        optSpinLandFile = dirBasin + "/LandRestartSubstitute.nc"
+        optSpinHydroFile = dirBasin + "/HydroRestartSubstitute.nc"
         
         # Double check to make sure input files exist
         if not os.path.isfile(geoPath):
@@ -194,14 +193,17 @@ def main(argv):
             print "ERROR: " + fullDomPath + " not found."
             sys.exit(1)
         if not os.path.isfile(gwPath):
-            print "ERROR: " + gwPath + "not found."
-            sys.exit(1)
+            print "WARNING: " + gwPath + " not found. Assuming you are running without the ground water bucket model."
+            gwPath = "-9999"
         if not os.path.isfile(lakePath1) and not os.path.isfile(lakePath2):
             print "WARNING: No lake parameter files found. Assuming you have setup a domain with no lakes."
             lakePath = '-9999'
         if not os.path.isfile(routePath):
             print "WARNING: " + routePath + " not found. Assuming this is for gridded routing....."
             routePath = "-9999"
+        if not os.path.isfile(chanParmPath):
+            print "WARNING: " + chanParmPath + " not found. Assuming this is a basin with reach-based routing...."
+            chanParmPath = "-9999"
         if not os.path.isfile(soilPath):
             print "ERROR: " + soilPath + " not found."
             sys.exit(1)
@@ -223,6 +225,12 @@ def main(argv):
         if not os.path.isfile(gwMskPath):
             print "WARNING: " + gwMskPath + " not found. Assuming you are running NWM routing...."
             gwMskPath = "-9999"
+        if not os.path.isfile(optSpinLandFile):
+            print "WARNING: " + optSpinLandFile + " not found for optional spinup states."
+            optSpinLandFile = "-9999"
+        if not os.path.isfile(optSpinHydroFile):
+            print "WARNING: " + optSpinHydroFile + " not found for optional spinup states."
+            optSpinHydroFile = "-9999"
             
         # Look for a NetCDF lake parameter file first, and use it. If not, use the ASCII table instead.
         if os.path.isfile(lakePath1):
@@ -239,22 +247,27 @@ def main(argv):
               "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
               "soil_file,fulldom_file,rtlink_file,spweight_file," + \
               "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
-              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc,dx_hydro,agg_factor,hydro_tbl_spatial) VALUES " + \
-              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
+              "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc," + \
+              "dx_hydro,agg_factor,hydro_tbl_spatial,opt_spin_land_path," + \
+              "opt_spin_hydro_path,chan_parm_path) VALUES " + \
+              "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
               gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
-              county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d)
+              county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d,
+              optSpinLandFile,optSpinHydroFile,chanParmPath)
               
         # Make entry into DB
         try:
-            conn.execute(cmd)
+            #conn.execute(cmd)
+            dbCursor.execute(cmd)
         except:
             print "ERROR: Unable to execute postgres command: " + cmd
             sys.exit(1)
             
         try:
-            db.commit()
+            #db.commit()
+            conn.commit()
         except:
             print "ERROR: Unable to commit postgres command: " + cmd
             sys.exit(1)

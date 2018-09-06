@@ -10,9 +10,7 @@
 
 import sys
 import argparse
-import getpass
 import os
-import time
 import pwd
 import numpy as np
 import datetime
@@ -23,6 +21,7 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
+topDir = libPath
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
 
@@ -42,12 +41,23 @@ def main(argv):
              'calibration for WRF-Hydro')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
                         help='Job ID specific to calibration spinup.')
-    parser.add_argument('--hostname',type=str,nargs='?',
-                        help='Optional hostname Postgres DB resides on. Will use localhost if not passed.')
-    parser.add_argument('--portNumber',type=int,nargs='?',
-                        help='Optional port number to connect. Default is 5432.')
+    parser.add_argument('--optDbPath',type=str,nargs='?',
+                        help='Optional alternative path to SQLite DB file.')
     
     args = parser.parse_args()
+    
+    # If the SQLite file does not exist, throw an error.
+    if args.optDbPath is not None:
+        if not os.path.isfile(args.optDbPath):
+            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            sys.exit(1)
+        else:
+            dbPath = args.optDbPath
+    else:
+        dbPath = topDir + "wrfHydroCalib.db"
+        if not os.path.isfile(dbPath):
+            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            sys.exit(1)
     
     # Establish the beginning timestamp for this program.
     begTimeStamp = datetime.datetime.now()
@@ -58,31 +68,7 @@ def main(argv):
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
-    
-    # Lookup database username/login credentials based on username
-    # running program.
-    try:
-        pwdTmp = getpass.getpass('Enter Database Password: ')
-        jobData.dbPwd = str(pwdTmp)
-    except:
-        print "ERROR: Unable to authenticate credentials for database."
-        sys.exit(1)
-    
-    jobData.dbUName = 'WH_Calib_rw'
-    
-    if not args.hostname:
-        # We will assume localhost for Postgres DB
-        hostTmp = 'localhost'
-    else:
-        hostTmp = str(args.hostname)
-        
-    if not args.portNumber:
-        # We will default to 5432
-        portTmp = '5432'
-    else:
-        portTmp = str(args.portNumber)
-    jobData.port = portTmp
-    jobData.host = hostTmp
+    jobData.dbPath = dbPath
     
     # Establish database connection.
     db = dbMod.Database(jobData)
@@ -185,10 +171,19 @@ def main(argv):
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database. 
     if int(jobData.spinComplete) != 1:
-        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
-                         " is NOT complete. You must complete the spinup in order" + \
-                         " to run calibration."
-        errMod.errOut(jobData)
+        # Check to see if optional spinup options were enabled. If so, update the spinup status.
+        if staticData.coldStart == 1 or staticData.optSpinFlag != 0:
+            print "Found optional spinup alternatives"
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errOut(jobData)
+        else:
+            jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
+                             " is NOT complete. You must complete the spinup in order" + \
+                             " to run calibration."
+            errMod.errOut(jobData)
         
     if int(jobData.calibComplete) == 1:
         jobData.errMsg = "ERROR: Calibration for job ID: " + str(jobData.jobID) + \
@@ -261,21 +256,6 @@ def main(argv):
         except:
             errMod.errOut(jobData)
             
-    # NOTE: Comented this out for V1.2. This is really an unecessary check on the workflow.
-    # Since the statuses for each basin are being read in from the DB, the workflow should
-    # be able to handle seeing existing jobs running. Keeping this code here for now
-    # in case there is a desire to put this back in the future. 
-    # Loop through each basin in the calibration job. There should always be at least 
-    # ONE job running for a given basin. If any jobs are found, exit gracefully.
-    #for basin in range(0,len(jobData.gages)):
-    #    # First pull the unique ID for the basin. 
-    #    calibStatus = statusMod.checkCalibJob(jobData,basin)
-    #    modelStatus = statusMod.checkBasJob(jobData,basin)
-    #    if calibStatus or modelStatus:
-    #        # Remove LOCK file
-    #        os.remove(lockPath)
-    #        sys.exit(0)
-            
     # Begin an "infinite" do loop. This loop will continue to loop through all 
     # the basins until calibrations are complete. Basins are allowed ONE failure. A restart
     # will be attempted. If the restart fails again, a LOCK file is placed into the
@@ -323,11 +303,6 @@ def main(argv):
     
     # Pull all the status values into the keySlot array. 
     for basin in range(0,len(jobData.gages)):
-        #try:
-        #    domainID = db.getDomainID(jobData,str(jobData.gages[basin]))
-        #except:
-        #    errMod.errOut(jobData)
-            
         domainID = jobData.gageIDs[basin]
             
         if domainID == -9999:
@@ -380,7 +355,6 @@ def main(argv):
                 if keyStatusCheck1 == 1.0:
                     continue
                 else:
-                    print "ITERATION = " + str(iteration)
                     try:
                         calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],
                                           jobData.gages[basin],keySlot,basin,iteration,pbsJobId)

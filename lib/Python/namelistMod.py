@@ -82,17 +82,24 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(' START_HOUR = 00\n')
         fileObj.write(' START_MIN = 00\n')
         fileObj.write('\n')
-        if typeFlag == 1:
+        if jobData.coldStart == 1:
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
         else:
-            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
-            inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
+            if jobData.optSpinFlag == 1:
+                inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + gageData.optLandRstFile + "'\n"
+            else:
+                if typeFlag == 1:
+                    inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
+                else:
+                    rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
+                    inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
+        fileObj.write(' ! Specification of simulation length in days OR hours\n')
         inStr = ' KHOUR = ' + str(dt.days*24 + int(dt.seconds/3600.0)) + '\n'
-        #inStr = ' KDAY = ' + str(dt.days) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
+        fileObj.write(' ! Physics options (see the documentation for details)\n')
         inStr = ' DYNAMIC_VEG_OPTION = ' + str(jobData.dynVegOpt) + '\n'
         fileObj.write(inStr)
         inStr = ' CANOPY_STOMATAL_RESISTANCE_OPTION = ' + str(jobData.canStomOpt) + '\n'
@@ -122,7 +129,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' SURFACE_RESISTANCE_OPTION = ' + str(jobData.sfcResOpt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        fileObj.write('\n')
+        fileObj.write(' ! Timestep in units of seconds\n')
         inStr = ' FORCING_TIMESTEP = ' + str(jobData.fDT) + '\n'
         fileObj.write(inStr)
         inStr = ' NOAH_TIMESTEP = ' + str(jobData.lsmDt) + '\n'
@@ -130,20 +137,17 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' OUTPUT_TIMESTEP = ' + str(jobData.lsmOutDt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        # Manually over-writing the restart frequency for now. 
-        #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(dt.days*24+dt.seconds/3600.0)) + '\n'
-        inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
-        #inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
+        fileObj.write(' ! Land surface model restart file write frequency\n')
+        if int(jobData.lsmRstFreq) == -9999:
+            inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
+        else:
+            inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
         fileObj.write(inStr)
+        fileObj.write('\n')
         fileObj.write(' ! Split output after split_output_count output times\n')
         fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
         fileObj.write('\n')
-        fileObj.write('\n')
-        fileObj.write(' ! XSTART = 1\n')
-        fileObj.write(' ! XEND = 1\n')
-        fileObj.write(' ! YSTART = 1\n')
-        fileObj.write(' ! YEND = 1\n')
-        fileObj.write('\n')
+        fileObj.write(' ! Soil layer specification\n')
         fileObj.write(' NSOIL = 4\n')
         inStr = ' soil_thick_input(1) = ' + str(jobData.soilThick[0]) + '\n'
         fileObj.write(inStr)
@@ -154,9 +158,11 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' soil_thick_input(4) = ' + str(jobData.soilThick[3]) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
+        fileObj.write(' ! Forcing data measurement height for winds, temp, humidity\n')
         inStr = ' ZLVL = ' + str(jobData.zLvl) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
+        fileObj.write(' ! Restart file format options\n')
         fileObj.write(' rst_bi_in = 0\n')
         fileObj.write(' rst_bi_out = 0\n')
         fileObj.write('\n')
@@ -197,17 +203,18 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     try:
         fileObj = open(pathOut,'w')
         fileObj.write('&HYDRO_nlist\n')
-        fileObj.write('\n')
-        fileObj.write('!!!! SYSTEM COUPLING !!!!\n')
+        fileObj.write('!!!! ---------------------- SYSTEM COUPLING ---------------------- !!!!\n')
         fileObj.write('!Specify what is being coupled: 1=HRLDAS (offline Noah-LSM), 2=WRF, 3=NASA/LIS, 4=CLM\n')
+        fileObj.write('\n')
         fileObj.write(' sys_cpl = 1\n')
         fileObj.write('\n')
-        fileObj.write('!!!! MODEL INPUT DATA FILES !!!!\n')
-        fileObj.write('!Specify land surface model gridded input data file...(e.g.: "geo_em.d03.nc")\n')
+        fileObj.write('!!!! ---------------------- MODEL INPUT DATA FILES ---------------------- !!!!\n')
+        fileObj.write('\n')
+        fileObj.write('!Specify land surface model gridded input data file...(e.g.: "geo_em.d01.nc")\n')
         inStr = ' GEO_STATIC_FLNM = "' + str(gageData.geoFile) + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        fileObj.write('!Specify the high-resolution routing terrain input data file...(e.g.: "Fulldom_hires_hydrofile.nc")\n')
+        fileObj.write('!Specify the high-resolution routing terrain input data file...(e.g.: "Fulldom_hires.nc")\n')
         if genFlag == 0:
             inStr = ' GEO_FINEGRID_FLNM = "' + str(gageData.fullDom) + '"' + '\n'
         if genFlag == 1:
@@ -238,7 +245,9 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                 raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
-        fileObj.write('! Specify the spatial hydro parameters file (e.g.: "HYDRO_TBL_2D.nc")\n')
+        fileObj.write('\n')
+        fileObj.write('! Specify the spatial hydro parameters file (e.g.: "hydro2dtbl.nc")\n')
+        fileObj.write('! If you specify a filename and the file does not exist, it will be created for you.\n')
         if genFlag == 0:
             # Spinup
             inStr = ' HYDROTBL_F = "' + str(gageData.hydroSpatial) + '"' + '\n'
@@ -274,7 +283,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' HYDROTBL_F = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        fileObj.write('! Specify spatial metadata file for land surface grid.\n')
+        fileObj.write('! Specify spatial metadata file for land surface grid. (e.g. "GEOGRID_LDASOUT_Spatial_Metadata.nc")\n')
         if str(gageData.landSpatialMeta) == '-9999':
             inStr = 'LAND_SPATIAL_META_FLNM = \'\'' + '\n'
         else:
@@ -282,23 +291,33 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the name of the restart file if starting from restart... comment out with ! if not...\n')
-        if typeFlag == 1: # Spinup
+        if jobData.coldStart == 1:
             inStr = ' !RESTART_FILE = ""' + '\n'
-            fileObj.write(inStr)
-        elif typeFlag == 2: # Calibration
-            restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-            if not os.path.isfile(restartFile):
-                jobData.errMsg = "ERROR: Failure to find: " + restartFile
-                raise Exception()
-            inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
-            fileObj.write(inStr)
+        else:
+            if jobData.optSpinFlag == 1:
+                inStr = ' RESTART_FILE = \"' + gageData.optHydroRstFile + '\"\n'
+            else:
+                if typeFlag == 1: # Spinup
+                    inStr = ' !RESTART_FILE = ""' + '\n'
+                elif typeFlag == 2: # Calibration
+                    restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+                    if not os.path.isfile(restartFile):
+                        jobData.errMsg = "ERROR: Failure to find: " + restartFile
+                        raise Exception()
+                    inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
-        fileObj.write('!!!! MODEL SETUP OPTIONS !!!!\n')
+        fileObj.write('!!!! ---------------------- MODEL SETUP OPTIONS ---------------------- !!!!\n')
+        fileObj.write('\n')
         fileObj.write('!Specify the domain or nest number identifier...(integer)\n')
         fileObj.write(' IGRID = 1\n')
         fileObj.write('\n')
         fileObj.write('!Specify the restart file write frequency...(minutes)\n')
-        inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
+        fileObj.write(' ! A value of -99999 will output restarts on the first day of the month only.\n')
+        if int(jobData.hydroRstFreq) == -99999:
+            inStr = ' rst_dt = -99999\n'
+        else:
+            inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n') 
         fileObj.write('! Reset the LSM soil states from the high-res routing restart file (1=overwrite, 0 = no overwrite)\n')
@@ -321,8 +340,13 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             # For cold-start spinups
             inStr = "GW_RESTART = 0\n"
         else:
-            # For all other runs that are not cold-start spinups. 
-            inStr = "GW_RESTART = 1\n"
+            if jobData.gwBaseFlag == 0:
+                # If the user has turned off the ground water buckets, 
+                # turn this option off.
+                inStr = "GW_RESTART = 0\n"
+            else:
+                # For all other runs that are not cold-start spinups. 
+                inStr = "GW_RESTART = 1\n"
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!!!!------------ MODEL OUTPUT CONTROL ---------------!!!\n')
@@ -389,7 +413,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('              ! 0 = no output, 1 = output\n')
         fileObj.write('\n')
-        fileObj.write('!!!! PHYSICS OPTIONS AND RELATED SETTINGS !!!!\n')
+        fileObj.write('!!!! ---------------------- PHYSICS OPTIONS AND RELATED SETTINGS ---------------------- !!!!\n')
         fileObj.write('\n')
         fileObj.write('!Specify the number of soil layers (integer) and the depth of the bottom of of each layer (meters)...\n')
         fileObj.write('! Notes: In Version 1 of WRF-Hydro these must be the same as in the namelist.input file\n')
@@ -426,6 +450,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' OVRTSWCRT = ' + str(jobData.ovrRtFlag) + '\n'
         fileObj.write(inStr)
         fileObj.write('!Specify overland flow routing option: 1=Steepest Descent(D8) 2=CASC2D\n')
+        fileObj.write(' ! NOTE: Currently subsurface flow is only steepest descent\n')
         inStr = ' rt_option = ' + str(jobData.rtOpt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
@@ -444,7 +469,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! If using channel_option=2, activate the compound channel formulation? (Default=.FALSE.)\n')
-        if jobData.chnRtOpt == 2:
+        if jobData.cmpdChan == 1:
             fileObj.write('compound_channel = .TRUE.\n')
         else:
             fileObj.write('compound_channel = .FALSE.\n')
@@ -468,36 +493,40 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             inStr = ' gwbasmskfil = "' + str(gageData.gwMask) + '"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        fileObj.write('! Groundwater bucket parameter file (e.g.: "GWBUCKPARM.nc" for netcdf or "GWBUCKPARM.TBL" for text)\n')
-        if genFlag == 0:
-            inStr = ' GWBUCKPARM_file = "' + str(gageData.gwFile) + '"\n'
-        if genFlag == 1:
-            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
-        if genFlag == 2:
-            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
-        if genFlag == 3:
-            pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
-                     str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
-        if genFlag == 4:
-            pthTmp = outDir + "/GWBUCKPARM.nc"
-            if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
-                raise Exception()
-            inStr = ' GWBUCKPARM_file = "' + pthTmp + '"' + '\n'
+        fileObj.write('! Groundwater bucket parameter file (e.g.: "GWBUCKPARM.nc")\n')
+        if jobData.gwBaseFlag == 1:
+            if genFlag == 0:
+                inStr = ' GWBUCKPARM_file = "' + str(gageData.gwFile) + '"\n'
+            if genFlag == 1:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+            if genFlag == 2:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+            if genFlag == 3:
+                pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
+                         str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
+            if genFlag == 4:
+                pthTmp = outDir + "/GWBUCKPARM.nc"
+                if not os.path.isfile(pthTmp):
+                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    raise Exception()
+                inStr = ' GWBUCKPARM_file = "' + pthTmp + '"' + '\n'
+        else:
+            # We aren't running with the ground water bucket model.
+            inStr = ' GWBUCKPARM_file = "-9999"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! User defined mapping, such NHDPlus\n')
@@ -515,10 +544,15 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('\n')
         fileObj.write('&NUDGING_nlist\n')
         fileObj.write('\n')
+        fileObj.write(' ! Path to the "timeslice" observation files.\n')
         fileObj.write('timeSlicePath = "./nudgingTimeSliceObs"\n')
         fileObj.write('\n')
         fileObj.write('nudgingParamFile  = "foo"\n')
-        fileObj.write('!netwkReExFile = "foo"\n')
+        fileObj.write('\n')
+        fileObj.write(' ! Nudging restart file = "nudgingLastObsFile"\n')
+        fileObj.write(' ! nudgingLastObsFile defaults to "", which will look for nudgingLastObs.YYYY-mm-dd_HH:MM:SS.nc\n')
+        fileObj.write(' !  **AT THE INITIALIZATION TIME OF THE RUN**. Set to a missing file to use no restart.\n')
+        fileObj.write(' !nudgingLastObsFile = "foo"\n')
         fileObj.write('\n')
         fileObj.write('!! Parallel input of nudging timeslice observation files?\n')
         fileObj.write(' readTimeSliceParallel = .TRUE.\n')
@@ -526,9 +560,42 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('! TemporalPersistence defaults to true, only runs if necessary params present.\n')
         fileObj.write(' temporalPersistence = .TRUE.\n')
         fileObj.write('\n')
-        fileObj.write('! nudgingLastObsFile defaults to '', which will look for nudgingLastObs.YYYY-mm-dd_HH:MM:SS.nc\n')
-        fileObj.write('!   **AT THE INITALIZATION TIME OF THE RUN**. Set to a missing file to use no restart.\n')
-        fileObj.write('!nudgingLastObsFile   = "notAFile.junk"\n')
+        fileObj.write(' ! The total number of last (obs,modeled) pairs to save in nudgingLastObs for\n')
+        fileObj.write(' ! removal of bias. This is the maximum array length. (This option is active when persistBias=FALSE)\n')
+        fileObj.write(' ! (Default=960=10days @15 min obs resolution, if all the obs are present and no longer if not.)\n')
+        fileObj.write(' nLastObs = 960\n')
+        fileObj.write('\n')
+        fileObj.write(' ! If using temporalPersistence the last observation persists by default.\n')
+        fileObj.write(' ! This option instead persists the bias after the last observation.\n')
+        fileObj.write(' persistBias = .FALSE.\n')
+        fileObj.write('\n')
+        fileObj.write(' ! AnA (FALSE) vs Forecast (TRUE) bias persistence.\n')
+        fileObj.write(' ! If persistBias: Does the window for calculating the bias end at\n')
+        fileObj.write(' ! model init time (=t0)?\n')
+        fileObj.write(' ! FALSE = window ends at model time (moving),\n')
+        fileObj.write(' ! TRUE = window ends at init=t0(fcst) time.\n')
+        fileObj.write(' ! (If commented out, Default=FALSE) time.\n')
+        fileObj.write(' ! Note: Perfect restart tests require this option to be .FALSE.\n')
+        fileObj.write(' biasWindowBeforeT0 = .FALSE.\n')
+        fileObj.write('\n')
+        fileObj.write(' ! If persistBias: Only use this many last (obs,modeled) pairs. (If Commented out, Default=-1*nLastObs)\n')
+        fileObj.write(' ! > 0: apply an age-based filter, units=hours.\n')
+        fileObj.write(' ! = 0: apply no additional filter, use all available/usable obs.\n')
+        fileObj.write(' ! < 0: apply an count-based filter, units=count\n')
+        fileObj.write(' maxAgePairsBiasPersist = -960\n')
+        fileObj.write('\n')
+        fileObj.write(' ! If persistBias: The minimum number of last (obs,modeled) pairs, with age less than\n')
+        fileObj.write(' ! maxAgePairsBiasPersist, required to apply a bias correction. (default=8)\n')
+        fileObj.write(' minNumPairsBiasPersist = 8\n')
+        fileObj.write('\n')
+        fileObj.write(' ! If persistBias: give more weight to observations closer in time? (default=FALSE)\n')
+        fileObj.write(' invDistTimeWeightBias = .TRUE.\n')
+        fileObj.write('\n')
+        fileObj.write(' ! If persistBias: "No constructive interference in bias correction?", Reduce the bias adjustment\n')
+        fileObj.write(' ! when the model and the bias adjustment have the same sign relative to the modeled flow at t0?\n')
+        fileObj.write(' (default=FALSE)\n')
+        fileObj.write(' ! Note: Perfect restart tests require this option to be .FALSE.\n')
+        fileObj.write(' noConstInterBias = .FALSE.\n')
         fileObj.write('/')
         fileObj.close
     except:

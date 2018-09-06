@@ -49,15 +49,23 @@ def errOut(jobData):
         print msgContent
     sys.exit(1)
         
-def wipeJobDir(jobData):
+def wipeJobDir(jobData,db):
     # Generic function to remove job directory that was not successfully 
-    # created during initialization routines.
+    # created during initialization routines. This function also calls the DB 
+    # to remove any table entries that were made for this failed attempt to iniitalize
+    # an experiment.
     jobDir = jobData.outDir + "/" + jobData.jobName
     try:
         shutil.rmtree(jobDir)
     except:
         print "ERROR: Failure to remove: " + jobDir + " Please remove manually."
         raise
+        
+    # Remove the DB entries that were made.
+    try:
+        db.cleanupJob(jobData)
+    except:
+        print "ERROR: Failure to delete entries for job ID: " + str(jobData.jobID)
         
 def removeOutput(jobData,runDir):
     """
@@ -176,7 +184,7 @@ def cleanCalib(jobData,workDir,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + statsTbl
             raise
             
-def scrubParams(jobData,runDir):
+def scrubParams(jobData,runDir,staticData):
     """
     Generic function to remove parameter files generated after calibration.
     This is done to remove the risk of a model being ran with the improper
@@ -187,6 +195,7 @@ def scrubParams(jobData,runDir):
     hydroTbl = runDir + "/HYDRO_TBL_2D.nc"
     soilFile = runDir + "/soil_properties.nc"
     gwFile = runDir + '/GWBUCKPARM.nc'
+    chanParmFile = runDir + "/CHANPARM.TBL"
 
     if os.path.isfile(fullDomFile):
         try:
@@ -209,12 +218,22 @@ def scrubParams(jobData,runDir):
             jobData.errMsg = "ERROR: Failure to remove: " + soilFile
             raise
             
-    if os.path.isfile(gwFile):
-        try:
-            os.remove(gwFile)
-        except:
-            jobData.errMsg = "ERROR: Failure to remove: " + gwFile
-            raise
+    if staticData.gwBaseFlag == 1:
+        if os.path.isfile(gwFile):
+            try:
+                os.remove(gwFile)
+            except:
+                jobData.errMsg = "ERROR: Failure to remove: " + gwFile
+                raise
+                
+    if staticData.chnRtOpt == 3:
+        # We are running gridded routing. Go ahead and remove CHANPARM
+        if os.path.isfile(chanParmFile):
+            try:
+                os.remove(chanParmFile)
+            except:
+                jobData.errMsg = "ERRROR: Failure to remove: " + chanParmFile
+                raise
 
 def cleanRunDir(jobData,runDir):
     """
