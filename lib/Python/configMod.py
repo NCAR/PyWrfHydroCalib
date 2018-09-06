@@ -260,7 +260,7 @@ class jobMeta:
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
-        self.cmpdChan = int(parser.et('hydroPhysics','compoundChannel'))
+        self.cmpdChan = int(parser.get('hydroPhysics','compoundChannel'))
         
 def readConfig(configFile):
     """
