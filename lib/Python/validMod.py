@@ -1782,8 +1782,8 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     """
     Generic function to link to necessary restart files from the spinup.
     """
-    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    link1 = runDir + "/RESTART." + statusData.bValidDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link2 = runDir + "/HYDRO_RST." + statusData.bValidDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     if staticData.optSpinFlag == 0: 
         # Check to make sure symbolic link to spinup state exists.
         check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"

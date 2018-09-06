@@ -299,7 +299,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             else:
                 if typeFlag == 1: # Spinup
                     inStr = ' !RESTART_FILE = ""' + '\n'
-                elif typeFlag == 2: # Calibration
+                elif typeFlag == 2: # Restart
                     restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
                     if not os.path.isfile(restartFile):
                         jobData.errMsg = "ERROR: Failure to find: " + restartFile
