@@ -725,7 +725,7 @@ class Database(object):
             if not results:
                 # Create "empty" entry into table.
                 sqlCmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResObj\",best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
                 try:
@@ -767,7 +767,7 @@ class Database(object):
                 # Create "empty" entry into table.
                 # First for hourly stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResObj\",\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
                 try:
@@ -781,7 +781,7 @@ class Database(object):
                     
                 # Next for daily stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResObj\",\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
                 try:
