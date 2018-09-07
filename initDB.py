@@ -134,7 +134,7 @@ def main(argv):
                         (jobID integer, domainID integer, simulation text,
                         evalPeriod text, objfnVal real, bias real, rmse real,
                         cor real, nse real, nselog real, nseWt real, kge real,
-                        msof real, hyperResMultiObj real,)''')
+                        msof real, hyperResMultiObj real)''')
     except:
         errOut(dbConn,"Unable to create table: Valid_Stats.",dbPath)
     
