@@ -180,9 +180,11 @@ for (i in 1:length(runList[[1]])) {
       statNseWt <- NseWt(chrt.obj$q_cms, chrt.obj$obs)
       statKge <- Kge(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
       statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs)
+      statHyperResMultiObj <- hyperResMultiObj(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
 
       # Archive results
-      validStats_new <- list(runList[["run"]][i], dtList[["period"]][j], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+      #validStats_new <- list(runList[["run"]][i], dtList[["period"]][j], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+      validStats_new <- list(runList[["run"]][i], dtList[["period"]][j], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)
       validStats[loopcnt,] <- validStats_new
       loopcnt <- loopcnt + 1
    }
