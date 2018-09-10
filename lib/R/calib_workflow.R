@@ -206,8 +206,7 @@ if (cyclecount > 0) {
 
    # Calc objective function
    F_new <- objFunc(chrt.obj$q_cms, chrt.obj$obs)
-   #if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge")) F_new <- 1 - F_new
-   if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge", "hyperResMultiObj")) F_new <- 1 - F_new
+   if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge")) F_new <- 1 - F_new
 
    # Calc stats
    chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
