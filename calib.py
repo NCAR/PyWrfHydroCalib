@@ -14,6 +14,7 @@ import os
 import pwd
 import numpy as np
 import datetime
+import time
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -361,27 +362,27 @@ def main(argv):
                     except:
                         errMod.errOut(jobData)
                 # Temporary for Cheyenne to slow down the strain on PBS. 
-                #keyStatusCheck2 = keySlot[basin,iteration]
+                keyStatusCheck2 = keySlot[basin,iteration]
                 # Put some spacing between launching model simulations to slow down que geting 
                 # overloaded.
-                #if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.5:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.25:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.75:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.75 and keyStatusCheck2 == 0.9:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.9:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
-                #    time.sleep(15)
-                #if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 1.0:
-                #    time.sleep(15)
+                if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.5:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.25:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.75:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.75 and keyStatusCheck2 == 0.9:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.9:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
+                    time.sleep(15)
+                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 1.0:
+                    time.sleep(15)
                     
                 # TEMPORARY FOR CHEYENNE
                 # Check to make sure program hasn't passed a prescribed time limit. If it has,
