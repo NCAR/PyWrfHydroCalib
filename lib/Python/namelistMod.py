@@ -304,21 +304,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the name of the restart file if starting from restart... comment out with ! if not...\n')
-        if typeFlag == 2:
-            # We are restarting a model simulation that either failed, or was killed. 
-            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
-            inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
-        if typeFlag == 3:
-            # This is the beginning of a new sensitivity/calibration/validation
-            # simulation.
-            if jobData.coldStart == 1:
-                inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n'
-            if jobData.optSpinFlag == 1:
-                inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + gageData.optLandRstFile + "'\n"
-            if jobData.optSpinFlag == 0 and jobData.coldStart == 0:
-                rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
-                inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
-                
         if typeFlag == 1:
             # We are cold-starting this simulation. This will most likely be for spinup
             # purposes.
