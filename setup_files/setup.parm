@@ -81,6 +81,7 @@ calibMethod = DDS
 # 4.) NseWt
 # 5.) Kge
 # 6.) Msof
+# 7.) hyperResMultiObj
 objectiveFunction = Nse
 
 # DDS specific parameters. Leave blank if not using DDS.

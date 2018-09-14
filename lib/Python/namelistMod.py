@@ -15,6 +15,9 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     
     # NOTE: typeFlag = 1 indicates cold start.
     #       typeFlag = 2 indicates restart.
+    #       typeFlag = 3 indicates this is the initialization of a new model
+    #                    simulation for either a calibration iteration, or 
+    #                    sensitivity simulation, or a validation simulation. 
     # NOTE: genFlag = 0 indicates a spinup - pull all parameter files from 
     #                   gageData
     #       genFlag = 1 indicartes a calibration - pull HYDRO_TBL_2D.nc, Fulldom.nc,
@@ -82,17 +85,27 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(' START_HOUR = 00\n')
         fileObj.write(' START_MIN = 00\n')
         fileObj.write('\n')
-        if jobData.coldStart == 1:
+        if typeFlag == 2:
+            # We are restarting a model simulation that either failed, or was killed. 
+            rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
+            if not os.path.isfile(rstFile):
+                jobData.errMsg = "ERROR: Failure to find: " + rstFile
+                raise Exception()
+            inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
+        if typeFlag == 1:
+            # We are cold-starting this simulation. This will most likely be for
+            # spinup purposes.
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
-        else:
+        if typeFlag == 3:
+            # This is the beginning of a new sensitivity/calibration/validation
+            # simulation.
+            if jobData.coldStart == 1:
+                inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n'
             if jobData.optSpinFlag == 1:
                 inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + gageData.optLandRstFile + "'\n"
-            else:
-                if typeFlag == 1:
-                    inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + "'" + '\n' 
-                else:
-                    rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
-                    inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
+            if jobData.optSpinFlag == 0 and jobData.coldStart == 0:
+                rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
+                inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Specification of simulation length in days OR hours\n')
@@ -291,20 +304,30 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the name of the restart file if starting from restart... comment out with ! if not...\n')
-        if jobData.coldStart == 1:
+        if typeFlag == 1:
+            # We are cold-starting this simulation. This will most likely be for spinup
+            # purposes.
             inStr = ' !RESTART_FILE = ""' + '\n'
-        else:
+        if typeFlag == 2:
+            # We are restarting a model simulation that has either failed, or was killed.
+            restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+            if not os.path.isfile(restartFile):
+                jobData.errMsg = "ERROR: Failure to find: " + restartFile
+                raise Exception()
+            inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
+        if typeFlag == 3:
+            # This is the beginning of a new sensitivity/calibration/validation
+            # simulation.
+            if jobData.coldStart == 1:
+                inStr = ' !RESTART_FILE = ""' + '\n'
             if jobData.optSpinFlag == 1:
                 inStr = ' RESTART_FILE = \"' + gageData.optHydroRstFile + '\"\n'
-            else:
-                if typeFlag == 1: # Spinup
-                    inStr = ' !RESTART_FILE = ""' + '\n'
-                elif typeFlag == 2: # Calibration
-                    restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
-                    if not os.path.isfile(restartFile):
-                        jobData.errMsg = "ERROR: Failure to find: " + restartFile
-                        raise Exception()
-                    inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
+            if jobData.optSpinFlag == 0 and jobData.coldStart == 0:
+                restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+                if not os.path.isfile(restartFile):
+                    jobData.errMsg = "ERROR: Failure to find: " + restartFile
+                    raise Exception()
+                inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!!!! ---------------------- MODEL SETUP OPTIONS ---------------------- !!!!\n')

@@ -387,7 +387,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         
         # Since these are validation simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
-        # when we have cold starts. 
+        # when we have cold starts. Note 2 indicates a restart. 
         startType = 2
         
         try:
@@ -453,8 +453,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         
         # Since these are validation simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
-        # when we have cold starts. 
-        startType = 2
+        # when we have cold starts. Note 3 indicates a fresh model simulation. 
+        startType = 3
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
@@ -919,7 +919,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         
         # Since these are validation simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
-        # when we have cold starts. 
+        # when we have cold starts. Note 2 indicates a restart. 
         startType = 2
         
         try:
@@ -983,8 +983,8 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         
         # Since these are validation simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
-        # when we have cold starts. 
-        startType = 2
+        # when we have cold starts. Note 3 indicates a fresh simulation. 
+        startType = 3
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
@@ -1782,8 +1782,8 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     """
     Generic function to link to necessary restart files from the spinup.
     """
-    link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    link1 = runDir + "/RESTART." + statusData.bValidDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link2 = runDir + "/HYDRO_RST." + statusData.bValidDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     if staticData.optSpinFlag == 0: 
         # Check to make sure symbolic link to spinup state exists.
         check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"

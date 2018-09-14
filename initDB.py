@@ -70,7 +70,7 @@ def main(argv):
                        (jobID integer, domainID integer, iteration integer,
                        objfnVal real, bias real, rmse real, cor real,
                        nse real, nselog real, kge real, fdcerr real,
-                       msof real, best integer, complete real)''')
+                       msof real, hyperResMultiObj real, best integer, complete real)''')
     except:
         errOut(dbConn,"Unable to create table: Calib_Stats.",dbPath)
         
@@ -79,7 +79,7 @@ def main(argv):
                        (jobID integer, domainID integer, iteration integer,
                        objfnVal real, bias real, rmse real, cor real,
                        nse real, nselog real, kge real, fdcerr real,
-                       msof real, timestep text, complete real)''')
+                       msof real, hyperResMultiObj real, timestep text, complete real)''')
     except:
         errOut(dbConn,"Unable to create table: Sens_Stats.",dbPath)
         
@@ -134,7 +134,7 @@ def main(argv):
                         (jobID integer, domainID integer, simulation text,
                         evalPeriod text, objfnVal real, bias real, rmse real,
                         cor real, nse real, nselog real, nseWt real, kge real,
-                        msof real)''')
+                        msof real, hyperResMultiObj real)''')
     except:
         errOut(dbConn,"Unable to create table: Valid_Stats.",dbPath)
     

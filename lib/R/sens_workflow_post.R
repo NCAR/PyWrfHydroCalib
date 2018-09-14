@@ -14,7 +14,8 @@ source(namelistFile)
 objFunc <- get(objFn)
 
 # Metrics
-metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+#metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
 
 #########################################################
 # MAIN CODE
@@ -93,11 +94,13 @@ for (cyclecount in 1:nrow(x_all)) {
   statNseWt <- NseWt(chrt.h$q_cms, chrt.h$obs)
   statKge <- Kge(chrt.h$q_cms, chrt.h$obs, na.rm=TRUE)
   statMsof <- Msof(chrt.h$q_cms, chrt.h$obs)
+  statHyperResMultiObj <- hyperResMultiObj(chrt.h$q_cms, chrt.h$obs, na.rm=TRUE)
   if (is.na(statMsof)) statMsof <- 0.0 
  
   # Archive results
-  x_archive_h[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
-  
+  #x_archive_h[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+  x_archive_h[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)  
+
   ########################## ####### DAILY CALCULATIONS ###################################################### 
   # Convert to daily
   chrt.d <- Convert2Daily(chrt)
@@ -124,10 +127,12 @@ for (cyclecount in 1:nrow(x_all)) {
   statNseWt <- NseWt(chrt.d$q_cms, chrt.d$obs)
   statKge <- Kge(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
   statMsof <- Msof(chrt.d$q_cms, chrt.d$obs)
+  statHyperResMultiObj <- hyperResMultiObj(chrt.d$q_cms, chrt.d$obs, na.rm=TRUE)
   if (is.na(statMsof)) statMsof <- 0.0
   
   # Archive results
-  x_archive[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+  #x_archive[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+  x_archive[cyclecount,] <- c(x_all[cyclecount,], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)
 }
 
 # Interim save

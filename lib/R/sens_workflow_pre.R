@@ -16,7 +16,8 @@ source(namelistFile)
 objFunc <- get(objFn)
 
 # Metrics
-metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+#metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+metrics <- c("objFn", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
 
 #########################################################
 # MAIN CODE

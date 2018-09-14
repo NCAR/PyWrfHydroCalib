@@ -166,6 +166,7 @@ def main(argv):
     idOut.createVariable("calibKge","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibFdc","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibMsof","f8",("numGages","numIterations"),fill_value=-9999)
+    idOut.createVariable("calibHyperResMultiObj","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibBest","f8",("numGages","numIterations"),fill_value=-9999)
     
     # Loop through the calibration parameters, extract information for each 
@@ -258,6 +259,17 @@ def main(argv):
             if os.path.isfile(outPath):
                 os.remove(outPath)
             sys.exit(1)
+
+        sqlCmd = "SELECT \"hyperResMultiObj\" from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsHyperResMultiObj = dbCursor.fetchall()
+        except:
+            print "ERROR: Unable to extract hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
+            idOut.close()
+            if os.path.isfile(outPath):
+                os.remove(outPath)
+            sys.exit(1)
             
         sqlCmd = "SELECT best from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -280,6 +292,7 @@ def main(argv):
             idOut.variables['calibKge'][i,j] = resultsKge[j][0]
             idOut.variables['calibFdc'][i,j] = resultsFdcerr[j][0]
             idOut.variables['calibMsof'][i,j] = resultsMsof[j][0]
+            idOut.variables['calibHyperResMultiObj'][i,j] = resultsHyperResMultiObj[j][0]
             idOut.variables['calibBest'][i,j] = resultsBest[j][0]
             
     idOut.close()

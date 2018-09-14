@@ -725,9 +725,9 @@ class Database(object):
             if not results:
                 # Create "empty" entry into table.
                 sqlCmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
                 try:
                     self.dbCursor.execute(sqlCmd)
                     self.conn.commit()
@@ -767,9 +767,9 @@ class Database(object):
                 # Create "empty" entry into table.
                 # First for hourly stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
                 try:
                     self.dbCursor.execute(sqlCmd)
                     self.conn.commit()
@@ -781,9 +781,9 @@ class Database(object):
                     
                 # Next for daily stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
                 try:
                     self.dbCursor.execute(sqlCmd)
                     self.conn.commit()
@@ -958,6 +958,7 @@ class Database(object):
         kge = str(tblData.kge[0])
         fdc = str(-9999)
         msof = str(tblData.msof[0])
+        hyperResMultiObj = str(tblData.hyperResMultiObj[0])
         
         if int(tblData.best[0]) == 1:
             # This means we need to copy the parameter files that were created over
@@ -1101,6 +1102,7 @@ class Database(object):
                  nse + "', nselog='" + nselog + "', kge='" + \
                  kge + "', fdcerr='" + fdc + \
                  "', msof='" + msof + \
+                 "', hyperResMultiObj='" + hyperResMultiObj + \
                  "', complete='1' where \"jobID\"='" + str(jobID) + "' and " + \
                  "\"domainID\"='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
@@ -1227,7 +1229,8 @@ class Database(object):
             raise
             
         numStats = len(tblData.run)
-        if numStats != 6:
+        #if numStats != 6:
+        if numStats != 2:
             jobData.errMsg = "ERROR: Unexpected length of validation stats table: " + statsTbl
             raise Exception()
             
@@ -1238,13 +1241,14 @@ class Database(object):
         # Loop through table and enter information into DB.
         for stat in range(0,numStats):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
-                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof) values (" + str(jobID) + \
+                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\") values (" + str(jobID) + \
                      "," + str(gageID) + ",'" + tblData.run[stat] + "','" + \
                      tblData.period[stat] + "'," + str(tblData.obj[stat]) + "," + \
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
                      str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
-                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ");"
+                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + \
+                     str(tblData.hyperResMultiObj[stat]) + ");"
                      
             try:
                 self.dbCursor.execute(sqlCmd)

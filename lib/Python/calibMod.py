@@ -749,7 +749,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             
         # Since these are calibration simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
-        # when we have cold starts. 
+        # when we have cold starts. Note 2 indicates we are restarting the model. 
         startType = 2
             
         if startType == 2:
@@ -832,7 +832,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Since these are calibration simulations, we are always going to be 
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. 
-        startType = 2
+        startType = 3
         
         # Create namelist files. 
         try:

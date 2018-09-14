@@ -19,7 +19,8 @@ source(namelistFile)
 objFunc <- get(objFn)
 
 # Metrics
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+#metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
 
 #########################################################
 # MAIN CODE
@@ -216,6 +217,7 @@ if (cyclecount > 0) {
    statNseLog <- NseLog(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
    statNseWt <- NseWt(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
    statKge <- Kge(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   statHyperResMultiObj <- hyperResMultiObj(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
    if (calcDailyStats) {
       statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,10,30))
    } else {
@@ -223,7 +225,8 @@ if (cyclecount > 0) {
    }
 
    # Archive results
-   x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+   #x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
+   x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)
 
    # Evaluate objective function
    if (cyclecount == 1) {
@@ -342,8 +345,10 @@ if (any(x_archive$obj > objFunThreshold)) {
 
    # Plot all the stats
    write("Metrics plot...", stdout())
-   DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
-               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
+   #DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
+   #            iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
+   DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
+               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
@@ -391,8 +396,10 @@ if (any(x_archive$obj > objFunThreshold)) {
 
    # Plot all the stats
    write("Metrics plot...", stdout())
-   DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
-               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
+   #DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
+   #            iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
+   DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
+               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
