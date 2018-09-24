@@ -173,7 +173,7 @@ def main(argv):
     idOut.createVariable("calibRmse","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibCorrelation","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibNse","f8",("numGages","numIterations"),fill_value=-9999)
-    idOut.createVariable("calibNseWt","f8",("numGages","numIterations"),fill_value=-9999)
+    #idOut.createVariable("calibNseWt","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibNseLog","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibKge","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibFdc","f8",("numGages","numIterations"),fill_value=-9999)
@@ -190,7 +190,7 @@ def main(argv):
     idOut.createVariable("validRmse","f8",("numGages","ctrlBest"),fill_value=-9999)
     idOut.createVariable("validCorrelation","f8",("numGages","ctrlBest"),fill_value=-9999)
     idOut.createVariable("validNse","f8",("numGages","ctrlBest"),fill_value=-9999)
-    idOut.createVariable("validNseWt","f8",("numGages","ctrlBest"),fill_value=-9999)
+    #idOut.createVariable("validNseWt","f8",("numGages","ctrlBest"),fill_value=-9999)
     idOut.createVariable("validNseLog","f8",("numGages","ctrlBest"),fill_value=-9999)
     idOut.createVariable("validKge","f8",("numGages","ctrlBest"),fill_value=-9999)
     idOut.createVariable("validFdc","f8",("numGages","ctrlBest"),fill_value=-9999)
@@ -244,16 +244,16 @@ def main(argv):
                 os.remove(outPath)
             sys.exit(1)
             
-        sqlCmd = "SELECT nseWt from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
-        try:
-            dbCursor.execute(sqlCmd)
-            resultsNseWt = dbCursor.fetchall()
-        except:
-            print "ERROR: Unable to extract nseWt stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
+        #sqlCmd = "SELECT nseWt from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
+        #try:
+        #    dbCursor.execute(sqlCmd)
+        #    resultsNseWt = dbCursor.fetchall()
+        #except:
+        #    print "ERROR: Unable to extract nseWt stats for domainID: " + str(jobGageIDs[i][0])
+        #    idOut.close()
+        #    if os.path.isfile(outPath):
+        #        os.remove(outPath)
+        #    sys.exit(1)
             
         sqlCmd = "SELECT nselog from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -327,7 +327,7 @@ def main(argv):
             idOut.variables['calibRmse'][i,j] = resultsRmse[j][0]
             idOut.variables['calibCorrelation'][i,j] = resultsCor[j][0]
             idOut.variables['calibNse'][i,j] = resultsNse[j][0]
-            idOut.variables['calibNseWt'][i,j] = resultsNseWt[j][0]
+            #idOut.variables['calibNseWt'][i,j] = resultsNseWt[j][0]
             idOut.variables['calibNseLog'][i,j] = resultsNseLog[j][0]
             idOut.variables['calibKge'][i,j] = resultsKge[j][0]
             idOut.variables['calibFdc'][i,j] = resultsFdcerr[j][0]
@@ -439,29 +439,29 @@ def main(argv):
         idOut.variables['validNse'][i,1] = resultsTmp[0][0]
         
         # NSE Weight
-        sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
-        try:
-            dbCursor.execute(sqlCmd)
-            resultsTmp = dbCursor.fetchall()
-        except:
-            print "ERROR: Unable to extract control nseWt stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validNseWt'][i,0] = resultsTmp[0][0]
+        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        #try:
+        #    dbCursor.execute(sqlCmd)
+        #    resultsTmp = dbCursor.fetchall()
+        #except:
+        #    print "ERROR: Unable to extract control nseWt stats for domainID: " + str(jobGageIDs[i][0])
+        #    idOut.close()
+        #    if os.path.isfile(outPath):
+        #        os.remove(outPath)
+        #    sys.exit(1)
+        #idOut.variables['validNseWt'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
-        try:
-            dbCursor.execute(sqlCmd)
-            resultsTmp = dbCursor.fetchall()
-        except:
-            print "ERROR: Unable to extract best nseWt stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validNseWt'][i,1] = resultsTmp[0][0]
+        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        #try:
+        #    dbCursor.execute(sqlCmd)
+        #    resultsTmp = dbCursor.fetchall()
+        #except:
+        #    print "ERROR: Unable to extract best nseWt stats for domainID: " + str(jobGageIDs[i][0])
+        #    idOut.close()
+        #    if os.path.isfile(outPath):
+        #        os.remove(outPath)
+        #    sys.exit(1)
+        #idOut.variables['validNseWt'][i,1] = resultsTmp[0][0]
 
         # NSE Log
         sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
