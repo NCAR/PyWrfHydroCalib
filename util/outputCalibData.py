@@ -85,17 +85,17 @@ def main(argv):
     sqlCmd = "SELECT \"domainID\" from \"Calib_Params\" where \"jobID\"=%s;" % args.jobID[0]
     try:
         dbCursor.execute(sqlCmd)
-        results = dbCursor.fetchone()
+        results1 = dbCursor.fetchone()
     except:
         print "ERROR: Unable to execute SQL command: " + sqlCmd
         sys.exit(1)
         
-    if len(results) == 0:
+    if len(results1) == 0:
         print "ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
               " Please confirm job has been initialized."
         sys.exit(1)
         
-    sqlCmd = "SELECT * from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results[0]))
+    sqlCmd = "SELECT * from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results1[0]))
     try:
         dbCursor.execute(sqlCmd)
         results = dbCursor.fetchall()
@@ -112,7 +112,7 @@ def main(argv):
     
     # Extract the parameter names, which will be used later for parameter value
     # extraction using similar logic.
-    sqlCmd = "SELECT \"paramName\" from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results[0]))
+    sqlCmd = "SELECT \"paramName\" from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results1[0]))
     try:
         dbCursor.execute(sqlCmd)
         calibParamNames = dbCursor.fetchall()
