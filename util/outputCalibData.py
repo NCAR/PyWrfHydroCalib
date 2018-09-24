@@ -502,7 +502,7 @@ def main(argv):
         # Loop through each gage
         for i in range(0,numGages):
             # Extract all parameter values for this gage.
-            sqlCmd = "SELECT \"paramValue\" from \"Calib_Params\" where where \"jobID\"=%s and \"domainID\"=%s and \"paramName\"=\"%s\";" % (args.jobID[0],jobGageIDs[i][0],calibParamName[0])
+            sqlCmd = "SELECT \"paramValue\" from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and \"paramName\"=\"%s\";" % (args.jobID[0],jobGageIDs[i][0],calibParamName[0])
             try:
                 dbCursor.execute(sqlCmd)
                 paramsTmp = dbCursor.fetchall()
