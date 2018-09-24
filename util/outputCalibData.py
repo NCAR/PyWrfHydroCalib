@@ -85,17 +85,17 @@ def main(argv):
     sqlCmd = "SELECT \"domainID\" from \"Calib_Params\" where \"jobID\"=%s;" % args.jobID[0]
     try:
         dbCursor.execute(sqlCmd)
-        results = dbCursor.fetchone()
+        results1 = dbCursor.fetchone()
     except:
         print "ERROR: Unable to execute SQL command: " + sqlCmd
         sys.exit(1)
         
-    if len(results) == 0:
+    if len(results1) == 0:
         print "ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
               " Please confirm job has been initialized."
         sys.exit(1)
         
-    sqlCmd = "SELECT * from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results[0]))
+    sqlCmd = "SELECT * from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results1[0]))
     try:
         dbCursor.execute(sqlCmd)
         results = dbCursor.fetchall()
@@ -109,6 +109,16 @@ def main(argv):
         sys.exit(1)
         
     numCalibParams = len(results)
+    
+    # Extract the parameter names, which will be used later for parameter value
+    # extraction using similar logic.
+    sqlCmd = "SELECT \"paramName\" from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results1[0]))
+    try:
+        dbCursor.execute(sqlCmd)
+        calibParamNames = dbCursor.fetchall()
+    except:
+        print "ERROR: Unable to execute SQL command: " + sqlCmd
+        sys.exit(1)
         
     # Create the ouptut NetCDF file that will contain output.
     if args.optOutPath:
@@ -123,6 +133,7 @@ def main(argv):
     idOut.createDimension('numIterations',numIter)
     idOut.createDimension('numParams',numCalibParams)
     idOut.createDimension('gageStrLen',30)
+    idOut.createDimension('ctrlBest',2)
     
     # Create a gage variable that will contain the gage string for each domain.
     idOut.createVariable("gage","S1",("numGages","gageStrLen"))
@@ -162,6 +173,7 @@ def main(argv):
     idOut.createVariable("calibRmse","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibCorrelation","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibNse","f8",("numGages","numIterations"),fill_value=-9999)
+    #idOut.createVariable("calibNseWt","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibNseLog","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibKge","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibFdc","f8",("numGages","numIterations"),fill_value=-9999)
@@ -169,7 +181,23 @@ def main(argv):
     idOut.createVariable("calibHyperResMultiObj","f8",("numGages","numIterations"),fill_value=-9999)
     idOut.createVariable("calibBest","f8",("numGages","numIterations"),fill_value=-9999)
     
-    # Loop through the calibration parameters, extract information for each 
+    # Create the validation statistics variables that will contain the control/best 
+    # stats for each gage. Each gage entry will contain two values: One for
+    # the stats representative of the simulation driven with the control parameter
+    # values and another with stats representative of the simulation driven with the 
+    # calibrated parameter values. 
+    idOut.createVariable("validBias","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validRmse","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validCorrelation","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validNse","f8",("numGages","ctrlBest"),fill_value=-9999)
+    #idOut.createVariable("validNseWt","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validNseLog","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validKge","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validFdc","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validMsof","f8",("numGages","ctrlBest"),fill_value=-9999)
+    idOut.createVariable("validHyperResMultiObj","f8",("numGages","ctrlBest"),fill_value=-9999)
+    
+    # Loop through the gages and extract calibration stats for each 
     # Close the NetCDF output file.
     for i in range(0,numGages):
         sqlCmd = "SELECT bias from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
@@ -215,6 +243,17 @@ def main(argv):
             if os.path.isfile(outPath):
                 os.remove(outPath)
             sys.exit(1)
+            
+        #sqlCmd = "SELECT nseWt from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
+        #try:
+        #    dbCursor.execute(sqlCmd)
+        #    resultsNseWt = dbCursor.fetchall()
+        #except:
+        #    print "ERROR: Unable to extract nseWt stats for domainID: " + str(jobGageIDs[i][0])
+        #    idOut.close()
+        #    if os.path.isfile(outPath):
+        #        os.remove(outPath)
+        #    sys.exit(1)
             
         sqlCmd = "SELECT nselog from \"Calib_Stats\" where \"jobID\"=%s and \"domainID\"=%s;" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -288,6 +327,7 @@ def main(argv):
             idOut.variables['calibRmse'][i,j] = resultsRmse[j][0]
             idOut.variables['calibCorrelation'][i,j] = resultsCor[j][0]
             idOut.variables['calibNse'][i,j] = resultsNse[j][0]
+            #idOut.variables['calibNseWt'][i,j] = resultsNseWt[j][0]
             idOut.variables['calibNseLog'][i,j] = resultsNseLog[j][0]
             idOut.variables['calibKge'][i,j] = resultsKge[j][0]
             idOut.variables['calibFdc'][i,j] = resultsFdcerr[j][0]
@@ -295,6 +335,188 @@ def main(argv):
             idOut.variables['calibHyperResMultiObj'][i,j] = resultsHyperResMultiObj[j][0]
             idOut.variables['calibBest'][i,j] = resultsBest[j][0]
             
+    # Loop through each gage and extract the stats for the control/best simulations 
+    # for the validation period. 
+    for i in range(0,numGages):
+        # Bias
+        sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validBias'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control bias stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp= dbCursor.fetchall()
+            idOut.variables['validBias'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best bias stats for domainID: " + str(jobGageIDs[i][0])
+        
+        # RMSE
+        sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validRmse'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control RMSE stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validRmse'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best RMSE stats for domainID: " + str(jobGageIDs[i][0])
+        
+        # Correlation Coefficient
+        sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validCorrelation'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control correlation stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validCorrelation'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best correlation stats for domainID: " + str(jobGageIDs[i][0])
+
+        # NSE
+        sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNse'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control nse stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNse'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best nse stats for domainID: " + str(jobGageIDs[i][0])
+        
+        # NSE Weight
+        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        #try:
+        #    dbCursor.execute(sqlCmd)
+        #    resultsTmp = dbCursor.fetchall()
+        #    idOut.variables['validNseWt'][i,0] = resultsTmp[0][0]
+        #except:
+        #    print "WARNING: Unable to extract control nseWt stats for domainID: " + str(jobGageIDs[i][0])
+        
+        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        #try:
+        #    dbCursor.execute(sqlCmd)
+        #    resultsTmp = dbCursor.fetchall()
+        #    idOut.variables['validNseWt'][i,1] = resultsTmp[0][0]
+        #except:
+        #    print "WARNING: Unable to extract best nseWt stats for domainID: " + str(jobGageIDs[i][0])
+
+        # NSE Log
+        sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNseLog'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control nse log stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNseLog'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best nse log stats for domainID: " + str(jobGageIDs[i][0])
+
+        # KGE
+        sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validKge'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control kge stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validKge'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best kge stats for domainID: " + str(jobGageIDs[i][0])
+
+        # MSOF
+        sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validMsof'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control msof stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validMsof'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best msof stats for domainID: " + str(jobGageIDs[i][0])
+
+        # Hyper Resolution Objective Function
+        sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validHyperResMultiObj'][i,0] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract control hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
+        
+        sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
+        try:
+            dbCursor.execute(sqlCmd)
+            resultsTmp = dbCursor.fetchall()
+            idOut.variables['validHyperResMultiObj'][i,1] = resultsTmp[0][0]
+        except:
+            print "WARNING: Unable to extract best hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
+        
+            
+           
+    # Loop through all the calibration parameters for this job. For each parameter
+    # the program will extract all parameter values for each gage, for each iteration.
+    for calibParamName in calibParamNames:
+        # First create a NetCDF variable for this calibration parameter.
+        idOut.createVariable(calibParamName[0],"f8",("numGages","numIterations"),fill_value = -9999)
+        
+        # Loop through each gage
+        for i in range(0,numGages):
+            # Extract all parameter values for this gage.
+            sqlCmd = "SELECT \"paramValue\" from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and \"paramName\"=\"%s\";" % (args.jobID[0],jobGageIDs[i][0],calibParamName[0])
+            try:
+                dbCursor.execute(sqlCmd)
+                paramsTmp = dbCursor.fetchall()
+            except:
+                print "ERROR: Unable to extract calibration parameter: " + calibParamName[0] + " for domainID: " + str(jobGageIDs[i][0])
+                idOut.close()
+                if os.path.isfile(outPath):
+                    os.remove(outPath)
+                sys.exit(1)
+                
+            # Place parameter values into the NetCDF file accordingly.
+            for j in range(0,numIter):
+                idOut.variables[calibParamName[0]][i,j] = paramsTmp[j][0]
+        
     idOut.close()
     
 if __name__ == "__main__":
