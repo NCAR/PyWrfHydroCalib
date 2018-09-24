@@ -343,225 +343,153 @@ def main(argv):
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validBias'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control bias stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validBias'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control bias stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp= dbCursor.fetchall()
+            idOut.variables['validBias'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best bias stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validBias'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best bias stats for domainID: " + str(jobGageIDs[i][0])
         
         # RMSE
         sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validRmse'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control RMSE stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validRmse'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control RMSE stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validRmse'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best RMSE stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validRmse'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best RMSE stats for domainID: " + str(jobGageIDs[i][0])
         
         # Correlation Coefficient
         sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validCorrelation'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control correlation stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validCorrelation'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control correlation stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validCorrelation'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best correlation stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validCorrelation'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best correlation stats for domainID: " + str(jobGageIDs[i][0])
 
         # NSE
         sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNse'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control nse stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validNse'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control nse stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNse'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best nse stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validNse'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best nse stats for domainID: " + str(jobGageIDs[i][0])
         
         # NSE Weight
         #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         #try:
         #    dbCursor.execute(sqlCmd)
         #    resultsTmp = dbCursor.fetchall()
+        #    idOut.variables['validNseWt'][i,0] = resultsTmp[0][0]
         #except:
-        #    print "ERROR: Unable to extract control nseWt stats for domainID: " + str(jobGageIDs[i][0])
-        #    idOut.close()
-        #    if os.path.isfile(outPath):
-        #        os.remove(outPath)
-        #    sys.exit(1)
-        #idOut.variables['validNseWt'][i,0] = resultsTmp[0][0]
+        #    print "WARNING: Unable to extract control nseWt stats for domainID: " + str(jobGageIDs[i][0])
         
         #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         #try:
         #    dbCursor.execute(sqlCmd)
         #    resultsTmp = dbCursor.fetchall()
+        #    idOut.variables['validNseWt'][i,1] = resultsTmp[0][0]
         #except:
-        #    print "ERROR: Unable to extract best nseWt stats for domainID: " + str(jobGageIDs[i][0])
-        #    idOut.close()
-        #    if os.path.isfile(outPath):
-        #        os.remove(outPath)
-        #    sys.exit(1)
-        #idOut.variables['validNseWt'][i,1] = resultsTmp[0][0]
+        #    print "WARNING: Unable to extract best nseWt stats for domainID: " + str(jobGageIDs[i][0])
 
         # NSE Log
         sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNseLog'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control nse log stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validNseLog'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control nse log stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validNseLog'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best nse log stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validNseLog'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best nse log stats for domainID: " + str(jobGageIDs[i][0])
 
         # KGE
         sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validKge'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control kge stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validKge'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control kge stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validKge'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best kge stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validKge'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best kge stats for domainID: " + str(jobGageIDs[i][0])
 
         # MSOF
         sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validMsof'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control msof stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validMsof'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control msof stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validMsof'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best msof stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validMsof'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best msof stats for domainID: " + str(jobGageIDs[i][0])
 
         # Hyper Resolution Objective Function
         sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validHyperResMultiObj'][i,0] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract control hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validHyperResMultiObj'][i,0] = resultsTmp[0][0]
+            print "WARNING: Unable to extract control hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
         
         sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
+            idOut.variables['validHyperResMultiObj'][i,1] = resultsTmp[0][0]
         except:
-            print "ERROR: Unable to extract best hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
-            idOut.close()
-            if os.path.isfile(outPath):
-                os.remove(outPath)
-            sys.exit(1)
-        idOut.variables['validHyperResMultiObj'][i,1] = resultsTmp[0][0]
+            print "WARNING: Unable to extract best hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
         
             
            
