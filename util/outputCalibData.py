@@ -339,7 +339,7 @@ def main(argv):
     # for the validation period. 
     for i in range(0,numGages):
         # Bias
-        sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -351,7 +351,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validBias'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp= dbCursor.fetchall()
@@ -364,7 +364,7 @@ def main(argv):
         idOut.variables['validBias'][i,1] = resultsTmp[0][0]
         
         # RMSE
-        sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -376,7 +376,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validRmse'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -389,7 +389,7 @@ def main(argv):
         idOut.variables['validRmse'][i,1] = resultsTmp[0][0]
         
         # Correlation Coefficient
-        sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -401,7 +401,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validCorrelation'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -414,7 +414,7 @@ def main(argv):
         idOut.variables['validCorrelation'][i,1] = resultsTmp[0][0]
 
         # NSE
-        sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -426,7 +426,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validNse'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -439,7 +439,7 @@ def main(argv):
         idOut.variables['validNse'][i,1] = resultsTmp[0][0]
         
         # NSE Weight
-        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         #try:
         #    dbCursor.execute(sqlCmd)
         #    resultsTmp = dbCursor.fetchall()
@@ -451,7 +451,7 @@ def main(argv):
         #    sys.exit(1)
         #idOut.variables['validNseWt'][i,0] = resultsTmp[0][0]
         
-        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         #try:
         #    dbCursor.execute(sqlCmd)
         #    resultsTmp = dbCursor.fetchall()
@@ -464,7 +464,7 @@ def main(argv):
         #idOut.variables['validNseWt'][i,1] = resultsTmp[0][0]
 
         # NSE Log
-        sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -476,7 +476,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validNseLog'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -489,7 +489,7 @@ def main(argv):
         idOut.variables['validNseLog'][i,1] = resultsTmp[0][0]
 
         # KGE
-        sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -501,7 +501,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validKge'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -514,7 +514,7 @@ def main(argv):
         idOut.variables['validKge'][i,1] = resultsTmp[0][0]
 
         # MSOF
-        sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -526,7 +526,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validMsof'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -539,7 +539,7 @@ def main(argv):
         idOut.variables['validMsof'][i,1] = resultsTmp[0][0]
 
         # Hyper Resolution Objective Function
-        sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"control\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
@@ -551,7 +551,7 @@ def main(argv):
             sys.exit(1)
         idOut.variables['validHyperResMultiObj'][i,0] = resultsTmp[0][0]
         
-        sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"best\";" % (args.jobID[0],jobGageIDs[i][0])
+        sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
             dbCursor.execute(sqlCmd)
             resultsTmp = dbCursor.fetchall()
