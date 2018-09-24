@@ -497,17 +497,17 @@ def main(argv):
     # the program will extract all parameter values for each gage, for each iteration.
     for calibParamName in calibParamNames:
         # First create a NetCDF variable for this calibration parameter.
-        idOut.createVariable(calibParamName,"f8",("numGages","numIterations"),fill_value = -9999)
+        idOut.createVariable(calibParamName[0],"f8",("numGages","numIterations"),fill_value = -9999)
         
         # Loop through each gage
         for i in range(0,numGages):
             # Extract all parameter values for this gage.
-            sqlCmd = "SELECT * from \"Calib_Params\" where where \"jobID\"=%s and \"domainID\"=%s and \"paramName\"=%s;" % (args.jobID[0],jobGageIDs[i][0],calibParamName)
+            sqlCmd = "SELECT \"paramValue\" from \"Calib_Params\" where where \"jobID\"=%s and \"domainID\"=%s and \"paramName\"=\"%s\";" % (args.jobID[0],jobGageIDs[i][0],calibParamName[0])
             try:
                 dbCursor.execute(sqlCmd)
                 paramsTmp = dbCursor.fetchall()
             except:
-                print "ERROR: Unable to extract calibration parameter: " + calibParamName + " for domainID: " + str(jobGageIDs[i][0])
+                print "ERROR: Unable to extract calibration parameter: " + calibParamName[0] + " for domainID: " + str(jobGageIDs[i][0])
                 idOut.close()
                 if os.path.isfile(outPath):
                     os.remove(outPath)
@@ -515,7 +515,7 @@ def main(argv):
                 
             # Place parameter values into the NetCDF file accordingly.
             for j in range(0,numIter):
-                idOut.variables[calibParamName][i,j] = paramsTmp[j][0]
+                idOut.variables[calibParamName[0]][i,j] = paramsTmp[j][0]
         
     idOut.close()
     
