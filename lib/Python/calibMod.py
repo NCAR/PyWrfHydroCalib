@@ -109,14 +109,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             raise
             
-    if statusData.analysisRunType == 3:
+    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
         # Generate Slurm file necessary to run R calibration/analysis code.
         try:
             generateSlurmCalibScript(statusData,int(gageID),runDir,workDir,staticData)
         except:
             raise
             
-    if statusData.jobRunType == 3:
+    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             
         # If PBS run script doesn't exist, create it here.
         pbsFile = runDir + "/run_WH.sh"
@@ -789,7 +789,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
                 
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH_Restart.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -870,7 +870,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -934,7 +934,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3:
+        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -988,7 +988,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3:
+        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -1144,7 +1144,10 @@ def generateRestartSlurmScript(jobData,gageID,runDir):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+        if jobData.jobRunType == 3:
+            inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+        if jobData.jobRunType == 6:
+            inStr = 'mpirun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1327,7 +1330,10 @@ def generateSlurmScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
+        if jobData.jobRunType == 3:
+            inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
+        if jobData.jobRunType == 6:
+            inStr = "mpirun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile

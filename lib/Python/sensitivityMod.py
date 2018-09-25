@@ -135,7 +135,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
         except:
             statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gageMeta.gage[basinNum])
             raise
-    if statusData.analysisRunType == 3:
+    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
         #SLURM
         generateSlurmPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         cmd = "sbatch " + workDir + "/run_WH_SENS_PREPROC.sh"
@@ -351,7 +351,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
             except:
                 statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3:
+        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
             #SLURM
             generateSlurmPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
             cmd = "sbatch " + workDir + "/run_WH_SENS_POSTPROC.sh"
@@ -732,7 +732,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.analysisRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
@@ -805,7 +805,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.analysisRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
@@ -866,7 +866,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
                 raise
-        if statusData.analysisRunType == 3:
+        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
             cmd = "sbatch " + collectScript
         if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
             cmd = collectScript + " 1>" + runDir + "/SCOL_" + \
@@ -1380,7 +1380,10 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+        if jobData.jobRunType == 3:
+            inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+        if jobData.jobRunType == 6:
+            inStr = 'mpirun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
         fileObj.close        
     except:

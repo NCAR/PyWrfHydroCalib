@@ -228,7 +228,7 @@ def checkBasJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
     
-    if jobData.jobRunType == 3:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -450,7 +450,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3:
+    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -640,7 +640,7 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.jobRunType == 3:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -773,7 +773,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.analysisRunType == 3:
+    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1014,7 +1014,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3:
+    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1199,7 +1199,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3:
+    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1379,7 +1379,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                 status = False
                 return status
             
-    if jobData.analysisRunType == 3:
+    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1562,7 +1562,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                 status = False
                 return status
     
-    if jobData.jobRunType == 3:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1746,7 +1746,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3:
+    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \

@@ -60,9 +60,10 @@ optSpinFlag = 0
 # method (jobRunType)
 # 1 - We will launch with bsub and monitor via bjobs command.
 # 2 - We will launch with qsub and monitor via qstat command.
-# 3 - We will launch with slurm and monitor via squeue command.
+# 3 - We will launch with slurm with srun and monitor via squeue command.
 # 4 - Job execution using mpiexec
 # 5 - Job execution using mpirun
+# 6 - We will launch with slurm with mpirun and monitor via squeue command.
 # jobRunType is how you plan on executing the WRF-Hydro simulations
 jobRunType = 4
 # analysisRunType is how you plan on executing the analysis/calibration R/Python code.

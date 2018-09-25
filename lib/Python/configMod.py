@@ -448,12 +448,12 @@ def checkConfig(parser):
         
     # Check to make sure a valid option was passed for running model/R code
     check = int(parser.get('logistics','jobRunType'))
-    if check < 1 or check > 5:
+    if check < 1 or check > 6:
         print "ERROR: Invalid jobRunType specified."
         raise Exception()
         
     check = int(parser.get('logistics','analysisRunType'))
-    if check < 1 or check > 5:
+    if check < 1 or check > 6:
         print "ERROR: Invalid analysisRunType specified."
         raise Exception()
         
