@@ -1247,7 +1247,7 @@ class Database(object):
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
                      str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
-                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + \
+                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ',' + \
                      str(tblData.hyperResMultiObj[stat]) + ");"
                      
             try:
