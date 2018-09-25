@@ -58,7 +58,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                 generatePbsScript(statusData,int(gageID),runDir,gageMeta)
             except:
                 raise
-    if statusData.jobRunType == 3:
+    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
         slurmFile = runDir + "/run_WH.sh"
         if not os.path.isfile(slurmFile):
             try:
@@ -236,14 +236,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            if statusData.jobRunType == 1 or statusData.jobRunType == 3:
+            if statusData.jobRunType == 1 or statusData.jobRunType == 3 or statusData.jobRunType == 6:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
@@ -293,14 +293,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
         try:
-            if statusData.jobRunType == 1 or statusData.jobRunType == 3:
+            if statusData.jobRunType == 1 or statusData.jobRunType == 3 or statusData.jobRunType == 6:
                 subprocess.call(cmd,shell=True)
             if statusData.jobRunType == 4 or statusData.jobRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
@@ -454,7 +454,10 @@ def generateSlurmScript(jobData,gageID,runDir,gageMeta):
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+        if jobData.jobRunType == 3:
+            inStr = 'srun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
+        if jobData.jobRunType == 6:
+            inStr = 'mpirun -n ' + str(jobData.nCoresMod) + ' ./wrf_hydro.exe\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'

@@ -160,14 +160,14 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         except:
             raise
             
-    if statusData.analysisRunType == 3:
+    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
         # Generate the Slurm script to run the parameter generation code.
         try:
             generateSlurmParmRunScript(statusData,bestDir,gageID)
         except:
             raise
             
-    if statusData.jobRunType == 3:
+    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
         # Generate the Slurm script to run the model simulations.
         try:
             generateSlurmRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
@@ -419,7 +419,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             # Fire off model.
             cmd = "sbatch " + runDir + "/run_WH.sh"
             try:
@@ -485,7 +485,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             # Fire off model.
             cmd = "sbatch " + runDir + "/run_WH.sh"
             try:
@@ -522,7 +522,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             except:
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3:
+        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
             cmd = "sbatch " + bestDir + "/run_params.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -656,7 +656,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         except:
             raise
             
-    if statusData.analysisRunType == 3:
+    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
         slurmEvalScript = validWorkDir + "/run_eval.sh"
         
         # If the file exists, remove them and re-create.
@@ -670,7 +670,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         except:
             raise
             
-    if statusData.jobRunType == 3:
+    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
         slurmRunScript = runDir + "/run_WH.sh"
         
         # If the file exists, remove them and re-create.
@@ -950,7 +950,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -1014,7 +1014,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.jobRunType == 3:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -1052,7 +1052,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
             except:
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3:
+        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
             cmd = "sbatch " + validWorkDir + "/run_eval.sh"
             try:
                 subprocess.call(cmd,shell=True)
@@ -1195,7 +1195,10 @@ def generateSlurmRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
+        if jobData.jobRunType == 3:
+            inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
+        if jobData.jobRunType == 6:
+            inStr = "mpirun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.close
