@@ -390,6 +390,12 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         # when we have cold starts. Note 2 indicates a restart. 
         startType = 2
         
+        if begDate == staticData.bValidDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
+        
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
             namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
@@ -455,6 +461,12 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. Note 3 indicates a fresh model simulation. 
         startType = 3
+        
+        if begDate == staticData.bValidDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
@@ -922,6 +934,12 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         # when we have cold starts. Note 2 indicates a restart. 
         startType = 2
         
+        if begDate == staticData.bValidDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
+        
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
             namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
@@ -985,6 +1003,12 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. Note 3 indicates a fresh simulation. 
         startType = 3
+        
+        if begDate == staticData.bValidDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
