@@ -707,6 +707,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 errMod.cleanRunDir(statusData,runDir)
             except:
                 raise
+                
+        if begDate == staticData.bSensDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
         
         try:
             namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,4)
@@ -773,6 +779,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. Note 3 indicates a fresh model run. 
         startType = 3
+        
+        if begDate == staticData.bSensDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
             
         if startType == 2:
             # Clean run directory of any old diagnostics files

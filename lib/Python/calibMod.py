@@ -758,6 +758,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 errMod.cleanRunDir(statusData,runDir)
             except:
                 raise
+                
+        if begDate == staticData.bCalibDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
         
         # Create new namelist files. 
         try:
@@ -833,6 +839,12 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # starting the model rom an existing RESTART file. startType = 1 is for
         # when we have cold starts. 
         startType = 3
+        
+        if begDate == staticData.bCalibDate:
+            if staticData.coldStart == 1:
+                # We are cold-starting this simulation for the beginning of the iteration.
+                # This is per user request. 
+                startType = 1
         
         # Create namelist files. 
         try:
