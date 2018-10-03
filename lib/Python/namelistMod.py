@@ -33,6 +33,19 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     if os.path.isfile(pathOut):
         os.remove(pathOut)
     
+    # If this is a calibration simulation, we need to check to see if we are 
+    # past the date of minimal outputs. If the user specified to turn this optional
+    # feature off, then by default, all simulations will produce full outputs
+    # for the entire calibration iteration simulation.
+    if jobData.optCalStripFlag == 1:
+        minOutFlag = 1
+        if bDate >= jobData.bCalibFullOutputs:
+            minOutFlag = 0
+        else:
+            minOutFlag = 1
+    else:
+        minOutFlag = 0
+        
     # Write each line of the expected hrldas.namelist file.
     try:
         fileObj = open(pathOut,'w')
@@ -147,14 +160,21 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(inStr)
         inStr = ' NOAH_TIMESTEP = ' + str(jobData.lsmDt) + '\n'
         fileObj.write(inStr)
-        inStr = ' OUTPUT_TIMESTEP = ' + str(jobData.lsmOutDt) + '\n'
+        if minOutFlag == 1:
+            # Produce minimal monthly outputs
+            inStr = ' OUTPUT_TIMESTEP = 2592000\n'
+        else:
+            inStr = ' OUTPUT_TIMESTEP = ' + str(jobData.lsmOutDt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Land surface model restart file write frequency\n')
-        if int(jobData.lsmRstFreq) == -9999:
+        if minOutFlag == 1:
             inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
         else:
-            inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
+            if int(jobData.lsmRstFreq) == -9999:
+                inStr = ' RESTART_FREQUENCY_HOURS = -9999\n'
+            else:
+                inStr = ' RESTART_FREQUENCY_HOURS = ' + str(int(jobData.lsmRstFreq/3600.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Split output after split_output_count output times\n')
@@ -211,6 +231,19 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     pathOut = outDir + "/hydro.namelist"
     if os.path.isfile(pathOut):
         os.remove(pathOut)
+        
+    # If this is a calibration simulation, we need to check to see if we are 
+    # past the date of minimal outputs. If the user specified to turn this optional
+    # feature off, then by default, all simulations will produce full outputs
+    # for the entire calibration iteration simulation.
+    if jobData.optCalStripFlag == 1:
+        minOutFlag = 1
+        if bDate >= jobData.bCalibFullOutputs:
+            minOutFlag = 0
+        else:
+            minOutFlag = 1
+    else:
+        minOutFlag = 0
         
     # Write each line of the hydro namelist file.
     try:
@@ -337,10 +370,13 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('\n')
         fileObj.write('!Specify the restart file write frequency...(minutes)\n')
         fileObj.write(' ! A value of -99999 will output restarts on the first day of the month only.\n')
-        if int(jobData.hydroRstFreq) == -99999:
+        if minOutFlag == 1:
             inStr = ' rst_dt = -99999\n'
         else:
-            inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
+            if int(jobData.hydroRstFreq) == -99999:
+                inStr = ' rst_dt = -99999\n'
+            else:
+                inStr = ' rst_dt = ' + str(int(jobData.hydroRstFreq/60.0)) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n') 
         fileObj.write('! Reset the LSM soil states from the high-res routing restart file (1=overwrite, 0 = no overwrite)\n')
@@ -409,31 +445,50 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write(' output_channelBucket_influx = 0\n')
         fileObj.write('\n')
         fileObj.write('!Output netcdf file control\n')
-        inStr = ' CHRTOUT_DOMAIN = ' + str(jobData.chrtoutDomain) + ' ! Netcdf point timeseries output at all channel points (1d)\n'
-        fileObj.write(inStr)
-        fileObj.write('                   ! 0 = no output, 1 = output\n')
-        inStr = ' CHANOBS_DOMAIN = ' + str(jobData.chanObs) + ' ! Netcdf point timeseries at forecast points or gage points (defined in Routelink)\n'
-        fileObj.write(inStr)
-        fileObj.write('              ! 0 = no output, 1 = output at forecast points or gage points\n')
-        inStr = ' CHRTOUT_GRID = ' + str(jobData.chrtoutGrid) + ' ! Netcdf grid of channel streamflow values (2d)' + '\n'
-        fileObj.write(inStr)
-        fileObj.write('              ! 0 = no output, 1 = output\n')
-        fileObj.write('              ! NOTE: Not available with reach-based routing\n')
-        inStr = ' LSMOUT_DOMAIN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
-        fileObj.write(inStr)
-        fileObj.write('              ! 0 = no output, 1 = output\n')
-        fileObj.write('              ! NOTE: No scale_factor/add_offset available\n')
-        inStr = ' RTOUT_DOMAIN = ' + str(jobData.rtoutDomain) + ' ! Netcdf grid of terrain routing variables on routing grid\n'
-        fileObj.write(inStr)
-        fileObj.write('              ! 0 = no output, 1 = output\n')
-        inStr = ' output_gw = ' + str(jobData.gwOut) + ' ! Netcdf point of GW buckets\n'
-        fileObj.write(inStr)
-        fileObj.write('              ! 0 = no output, 1 = output\n')
-        inStr = ' outlake = ' + str(jobData.lakeOut) + ' ! Netcdf point file of lakes (1d)\n'
-        fileObj.write(inStr)
-        fileObj.write('              ! 0 = no output, 1 = output\n')
-        inStr = ' frxst_pts_out = ' + str(jobData.frxstPts) + ' ! ASCII text file of forecast points or gage points (defined in Routelink)\n'
-        fileObj.write(inStr)
+        if minOutFlag == 1:
+            # Turn all outputs off
+            inStr = ' CHRTOUT_DOMAIN = 0\n'
+            fileObj.write(inStr)
+            inStr = ' CHANOBS_DOMAIN = 0\n'
+            fileObj.write(inStr)
+            inStr = ' CHRTOUT_GRID = 0\n'
+            fileObj.write(inStr)
+            inStr = ' LSMOUT_DOMAIN = 0\n'
+            fileObj.write(inStr)
+            inStr = ' RTOUT_DOMAIN = 0\n'
+            fileObj.write(inStr)
+            inStr = ' output_gw = 0\n'
+            fileObj.write(inStr)
+            inStr = ' outlake = 0\n'
+            fileObj.write(inStr)
+            inStr = ' frxst_pts_out = 0\n'
+            fileObj.write(inStr)
+        else:
+            inStr = ' CHRTOUT_DOMAIN = ' + str(jobData.chrtoutDomain) + ' ! Netcdf point timeseries output at all channel points (1d)\n'
+            fileObj.write(inStr)
+            fileObj.write('                   ! 0 = no output, 1 = output\n')
+            inStr = ' CHANOBS_DOMAIN = ' + str(jobData.chanObs) + ' ! Netcdf point timeseries at forecast points or gage points (defined in Routelink)\n'
+            fileObj.write(inStr)
+            fileObj.write('              ! 0 = no output, 1 = output at forecast points or gage points\n')
+            inStr = ' CHRTOUT_GRID = ' + str(jobData.chrtoutGrid) + ' ! Netcdf grid of channel streamflow values (2d)' + '\n'
+            fileObj.write(inStr)
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            fileObj.write('              ! NOTE: Not available with reach-based routing\n')
+            inStr = ' LSMOUT_DOMAIN = ' + str(jobData.lsmDomain) + ' ! Netcdf grid of variables passed between LSM and routing components\n'
+            fileObj.write(inStr)
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            fileObj.write('              ! NOTE: No scale_factor/add_offset available\n')
+            inStr = ' RTOUT_DOMAIN = ' + str(jobData.rtoutDomain) + ' ! Netcdf grid of terrain routing variables on routing grid\n'
+            fileObj.write(inStr)
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            inStr = ' output_gw = ' + str(jobData.gwOut) + ' ! Netcdf point of GW buckets\n'
+            fileObj.write(inStr)
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            inStr = ' outlake = ' + str(jobData.lakeOut) + ' ! Netcdf point file of lakes (1d)\n'
+            fileObj.write(inStr)
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            inStr = ' frxst_pts_out = ' + str(jobData.frxstPts) + ' ! ASCII text file of forecast points or gage points (defined in Routelink)\n'
+            fileObj.write(inStr)
         fileObj.write('              ! 0 = no output, 1 = output\n')
         fileObj.write('\n')
         fileObj.write('!!!! ---------------------- PHYSICS OPTIONS AND RELATED SETTINGS ---------------------- !!!!\n')

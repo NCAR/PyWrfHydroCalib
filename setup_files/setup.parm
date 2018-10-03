@@ -39,6 +39,7 @@ calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
 # will be aggregated to daily statistics. 
 # 0 - Run hourly stats, 1 - Run daily stats
 dailyStats = 0
+
 # This is a flag for the user to bypass the spinup and run calibrations/validations/sensitivity
 # analysis from cold starts. Note: This is highly discouraged as a spinup allows for
 # stable hydrologic states: 0 - Off, 1 - On.
@@ -53,6 +54,19 @@ coldStart = 0
 # 0 = No substitute spinup files
 # 1 = Use optional spinup files
 optSpinFlag = 0
+
+# Here we have two additional new flags to allow the user to only
+# run the model with extremely minimal outputs:
+# - Monthly restart files, no streamflow output,
+#   and monthly land output files. 
+# This allows for the model to minimize I/O time during the initial
+# period of the calibration simulations where no evaluation is taking
+# place.
+# Flag to turn option on (1) or off (0)
+stripCalibOutputs = 0 
+# Specify the initial time period (hours) for each simulation
+# to contain minimal output. 
+stripCalibHours = 180
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
