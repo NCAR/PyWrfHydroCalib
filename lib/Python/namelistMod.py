@@ -88,7 +88,13 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         inStr = ' OUTDIR = "' + outDir + '"' + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        dt = eDate - bDate
+        if minOutFlag == 1:
+            # Only run simulation to the end of the mimimal output time period. 
+            # The workflow will then restart the model with full output after 
+            # it has seen it's passed this point.
+            dt = jobData.bCalibFullOutputs - bDate
+        else:
+            dt = eDate - bDate
         inStr = ' START_YEAR = ' + bDate.strftime('%Y') + '\n'
         fileObj.write(inStr)
         inStr = ' START_MONTH = ' + bDate.strftime('%m') + '\n'
@@ -447,21 +453,30 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('!Output netcdf file control\n')
         if minOutFlag == 1:
             # Turn all outputs off
-            inStr = ' CHRTOUT_DOMAIN = 0\n'
+            inStr = ' CHRTOUT_DOMAIN = 0 ! Netcdf point timeseries output at all channel points (1d)\n'
             fileObj.write(inStr)
-            inStr = ' CHANOBS_DOMAIN = 0\n'
+            fileObj.write('                   ! 0 = no output, 1 = output\n')
+            inStr = ' CHANOBS_DOMAIN = 0 ! Netcdf point timeseries at forecast points or gage points (defined in Routelink)\n'
             fileObj.write(inStr)
-            inStr = ' CHRTOUT_GRID = 0\n'
+            fileObj.write('              ! 0 = no output, 1 = output at forecast points or gage points\n')
+            inStr = ' CHRTOUT_GRID = 0 ! Netcdf grid of channel streamflow values (2d)\n'
             fileObj.write(inStr)
-            inStr = ' LSMOUT_DOMAIN = 0\n'
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            fileObj.write('              ! NOTE: Not available with reach-based routing\n')
+            inStr = ' LSMOUT_DOMAIN = 0 ! Netcdf grid of variables passed between LSM and routing components\n'
             fileObj.write(inStr)
-            inStr = ' RTOUT_DOMAIN = 0\n'
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            fileObj.write('              ! NOTE: No scale_factor/add_offset available\n')
+            inStr = ' RTOUT_DOMAIN = 0 ! Netcdf grid of terrain routing variables on routing grid\n'
             fileObj.write(inStr)
-            inStr = ' output_gw = 0\n'
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            inStr = ' output_gw = 0 ! Netcdf point of GW buckets\n'
+            fileObj.write('              ! 0 = no output, 1 = output\n')
             fileObj.write(inStr)
-            inStr = ' outlake = 0\n'
+            inStr = ' outlake = 0 ! Netcdf point file of lakes (1d)\n'
             fileObj.write(inStr)
-            inStr = ' frxst_pts_out = 0\n'
+            fileObj.write('              ! 0 = no output, 1 = output\n')
+            inStr = ' frxst_pts_out = 0 ! ASCII text file of forecast points or gage points (defined in Routelink)\n'
             fileObj.write(inStr)
         else:
             inStr = ' CHRTOUT_DOMAIN = ' + str(jobData.chrtoutDomain) + ' ! Netcdf point timeseries output at all channel points (1d)\n'
