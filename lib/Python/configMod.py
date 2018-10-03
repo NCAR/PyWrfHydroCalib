@@ -38,6 +38,8 @@ class jobMeta:
         self.dailyAnalysis = []
         self.coldStart = []
         self.optSpinFlag = []
+        self.optCalStripFlag = []
+        self.optCalStripHrs = []
         self.jobRunType = []
         self.analysisRunType = []
         self.nIter = []
@@ -64,6 +66,7 @@ class jobMeta:
         self.bCalibDate = []
         self.eCalibDate = []
         self.bCalibEvalDate = []
+        self.bCalibFullOutputs = []
         self.bValidDate = []
         self.eValidDate = []
         self.bValidEvalDate = []
@@ -152,6 +155,8 @@ class jobMeta:
         self.acctKey = str(parser.get('logistics','acctKey'))
         self.queName = str(parser.get('logistics','optQueNameModel'))
         self.queNameAnalysis = str(parser.get('logistics','optQueNameAnalysis'))
+        self.optCalStripFlag = int(parser.get('logistics','stripCalibOutputs'))
+        self.optCalStripHrs = int(parser.get('logistics','stripCalibHours'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
         self.nCoresR = int(parser.get('logistics','nCoresR'))
@@ -198,6 +203,22 @@ class jobMeta:
         self.eCalibDate = datetime.datetime.strptime(self.eCalibDate,'%Y-%m-%d')
         self.bCalibEvalDate = parser.get('logistics','bCalibEvalDate')
         self.bCalibEvalDate = datetime.datetime.strptime(self.bCalibEvalDate,'%Y-%m-%d')
+        # Calculate the beginning date for full outputs. If no optional
+        # flag for stripping outputs is off, then set this date to the beginning
+        # of the model simulation.
+        if self.optCalStripFlag == 1:
+            self.bCalibFullOutputs = self.bCalibDate + datetime.timedelta(seconds=3600*self.optCalStripHrs)
+            # Run a check here..... If the user has specified a date that is NOT
+            # the beginning of the month, throw an error. When minimal outputs are activated,
+            # only restart files at the beginning of the month are available. If the
+            # user specifies to stript outputs to a date that is any other step,
+            # the workflow will continuously initialize calibration model simulations
+            # from a timestep with no restart file available. 
+            if self.bCalibFullOutputs.day != 1 and self.bCalibFullOutputs.hour != 0:
+                print "ERROR: Please specify a stripCalibHours value that results in a date at the beginning of the month."
+                raise Exception()
+        else:
+            self.bCalibFullOutputs = self.bCalibDate
         self.bValidDate = parser.get('logistics','bValidDate')
         self.bValidDate = datetime.datetime.strptime(self.bValidDate,'%Y-%m-%d')
         self.eValidDate = parser.get('logistics','eValidDate')
@@ -495,6 +516,17 @@ def checkConfig(parser):
     if check != "DDS":
         print "ERROR: Invalid calibration method passed to program."
         raise Exception()
+        
+    # Check optional calibration output strip options.
+    check1 = int(parser.get('logistics','stripCalibOutputs'))
+    if check1 < 0 or check1 > 1:
+        print "ERROR: Invalid stripCalibOutputs option passed to program."
+        raise Exception()
+    check2 = int(parser.get('logistics','stripCalibHours'))
+    if check1 == 1:
+        if check2 < 0:
+            print "ERROR: Invalid stripCalibHours passed to program."
+            raise Exception()
         
     check = str(parser.get('logistics','objectiveFunction'))
     if len(check) == 0:
