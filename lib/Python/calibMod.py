@@ -764,6 +764,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # We are cold-starting this simulation for the beginning of the iteration.
                 # This is per user request. 
                 startType = 1
+            else:
+                # This is a unique situtation where the model failed right away, so treat it
+                # as a new simulation. 
+                startType = 3
             
         # Create new namelist files. 
         try:

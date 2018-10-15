@@ -209,8 +209,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             os.remove(check2)
         
         if begDate == staticData.bSpinDate:
+            # Always cold start the model for the beginning......
             startType = 1
         else:
+            # Alternative is the model HAS to have a restart file. 
             startType = 2
         
         try:
@@ -266,8 +268,10 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             os.remove(check2)
         
         if begDate == staticData.bSpinDate:
+            # Model always has to start from a cold start.....
             startType = 1
         else:
+            # Otherwise, there HAS to be a restart file.....
             startType = 2
         
         try:
