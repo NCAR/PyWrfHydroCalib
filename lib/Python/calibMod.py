@@ -767,8 +767,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             
         # Create new namelist files. 
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
         except:
             raise
             
@@ -848,8 +848,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         
         # Create namelist files. 
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,1)
         except:
             raise
             
