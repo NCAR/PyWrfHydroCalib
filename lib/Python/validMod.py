@@ -395,6 +395,10 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 # We are cold-starting this simulation for the beginning of the iteration.
                 # This is per user request. 
                 startType = 1
+            else:
+                # This is a unique situtation where the model failed right away, so treat it
+                # as a new simulation. 
+                startType = 3
         
         try:
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
@@ -939,6 +943,10 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 # We are cold-starting this simulation for the beginning of the iteration.
                 # This is per user request. 
                 startType = 1
+            else:
+                # This is a unique situtation where the model failed right away, so treat it
+                # as a new simulation. 
+                startType = 3
         
         try:
             namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
