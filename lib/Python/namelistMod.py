@@ -10,7 +10,7 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 
-def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
+def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     # General function for creation of a namelist.hrldas file.
     
     # NOTE: typeFlag = 1 indicates cold start.
@@ -61,27 +61,27 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/OUTPUT/soil_properties.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/soil_properties.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/soil_properties.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         if genFlag == 4:
             pthTmp = outDir + "/soil_properties.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' SPATIAL_FILENAME = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
@@ -108,7 +108,7 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             # We are restarting a model simulation that either failed, or was killed. 
             rstFile = outDir + "/RESTART." + bDate.strftime('%Y%m%d') + "00_DOMAIN1"
             if not os.path.isfile(rstFile):
-                jobData.errMsg = "ERROR: Failure to find: " + rstFile
+                statusData.errMsg = "ERROR: Failure to find: " + rstFile
                 raise Exception()
             inStr = ' RESTART_FILENAME_REQUESTED = ' + "'" + rstFile + "'" + '\n'
         if typeFlag == 1:
@@ -216,10 +216,11 @@ def createHrldasNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('/\n')
         fileObj.close
     except:
-        jobData.errMsg = "ERROR: Failure to create: " + pathOut
+        if len(statusData.errMsg) != 0:
+            statusData.errMsg = "ERROR: Failure to create: " + pathOut
         raise
     
-def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
+def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
     # General function for creation of a hydro.namelist file.
     # NOTE: typeFlag = 1 indicates cold start.
     #       typeFlag = 2 indicates restart.
@@ -273,27 +274,27 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/OUTPUT/Fulldom.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 2:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/Fulldom.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 3:
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/Fulldom.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"\n'
         if genFlag == 4:
             pthTmp = outDir + "/Fulldom.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' GEO_FINEGRID_FLNM = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
@@ -308,7 +309,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.CALIB/OUTPUT/HYDRO_TBL_2D.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' HYDROTBL_F = "' + pthTmp + '"\n'
         if genFlag == 2:
@@ -316,7 +317,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/HYDRO_TBL_2D.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' HYDROTBL_F = "' + pthTmp + '"\n'
         if genFlag == 3:
@@ -324,13 +325,13 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                      str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/HYDRO_TBL_2D.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' HYDROTBL_F = "' + pthTmp + '"\n'
         if genFlag == 4:
             pthTmp = outDir + "/HYDRO_TBL_2D.nc"
             if not os.path.isfile(pthTmp):
-                jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                 raise Exception()
             inStr = ' HYDROTBL_F = "' + pthTmp + '"' + '\n'
         fileObj.write(inStr)
@@ -351,7 +352,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             # We are restarting a model simulation that has either failed, or was killed.
             restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
             if not os.path.isfile(restartFile):
-                jobData.errMsg = "ERROR: Failure to find: " + restartFile
+                statusData.errMsg = "ERROR: Failure to find: " + restartFile
                 raise Exception()
             inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
         if typeFlag == 3:
@@ -364,7 +365,7 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
             if jobData.optSpinFlag == 0 and jobData.coldStart == 0:
                 restartFile = outDir + "/HYDRO_RST." + bDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
                 if not os.path.isfile(restartFile):
-                    jobData.errMsg = "ERROR: Failure to find: " + restartFile
+                    statusData.errMsg = "ERROR: Failure to find: " + restartFile
                     raise Exception()
                 inStr = ' RESTART_FILE = "' + restartFile + '"' + '\n'
         fileObj.write(inStr)
@@ -594,27 +595,27 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
                 pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                          str(gageData.gage) + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
                 if not os.path.isfile(pthTmp):
-                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                     raise Exception()
                 inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
             if genFlag == 2:
                 pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                          str(gageData.gage) + "/RUN.VALID/OUTPUT/CTRL/GWBUCKPARM.nc"
                 if not os.path.isfile(pthTmp):
-                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                     raise Exception()
                 inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
             if genFlag == 3:
                 pthTmp = str(jobData.outDir) + "/" + str(jobData.jobName) + "/" + \
                          str(gageData.gage) + "/RUN.VALID/OUTPUT/BEST/GWBUCKPARM.nc"
                 if not os.path.isfile(pthTmp):
-                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                     raise Exception()
                 inStr = ' GWBUCKPARM_file = "' + pthTmp + '"\n'
             if genFlag == 4:
                 pthTmp = outDir + "/GWBUCKPARM.nc"
                 if not os.path.isfile(pthTmp):
-                    jobData.errMsg = "ERROR: Failure to find: " + pthTmp
+                    statusData.errMsg = "ERROR: Failure to find: " + pthTmp
                     raise Exception()
                 inStr = ' GWBUCKPARM_file = "' + pthTmp + '"' + '\n'
         else:
@@ -692,5 +693,6 @@ def createHydroNL(gageData,jobData,outDir,typeFlag,bDate,eDate,genFlag):
         fileObj.write('/')
         fileObj.close
     except:
-        jobData.errMsg = "ERROR: Failure to create " + pathOut
+        if len(statusData.errMsg) != 0:
+            statusData.errMsg = "ERROR: Failure to create " + pathOut
         raise

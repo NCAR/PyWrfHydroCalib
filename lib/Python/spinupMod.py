@@ -214,8 +214,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             startType = 2
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,0)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,0)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
         except:
             raise
             
@@ -271,8 +271,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             startType = 2
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,0)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,0)
+            namelistMod.createHrldasNL(statusData.gageMeta,staticData,runDir,startType,begDate,endDate,0)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
         except:
             raise
             

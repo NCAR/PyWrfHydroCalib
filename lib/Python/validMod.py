@@ -397,8 +397,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 startType = 1
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
         except:
             raise
             
@@ -469,8 +469,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 startType = 1
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,2)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,2)
         except:
             raise
             
@@ -941,8 +941,8 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 startType = 1
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
         except:
             raise
             
@@ -1011,8 +1011,8 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 startType = 1
         
         try:
-            namelistMod.createHrldasNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
-            namelistMod.createHydroNL(gageMeta,staticData,runDir,startType,begDate,endDate,3)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
+            namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,3)
         except:
             raise
             
