@@ -34,7 +34,7 @@ def errOut(jobData):
         msg['From'] = jobData.email
         msg['To'] = jobData.email
         try:
-            s = smtplib.SMTP('localhost',1025)
+            s = smtplib.SMTP('localhost')
             s.sendmail(jobData.email,[jobData.email],msg.as_string())
             s.quit()
         except:

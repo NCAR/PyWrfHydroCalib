@@ -216,7 +216,7 @@ def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFl
         fileObj.write('/\n')
         fileObj.close
     except:
-        if len(statusData.errMsg) != 0:
+        if len(statusData.errMsg) == 0:
             statusData.errMsg = "ERROR: Failure to create: " + pathOut
         raise
     
@@ -693,6 +693,6 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write('/')
         fileObj.close
     except:
-        if len(statusData.errMsg) != 0:
+        if len(statusData.errMsg) == 0:
             statusData.errMsg = "ERROR: Failure to create " + pathOut
         raise
