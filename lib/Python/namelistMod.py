@@ -562,11 +562,11 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
             inStr = ' route_link_f = "' + str(gageData.rtLnk) + '"\n'
         fileObj.write(inStr)
         fileObj.write('\n')
-        fileObj.write('! If using channel_option=2, activate the compound channel formulation? (Default=.FALSE.)\n')
-        if jobData.cmpdChan == 1:
-            fileObj.write('compound_channel = .TRUE.\n')
-        else:
-            fileObj.write('compound_channel = .FALSE.\n')
+        #fileObj.write('! If using channel_option=2, activate the compound channel formulation? (Default=.FALSE.)\n')
+        #if jobData.cmpdChan == 1:
+        #    fileObj.write('compound_channel = .TRUE.\n')
+        #else:
+        #    fileObj.write('compound_channel = .FALSE.\n')
         fileObj.write('! Specify the simulated lakes for NHDPlus reach-based routing\n')
         if str(gageData.lkFile) == '-9999':
             inStr = ' route_lake_f = \'\'' + '\n'
