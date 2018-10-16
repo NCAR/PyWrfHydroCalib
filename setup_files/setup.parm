@@ -329,4 +329,4 @@ gwRestart = 0
 
 # Specify whether to use compound channel. This is for NWM ONLY. Cannot use with gridded routing.
 # (0: Turn off, 1: Turn on)
-#compoundChannel = 0
+compoundChannel = 0
