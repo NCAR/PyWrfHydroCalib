@@ -113,7 +113,7 @@ def main(argv):
         jobData.checkGages2(db)
     except:
         errMod.errOut(jobData)
-    
+
     # Establish LOCK file to secure this Python program to make sure
     # no other instances over-step here. This is mostly designed to deal
     # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
@@ -287,10 +287,12 @@ def main(argv):
         # If job is not running, and output has been completed, status goes to 1.0.
         # This continues indefinitely until statuses for ALL basins go to 1.0.
         for basin in range(0,len(jobData.gages)):
-            try:
-                spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobId)
-            except:
-                errMod.errOut(jobData)
+            print basin
+            spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobId)
+            #try:
+            #    spinupMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobId)
+            #except:
+            #    errMod.errOut(jobData)
             
             # TEMPORARY FOR CHEYENNE
             # Check to make sure program hasn't passed a prescribed time limit. If it has,

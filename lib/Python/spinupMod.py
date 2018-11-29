@@ -73,7 +73,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                 generateMpiScript(statusData,int(gageID),runDir,gageMeta)
             except:
                 raise
-    
+
     # Calculate datetime objects
     begDate = statusData.bSpinDate
     endDate = statusData.eSpinDate
@@ -130,7 +130,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
-           
+    
     # For simulations that are fresh
     if keyStatus == 0.0:
         if basinStatus:
@@ -169,7 +169,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
                 runFlag = False
-                
+        
     # For when the model crashed ONCE
     if keyStatus == -0.5:
         if basinStatus:
@@ -197,7 +197,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                 # Model sucessfully completed from first failed attempt.
                 keySlot[basinNum] = 1.0
                 keyStatus = 1.0
-                
+    
     if keyStatus == -0.25 and runFlag:
         # Restarting model from one crash
         # First delete namelist files if they exist.
@@ -256,7 +256,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
         keySlot[basinNum] = -0.5
-        
+    
     if keyStatus == 0.0 and runFlag:
         # Model needs to be either ran, or restarted
         # First delete namelist files if they exist.
@@ -275,11 +275,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
             startType = 2
         
         try:
-            namelistMod.createHrldasNL(statusData.gageMeta,staticData,runDir,startType,begDate,endDate,0)
+            namelistMod.createHrldasNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
             namelistMod.createHydroNL(statusData,gageMeta,staticData,runDir,startType,begDate,endDate,0)
         except:
             raise
-            
+          
         if startType == 2:
             # Clean run directory of any old diagnostics files
             try:

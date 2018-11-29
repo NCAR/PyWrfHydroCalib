@@ -324,7 +324,7 @@ def createJob(argsUser):
     except:
         print "ERROR: Improper Entries Into Config File."
         raise
-        
+    
     # Initialize job object
     jobObj = jobMeta()
     
