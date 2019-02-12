@@ -29,7 +29,7 @@ sys.path.insert(0,libPath)
 import warnings
 warnings.filterwarnings("ignore")
 
-import statusMod
+import lib/Python/statusMod
 import dbMod
 import errMod
 import configMod

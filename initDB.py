@@ -36,14 +36,14 @@ def main(argv):
     # If the optional SQLite file already exists, throw an error.
     if args.optDbPath is not None:
         if os.path.isfile(args.optDbPath):
-            print "ERROR: " + args.optDbPath + " Already Exists."
+            print("ERROR: " + args.optDbPath + " Already Exists.")
             sys.exit(1)
         else:
             dbPath = args.optDbPath
     else:
         dbPath = topDir + "wrfHydroCalib.db"
         if os.path.isfile(dbPath):
-            print "ERROR: SQLite3 DB file: " + dbPath + " Already Exists."
+            print("ERROR: SQLite3 DB file: " + dbPath + " Already Exists.")
             sys.exit(1)
             
     # Create a connnection object.
@@ -148,16 +148,16 @@ def errOut(dbConn,errMsg,dbPath):
     """"
     Quick function to close out the DB file and report an error to the user on the screen.
     """
-    print "ERROR: " + errMsg
+    print("ERROR: " + errMsg)
     try:
         dbConn.close()
     except:
-        print "ERROR: Unable to close DB file properly. Defaulting to removing the file."
+        print("ERROR: Unable to close DB file properly. Defaulting to removing the file.")
         
     try:
         os.remove(dbPath)
     except:
-        print "ERROR: Unable to remove the DB file."
+        print("ERROR: Unable to remove the DB file.")
         sys.exit(1)
     
 if __name__ == "__main__":
