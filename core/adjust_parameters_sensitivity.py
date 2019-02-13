@@ -87,33 +87,33 @@ def main(argv):
     for i in range(0,nIter):
         runDir = workDir + "/OUTPUT_" + str(i)
         
-        print runDir
+        print(runDir)
         if not os.path.isdir(runDir):
             sys.exit(1)
             
         # Copy default parameter files over to the run directory
         try:
             tmpPath = runDir + "/Fulldom.nc"
-            print tmpPath
+            print(tmpPath)
             shutil.copy(fullDomOrig,tmpPath)
         except:
             sys.exit(1)
         try:
             tmpPath = runDir + "/HYDRO_TBL_2D.nc"
-            print tmpPath
+            print(tmpPath)
             shutil.copy(hydroOrig,tmpPath)
         except:
             sys.exit(1)
         try:
             tmpPath = runDir + "/soil_properties.nc"
-            print tmpPath
+            print(tmpPath)
             shutil.copy(soilOrig,tmpPath)
         except:
             sys.exit(1)
         if args.gwFlag[0] == 1:
             try:
                 tmpPath = runDir + "/GWBUCKPARM.nc"
-                print tmpPath
+                print(tmpPath)
                 shutil.copy(gwOrig,tmpPath)
             except:
                 sys.exit(1)
@@ -121,7 +121,7 @@ def main(argv):
         if args.chrtFlag[0] == 3:
             try:
                 tmpPath = runDir + "/CHANPARM.TBL"
-                print tmpPath
+                print(tmpPath)
                 shutil.copy(chanParmOrig,tmpPath)
             except:
                 sys.exit(1)
@@ -142,7 +142,7 @@ def main(argv):
         
         if args.chRtFlag[0] == 3:
             # Open the CHANPARM.TBL
-            chanParmTblDataOrig = file(chanParmOrig)
+            chanParmTblDataOrig = open(chanParmOrig,'w')
         
             # Open the new CHANPARM.TBL for writing
             chanParmOutObj = open(chanParmOut,'w')

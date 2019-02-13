@@ -5,10 +5,10 @@
 # Research Applications Laboratory
 
 import os
-import calibIoMod
-import namelistMod
-import statusMod
-import errMod
+from core import calibIoMod
+from core import namelistMod
+from core import statusMod
+from core import errMod
 import subprocess
 import time
 
@@ -237,7 +237,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                     errMod.scrubParams(statusData,workDir,staticData)
                 except:
                     raise
-                print "MODEL HAS COMPLETED AND IS READY FOR PARAMETER GENERATION"
+                print("MODEL HAS COMPLETED AND IS READY FOR PARAMETER GENERATION")
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -271,7 +271,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                     errMod.cleanCalib(statusData,workDir,runDir)
                 except:
                     raise
-                print "CALIB/PARAM CODE COMPLETE"
+                print("CALIB/PARAM CODE COMPLETE")
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -341,7 +341,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                     db.logCalibParams(statusData,int(statusData.jobID),int(gageID),calibTbl,int(iteration))
                 except:
                     raise
-                print "FIRST CALIB/PARAM CODE DONE, READY TO RUN THE MODEL"
+                print("FIRST CALIB/PARAM CODE DONE, READY TO RUN THE MODEL")
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
                 runFlag = True
@@ -397,14 +397,14 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Iteration 0 needs to have an inital calibration procedure to generate
             # an initial parameter dataset.
             if os.path.isfile(lockPath):
-                print "MODEL IS LOCKED"
+                print("MODEL IS LOCKED")
                 # Simulation was locked up. Set status to -1.0.
                 keySlot[basinNum,iteration] = -1.0
                 keyStatus = -1.0
                 runFlag = False
                 runCalib = False
             elif os.path.isfile(calibLockPath):
-                print "CALIB IS LOCKED"
+                print("CALIB IS LOCKED")
                 # Calibration failed and locked directory up.
                 keySlot[basinNum,iteration] = -0.75
                 keyStatus = -0.75
@@ -436,7 +436,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                             errMod.cleanCalib(statusData,workDir,runDir)
                         except:
                             raise
-                        print "FIRST CALIB CODE COMPLETE, READY TO RUN MODEL"
+                        print("FIRST CALIB CODE COMPLETE, READY TO RUN MODEL")
                         keySlot[basinNum,iteration] = 0.0
                         keyStatus = 0.0
                         runFlag = True
@@ -456,7 +456,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                             errMod.cleanCalib(statusData,workDir,runDir)
                         except:
                             raise
-                        print "READY TO RUN MODEL"
+                        print("READY TO RUN MODEL")
                         keySlot[basinNum,iteration] = 0.0
                         keyStatus = 0.0
                         runFlag = True
@@ -465,7 +465,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # Run calibration procedure to generate initial table of values to adjust
             # parameters with.
             if os.path.isfile(lockPath):
-                print "MODEL IS LOCKED"
+                print("MODEL IS LOCKED")
                 # Simulation was locked up. Set status to -1.0.
                 keySlot[basinNum,iteration] = -1.0
                 keyStatus = -1.0
@@ -482,13 +482,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                     runFlag = runStatus[2]
                     if begDate == statusData.bCalibDate and runFlag:
                         # The first calib for iteration 1 failed.
-                        print "FIRST CALIB CODE FAILED"
+                        print("FIRST CALIB CODE FAILED")
                         keySlot[basinNum,iteration] = -0.10
                         keyStatus = -0.10
                         runFlag = False
                         runCalib = False
                     else:
-                        print "CALIB CODE FAILED"
+                        print("CALIB CODE FAILED")
                         # The main calib failed.
                         keySlot[basinNum,iteration] = -0.75
                         keyStatus = -0.75
@@ -524,7 +524,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                             if os.path.isfile(calibCompleteFlag):
                                 # First calibration completed. Ready to run the model.
                                 # Cleanup any previou calib-related parameters (minus new parameter files)
-                                print "FIRST CALIB CODE COMPLETE"
+                                print("FIRST CALIB CODE COMPLETE")
                                 keySlot[basinNum,iteration] = 0.0
                                 keyStatus = 0.0
                                 runFlag = True
@@ -534,7 +534,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                 if os.path.isfile(calibLockPath):
                                     if os.path.isfile(rDataFile):
                                         os.remove(rDataFile)
-                                    print "FIRST CALIB CODE LOCKED"
+                                    print("FIRST CALIB CODE LOCKED")
                                     keySlot[basinNum,iteration] = -0.10
                                     keyStatus = -0.10
                                     runFlag = False
@@ -547,7 +547,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                         errMod.scrubParams(statusMod,runDir,staticData)
                                     except:
                                         raise
-                                    print "READY TO RUN FIRST CALIB CODE"
+                                    print("READY TO RUN FIRST CALIB CODE")
                                     keySlot[basinNum,iteration] = 0.0
                                     keyStatus = 0.0
                                     runFlag = False
@@ -580,7 +580,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                     errMod.scrubParams(statusMod,runDir,staticData)
                                 except:
                                     raise
-                                print "MODEL COMPLETE, READY TO RUN CALIB CODE"
+                                print("MODEL COMPLETE, READY TO RUN CALIB CODE")
                                 keySlot[basinNum,iteration] = 0.75
                                 keyStatus = 0.75
                                 runFlag = False
@@ -593,7 +593,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                             errMod.scrubParams(statusMod,runDir,staticData)
                         except:
                             raise
-                        print "MODEL COMPLETE, READY TO RUN CALIB CODE"
+                        print("MODEL COMPLETE, READY TO RUN CALIB CODE")
                         keySlot[basinNum,iteration] = 0.75
                         keyStatus = 0.75
                         runFlag = False
@@ -604,7 +604,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # If LOCK file exists, no simulation will take place. File must be removed
         # manually by user.
         if os.path.isfile(lockPath):
-            print "MODEL IS LOCKED"
+            print("MODEL IS LOCKED")
             runFlag = False
             runCalib = False
             keySlot[basinNum,iteration] = -1.0
@@ -616,7 +616,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if runFlag:
-                print "READ TO RUN MODEL FOR FIRST ITERATION"
+                print("READ TO RUN MODEL FOR FIRST ITERATION")
                 keySlot[basinNum,iteration] = 0.0
                 keyStatus = 0.0
                 runFlag = True
@@ -629,7 +629,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                     errMod.scrubParams(statusMod,runDir,staticData)
                 except:
                     raise
-                print "MODEL COMPLETE, READY TO RUN CALIB CODE"
+                print("MODEL COMPLETE, READY TO RUN CALIB CODE")
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -646,7 +646,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 errMod.scrubParams(statusMod,runDir,staticData)
             except:
                 raise
-            print "CALIB LOCKED"
+            print("CALIB LOCKED")
             runFlag = False
             runCalib = False
             keySlot[basinNum,iteration] = -0.75
@@ -658,7 +658,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 errMod.scrubParams(statusMod,runDir,staticData)
             except:
                 raise
-            print "READY TO RUN CALIB CODE"
+            print("READY TO RUN CALIB CODE")
             # LOCK file was removed, upgrade status.
             keySlot[basinNum,iteration] = 0.75
             keyStatus = 0.75
@@ -672,7 +672,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if os.path.isfile(calibLockPath):
             if os.path.isfile(rDataFile):
                 os.remove(rDataFile)
-            print "FIRST CALIB CODE LOCKED"
+            print("FIRST CALIB CODE LOCKED")
             keySlot[basinNum,iteration] = -0.10
             keyStatus = -0.10
             runFlag = False
@@ -684,7 +684,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 errMod.scrubParams(statusMod,runDir,staticData)
             except:
                 raise
-            print "READY TO RUN FIRST CALIB CODE"
+            print("READY TO RUN FIRST CALIB CODE")
             # LOCK file was removed, upgrade status.
             keySlot[basinNum,iteration] = 0.0
             runFlag = False
@@ -724,7 +724,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                     errMod.scrubParams(statusMod,runDir,staticData)
                 except:
                     raise
-                print "MODEL COMPLETE, READY TO RUN CALIB CODE"
+                print("MODEL COMPLETE, READY TO RUN CALIB CODE")
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -782,7 +782,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             errMod.cleanCalib(statusData,workDir,runDir)
         except:
             raise
-        print "RESTARTING MODEL"
+        print("RESTARTING MODEL")
         # Fire off model.
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH_Restart.sh"
@@ -870,7 +870,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             raise
             
-        print "FIRING OFF MODEL SIMULATION"
+        print("FIRING OFF MODEL SIMULATION")
         # Fire off model.
         if statusData.jobRunType == 1:
             cmd = "bsub < " + runDir + "/run_WH.sh"
@@ -934,7 +934,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             statusData.errMsg = "ERROR: Failure to write calibration R script."
             raise
             
-        print "FIRING OFF FIRST CALIBRATION CODE"
+        print("FIRING OFF FIRST CALIBRATION CODE")
         # Fire off calibration programs.
         if statusData.analysisRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
@@ -988,7 +988,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             statusData.errMsg = "ERROR: Failure to write calibration R script."
             raise
             
-        print "FIRING OFF CALIB CODE"
+        print("FIRING OFF CALIB CODE")
         # Fire off calibration program.
         if statusData.analysisRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"

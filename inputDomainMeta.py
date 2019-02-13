@@ -43,8 +43,8 @@ import pandas as pd
 from netCDF4 import Dataset
 import sqlite3
 
-import warnings
-warnings.filterwarnings("ignore")
+#import warnings
+#warnings.filterwarnings("ignore")
 
 # Establish top-level paths that are used to find the DB file. 
 prPath = os.path.realpath(__file__)
@@ -53,6 +53,7 @@ libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
 topDir = libPath
+libPathTop = libPath + 'core'
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
@@ -68,27 +69,27 @@ def main(argv):
     # If the SQLite file does not exist, throw an error.
     if args.optDbPath is not None:
         if not os.path.isfile(args.optDbPath):
-            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            print("ERROR: " + args.optDbPath + " Does Not Exist.")
             sys.exit(1)
         else:
             dbPath = args.optDbPath
     else:
         dbPath = topDir + "wrfHydroCalib.db"
         if not os.path.isfile(dbPath):
-            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            print("ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist.")
             sys.exit(1)
     
     # Open the SQLite DB file
     try:
         conn = sqlite3.connect(dbPath)
     except:
-        print "ERROR: Unable to connect to: " + dbPath + ". Please intiialize the DB file."
+        print("ERROR: Unable to connect to: " + dbPath + ". Please intiialize the DB file.")
         sys.exit(1)
         
     try:
         dbCursor = conn.cursor()
     except:
-        print "ERROR: Unable to establish cursor object for: " + dbPath
+        print("ERROR: Unable to establish cursor object for: " + dbPath)
         sys.exit(1)
     
     # Create expected dictionary of column types
@@ -102,14 +103,14 @@ def main(argv):
     try:
         metaCSV = pd.read_csv(str(args.inCSV[0]),dtype = dtype_dic)
     except:
-        print "ERROR: Unable to open CSV file: " + str(args.inCSV[0])
+        print("ERROR: Unable to open CSV file: " + str(args.inCSV[0]))
         sys.exit(1)
         
     # Check for expected headers in input CSV file.
     colNames = list(metaCSV.columns)
     
     if len(colNames) != 26:
-        print "ERROR: Improper CSV file passed to program."
+        print("ERROR: Improper CSV file passed to program.")
         sys.exit(1)
         
     expectedNames = ['site_no', 'link', 'hyd_w', 'hyd_e', 'hyd_s', \
@@ -120,13 +121,13 @@ def main(argv):
     for i in range(0,len(colNames)):
         nameCheck = colNames[i]
         if nameCheck != expectedNames[i]:
-            print "ERROR: Unexpected column name in: " + str(args.inCSV[0])
+            print("ERROR: Unexpected column name in: " + str(args.inCSV[0]))
             sys.exit(1)
         
     # Check to make sure some data has been entered.
     nSites = len(metaCSV.site_no)
     if nSites <= 0:
-        print "ERROR: Zero entries detected in input CSV file."
+        print("ERROR: Zero entries detected in input CSV file.")
         sys.exit(1)
         
     # Loop through basins and enter information into the DB.
@@ -160,7 +161,7 @@ def main(argv):
         rfc = metaCSV.rfc[siteNum]
         
         if not os.path.isdir(dirBasin):
-            print "ERROR: Directory: " + dirBasin + " not found."
+            print("ERROR: Directory: " + dirBasin + " not found.")
             sys.exit(1)
             
         # Compose paths to input files and check for existence of files.
@@ -184,52 +185,52 @@ def main(argv):
         
         # Double check to make sure input files exist
         if not os.path.isfile(geoPath):
-            print "ERROR: " + geoPath + " not found."
+            print("ERROR: " + geoPath + " not found.")
             sys.exit(1)
         if not os.path.isfile(landSpatialMetaPath):
-            print "WARNING: " + landSpatialMetaPath + " not found. Output will not be CF-Compliant."
+            print("WARNING: " + landSpatialMetaPath + " not found. Output will not be CF-Compliant.")
             landSpatialMetaPath = "-9999"
         if not os.path.isfile(fullDomPath):
-            print "ERROR: " + fullDomPath + " not found."
+            print("ERROR: " + fullDomPath + " not found.")
             sys.exit(1)
         if not os.path.isfile(gwPath):
-            print "WARNING: " + gwPath + " not found. Assuming you are running without the ground water bucket model."
+            print("WARNING: " + gwPath + " not found. Assuming you are running without the ground water bucket model.")
             gwPath = "-9999"
         if not os.path.isfile(lakePath1) and not os.path.isfile(lakePath2):
-            print "WARNING: No lake parameter files found. Assuming you have setup a domain with no lakes."
+            print("WARNING: No lake parameter files found. Assuming you have setup a domain with no lakes.")
             lakePath = '-9999'
         if not os.path.isfile(routePath):
-            print "WARNING: " + routePath + " not found. Assuming this is for gridded routing....."
+            print("WARNING: " + routePath + " not found. Assuming this is for gridded routing.....")
             routePath = "-9999"
         if not os.path.isfile(chanParmPath):
-            print "WARNING: " + chanParmPath + " not found. Assuming this is a basin with reach-based routing...."
+            print("WARNING: " + chanParmPath + " not found. Assuming this is a basin with reach-based routing....")
             chanParmPath = "-9999"
         if not os.path.isfile(soilPath):
-            print "ERROR: " + soilPath + " not found."
+            print("ERROR: " + soilPath + " not found.")
             sys.exit(1)
         if not os.path.isfile(hydro2d):
-            print "ERROR: " + hydro2d + " not found."
+            print("ERROR: " + hydro2d + " not found.")
             sys.exit(1)
         if not os.path.isfile(wghtPath):
-            print "WARNING: " + wghtPath + " not found. Assuming you are running a non NWM routing...."
+            print("WARNING: " + wghtPath + " not found. Assuming you are running a non NWM routing....")
             wghtPath = "-9999"
         if not os.path.isfile(wrfInPath):
-            print "ERROR: " + wrfInPath + " not found."
+            print("ERROR: " + wrfInPath + " not found.")
             sys.exit(1)
         if not os.path.isdir(forceDir):
-            print "ERROR: " + forceDir + " not found."
+            print("ERROR: " + forceDir + " not found.")
             sys.exit(1)
         if not os.path.isfile(obsFile):
-            print "ERROR: " + obsFile + " not found."
+            print("ERROR: " + obsFile + " not found.")
             sys.exit(1)
         if not os.path.isfile(gwMskPath):
-            print "WARNING: " + gwMskPath + " not found. Assuming you are running NWM routing...."
+            print("WARNING: " + gwMskPath + " not found. Assuming you are running NWM routing....")
             gwMskPath = "-9999"
         if not os.path.isfile(optSpinLandFile):
-            print "WARNING: " + optSpinLandFile + " not found for optional spinup states."
+            print("WARNING: " + optSpinLandFile + " not found for optional spinup states.")
             optSpinLandFile = "-9999"
         if not os.path.isfile(optSpinHydroFile):
-            print "WARNING: " + optSpinHydroFile + " not found for optional spinup states."
+            print("WARNING: " + optSpinHydroFile + " not found for optional spinup states.")
             optSpinHydroFile = "-9999"
             
         # Look for a NetCDF lake parameter file first, and use it. If not, use the ASCII table instead.
@@ -262,21 +263,21 @@ def main(argv):
             #conn.execute(cmd)
             dbCursor.execute(cmd)
         except:
-            print "ERROR: Unable to execute postgres command: " + cmd
+            print("ERROR: Unable to execute postgres command: " + cmd)
             sys.exit(1)
             
         try:
             #db.commit()
             conn.commit()
         except:
-            print "ERROR: Unable to commit postgres command: " + cmd
+            print("ERROR: Unable to commit postgres command: " + cmd)
             sys.exit(1)
             
     # Close connection to DB
     try:
         conn.close()
     except:
-        print "ERROR: Unable to close DB connection."
+        print("ERROR: Unable to close DB connection.")
         sys.exit(1)
         
 def calcSpacing(geoPath,fullDomPath):
@@ -290,32 +291,32 @@ def calcSpacing(geoPath,fullDomPath):
         dxLand = float(idGeo.DX)
         nRowLand = float(idGeo.variables['XLAT_M'].shape[1])
     except:
-        print "ERROR: Unable to open: " + geoPath + " and extract DX global attribute along with number of rows."
+        print("ERROR: Unable to open: " + geoPath + " and extract DX global attribute along with number of rows.")
         sys.exit(1)
         
     try:
         idGeo.close()
     except:
-        print "ERROR: Unable to close: " + geoPath
+        print("ERROR: Unable to close: " + geoPath)
         sys.exit(1)
         
     # Open the Fulldom file and extract the resolution from teh "x" coordinate variable.
     try:
         idFullDom = Dataset(fullDomPath,'r')
     except:
-        print "ERROR: Unable to open: " + fullDomPath
+        print("ERROR: Unable to open: " + fullDomPath)
         sys.exit(1)
     
     try:
         nRowHydro = float(idFullDom.variables['y'].shape[0])
     except:
-        print "ERROR: Unable to extract Fulldom number of rows from y coordinate variable."
+        print("ERROR: Unable to extract Fulldom number of rows from y coordinate variable.")
         sys.exit(1)
         
     try:
         idFullDom.close()
     except:
-        print "ERROR: Unable to close: " + fullDomPath
+        print("ERROR: Unable to close: " + fullDomPath)
     
     aggFactor = int(nRowHydro/nRowLand)
     dxHydro = dxLand/aggFactor

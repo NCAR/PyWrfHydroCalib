@@ -19,12 +19,9 @@ for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
 topDir = libPath
 schemaFile2 = libPath + 'setup_files/psql_schema2.sql'
-libPathTop = libPath + 'lib'
-libPath = libPath + 'lib/Python'
-sys.path.insert(0,libPath)
 
-import warnings
-warnings.filterwarnings("ignore")
+#import warnings
+#warnings.filterwarnings("ignore")
 
 def main(argv):
     # Optional hostname for the user to pass.

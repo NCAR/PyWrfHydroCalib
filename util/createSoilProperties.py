@@ -224,13 +224,13 @@ def main(argv):
     solmap[np.where(vegmap == vegWater)] = soilWater
         
     # Translate updated parameter values to the new soil_properties.nc file
-    print "Updating soil_properties.nc"
+    print("Updating soil_properties.nc")
     for param in idSoilOut.variables:
         paramName = soilLookupVars[param]
-        print "Processing: " + param
+        print("Processing: " + param)
         if paramName in soilTblDf.columns.values:
             # Parameter is in the soil table, map to the categories
-            print "Updating: " + paramName
+            print("Updating: " + paramName)
             pnew = idGeoOrig.variables['SCT_DOM'][0,:,:]
             pnew[np.where((vegmap != vegWater) & (pnew == soilWater))] = soilFillVal
             pnew[np.where(vegmap == vegWater)] = soilWater
@@ -244,7 +244,7 @@ def main(argv):
                 idSoilOut.variables[param][0,i,:,:] = pnew
         elif len(np.where(mpTblDf.Name == paramName)[0]) == 1:
             # Parameter is in the table, map to the categories. 
-            print "Updating: " + paramName
+            print("Updating: " + paramName)
             indexTmp = np.where(mpTblDf.Name == paramName)[0][0]
             pnew = idGeoOrig.variables['LU_INDEX'][0,:,:]
             for catTmp in range(0,len(mpTblDf.columns.values)-2):
@@ -259,12 +259,12 @@ def main(argv):
     idSoilOut.close()
         
     # Translate updated parameter values to the new HYDRO_TBL_2D.nc file
-    print "Updating HYDRO_2D_TBL.nc"
+    print("Updating HYDRO_2D_TBL.nc")
     for param in idHydroOut.variables:
         paramName = hydroLookupVars[param]
-        print "Processing: " + param
+        print("Processing: " + param)
         if soilLookupVars[hydroLookupVars[param]] in soilTblDf.columns.values:
-            print "Updating HYDRO soil parameters: " + paramName
+            print("Updating HYDRO soil parameters: " + paramName)
             pnew = idGeoOrig.variables['SCT_DOM'][0,:,:]
             pnew[np.where((vegmap != vegWater) & (pnew == soilWater))] = soilFillVal
             pnew[np.where(vegmap == vegWater)] = soilWater
@@ -283,7 +283,7 @@ def main(argv):
             # Write to an output NetCDF file
             idHydroOut.variables[param][:,:] = pnew
         elif paramName in sfcRoughDf:
-            print "Updating OV_ROUGH2D"
+            print("Updating OV_ROUGH2D")
             pnew = idGeoOrig.variables['LU_INDEX'][0,:,:]
             pnew[np.where(vegmap == soilWater)] = vegWater
             # Loop through each vegetation category

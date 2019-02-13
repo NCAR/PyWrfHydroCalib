@@ -6,10 +6,10 @@
 
 #import datetime
 import os
-import calibIoMod
-import namelistMod
-import statusMod
-import errMod
+from core import calibIoMod
+from core import namelistMod
+from core import statusMod
+from core import errMod
 import subprocess
 import time
 
@@ -77,7 +77,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
             return
         if not os.path.isfile(lockFile) and os.path.isfile(errFile):
             # User has removed the LOCK file. We will attempt to run the pre-processing code.
-            print "LOCK FILE REMOVED, RESTARTING JOB"
+            print("LOCK FILE REMOVED, RESTARTING JOB")
             try:
                 os.remove(errFile)
             except:
@@ -107,7 +107,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
                 return
             else:
                 # The job is still running.
-                print "SENSITIVITY PRE PROC SENS RUNNING FOR BASIN: " + str(gageID)
+                print("SENSITIVITY PRE PROC SENS RUNNING FOR BASIN: " + str(gageID))
                 time.sleep(1)
                 preProcStatus = False
                 return
@@ -231,7 +231,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
         # Ensure the stats file is present.
         if not os.path.isfile(statsFile) and not os.path.isfile(missingFlag):
             statusData.errMsg = "ERROR: Expected to find: " + statsFile + " but was not found."
-            raise
+            raise Exception()
         # Remove the run flag if it's present.
         if os.path.isfile(runFlag):
             try:
@@ -243,7 +243,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
         runStatus = False
         return
     if not os.path.isfile(lockFile) and os.path.isfile(errFile):
-        print "ERRORED BUT LOCK REMOVED"
+        print("ERRORED BUT LOCK REMOVED")
         # User has removed the LOCK file. We will attempt to run the post-processing code.
         # Remove the run flag if it's present.
         if os.path.isfile(runFlag):
@@ -322,7 +322,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
                 return
         else:
             # The job is still running.
-            print "SENS POST PROC SENS RUNNING FOR BASIN: " + str(gageID)
+            print("SENS POST PROC SENS RUNNING FOR BASIN: " + str(gageID))
             postProcStatus = False
             runStatus = False
             return
@@ -526,7 +526,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
-            print "MODEL IS RUNNING"
+            print("MODEL IS RUNNING")
             return
         else:
             # Either simulation has completed, or potentially crashed.
@@ -544,7 +544,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 keyStatus = -0.25
             else:
                 # Model has completed!
-                print "MODEL COMPLETE! - READY TO COLLECT DATA"
+                print("MODEL COMPLETE! - READY TO COLLECT DATA")
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -555,13 +555,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             keySlot[basinNum,iteration] = 0.5
             keyStatus = 0.5
             runFlag = False
-            print "MODEL IS RUNNING"
+            print("MODEL IS RUNNING")
         elif collectStatus:
             # Collection code is running. Allow it to continue.
             keySlot[basinNum,iteration] = 0.9
             keyStatus = 0.9
             runFlag = False
-            print "COLLECTION RUNNING"
+            print("COLLECTION RUNNING")
         else:
             runStatus = statusMod.walkMod(begDate,endDate,runDir)
             begDate = runStatus[0]
@@ -569,7 +569,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             runFlag = runStatus[2]
             if not runFlag:
                 # Model has completed!
-                print "MODEL COMPLETE! - READY TO COLLECT DATA"
+                print("MODEL COMPLETE! - READY TO COLLECT DATA")
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -577,7 +577,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # are present. 
                 if collectComplete:
                     # Collection code also completed.
-                    print "COLLECTION COMPLETE!"
+                    print("COLLECTION COMPLETE!")
                     keySlot[basinNum,iteration] = 1.0
                     keyStatus = 1.0
                     runFlag = False
@@ -601,13 +601,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             else:
                 # Check for complete flag
                 if os.path.isfile(collectComplete):
-                    print "COLLECTION COMPLETE"
+                    print("COLLECTION COMPLETE")
                     keySlot[basinNum,iteration] = 1.0
                     keyStatus = 1.0
                     runFlag = False
                 else:
                     # Upgrade the status
-                    print "UPGRADING COLLECTION STATUS"
+                    print("UPGRADING COLLECTION STATUS")
                     keySlot[basinNum,iteration] = 0.75
                     keyStatus = 0.75
                     runFlag = False
@@ -621,20 +621,20 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         else:
             # LOCK file was removed, uprade status to 0.75
             if collectStatus:
-                print "COLLECTION RUNNING"
+                print("COLLECTION RUNNING")
                 keySlot[basinNum,iteration] = 0.9
                 keyStatus = 0.9
                 runFlag = False
             else:
                 # Check for complete flag
                 if os.path.isfile(collectComplete):
-                    print "COLLECTION COMPLETE"
+                    print("COLLECTION COMPLETE")
                     keySlot[basinNum,iteration] = 1.0
                     keyStatus = 1.0
                     runFlag = False
                 else:
                     # Upgrade the status
-                    print "UPGRADING COLLECTION STATUS"
+                    print("UPGRADING COLLECTION STATUS")
                     keySlot[basinNum,iteration] = 0.75
                     keyStatus = 0.75
                     runFlag = False
@@ -642,7 +642,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     # For when the model crashed ONCE
     if keyStatus == -0.5:
         if basinStatus:
-            print "MODEL RUNNING"
+            print("MODEL RUNNING")
             # Model is running again, upgrade status
             # PLACEHOLDER FOR MORE ROBUST METHOD HERE.
             keySlot[basinNum,iteration] = 0.5
@@ -668,13 +668,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             else:
                 # Check for complete flag
                 if os.path.isfile(collectComplete):
-                    print "COLLECTION COMPLETE"
+                    print("COLLECTION COMPLETE")
                     keySlot[basinNum,iteration] = 1.0
                     keyStatus = 1.0
                     runFlag = False
                 else:
                     # Upgrade the status
-                    print "UPGRADING COLLECTION STATUS"
+                    print("UPGRADING COLLECTION STATUS")
                     keySlot[basinNum,iteration] = 0.75
                     keyStatus = 0.75
                     runFlag = False
@@ -845,13 +845,13 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Collection routine is running. Check to see if it's completed. If not, lock this 
         # basin up and require the user to manually remove the LOCK file.
         if collectStatus:
-            print "COLLECTING DATA"
+            print("COLLECTING DATA")
             keySlot[basinNum,iteration] = 0.9
             keyStatus = 0.9
             runFlag = False
         else:
             if os.path.isfile(collectComplete):
-                print "COLLECTION COMPLETE!"
+                print("COLLECTION COMPLETE!")
                 keySlot[basinNum,iteration] = 1.0
                 keyStatus = 1.0
                 runFlag = 1.0
@@ -870,7 +870,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 
     if keyStatus == 0.75 and not runFlag:
         # Ready to fire off collection program.
-        print "FIRING OFF COLLECTION"
+        print("FIRING OFF COLLECTION")
         # Fire off model.
         if statusData.analysisRunType == 1:
             cmd = "bsub < " + collectScript
@@ -1775,7 +1775,7 @@ def generateBsubCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
     if not os.path.isfile(link):
         if not os.path.isfile(nameListR):
             jobData.errMsg = "ERROR: Failure to find: " + nameListR
-            raise
+            raise Exception()
         try:
             os.symlink(nameListR,link)
         except:
@@ -1859,7 +1859,7 @@ def generatePbsCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
     if not os.path.isfile(link):
         if not os.path.isfile(nameListR):
             jobData.errMsg = "ERROR: Failure to find: " + nameListR
-            raise
+            raise Exception()
         try:
             os.symlink(nameListR,link)
         except:
@@ -1940,7 +1940,7 @@ def generateSlurmCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir)
     if not os.path.isfile(link):
         if not os.path.isfile(nameListR):
             jobData.errMsg = "ERROR: Failure to find: " + nameListR
-            raise
+            raise Exception()
         try:
             os.symlink(nameListR,link)
         except:
@@ -1986,7 +1986,7 @@ def generateMpiCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
     if not os.path.isfile(link):
         if not os.path.isfile(nameListR):
             jobData.errMsg = "ERROR: Failure to find: " + nameListR
-            raise
+            raise Exception()
         try:
             os.symlink(nameListR,link)
         except:

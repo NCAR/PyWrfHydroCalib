@@ -28,7 +28,7 @@ def main(argv):
 
     # If the sqllite DB file does not exist, throw an error to the user.
     if not os.path.isfile(args.inDB[0]):
-        print "ERROR: Unable to locate DB file: " + args.inDB[0]
+        print("ERROR: Unable to locate DB file: " + args.inDB[0])
         sys.exit(1)
 
     dbPath = args.inDB[0]
@@ -37,13 +37,13 @@ def main(argv):
     try:
         conn = sqlite3.connect(dbPath)
     except:
-        print "ERROR: Unable to connect to: " + dbPath + ". Please intiialize the DB file."
+        print("ERROR: Unable to connect to: " + dbPath + ". Please intiialize the DB file.")
         sys.exit(1)
 
     try:
         dbCursor = conn.cursor()
     except:
-        print "ERROR: Unable to establish cursor object for: " + dbPath
+        print("ERROR: Unable to establish cursor object for: " + dbPath)
         sys.exit(1)
         
     # First, pull the number of gages and iterations from the Job_Meta table. This will
@@ -53,12 +53,12 @@ def main(argv):
         dbCursor.execute(sqlCmd)
         results = dbCursor.fetchone()
     except:
-        print "ERROR: Unable to execute SQL command: " + sqlCmd
+        print("ERROR: Unable to execute SQL command: " + sqlCmd)
         sys.exit(1)
         
     if len(results) == 0:
-        print "ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
-              " Please confirm job has been initialized."
+        print("ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
+              " Please confirm job has been initialized.")
         sys.exit(1)
         
     numIter = int(results[0])
@@ -68,12 +68,12 @@ def main(argv):
         dbCursor.execute(sqlCmd)
         results = dbCursor.fetchone()
     except:
-        print "ERROR: Unable to execute SQL command: " + sqlCmd
+        print("ERROR: Unable to execute SQL command: " + sqlCmd)
         sys.exit(1)
         
     if len(results) == 0:
-        print "ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
-              " Please confirm job has been initialized."
+        print("ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
+              " Please confirm job has been initialized.")
         sys.exit(1)
     
     numGages = int(results[0])
@@ -87,12 +87,12 @@ def main(argv):
         dbCursor.execute(sqlCmd)
         results1 = dbCursor.fetchone()
     except:
-        print "ERROR: Unable to execute SQL command: " + sqlCmd
+        print("ERROR: Unable to execute SQL command: " + sqlCmd)
         sys.exit(1)
         
     if len(results1) == 0:
-        print "ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
-              " Please confirm job has been initialized."
+        print("ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
+              " Please confirm job has been initialized.")
         sys.exit(1)
         
     sqlCmd = "SELECT * from \"Calib_Params\" where \"jobID\"=%s and \"domainID\"=%s and iteration=1;" % (args.jobID[0],int(results1[0]))
@@ -100,12 +100,12 @@ def main(argv):
         dbCursor.execute(sqlCmd)
         results = dbCursor.fetchall()
     except:
-        print "ERROR: Unable to execute SQL command: " + sqlCmd
+        print("ERROR: Unable to execute SQL command: " + sqlCmd)
         sys.exit(1)
         
     if len(results) == 0:
-        print "ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
-              " Please confirm job has been initialized."
+        print("ERROR: User-provided Job ID: " + str(args.jobID[0]) + " returned no results. " + \
+              " Please confirm job has been initialized.")
         sys.exit(1)
         
     numCalibParams = len(results)
@@ -117,7 +117,7 @@ def main(argv):
         dbCursor.execute(sqlCmd)
         calibParamNames = dbCursor.fetchall()
     except:
-        print "ERROR: Unable to execute SQL command: " + sqlCmd
+        print("ERROR: Unable to execute SQL command: " + sqlCmd)
         sys.exit(1)
         
     # Create the ouptut NetCDF file that will contain output.
@@ -144,11 +144,11 @@ def main(argv):
         dbCursor.execute(sqlCmd)
         jobGageIDs = dbCursor.fetchall()
     except:
-        print "ERROR: Unable to execute SQL command: " + sqlCmd
+        print("ERROR: Unable to execute SQL command: " + sqlCmd)
         sys.exit(1)
         
     if numGages != len(jobGageIDs):
-        print "ERROR: Number of gages found in Calib_Stats does not match what is in Job_Meta."
+        print("ERROR: Number of gages found in Calib_Stats does not match what is in Job_Meta.")
         idOut.close()
         if os.path.isfile(outPath):
             os.remove(outPath)
@@ -160,7 +160,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             gageIdTmp = dbCursor.fetchone()
         except:
-            print "ERROR: Unable to extract gage_id for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract gage_id for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -205,7 +205,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsBias = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract bias stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract bias stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -216,7 +216,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsRmse = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract rmse stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract rmse stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -227,7 +227,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsCor = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract correlation stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract correlation stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -238,7 +238,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsNse = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract nse stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract nse stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -260,7 +260,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsNseLog = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract nselog stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract nselog stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -271,7 +271,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsKge = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract kge stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract kge stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -282,7 +282,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsFdcerr = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract fdcerr stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract fdcerr stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -293,7 +293,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsMsof = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract msof stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract msof stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -304,7 +304,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsHyperResMultiObj = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -315,7 +315,7 @@ def main(argv):
             dbCursor.execute(sqlCmd)
             resultsBest = dbCursor.fetchall()
         except:
-            print "ERROR: Unable to extract bias best iteration for domainID: " + str(jobGageIDs[i][0])
+            print("ERROR: Unable to extract bias best iteration for domainID: " + str(jobGageIDs[i][0]))
             idOut.close()
             if os.path.isfile(outPath):
                 os.remove(outPath)
@@ -345,7 +345,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validBias'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control bias stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control bias stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT bias from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -353,7 +353,7 @@ def main(argv):
             resultsTmp= dbCursor.fetchall()
             idOut.variables['validBias'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best bias stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best bias stats for domainID: " + str(jobGageIDs[i][0]))
         
         # RMSE
         sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
@@ -362,7 +362,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validRmse'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control RMSE stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control RMSE stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT rmse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -370,7 +370,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validRmse'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best RMSE stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best RMSE stats for domainID: " + str(jobGageIDs[i][0]))
         
         # Correlation Coefficient
         sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
@@ -379,7 +379,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validCorrelation'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control correlation stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control correlation stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT cor from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -387,7 +387,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validCorrelation'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best correlation stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best correlation stats for domainID: " + str(jobGageIDs[i][0]))
 
         # NSE
         sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
@@ -396,7 +396,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validNse'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control nse stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control nse stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT nse from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -404,7 +404,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validNse'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best nse stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best nse stats for domainID: " + str(jobGageIDs[i][0]))
         
         # NSE Weight
         #sqlCmd = "SELECT nseWt from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
@@ -430,7 +430,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validNseLog'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control nse log stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control nse log stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT nselog from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -438,7 +438,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validNseLog'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best nse log stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best nse log stats for domainID: " + str(jobGageIDs[i][0]))
 
         # KGE
         sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
@@ -447,7 +447,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validKge'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control kge stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control kge stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT kge from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -455,7 +455,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validKge'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best kge stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best kge stats for domainID: " + str(jobGageIDs[i][0]))
 
         # MSOF
         sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
@@ -464,7 +464,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validMsof'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control msof stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control msof stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT msof from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -472,7 +472,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validMsof'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best msof stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best msof stats for domainID: " + str(jobGageIDs[i][0]))
 
         # Hyper Resolution Objective Function
         sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"default\";" % (args.jobID[0],jobGageIDs[i][0])
@@ -481,7 +481,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validHyperResMultiObj'][i,0] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract control hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract control hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0]))
         
         sqlCmd = "SELECT hyperResMultiObj from \"Valid_Stats\" where \"jobID\"=%s and \"domainID\"=%s and simulation=\"calibrated\";" % (args.jobID[0],jobGageIDs[i][0])
         try:
@@ -489,7 +489,7 @@ def main(argv):
             resultsTmp = dbCursor.fetchall()
             idOut.variables['validHyperResMultiObj'][i,1] = resultsTmp[0][0]
         except:
-            print "WARNING: Unable to extract best hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0])
+            print("WARNING: Unable to extract best hyperResMultiObj stats for domainID: " + str(jobGageIDs[i][0]))
         
             
            
@@ -507,7 +507,7 @@ def main(argv):
                 dbCursor.execute(sqlCmd)
                 paramsTmp = dbCursor.fetchall()
             except:
-                print "ERROR: Unable to extract calibration parameter: " + calibParamName[0] + " for domainID: " + str(jobGageIDs[i][0])
+                print("ERROR: Unable to extract calibration parameter: " + calibParamName[0] + " for domainID: " + str(jobGageIDs[i][0]))
                 idOut.close()
                 if os.path.isfile(outPath):
                     os.remove(outPath)

@@ -48,7 +48,7 @@ class Database(object):
         try:
             self.dbCursor = self.conn.cursor()
         except:
-            print "ERROR: Unable to establish cursor object for: " + jobData.dbPath
+            print("ERROR: Unable to establish cursor object for: " + jobData.dbPath)
             self.conn = None
             self.dbCursor = None
             self.db = None
@@ -244,7 +244,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
         sqlCmd = "Select * from \"Domain_Meta\" where gage_id='" + str(gageName) + "';"
         
@@ -266,7 +266,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
         sqlCmd = "select * from \"Domain_Meta\" where \"domainID\"=" + str(tmpMeta['domainID']) + ";"
         
@@ -309,7 +309,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
         sqlCmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(jobData.jobID) + "';"
         
@@ -387,7 +387,7 @@ class Database(object):
         """
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
-            raise
+            raise Exception()
             
         sqlCmd1 = "update \"Job_Meta\" set owner='" + str(newOwner) + \
                   "' where \"jobID\"='" + str(jobData.jobID) + "';"
@@ -900,7 +900,7 @@ class Database(object):
             
         if not os.path.isfile(calibTbl):
             jobData.errMsg = "ERROR: Expected calibration table: " + calibTbl + " not found."
-            raise
+            raise Exception()
             
         # Read in parameter table.
         try:
@@ -940,7 +940,7 @@ class Database(object):
             
         if not os.path.isfile(statsTbl):
             jobData.errMsg = "ERROR: Expected calibration table: " + statsTbl + " not found."
-            raise
+            raise Exception()
             
         # Read in table.
         try:

@@ -38,15 +38,15 @@ def errOut(jobData):
             s.sendmail(jobData.email,[jobData.email],msg.as_string())
             s.quit()
         except:
-            print msgContent
-            print "ERROR: Unable to send email from workflow."
-            print "SMTP on a port needs to be activated from this host machine."
+            print(msgContent)
+            print("ERROR: Unable to send email from workflow.")
+            print("SMTP on a port needs to be activated from this host machine.")
     #if jobData.slackObj:
     #    msg1 = "ERROR in Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
     #    jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
     #    jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.errMsg,as_user=str(jobData.slUser))
     if not jobData.email and not jobData.slackObj:
-        print msgContent
+        print(msgContent)
     sys.exit(1)
         
 def wipeJobDir(jobData,db):
@@ -58,14 +58,14 @@ def wipeJobDir(jobData,db):
     try:
         shutil.rmtree(jobDir)
     except:
-        print "ERROR: Failure to remove: " + jobDir + " Please remove manually."
+        print("ERROR: Failure to remove: " + jobDir + " Please remove manually.")
         raise
         
     # Remove the DB entries that were made.
     try:
         db.cleanupJob(jobData)
     except:
-        print "ERROR: Failure to delete entries for job ID: " + str(jobData.jobID)
+        print("ERROR: Failure to delete entries for job ID: " + str(jobData.jobID))
         
 def removeOutput(jobData,runDir):
     """
@@ -268,15 +268,15 @@ def sendMsg(jobData):
             s.sendmail(jobData.email,[jobData.email],msg.as_string())
             s.quit()
         except:
-            print msgContent
-            print "ERROR: Unable to send email from workflow."
-            print "SMTP on a port needs to be activated from this host machine."
+            print(msgContent)
+            print("ERROR: Unable to send email from workflow.")
+            print("SMTP on a port needs to be activated from this host machine.")
     #if jobData.slackObj:
     #    msg1 = "MESSAGE for Job: " + str(jobData.jobID) + " for Owner: " + str(jobData.owner)
     #    jobData.slackObj.chat.post_message(str(jobData.slChan),msg1,as_user=str(jobData.slUser))
     #    jobData.slackObj.chat.post_message(str(jobData.slChan),jobData.genMsg,as_user=str(jobData.slUser))
     if not jobData.email and not jobData.slackObj:
-        print msgContent
+        print(msgContent)
         
 def CleanSpinup(jobData,runDir):
     """

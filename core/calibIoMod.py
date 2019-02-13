@@ -337,7 +337,7 @@ def setupModels(jobData,db,args,libPathTop):
             if not os.path.isfile(origPath):
                 wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Input file: " + origPath + " not found."
-                raise
+                raise Exception()
             try:
                 shutil.copy(origPath,newPath)
             except:
@@ -352,7 +352,7 @@ def setupModels(jobData,db,args,libPathTop):
             if not os.path.isfile(origPath):
                 wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Input file: " + origPath + " not found."
-                raise
+                raise Exception()
             try:
                 shutil.copy(origPath,newPath)
             except:
@@ -652,10 +652,10 @@ def setupModels(jobData,db,args,libPathTop):
             
         # Copy Python and R program necessary to run calibration and parameter 
         # adjustments into the calibration run directory.
-        calibPyProgram = libPathTop + '/Python/adjust_parameters.py'
-        sensPyProgram = libPathTop + '/Python/adjust_parameters_sensitivity.py'
-        calibRProgram = libPathTop + '/R/calib_workflow.R'
-        calibRUtils = libPathTop + '/R/calib_utils.R'
+        calibPyProgram = libPathTop + '/adjust_parameters.py'
+        sensPyProgram = libPathTop + '/adjust_parameters_sensitivity.py'
+        calibRProgram = libPathTop + '/calib_workflow.R'
+        calibRUtils = libPathTop + '/calib_utils.R'
         if jobData.calibFlag == 1:
             try:
                 link = gageDir + "/RUN.CALIB/adjust_parameters.py"
@@ -683,9 +683,9 @@ def setupModels(jobData,db,args,libPathTop):
                 
         # Copy Python and R programs necessary to run parameter generation and 
         # sensitivity analysis. 
-        sensPreRProgram = libPathTop + "/R/sens_workflow_pre.R"
-        sensCollectRProgram = libPathTop + "/R/Collect_simulated_flow.R"
-        sensPostRProgram = libPathTop + "/R/sens_workflow_post.R"
+        sensPreRProgram = libPathTop + "/sens_workflow_pre.R"
+        sensCollectRProgram = libPathTop + "/Collect_simulated_flow.R"
+        sensPostRProgram = libPathTop + "/sens_workflow_post.R"
         if jobData.sensFlag == 1:
             try:
                 link = gageDir + "/RUN.SENSITIVITY/sens_workflow_pre.R"
