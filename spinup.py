@@ -17,6 +17,12 @@ import pwd
 import numpy as np
 import datetime
 
+from core import statusMod
+from core import dbMod
+from core import errMod
+from core import spinupMod
+from core import configMod
+
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
 pathSplit = prPath.split('/')
@@ -24,17 +30,10 @@ libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
 topDir = libPath
-libPath = libPath + 'lib/Python'
-sys.path.insert(0,libPath)
+libPathTop = libPath + 'core'
 
-import warnings
-warnings.filterwarnings("ignore")
-
-import statusMod
-import dbMod
-import errMod
-import spinupMod
-import configMod
+#import warnings
+#warnings.filterwarnings("ignore")
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -50,14 +49,14 @@ def main(argv):
     # If the SQLite file does not exist, throw an error.
     if args.optDbPath is not None:
         if not os.path.isfile(args.optDbPath):
-            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            print("ERROR: " + args.optDbPath + " Does Not Exist.")
             sys.exit(1)
         else:
             dbPath = args.optDbPath
     else:
         dbPath = topDir + "wrfHydroCalib.db"
         if not os.path.isfile(dbPath):
-            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            print("ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist.")
             sys.exit(1)
     
     # Establish the beginning timestamp for this program.
@@ -76,33 +75,33 @@ def main(argv):
     try:
         db.connect(jobData)
     except:
-        print jobData.errMsg
+        print(jobData.errMsg)
         sys.exit(1)
         
     # Extract job data from database
     try:
         db.jobStatus(jobData)
     except:
-        print jobData.errMsg
+        print(jobData.errMsg)
         sys.exit(1)
     
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
     if not os.path.isfile(configPath):
-        print "ERROR: Configuration file: " + configPath + " not found."
+        print("ERROR: Configuration file: " + configPath + " not found.")
         sys.exit(1)
 
     try:        
         staticData = configMod.readConfig(configPath)
     except:
-        print "ERROR: Failure to read configuration file: " + configPath
+        print("ERROR: Failure to read configuration file: " + configPath)
         sys.exit(1)
         
     if staticData.coldStart == 1:
-        print "ERROR: User has specified a cold-start option for calibration. Exiting...."
+        print("ERROR: User has specified a cold-start option for calibration. Exiting....")
         sys.exit(0)
     if staticData.optSpinFlag == 1:
-        print "ERROR: User has specified an optional spinup file. Exiting...."
+        print("ERROR: User has specified an optional spinup file. Exiting....")
         sys.exit(0)
     
     # Assign the SQL command from the config file into the jobData structure
@@ -123,18 +122,18 @@ def main(argv):
         # Either a job is still running, or was running
         # and was killed.
 
-        print 'LOCK FILE FOUND.'
+        print('LOCK FILE FOUND.')
         # Read in to get PID number
         pidObj = pd.read_csv(pyLockPath)
         pidCheck = int(pidObj.PID[0])
         if errMod.check_pid(pidCheck):
-                print "JOB: " + str(pidCheck) + \
-                      " Is still running."
+                print("JOB: " + str(pidCheck) + \
+                      " Is still running.")
                 sys.exit(0)
         else:
-                print "JOB: " + str(pidCheck) + \
+                print("JOB: " + str(pidCheck) + \
                       " Has Failed. Removing LOCK " + \
-                      " file."
+                      " file.")
                 os.remove(pyLockPath)
                 fileObj = open(pyLockPath,'w')
                 fileObj.write('\"PID\"\n')
@@ -176,13 +175,13 @@ def main(argv):
         errMod.errOut(jobData)
         
     if userTmp != jobData.owner:
-        print "User: " + userTmp + " is requesting to takeover jobID: " + \
-              str(jobData.jobID) + " from owner: " + str(jobData.owner)
+        print("User: " + userTmp + " is requesting to takeover jobID: " + \
+              str(jobData.jobID) + " from owner: " + str(jobData.owner))
         strTmp = "Please enter new email address. Leave blank if no email " + \
                  "change is desired. NOTE if you leave both email and Slack " + \
                  "information blank, no change in contact will occur. Only " + \
                  "the owner will be modified:"
-        newEmail = raw_input(strTmp)
+        newEmail = input(strTmp)
         #strTmp = "Please enter Slack channel:"
         #newSlackChannel = raw_input(strTmp)
         #strTmp = "Please enter Slack token:"

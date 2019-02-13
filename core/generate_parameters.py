@@ -104,7 +104,7 @@ def main(argv):
     
     if args.chRtFlag[0] == 3:
         # Open the CHANPARM.TBL
-        chanParmTblDataOrig = file(chanParmOrig)
+        chanParmTblDataOrig = open(chanParmOrig,'r')
         
         # Open the new CHANPARM.TBL for writing
         chanParmOutObj = open(chanParmBest,'w')
@@ -145,7 +145,7 @@ def main(argv):
     
     # Loop through and adjust each parameter accordingly.
     for param in paramNames:
-        print param
+        print(param)
         if param == "bexp":
             idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(paramValues[np.where(paramNames == 'bexp')[0][0]])
         

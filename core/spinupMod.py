@@ -6,10 +6,10 @@
 
 #import datetime
 import os
-import calibIoMod
-import namelistMod
-import statusMod
-import errMod
+from core import calibIoMod
+from core import namelistMod
+from core import statusMod
+from core import errMod
 import subprocess
 
 import warnings
@@ -94,7 +94,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         keySlot[basinNum] = -1.0
         keyStatus = -1.0
         runFlag = False
-        print "MODEL IS LOCKED"
+        print("MODEL IS LOCKED")
         #statusData.genMsg = "ERROR: Basin ID: " + str(gageID) + " Is locked. " + \
         #                    "Please remove: " + lockPath + " before continuing."
         #errMod.sendMsg(statusData)
@@ -122,7 +122,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
                 # Model crashed as simulation is not complete but no processes are running.
                 statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
                                     " Failed. Attempting to restart."
-                print statusData.genMsg
+                print(statusData.genMsg)
                 keySlot[basinNum] = -0.25
                 keyStatus = -0.25
             else:
@@ -234,7 +234,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -293,7 +293,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise

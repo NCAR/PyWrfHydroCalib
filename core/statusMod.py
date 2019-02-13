@@ -200,7 +200,7 @@ def checkBasJob(jobData,gageNum,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -242,7 +242,7 @@ def checkBasJob(jobData,gageNum,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -263,13 +263,13 @@ def checkBasJob(jobData,gageNum,pbsJobId):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "MODEL SIMULATIONS FOUND"
+                    print("MODEL SIMULATIONS FOUND")
                     status = True
         else:
             status = False
         
         if not status:
-            print "NO MODEL SIMULATIONS FOUND"
+            print("NO MODEL SIMULATIONS FOUND")
             
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -283,12 +283,12 @@ def checkBasJob(jobData,gageNum,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
-            print "NO MODEL SIMULATIONS FOUND"
+            print("NO MODEL SIMULATIONS FOUND")
         else:
-            print "MODEL SIMULATIONS FOUND"
+            print("MODEL SIMULATIONS FOUND")
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -297,7 +297,7 @@ def checkBasJob(jobData,gageNum,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
             
@@ -422,7 +422,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -464,7 +464,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -485,13 +485,13 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "CALIB JOBS FOUND"
+                    print("CALIB JOBS FOUND")
                     status = True
         else:
             status = False
         
         if not status:
-            print "NO CALIB JOBS FOUND"
+            print("NO CALIB JOBS FOUND")
     
     if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -505,12 +505,12 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
-            print "NO CALIB JOBS FOUND"
+            print("NO CALIB JOBS FOUND")
         else:
-            print "CALIB JOBS FOUND"
+            print("CALIB JOBS FOUND")
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -519,7 +519,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by : " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
                 
@@ -612,7 +612,7 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -654,7 +654,7 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -676,13 +676,13 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "BASIN VALID JOBS FOUND"
+                    print("BASIN VALID JOBS FOUND")
                     status = True
         else:
             status = False
         
         if not status:
-            print "NO VALID MODEL JOBS FOUND"
+            print("NO VALID MODEL JOBS FOUND")
                     
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -699,12 +699,12 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
-            print "NO VALID MODEL JOBS FOUND"
+            print("NO VALID MODEL JOBS FOUND")
         else:
-            print "BASIN VALID JOBS FOUND"
+            print("BASIN VALID JOBS FOUND")
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -713,7 +713,7 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
                 
@@ -787,7 +787,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -809,13 +809,13 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "EVAL JOBS FOUND"
+                    print("EVAL JOBS FOUND")
                     status = True
         else:
             status = False
         
         if not status:
-            print "NO EVAL JOBS FOUND"
+            print("NO EVAL JOBS FOUND")
         
     if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -829,12 +829,12 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
-            print "NO EVAL JOBS FOUND"
+            print("NO EVAL JOBS FOUND")
         else:
-            print "EVAL JOBS FOUND"
+            print("EVAL JOBS FOUND")
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -843,7 +843,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
                 
@@ -875,7 +875,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -986,7 +986,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -1028,7 +1028,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -1050,13 +1050,13 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "EVAL JOBS FOUND"
+                    print("EVAL JOBS FOUND")
                     status = True
         else:
             status = False
         
         if not status:
-            print "NO EVAL JOBS FOUND"
+            print("NO EVAL JOBS FOUND")
                 
     if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -1070,12 +1070,12 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
-            print "NO EVAL JOBS FOUND"
+            print("NO EVAL JOBS FOUND")
         else:
-            print "EVAL JOBS FOUND"
+            print("EVAL JOBS FOUND")
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -1084,7 +1084,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
             
@@ -1171,7 +1171,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -1213,7 +1213,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -1246,13 +1246,13 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
         # We are running via mpiexec
         pidActive = []
         exeName = "SPRE" + str(jobData.jobID) + str(gageID) 
-        print exeName
+        print(exeName)
         for proc in psutil.process_iter():
             try:
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
         else:
@@ -1264,7 +1264,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
             
@@ -1351,7 +1351,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -1393,7 +1393,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -1431,7 +1431,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
         else:
@@ -1443,7 +1443,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
     
@@ -1534,7 +1534,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -1576,7 +1576,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -1597,13 +1597,13 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
         if len(jobs.NAME) > 0:
             for jobNum in range(0,len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print "MODEL SIMULATIONS FOUND"
+                    print("MODEL SIMULATIONS FOUND")
                     status = True
         else:
             status = False
         
         if not status:
-            print "NO MODEL SIMULATIONS FOUND"
+            print("NO MODEL SIMULATIONS FOUND")
             
     if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
@@ -1617,12 +1617,12 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
-            print "NO MODEL SIMULATIONS FOUND"
+            print("NO MODEL SIMULATIONS FOUND")
         else:
-            print "MODEL SIMULATIONS FOUND"
+            print("MODEL SIMULATIONS FOUND")
             # Ensure these are being ran by the proper user.
             proc_stat_file = os.stat('/proc/%d' % pidActive[0])
             uid = proc_stat_file.st_uid
@@ -1631,7 +1631,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
                 
@@ -1718,7 +1718,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
                 if numLinesTmp < 7:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
-                    raise
+                    raise Exception()
                 for lineNum in range(5,numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat 
                     # on Cheyenne.
@@ -1760,7 +1760,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
             
         if not os.path.isfile(csvPath):
             jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
-            raise
+            raise Exception()
             
         try:
             jobs = pd.read_csv(csvPath,delim_whitespace=True)
@@ -1798,7 +1798,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 if proc.name() == exeName:
                     pidActive.append(proc.pid)
             except:
-                print exeName + " Found, but ended before Python could get the PID."
+                print(exeName + " Found, but ended before Python could get the PID.")
         if len(pidActive) == 0:
             status = False
         else:
@@ -1810,7 +1810,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 jobData.errMsg = "ERROR: " + exeName + " is being ran by: " + \
                 userCheck + " When it should be ran by: " + jobData.owner
                 status = False
-                raise
+                raise Exception()
             else:
                 status = True
     

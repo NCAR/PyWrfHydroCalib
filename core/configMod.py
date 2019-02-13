@@ -7,7 +7,7 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import os
 import datetime
 import ast
@@ -215,7 +215,7 @@ class jobMeta:
             # the workflow will continuously initialize calibration model simulations
             # from a timestep with no restart file available. 
             if self.bCalibFullOutputs.day != 1 and self.bCalibFullOutputs.hour != 0:
-                print "ERROR: Please specify a stripCalibHours value that results in a date at the beginning of the month."
+                print("ERROR: Please specify a stripCalibHours value that results in a date at the beginning of the month.")
                 raise Exception()
         else:
             self.bCalibFullOutputs = self.bCalibDate
@@ -296,7 +296,7 @@ def readConfig(configFile):
     try:
         jobMeta.readConfig(jobObj,parser)
     except:
-        print "ERROR: Unable to assign values from config file."
+        print("ERROR: Unable to assign values from config file.")
         raise
         
     return jobObj
@@ -306,7 +306,7 @@ def createJob(argsUser):
     """
     # Check to make sure a non-zero length config file was passed by the user.
     if len(argsUser.configFile[0]) ==0:
-        print "ERROR: Zero Length Configuration File Passed To Program."
+        print("ERROR: Zero Length Configuration File Passed To Program.")
         raise Exception()
 
     configPath = argsUser.configFile[0]    
@@ -315,14 +315,14 @@ def createJob(argsUser):
     if os.path.isfile(configPath):
         parser.read(configPath)
     else:
-        print "ERROR: Config file not found."
+        print("ERROR: Config file not found.")
         raise Exception()
 
     # Check entries into the config file to make sure they make sense.
     try:
         checkConfig(parser)
     except:
-        print "ERROR: Improper Entries Into Config File."
+        print("ERROR: Improper Entries Into Config File.")
         raise
     
     # Initialize job object
@@ -332,19 +332,19 @@ def createJob(argsUser):
     try:
         jobMeta.readConfig(jobObj,parser)
     except:
-        print "ERROR: Unable to assign values from config file."
+        print("ERROR: Unable to assign values from config file.")
         raise
         
     # If calibration has been activated, check to make sure a valid parameter table was specified. 
     if jobObj.calibFlag == 1:
         if not os.path.isfile(jobObj.calibTbl):
-            print "ERROR: Calibration parameter table: " + str(jobObj.calibTbl) + " not found."
+            print("ERROR: Calibration parameter table: " + str(jobObj.calibTbl) + " not found.")
             raise Exception()
             
     # If sensitivity analysis was activated, check to make sure a valid parameter table was specified.
     if jobObj.sensFlag == 1:
         if not os.path.isfile(jobObj.sensTbl):
-            print "ERROR: Sensitivity parameter table: " + str(jobObj.sensTbl) + " not found."
+            print("ERROR: Sensitivity parameter table: " + str(jobObj.sensTbl) + " not found.")
             raise Exception()
         else:
             # Read in the sensitivity parameter table and calculate the total number 
@@ -353,7 +353,7 @@ def createJob(argsUser):
             tblTmp = pd.read_csv(jobObj.sensTbl,sep=',')
             nIterTmp = jobObj.nSensSample*(len(np.where(tblTmp.sens_flag == 1)[0])+1)
             if nIterTmp % jobObj.nSensBatch != 0:
-                print "ERROR: Invalid number of sensitivity batch runs. Must be compatible with num_sens_params * (sample+1)"
+                print("ERROR: Invalid number of sensitivity batch runs. Must be compatible with num_sens_params * (sample+1)")
                 raise Exception()
             else:
                 jobObj.nSensIter = nIterTmp
@@ -372,7 +372,7 @@ def queryJob(argsUser):
     """
     # Check to make sure a non-zero length config file was passed by the user.
     if len(argsUser.configFile[0]) ==0:
-        print "ERROR: Zero Length Configuration File Passed To Program."
+        print("ERROR: Zero Length Configuration File Passed To Program.")
         raise Exception()
 
     configPath = argsUser.configFile[0]    
@@ -381,7 +381,7 @@ def queryJob(argsUser):
     if os.path.isfile(configPath):
         parser.read(configPath)
     else:
-        print "ERROR: Config file not found."
+        print("ERROR: Config file not found.")
         raise Exception()
 
     # Initialize job object
@@ -391,7 +391,7 @@ def queryJob(argsUser):
     try:
         jobMeta.readConfig(jobObj,parser)
     except:
-        print "ERROR: Unable to assign values from config file."
+        print("ERROR: Unable to assign values from config file.")
         raise
         
     return jobObj
@@ -402,20 +402,20 @@ def checkConfig(parser):
     # Go through and check everything put into the config file.
     check = str(parser.get('logistics','outDir'))
     if len(check) == 0:
-        print "ERROR: Zero length output directory provided."
+        print("ERROR: Zero length output directory provided.")
         raise Exception()
     if not os.path.isdir(check):
-        print "ERROR: Directory: " + check + " not found."
+        print("ERROR: Directory: " + check + " not found.")
         raise Exception()
 
     check = str(parser.get('logistics','jobName'))
     if len(check) == 0:
-        print "ERROR: Zero length job name provided."
+        print("ERROR: Zero length job name provided.")
         raise Exception()
         
     check = str(parser.get('logistics','acctKey'))
     if len(check) == 0:
-        print "WARNING: Zero length account key passed to program."
+        print("WARNING: Zero length account key passed to program.")
 
     # We won't check the optional que name as it's optional. Even if some 
     # run with a job submission method, they may not need to run with a que.
@@ -425,7 +425,7 @@ def checkConfig(parser):
     # FOR NOW WILL RELAX EMAIL CONSTRAINT
     check1 = str(parser.get('logistics','email'))
     if len(check1) == 0:
-        print "WARNING: Zero length email passed. Proceed with caution...."
+        print("WARNING: Zero length email passed. Proceed with caution....")
     #check2 = str(parser.get('logistics','slackChannel'))
     #check3 = str(parser.get('logistics','slackToken'))
     #check4 = str(parser.get('logistics','slackUser'))
@@ -444,154 +444,154 @@ def checkConfig(parser):
 
     check = int(parser.get('logistics','nCoresModel'))
     if not check:
-        print "ERROR: Number of model cores to use not specified."
+        print("ERROR: Number of model cores to use not specified.")
         raise Exception()
     if check <= 0:
-        print "ERROR: Invalid number of model cores to use."
+        print("ERROR: Invalid number of model cores to use.")
         raise Exception()
     check = int(parser.get('logistics','nNodesModel'))
     if not check:
-        print "ERROR: Number of model nodes to use not specified."
+        print("ERROR: Number of model nodes to use not specified.")
         raise Exception()
     if check <= 0:
-        print "ERROR: Invalid number of model nodes to use."
+        print("ERROR: Invalid number of model nodes to use.")
         raise Exception()
         
     # Check calibration/sensitivity activation flags.
     check = int(parser.get('logistics','runSens'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid runSens flag specified."
+        print("ERROR: Invalid runSens flag specified.")
         raise Exception()
     check = int(parser.get('logistics','runCalib'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid runCalib flag specified."
+        print("ERROR: Invalid runCalib flag specified.")
         raise Exception()
         
     # Check to make sure a valid option was passed for running model/R code
     check = int(parser.get('logistics','jobRunType'))
     if check < 1 or check > 6:
-        print "ERROR: Invalid jobRunType specified."
+        print("ERROR: Invalid jobRunType specified.")
         raise Exception()
         
     check = int(parser.get('logistics','analysisRunType'))
     if check < 1 or check > 6:
-        print "ERROR: Invalid analysisRunType specified."
+        print("ERROR: Invalid analysisRunType specified.")
         raise Exception()
         
     check = int(parser.get('logistics','nCoresR'))
     if not check:
-        print "ERROR: Number of R Cores to use not specified."
+        print("ERROR: Number of R Cores to use not specified.")
         raise Exception()
     check = int(parser.get('logistics','nNodesR'))
     if not check:
-        print "ERROR: Number of R Nodes to use not specified."
+        print("ERROR: Number of R Nodes to use not specified.")
         raise Exception()
     if check <= 0:
-        print "ERROR: Invalid number of R Nodes to use."
+        print("ERROR: Invalid number of R Nodes to use.")
         raise Exception()
         
     check = int(parser.get('logistics','dailyStats'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid dailyStats value specified."
+        print("ERROR: Invalid dailyStats value specified.")
         raise Exception()
         
     check = int(parser.get('logistics','coldStart'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid coldStart value specified."
+        print("ERROR: Invalid coldStart value specified.")
         raise Exception()
         
     check = int(parser.get('logistics','optSpinFlag'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid optSpinFlag value specified."
+        print("ERROR: Invalid optSpinFlag value specified.")
         raise Exception()
         
     check1 = int(parser.get('logistics','coldStart'))
     check2 = int(parser.get('logistics','optSpinFlag'))
     if check1 == 1 and check2 == 1:
-        print "ERROR: Cannot run cold start calibrations with optional spinup files."
+        print("ERROR: Cannot run cold start calibrations with optional spinup files.")
         raise Exception()
     
     # Check to make sure calibration method is DDS
     check = str(parser.get('logistics','calibMethod'))
     if check != "DDS":
-        print "ERROR: Invalid calibration method passed to program."
+        print("ERROR: Invalid calibration method passed to program.")
         raise Exception()
         
     # Check optional calibration output strip options.
     check1 = int(parser.get('logistics','stripCalibOutputs'))
     if check1 < 0 or check1 > 1:
-        print "ERROR: Invalid stripCalibOutputs option passed to program."
+        print("ERROR: Invalid stripCalibOutputs option passed to program.")
         raise Exception()
     check2 = int(parser.get('logistics','stripCalibHours'))
     if check1 == 1:
         if check2 < 0:
-            print "ERROR: Invalid stripCalibHours passed to program."
+            print("ERROR: Invalid stripCalibHours passed to program.")
             raise Exception()
         
     check = str(parser.get('logistics','objectiveFunction'))
     if len(check) == 0:
-        print "ERROR: Zero length calibration objective function provided."
+        print("ERROR: Zero length calibration objective function provided.")
         raise Exception()
     # For now, restrict the user to a set of pre-defined objective functions.
     if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj":
-        print "ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, and hyperResMultiObj"
+        print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, and hyperResMultiObj")
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))
     if not check:
-        print "ERROR: Number of calibration iterations not specified."
+        print("ERROR: Number of calibration iterations not specified.")
         raise Exception()
     if check <= 0:
-        print "ERROR: Invalid number of calibration iterations specified."
+        print("ERROR: Invalid number of calibration iterations specified.")
         raise Exception()
         
     check = str(parser.get('logistics','wrfExe'))
     if len(check) == 0:
-        print "ERROR: Zero length executable provided."
+        print("ERROR: Zero length executable provided.")
         raise Exception()
     if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
+        print("ERROR: File: " + check + " not found.")
         raise Exception()
         
     # Parameter tables
     check = str(parser.get('logistics','genParmTbl'))
     if len(check) == 0:
-        print "ERROR: Zero length general parameter table provided."
+        print("ERROR: Zero length general parameter table provided.")
         raise Exception()
     if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
+        print("ERROR: File: " + check + " not found.")
         raise Exception()
         
     check = str(parser.get('logistics','mpParmTbl'))
     if len(check) == 0:
-        print "ERROR: Zero length MP parameter table provided."
+        print("ERROR: Zero length MP parameter table provided.")
         raise Exception()
     if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
+        print("ERROR: File: " + check + " not found.")
         raise Exception()
         
     check = str(parser.get('logistics','urbParmTbl'))
     if len(check) == 0:
-        print "ERROR: Zero length urban parameter table provided."
+        print("ERROR: Zero length urban parameter table provided.")
         raise Exception()
     if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
+        print("ERROR: File: " + check + " not found.")
         raise Exception()
         
     check = str(parser.get('logistics','vegParmTbl'))
     if len(check) == 0:
-        print "ERROR: Zero length vegetation parameter table provided."
+        print("ERROR: Zero length vegetation parameter table provided.")
         raise Exception()
     if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
+        print("ERROR: File: " + check + " not found.")
         raise Exception()
         
     check = str(parser.get('logistics','soilParmTbl'))
     if len(check) == 0:
-        print "ERROR: Zero length soil parameter table provided."
+        print("ERROR: Zero length soil parameter table provided.")
         raise Exception()
     if not os.path.isfile(check):
-        print "ERROR: File: " + check + " not found."
+        print("ERROR: File: " + check + " not found.")
         raise Exception()
         
     # Date information
@@ -600,7 +600,7 @@ def checkConfig(parser):
     bDate = datetime.datetime.strptime(str(bDate),'%Y-%m-%d')
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
     if bDate >= eDate:
-        print "ERROR: Must specify ending spinup date greater than beginning spinup date."
+        print("ERROR: Must specify ending spinup date greater than beginning spinup date.")
         raise Exception()
         
     bDate = parser.get('logistics','bCalibDate')
@@ -610,11 +610,11 @@ def checkConfig(parser):
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
     bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
     if bDate >= eDate:
-        print "ERROR: Must specify ending calibration date greater than beginning spinup date."
+        print("ERROR: Must specify ending calibration date greater than beginning spinup date.")
         raise Exception()
     if bEDate >= eDate:
-        print "ERROR: Must specify the beginning date for calibration evaluation date " + \
-              " that is before the ending date for calibration simulations."
+        print("ERROR: Must specify the beginning date for calibration evaluation date " + \
+              " that is before the ending date for calibration simulations.")
         raise Exception()
         
     bDate = parser.get('logistics','bValidDate')
@@ -624,11 +624,11 @@ def checkConfig(parser):
     eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
     bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
     if bDate >= eDate:
-        print "ERROR: Must specify ending validation date greater than beginning validation date."
+        print("ERROR: Must specify ending validation date greater than beginning validation date.")
         raise Exception()
     if bEDate >= eDate:
-        print "ERROR: Must specify the beginning date for validation evaluation date " + \
-              " that is before the ending date for validation simulations."
+        print("ERROR: Must specify the beginning date for validation evaluation date " + \
+              " that is before the ending date for validation simulations.")
         raise Exception()
         
     check = int(parser.get('logistics','runSens'))
@@ -636,11 +636,11 @@ def checkConfig(parser):
     if check == 1:
         check1 = int(parser.get('Sensitivity','sensParmSample'))
         if check1 <= 0:
-            print "ERROR: Please choose numSensIter greater than 0."
+            print("ERROR: Please choose numSensIter greater than 0.")
             raise Exception()
         check2 = int(parser.get('Sensitivity','sensBatchNum'))
         if check2 <= 0:
-            print "ERROR: Please choose sensBatchNum greater than 0."
+            print("ERROR: Please choose sensBatchNum greater than 0.")
             raise Exception()
         bDate = parser.get('Sensitivity','bSensDate')
         eDate = parser.get('Sensitivity','eSensDate')
@@ -649,291 +649,291 @@ def checkConfig(parser):
         eDate = datetime.datetime.strptime(str(eDate),'%Y-%m-%d')
         bEDate = datetime.datetime.strptime(str(bEDate),'%Y-%m-%d')
         if bDate >= eDate:
-            print "ERROR: Must specify ending sensitivity date greater than beginning sensitivity date."
+            print("ERROR: Must specify ending sensitivity date greater than beginning sensitivity date.")
             raise Exception()
         if bEDate >= eDate:
-            print "ERROR: Must specify the beginning date for sensitivity evaluation date " + \
-                  " that is before the ending date for validation simulations."
+            print("ERROR: Must specify the beginning date for sensitivity evaluation date " + \
+                  " that is before the ending date for validation simulations.")
             raise Exception()
     
     # Check gauge information
     check1 = str(parser.get('gageInfo','gageListFile'))
     check2 = str(parser.get('gageInfo','gageListSQL'))
     if len(check1) == 0 and len(check2) == 0:
-        print "ERROR: Zero length gage list file and SQL command passed to program."
+        print("ERROR: Zero length gage list file and SQL command passed to program.")
         raise Exception()
     if len(check1) > 0 and len(check2) > 0:
-        print "ERROR: Cannot have both gage list and SQL command."
+        print("ERROR: Cannot have both gage list and SQL command.")
         raise Exception()
     if len(check1) > 0:
         if not os.path.isfile(check1):
-            print "ERROR: File: " + check2 + " not found."
+            print("ERROR: File: " + check2 + " not found.")
             raise Exception()
         
     # Check LSM physics options
     check = int(parser.get('lsmPhysics','dynVegOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid dynamic vegetation option chosen."
+        print("ERROR: Invalid dynamic vegetation option chosen.")
         raise Exception()
     
     check = int(parser.get('lsmPhysics','canStomResOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid canopy stomatal resistance option chosen."
+        print("ERROR: Invalid canopy stomatal resistance option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','btrOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid BTR option chosen."
+        print("ERROR: Invalid BTR option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','runoffOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid LSM runoff option chosen."
+        print("ERROR: Invalid LSM runoff option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','sfcDragOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid surface drag coefficient option chosen."
+        print("ERROR: Invalid surface drag coefficient option chosen.")
         raise Exception()
     
     check = int(parser.get('lsmPhysics','frzSoilOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid frozen soil option chosen."
+        print("ERROR: Invalid frozen soil option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','supCoolOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid supercooled water option chosen."
+        print("ERROR: Invalid supercooled water option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','radTransferOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid radiative transfer option chosen."
+        print("ERROR: Invalid radiative transfer option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','snAlbOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid snow albedo option chosen."
+        print("ERROR: Invalid snow albedo option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','pcpPartOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid precip partitioning option chosen."
+        print("ERROR: Invalid precip partitioning option chosen.")
         raise Exception()
     
     check = int(parser.get('lsmPhysics','tbotOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid TBOT option chosen."
+        print("ERROR: Invalid TBOT option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','tempTimeSchOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid temperature time scheme option chosen."
+        print("ERROR: Invalid temperature time scheme option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','sfcResOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid surface resistence option chosen."
+        print("ERROR: Invalid surface resistence option chosen.")
         raise Exception()
         
     check = int(parser.get('lsmPhysics','glacierOption'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid glacier option chosen."
+        print("ERROR: Invalid glacier option chosen.")
         raise Exception()
     
     # Check soil moisture thickness values
     check = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
     if len(check) != 4:
-        print "ERROR: Must specify four soil layer thicknesses."
+        print("ERROR: Must specify four soil layer thicknesses.")
         raise Exception()
         
     # Check z-level
     check = parser.get('lsmPhysics','zLvl')
     if float(check) < 0:
-        print "ERROR: zLvl must be greater than or equal to 0.0 meters."
+        print("ERROR: zLvl must be greater than or equal to 0.0 meters.")
         raise Exception()
     if len(check) == 0:
-        print "ERROR: Zero length zLvl passed to program."
+        print("ERROR: Zero length zLvl passed to program.")
         raise Exception()
         
     # Check forcing options
     check = parser.get('forcing','forceType')
     if len(check) == 0:
-        print "ERROR: Zero length forceType value passed to program."
+        print("ERROR: Zero length forceType value passed to program.")
         raise Exception()
     if int(check) < 1 or int(check) > 6:
-        print "ERROR: Invalid forceType value passed to program."
+        print("ERROR: Invalid forceType value passed to program.")
         raise Exception()
         
     # Make sure output frequencies aren't < 0
     check = int(parser.get('modelTime','forceDt'))
     if check < 0:
-        print "ERROR: Invalid forcing DT passed to program."
+        print("ERROR: Invalid forcing DT passed to program.")
         raise Exception()
         
     check = int(parser.get('modelTime','lsmDt'))
     if check < 0:
-        print "ERROR: Invalid LSM DT passed to program."
+        print("ERROR: Invalid LSM DT passed to program.")
         raise Exception()
         
     check = int(parser.get('modelTime','lsmOutDt'))
     if check < 0:
-        print "ERROR: Invalid LSM Output DT passed to program."
+        print("ERROR: Invalid LSM Output DT passed to program.")
         raise Exception()
         
     check = int(parser.get('modelTime','lsmRstFreq'))
     if check < 0:
         if check != -9999:
-            print "ERROR: Invalid LSM restart frequency passed to program."
+            print("ERROR: Invalid LSM restart frequency passed to program.")
             raise Exception()
         
     check = int(parser.get('modelTime','hydroRstFreq'))
     if check < 0:
         if check != -99999:
-            print "ERROR: Invalid Hydro restart frequency passed to program."
+            print("ERROR: Invalid Hydro restart frequency passed to program.")
             raise Exception()
         
     check = int(parser.get('modelTime','hydroOutDt'))
     if check < 0:
-        print "ERROR: Invalid Hydro output DT passed to program."
+        print("ERROR: Invalid Hydro output DT passed to program.")
         raise Exception()
         
     # Check Hydro IO options
     check = parser.get('hydroIO','rstType')
     if len(check) == 0:
-        print "ERROR: Zero length rstType passed to program."
+        print("ERROR: Zero length rstType passed to program.")
         raise Exception()
     if int(check) < 0 or int(check) > 1:
-        print "ERROR: Invalid rstType passed to program."
+        print("ERROR: Invalid rstType passed to program.")
         raise Exception()
         
     check = parser.get('hydroIO','ioConfigOutputs')
     if len(check) == 0:
-        print "ERROR: Zero length ioConfigOutputs passed to program."
+        print("ERROR: Zero length ioConfigOutputs passed to program.")
         raise Exception()
     if int(check) < 0 or int(check) > 6:
-        print "ERROR: Invalid ioConfigOutputs passed to program."
+        print("ERROR: Invalid ioConfigOutputs passed to program.")
         raise Exception()
         
     check = parser.get('hydroIO','ioFormOutputs')
     if len(check) == 0:
-        print "ERROR: Zero length ioFormOutputs passed to program."
+        print("ERROR: Zero length ioFormOutputs passed to program.")
         raise Exception()
     if int(check) < 0 or int(check) > 4:
-        print "ERROR: Invalid ioFormOutputs passed to program."
+        print("ERROR: Invalid ioFormOutputs passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','chrtoutDomain'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid CHRTOUT_DOMAIN option passed to program."
+        print("ERROR: Invalid CHRTOUT_DOMAIN option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','chanObsDomain'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid CHANOBS_DOMAIN optino passed to program."
+        print("ERROR: Invalid CHANOBS_DOMAIN optino passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','chrtoutGrid'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid CHRTOUT_GRID option passed to program."
+        print("ERROR: Invalid CHRTOUT_GRID option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','lsmDomain'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid LSMOUT_DOMAIN option passed to program."
+        print("ERROR: Invalid LSMOUT_DOMAIN option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','rtoutDomain'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid RTOUT_DOMAIN option passed to program."
+        print("ERROR: Invalid RTOUT_DOMAIN option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','gwOut'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid GW_OUT option passed to program."
+        print("ERROR: Invalid GW_OUT option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','lakeOut'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid LAKE_OUT option passed to program."
+        print("ERROR: Invalid LAKE_OUT option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','frxstOut'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid frxstOut option passed to program."
+        print("ERROR: Invalid frxstOut option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','resetHydroAcc'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid RSTRT_SWC option passed to program."
+        print("ERROR: Invalid RSTRT_SWC option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroIO','streamOrderOut'))
     if check < 0 or check > 4:
-        print "ERROR: Invalid stream order output option passed to program."
+        print("ERROR: Invalid stream order output option passed to program.")
         raise Exception()
         
     # Check hydro physics options
     check = int(parser.get('hydroPhysics','dtChSec'))
     if check < 0:
-        print "ERROR: Invalid DTRT_CH option passed to program."
+        print("ERROR: Invalid DTRT_CH option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','dtTerSec'))
     if check < 0:
-        print "ERROR: Invalid DTRT_TER option passed to program."
+        print("ERROR: Invalid DTRT_TER option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','subRouting'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid sub-surface routing switch passed to program."
+        print("ERROR: Invalid sub-surface routing switch passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','ovrRouting'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid overland routing switch passed to program."
+        print("ERROR: Invalid overland routing switch passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','channelRouting'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid channel routing switch passed to program."
+        print("ERROR: Invalid channel routing switch passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','rtOpt'))
     if check < 0 or check > 2:
-        print "ERROR: Invalid overland/subsurface routing option passed to program."
+        print("ERROR: Invalid overland/subsurface routing option passed to program.")
         raise Exception()
     
     check = int(parser.get('hydroPhysics','chanRtOpt'))
     if check < 0 or check > 3:
-        print "ERROR: Invalid channel routing option passed to program."
+        print("ERROR: Invalid channel routing option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','udmpOpt'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid user-defined mapping option passed to program."
+        print("ERROR: Invalid user-defined mapping option passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','gwBaseSw'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid groundwater bucket switch passed to program."
+        print("ERROR: Invalid groundwater bucket switch passed to program.")
         raise Exception()
     
     check = int(parser.get('hydroPhysics','gwRestart'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid ground water restart switch passed to program."
+        print("ERROR: Invalid ground water restart switch passed to program.")
         raise Exception()
         
     check = int(parser.get('hydroPhysics','compoundChannel'))
     if check < 0 or check > 1:
-        print "ERROR: Invalid compoundChannel switch passed to program."
+        print("ERROR: Invalid compoundChannel switch passed to program.")
         raise Exception()
         
     # Ensure muskingum cunge routing has been chosen if compound channel is activated.
     check1 = int(parser.get('hydroPhysics','compoundChannel'))
     check2 = int(parser.get('hydroPhysics','chanRtOpt'))
     if check1 == 1 and check2 != 2:
-        print "ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing."
+        print("ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing.")
         raise Exception()
     
     

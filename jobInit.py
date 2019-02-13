@@ -18,7 +18,12 @@ import sys
 import argparse
 import os
 
-# Set the Python path to include package specific functions included with this 
+from core import configMod
+from core import calibIoMod
+from core import errMod
+from core import dbMod
+
+# Set the Python path to include package specific functions included with this
 # package.
 prPath = os.path.realpath(__file__)
 pathSplit = prPath.split('/')
@@ -26,17 +31,10 @@ libPath = '/'
 for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
 topDir = libPath
-libPathTop = libPath + 'lib'
-libPath = libPath + 'lib/Python'
-sys.path.insert(0,libPath)
+libPathTop = libPath + 'core'
 
-import warnings
-warnings.filterwarnings("ignore")
-
-import configMod
-import calibIoMod
-import errMod
-import dbMod
+#import warnings
+#warnings.filterwarnings("ignore")
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -52,21 +50,21 @@ def main(argv):
     # If the SQLite file does not exist, throw an error.
     if args.optDbPath is not None:
         if not os.path.isfile(args.optDbPath):
-            print "ERROR: " + args.optDbPath + " Does Not Exist."
+            print("ERROR: " + args.optDbPath + " Does Not Exist.")
             sys.exit(1)
         else:
             dbPath = args.optDbPath
     else:
         dbPath = topDir + "wrfHydroCalib.db"
         if not os.path.isfile(dbPath):
-            print "ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist."
+            print("ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist.")
             sys.exit(1)     
 
     # Initialize job using setup.parm and calibration DB.
     try:
          jobData = configMod.createJob(args)
     except:
-        print "ERROR: Failure to initialize calibration workflow job."
+        print("ERROR: Failure to initialize calibration workflow job.")
         sys.exit(1)
         
     jobData.dbPath = dbPath
@@ -110,7 +108,7 @@ def main(argv):
     # job was ran in the DB, it was removed from Job_Meta, but the remaining tables
     # weren't cleaned up.
     if not statusTmp:
-        print "WARNING: Old orphaned table entries from this jobID are being deleted."
+        print("WARNING: Old orphaned table entries from this jobID are being deleted.")
         try:
             db.cleanupJob(jobData)
         except:
@@ -185,7 +183,7 @@ def main(argv):
     # Print the newly created job ID to the user
     jobData.genMsg = "WORKFLOW HAS BEEN SETUP FOR OWNER: " + str(jobData.owner) + \
                      " JOB ID = " + str(jobData.jobID)
-    print jobData.genMsg
+    print(jobData.genMsg)
     errMod.sendMsg(jobData)
         
 if __name__ == "__main__":

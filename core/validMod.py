@@ -5,10 +5,10 @@
 # Research Applications Laboratory
 
 import os
-import calibIoMod
-import namelistMod
-import statusMod
-import errMod
+from core import calibIoMod
+from core import namelistMod
+from core import statusMod
+from core import errMod
 import subprocess
 import time
 
@@ -365,7 +365,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                                     " HAS FAILED A SECOND TIME. PLEASE FIX ISSUE AND " + \
                                     "MANUALLY REMOVE LOCK FILE: " + lockPath
                 errMod.sendMsg(statusData)
-                print statusData.genMsg
+                print(statusData.genMsg)
                 open(lockPath,'a').close()
                 keySlot[basinNum,0] = -1.0
                 keyStatus = -1.0
@@ -425,7 +425,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             # Fire off model.
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -497,7 +497,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             # Fire off model.
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -534,7 +534,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         if statusData.analysisRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',bestDir + '/run_params.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -972,7 +972,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -1042,7 +1042,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -1080,7 +1080,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         if statusData.analysisRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',validWorkDir + '/run_eval.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -1303,7 +1303,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir,staticData):
     try:
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
-        fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
+        fileObj.write('python3 ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' ' + str(staticData.gwBaseFlag) + \
                       ' ' + str(staticData.chnRtOpt) + ' \n')
         fileObj.write('exit\n')

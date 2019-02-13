@@ -25,8 +25,8 @@ sys.path.insert(0,libPath)
 import warnings
 warnings.filterwarnings("ignore")
 
-import configMod
-import dbMod
+from core import configMod
+from core import dbMod
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
@@ -42,7 +42,7 @@ def main(argv):
     
     # If the sqllite DB file does not exist, throw an error to the user.
     if not os.path.isfile(args.inDB[0]):
-        print "ERROR: Unable to locate DB file: " + args.inDB[0]
+        print("ERROR: Unable to locate DB file: " + args.inDB[0])
         sys.exit(1)
         
     dbPath = args.inDB[0]
@@ -51,7 +51,7 @@ def main(argv):
     try:
         jobData = configMod.queryJob(args)
     except:
-        print "ERROR: Failure to read in configuration file."
+        print("ERROR: Failure to read in configuration file.")
         sys.exit(1)
         
     # Lookup database username/login credentials based on username
@@ -72,20 +72,20 @@ def main(argv):
     try:
         db.connect(jobData)
     except:
-        print "ERROR: Unable to authenticate credentials for database."
+        print("ERROR: Unable to authenticate credentials for database.")
         sys.exit(1)
         
     # First check to see if unique Job ID already exists. 
     try:
         db.getJobID(jobData)
     except:
-        print "ERROR: Failure to extract unique Job ID for job."
+        print("ERROR: Failure to extract unique Job ID for job.")
         sys.exit(1)
         
     if int(jobData.jobID) == -9999:
-        print "This job has not been entered into the workflow database."
+        print("This job has not been entered into the workflow database.")
     else:
-        print "JOB ID = " + str(jobData.jobID)
+        print("JOB ID = " + str(jobData.jobID))
         
 if __name__ == "__main__":
     main(sys.argv[1:])

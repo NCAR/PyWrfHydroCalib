@@ -27,10 +27,10 @@ for j in range(1,len(pathSplit)-2):
 libPath = libPath + 'lib/Python'
 sys.path.insert(0,libPath)
 
-import statusMod
-import dbMod
-import errMod
-import configMod
+from core import statusMod
+from core import dbMod
+from core import errMod
+from core import configMod
 
 def main(argv):
     # Parse arguments. User must input a job name and directory.
@@ -51,7 +51,7 @@ def main(argv):
     
     # If the sqllite DB file does not exist, throw an error to the user.
     if not os.path.isfile(args.inDB[0]):
-        print "ERROR: Unable to locate DB file: " + args.inDB[0]
+        print("ERROR: Unable to locate DB file: " + args.inDB[0])
         sys.exit(1)
         
     # Create dictionary of specified status messages.
@@ -94,26 +94,26 @@ def main(argv):
     try:
         db.connect(jobData)
     except:
-        print jobData.errMsg
+        print(jobData.errMsg)
         sys.exit(1)
         
     # Extract job data from database
     try:
         db.jobStatus(jobData)
     except:
-        print jobData.errMsg
+        print(jobData.errMsg)
         sys.exit(1)
         
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
     if not os.path.isfile(configPath):
-        print "ERROR: Configuration file: " + configPath + " not found."
+        print("ERROR: Configuration file: " + configPath + " not found.")
         sys.exit(1)
     staticData = configMod.readConfig(configPath)
     try:
         staticData = configMod.readConfig(configPath)
     except:
-        print "ERROR: Failure to read configuration file: " + configPath
+        print("ERROR: Failure to read configuration file: " + configPath)
         sys.exit(1)
 
     # Assign the SQL command from the config file into the jobData structure
@@ -174,10 +174,10 @@ def main(argv):
 		         ": " + str(msgDict[str(statusCurrent)]) + \
 		         " - ITERATION: " + str(iterCurrent) + "\n"
                   
-    print "MEAN COMPLETENESS = " + str(float(meanSum)/len(jobData.gages))
+    print("MEAN COMPLETENESS = " + str(float(meanSum)/len(jobData.gages)))
     jobData.genMsg = msgOut
     if int(args.contactFlag[0]) == 0:
-        print jobData.genMsg
+        print(jobData.genMsg)
     else:
         errMod.sendMsg(jobData)
                 
