@@ -1513,7 +1513,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
+            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
@@ -1589,7 +1589,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
+            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
                           runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
                           str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
@@ -1664,7 +1664,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
+            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
                           str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
@@ -1732,7 +1732,7 @@ def generateMpiCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
+            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
                           str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')

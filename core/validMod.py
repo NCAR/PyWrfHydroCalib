@@ -1303,7 +1303,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir,staticData):
     try:
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
-        fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
+        fileObj.write('python3 ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' ' + str(staticData.gwBaseFlag) + \
                       ' ' + str(staticData.chnRtOpt) + ' \n')
         fileObj.write('exit\n')
