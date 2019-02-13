@@ -234,7 +234,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -293,7 +293,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
                 raise

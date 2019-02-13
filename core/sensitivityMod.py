@@ -131,7 +131,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
             raise
         try:
             jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_SENS_PREPROC.sh'])
-            pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+            pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
         except:
             statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gageMeta.gage[basinNum])
             raise
@@ -347,7 +347,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
                 raise
             try:
                 jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_SENS_POSTPROC.sh'])
-                pbsJobId[basinNum] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gageMeta.gage[basinNum])
                 raise
@@ -737,7 +737,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum,iteration] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
@@ -816,7 +816,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum,iteration] = int(jobTmp.split('.')[0])
+                pbsJobId[basinNum,iteration] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
@@ -877,7 +877,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         if statusData.analysisRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',collectScript])
-                pbsCollectId[basinNum,iteration] = int(jobTmp.split('.')[0])
+                pbsCollectId[basinNum,iteration] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)

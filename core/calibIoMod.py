@@ -6,7 +6,7 @@
 
 import os
 import pandas as pd
-from errMod import wipeJobDir
+from core import errMod
 import shutil
 
 class gageMeta:
@@ -201,7 +201,7 @@ def setupModels(jobData,db,args,libPathTop):
     try:
         shutil.copy(configPath,copyPath)
     except:
-        wipeJobDir(jobData,db)
+        errMod.wipeJobDir(jobData,db)
         jobData.errMsg = "ERROR: Failure to copy configuration setup file."
         raise
         
@@ -212,7 +212,7 @@ def setupModels(jobData,db,args,libPathTop):
         try:
             os.mkdir(gageDir)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Failure to create directory: " + gageDir
             raise
             
@@ -221,7 +221,7 @@ def setupModels(jobData,db,args,libPathTop):
         try:
             os.mkdir(obsDir)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
             raise
         
@@ -230,7 +230,7 @@ def setupModels(jobData,db,args,libPathTop):
         try:
             os.mkdir(spinupDir)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Failure to create directory: " + spinupDir
             raise
             
@@ -238,7 +238,7 @@ def setupModels(jobData,db,args,libPathTop):
         try:
             os.mkdir(outDir)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Failure to create directory: " + outDir
             raise
             
@@ -247,7 +247,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(calibDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + calibDir
                 raise
             
@@ -255,7 +255,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(outDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + outDir
                 raise
             
@@ -263,7 +263,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(validDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + validDir
                 raise
             
@@ -271,7 +271,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(outDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + outDir
                 raise
             
@@ -279,7 +279,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(outDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + outDir
                 raise
             
@@ -287,7 +287,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(outDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + outDir
                 raise
             
@@ -297,7 +297,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(sensDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + sensDir
                 raise
             for i in range(0,jobData.nSensIter):
@@ -315,7 +315,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(baseParmDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + baseParmDir
                 raise
             
@@ -327,7 +327,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(defaultParmDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + defaultParmDir
                 raise
             
@@ -335,13 +335,13 @@ def setupModels(jobData,db,args,libPathTop):
             origPath = str(jobData.calibTbl)
             newPath = gageDir + "/RUN.CALIB/calib_parms.tbl"
             if not os.path.isfile(origPath):
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Input file: " + origPath + " not found."
                 raise Exception()
             try:
                 shutil.copy(origPath,newPath)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                 raise
             
@@ -350,13 +350,13 @@ def setupModels(jobData,db,args,libPathTop):
             origPath = str(jobData.sensTbl)
             newPath = gageDir + "/RUN.SENSITIVITY/sens_params.tbl"
             if not os.path.isfile(origPath):
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Input file: " + origPath + " not found."
                 raise Exception()
             try:
                 shutil.copy(origPath,newPath)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                 
         if jobData.calibFlag == 1:
@@ -365,7 +365,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.mkdir(finalParmDir)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create directory: " + finalParmDir
                 raise
 
@@ -381,7 +381,7 @@ def setupModels(jobData,db,args,libPathTop):
                 os.symlink(str(jobData.exe),link3)
                 os.symlink(str(jobData.exe),link4)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
             raise
             
@@ -412,7 +412,7 @@ def setupModels(jobData,db,args,libPathTop):
                 os.symlink(str(jobData.exe),link3)
                 os.symlink(str(jobData.exe),link4)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to WRF-Hydro executable."
             raise
             
@@ -427,7 +427,7 @@ def setupModels(jobData,db,args,libPathTop):
                 os.symlink(str(jobData.genParmTbl),link3)
                 os.symlink(str(jobData.genParmTbl),link4)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to general parameter table."
             raise
             
@@ -451,7 +451,7 @@ def setupModels(jobData,db,args,libPathTop):
                 os.symlink(str(jobData.mpParmTbl),link3)
                 os.symlink(str(jobData.mpParmTbl),link4)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to MP parameter table."
             raise
             
@@ -475,7 +475,7 @@ def setupModels(jobData,db,args,libPathTop):
                 os.symlink(str(jobData.soilParmTbl),link3)
                 os.symlink(str(jobData.soilParmTbl),link4)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to soil parameter table."
             raise
             
@@ -499,7 +499,7 @@ def setupModels(jobData,db,args,libPathTop):
                 os.symlink(str(jobData.urbParmTbl),link3)
                 os.symlink(str(jobData.urbParmTbl),link4)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to urban parameter table."
             raise
             
@@ -523,7 +523,7 @@ def setupModels(jobData,db,args,libPathTop):
                 os.symlink(str(jobData.vegParmTbl),link3)
                 os.symlink(str(jobData.vegParmTbl),link4)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Unable to create symbolic link to vegetation parameter table."
             raise
             
@@ -541,7 +541,7 @@ def setupModels(jobData,db,args,libPathTop):
         try:
             gageData.pullGageMeta(jobData,db,str(jobData.gages[gage]),jobData.gageIDs[gage])
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             raise
             
         # Make a copy of the CHANPARM table file (if gridded routing) for spinup
@@ -551,7 +551,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.symlink(str(gageData.chanParmFile),link)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Unable to create CHANPARM symlink for spinup for gage: " + \
                                  str(jobData.gages[gage])
                 raise
@@ -563,7 +563,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 shutil.copy(origPath,newPath)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                 raise
             
@@ -572,7 +572,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 shutil.copy(origPath,newPath)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                 raise
             
@@ -581,7 +581,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 shutil.copy(origPath,newPath)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to : " + newPath
                 raise
                 
@@ -591,7 +591,7 @@ def setupModels(jobData,db,args,libPathTop):
                 try:
                     shutil.copy(origPath,newPath)
                 except:
-                    wipeJobDir(jobData,db)
+                    errMod.wipeJobDir(jobData,db)
                     jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                     raise
             
@@ -601,7 +601,7 @@ def setupModels(jobData,db,args,libPathTop):
                 try:
                     shutil.copy(origPath,newPath)
                 except:
-                    wipeJobDir(jobData,db)
+                    errMod.wipeJobDir(jobData,db)
                     jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                     raise
             
@@ -610,7 +610,7 @@ def setupModels(jobData,db,args,libPathTop):
         try:
             os.symlink(str(gageData.forceDir),fLink)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Failure to create FORCING link to: " + str(gageData.forceDir)
             raise
             
@@ -619,7 +619,7 @@ def setupModels(jobData,db,args,libPathTop):
         try:
             os.symlink(str(gageData.obsFile),obsLink)
         except:
-            wipeJobDir(jobData,db)
+            errMod.wipeJobDir(jobData,db)
             jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
             raise
             
@@ -630,14 +630,14 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.symlink(obsDir,obsLink)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create OBS link in RUN.CALIB to: " + obsDir
                 raise
             obsLink = gageDir + "/RUN.VALID/OBS"
             try:
                 os.symlink(obsDir,obsLink)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create OBS link in RUN.VALID to: " + obsDir
                 raise
         if jobData.sensFlag == 1:
@@ -646,7 +646,7 @@ def setupModels(jobData,db,args,libPathTop):
             try:
                 os.symlink(obsDir,obsLink)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to create OBS link in RUN.SENSITIVITY to: " + obsDir
                 raise
             
@@ -661,7 +661,7 @@ def setupModels(jobData,db,args,libPathTop):
                 link = gageDir + "/RUN.CALIB/adjust_parameters.py"
                 os.symlink(calibPyProgram,link)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to link: " + calibPyProgram
                 raise
                 
@@ -669,7 +669,7 @@ def setupModels(jobData,db,args,libPathTop):
                 link = gageDir + '/RUN.CALIB/calib_workflow.R'
                 os.symlink(calibRProgram,link)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to link: " + calibRProgram
                 raise
 
@@ -677,7 +677,7 @@ def setupModels(jobData,db,args,libPathTop):
                 link = gageDir + "/RUN.CALIB/calib_utils.R"
                 os.symlink(calibRUtils,link)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to link: " + calibRUtils
                 raise
                 
@@ -691,21 +691,21 @@ def setupModels(jobData,db,args,libPathTop):
                 link = gageDir + "/RUN.SENSITIVITY/sens_workflow_pre.R"
                 os.symlink(sensPreRProgram,link)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to link: " + sensPreRProgram
                 raise
             try:
                 link = gageDir + "/RUN.SENSITIVITY/adjust_parameters_sensitivity.py"
                 os.symlink(sensPyProgram,link)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to link: " + sensPyProgram
                 raise
             try:
                 link = gageDir + "/RUN.SENSITIVITY/calib_utils.R"
                 os.symlink(calibRUtils,link)
             except:
-                wipeJobDir(jobData,db)
+                errMod.wipeJobDir(jobData,db)
                 jobData.errMsg = "ERROR: Failure to link: " + calibRUtils
                 raise
             for i in range(0,jobData.nSensIter):
