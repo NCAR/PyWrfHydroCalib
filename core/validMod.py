@@ -1224,11 +1224,13 @@ def generateSlurmRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write(inStr)
         inStr = "#SBATCH -N " + str(jobData.nNodesMod) + "\n"
         fileObj.write(inStr)
+        inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+        fileObj.write(inStr)
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         if jobData.jobRunType == 3:
-            inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
+            inStr = "srun ./wrf_hydro.exe\n"
         if jobData.jobRunType == 6:
             inStr = "mpirun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
         fileObj.write(inStr)
