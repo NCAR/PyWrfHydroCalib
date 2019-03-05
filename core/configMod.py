@@ -124,7 +124,10 @@ class jobMeta:
         self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
+        self.enableCmpdChan = []
         self.cmpdChan = []
+        self.enableGwLoss = []
+        self.gwLoss = []
         self.gages = []
         self.gageIDs = []
         self.dbPath = []
@@ -281,7 +284,10 @@ class jobMeta:
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
+        self.enableCmpdChan = int(parser.get('hydroPhysics','enableCompoundChannel'))
         self.cmpdChan = int(parser.get('hydroPhysics','compoundChannel'))
+        self.enableGwLoss = int(parser.get('hydroPhysics','enableGwBucketLoss'))
+        self.gwLoss = int(parser.get('hydroPhysics','bucket_loss'))
         
 def readConfig(configFile):
     """
@@ -923,10 +929,19 @@ def checkConfig(parser):
     if check < 0 or check > 1:
         print("ERROR: Invalid ground water restart switch passed to program.")
         raise Exception()
+
+    check1 = int(parser.get('hydroPhysics','enableCompoundChannel'))
+    if check1 < 0 or check1 > 1:
+        print('ERROR: Inavlid enableCompoundChannel option passed to program.')
+        raise Exception()
         
-    check = int(parser.get('hydroPhysics','compoundChannel'))
-    if check < 0 or check > 1:
+    check2 = int(parser.get('hydroPhysics','compoundChannel'))
+    if check2 < 0 or check2 > 1:
         print("ERROR: Invalid compoundChannel switch passed to program.")
+        raise Exception()
+
+    if check1 == 0 and check2 == 1:
+        print("ERROR: Cannot turn on compound channel without enabling the namelist option.")
         raise Exception()
         
     # Ensure muskingum cunge routing has been chosen if compound channel is activated.
@@ -936,4 +951,12 @@ def checkConfig(parser):
         print("ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing.")
         raise Exception()
     
-    
+    # Read in the groundwater loss options.
+    check1 = int(parser.get('hydroPhysics','enableGwBucketLoss'))
+    check2 = int(parser.get('hydroPhysics','bucket_loss'))
+    if check1 < 0 or check1 > 1:
+        print('ERROR: Invalid enableGwBucketLoss option specified in the configuration file.')
+        raise Exception()
+    if check1 == 0 and check2 == 1:
+        print('ERROR: Cannot activate bucket_loss in the namelist if enableGwBucketLoss is off.')
+        raise  Exception()

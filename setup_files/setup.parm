@@ -328,5 +328,15 @@ gwBaseSw = 1
 gwRestart = 0
 
 # Specify whether to use compound channel. This is for NWM ONLY. Cannot use with gridded routing.
-# (0: Turn off, 1: Turn on)
+# (0: Turn off, 1: Turn on). The enableCompoundChannel needs to be turned on if this is NWM code.
+# If community, set to 0 as it will not be placed into the hydro.namelist.
+enableCompoundChannel = 0
 compoundChannel = 0
+
+# Specify whether to enable the groundwater bucket loss function in the hydro.namelist file.
+# (0: No option specified in namelist, 1: Place option into namelist).
+enableGwBucketLoss = 0
+# Activate the groundwater bucket loss function.
+# (0: Turn off, 1: Turn on)
+bucket_loss = 0
+
