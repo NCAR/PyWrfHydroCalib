@@ -1352,7 +1352,7 @@ def generatePbsScript(jobData,gageID,runDir,gageMeta,iteration):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        fileObj.write('mpiexec ./wrf_hydro.exe\n')
         fileObj.write(inStr)
         fileObj.close
     except:

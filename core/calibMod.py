@@ -1116,7 +1116,7 @@ def generateRestartPbsScript(jobData,gageID,runDir):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        fileObj.write('mpiexec ./wrf_hydro.exe\n')
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1301,7 +1301,7 @@ def generatePbsScript(jobData,gageID,runDir):
         fileObj.write(inStr)
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
-        fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        fileObj.write('mpiexec ./wrf_hydro.exe\n')
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
