@@ -153,7 +153,7 @@ class jobMeta:
     def readConfig(self,parser):
         """ Read in and check options passed by the config file.
         """
-        self.jobName = str(parser.get('logistics','jobName'))
+        self.jobName = str(parser.get('logistics','expName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
         self.queName = str(parser.get('logistics','optQueNameModel'))
@@ -414,9 +414,9 @@ def checkConfig(parser):
         print("ERROR: Directory: " + check + " not found.")
         raise Exception()
 
-    check = str(parser.get('logistics','jobName'))
+    check = str(parser.get('logistics','expName'))
     if len(check) == 0:
-        print("ERROR: Zero length job name provided.")
+        print("ERROR: Zero length expName provided.")
         raise Exception()
         
     check = str(parser.get('logistics','acctKey'))

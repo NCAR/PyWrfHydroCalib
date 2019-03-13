@@ -20,7 +20,7 @@
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
 outDir = /home/cuahsi/calibOut
-jobName = TEST_CALIB
+expName = TEST_CALIB
 acctKey =
 optQueNameModel =
 optQueNameAnalysis = 
