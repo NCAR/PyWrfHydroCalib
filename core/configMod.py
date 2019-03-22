@@ -14,6 +14,7 @@ import ast
 import pwd
 import pandas as pd
 import numpy as np
+import math
 #from slacker import Slacker
 
 import warnings
@@ -31,6 +32,7 @@ class jobMeta:
         self.nNodesMod = []
         self.nCoresR = []
         self.nNodesR = []
+        self.nCoresPerNode = []
         self.sensFlag = []
         self.sensTbl = []
         self.calibFlag = []
@@ -131,6 +133,12 @@ class jobMeta:
         self.gages = []
         self.gageIDs = []
         self.dbPath = []
+        self.nGroups = None
+        self.numBasPerGroup = None
+        self.gageGroup = []
+        self.gageBegModelCpu = []
+        self.gageEndModelCpu = []
+        self.groupComplete = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -150,6 +158,48 @@ class jobMeta:
         self.gages = gagesTmp[:]
         self.gageIDs = gageIDsTmp[:]
 
+    def calcGroupNum(self):
+        """
+        Function to calculate the number of basin groups based on the CPU layout provided
+        by the user. This function also assigns a group number to each basin, along with
+        a pre-determined beginning/ending CPU number based on the user-provided CPU layout
+        informaiton in the configuration file.
+        :return:
+        """
+        nCoresAvail = self.nCoresMod*self.nNodesMod
+        self.numBasPerGroup = math.floor(nCoresAvail/self.nCoresMod)
+        self.nGroups = len(self.gages)/self.numBasPerGroup
+
+        # Temporary arrays to calculate groups, CPU layout, etc
+        gGroupTmp = []
+        gBcpuTmp = []
+        gEcpuTmp = []
+        gCompleteTmp = []
+        countTmp = 0
+
+        for groupTmp in range(0,self.nGroups):
+            begCpuTmpVal = 0
+            endCpuTmpVal = 0
+            # Initialize the complete flag for this group of basins to be 0. The
+            # orchestrator program will set things to 1 if they are already complete.
+            gCompleteTmp.append(0)
+            for basinTmp in range(0,self.numBasPerGroup):
+                endCpuTmpVal = endCpuTmpVal + self.nCoresMod
+                # Create CPU strides for each basin in this group.
+                if basinTmp == 0:
+                    begCpuTmpVal = begCpuTmpVal
+                else:
+                    begCpuTmpVal = begCpuTmpVal + endCpuTmpVal
+                gGroupTmp.append(groupTmp)
+                gBcpuTmp.append(begCpuTmpVal)
+                gEcpuTmp.append(endCpuTmpVal)
+
+        self.gageGroup = gGroupTmp
+        self.gageEndModelCpu = gEcpuTmp
+        self.gageBegModelCpu = gBcpuTmp
+        self.groupComplete = gCompleteTmp
+
+
     def readConfig(self,parser):
         """ Read in and check options passed by the config file.
         """
@@ -162,8 +212,9 @@ class jobMeta:
         self.optCalStripHrs = int(parser.get('logistics','stripCalibHours'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
-        self.nCoresR = int(parser.get('logistics','nCoresR'))
-        self.nNodesR = int(parser.get('logistics','nNodesR'))
+        self.nCoresR = 1
+        self.nNodesR = 1
+        self.nCoresPerNode = int(parser.get('logistics','nCoresPerNode'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.sensFlag = int(parser.get('logistics','runSens'))
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
@@ -448,18 +499,18 @@ def checkConfig(parser):
     #    print "ERROR: You must enter a Slack user name."
     #    raise Exception()
 
-    check = int(parser.get('logistics','nCoresModel'))
+    checkCoresModel = int(parser.get('logistics','nCoresModel'))
     if not check:
         print("ERROR: Number of model cores to use not specified.")
         raise Exception()
-    if check <= 0:
+    if checkCoresModel <= 0:
         print("ERROR: Invalid number of model cores to use.")
         raise Exception()
-    check = int(parser.get('logistics','nNodesModel'))
-    if not check:
+    checkNodesModel = int(parser.get('logistics','nNodesModel'))
+    if not checkNodesModel:
         print("ERROR: Number of model nodes to use not specified.")
         raise Exception()
-    if check <= 0:
+    if checkNodesModel <= 0:
         print("ERROR: Invalid number of model nodes to use.")
         raise Exception()
         
@@ -484,18 +535,21 @@ def checkConfig(parser):
         print("ERROR: Invalid analysisRunType specified.")
         raise Exception()
         
-    check = int(parser.get('logistics','nCoresR'))
-    if not check:
-        print("ERROR: Number of R Cores to use not specified.")
+    checkCoresPerNode = int(parser.get('logistics','nCoresPerNode'))
+    if not checkCoresPerNode:
+        print('ERROR: Number of nCoresPerNode to use not specified.')
         raise Exception()
-    check = int(parser.get('logistics','nNodesR'))
-    if not check:
-        print("ERROR: Number of R Nodes to use not specified.")
-        raise Exception()
-    if check <= 0:
-        print("ERROR: Invalid number of R Nodes to use.")
-        raise Exception()
-        
+    if checkNodesModel > 1:
+        if (checkCoresModel*checkNodesModel)%(checkCoresPerNode) != 0:
+            print("ERROR: Number of cores being used to run the model is not an equal divider " + \
+                  "of the number of cores per node.")
+            raise Exception()
+    else:
+        if checkCoresPerNode%checkCoresModel != 0:
+            print('ERROR Number of cores being sued to run the model is not an equal divider ' + \
+                  'of the number of cores per node.')
+            raise Exception()
+
     check = int(parser.get('logistics','dailyStats'))
     if check < 0 or check > 1:
         print("ERROR: Invalid dailyStats value specified.")

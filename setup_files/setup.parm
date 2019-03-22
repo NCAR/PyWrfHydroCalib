@@ -26,8 +26,7 @@ optQueNameModel =
 optQueNameAnalysis = 
 nCoresModel = 4
 nNodesModel = 1
-nCoresR     = 1
-nNodesR = 1
+nCoresPerNode = 36
 # Flag to turn sensitivity analysis on: 0 - Off, 1 - On.
 runSens = 1 
 sensParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/sens_params.tbl

@@ -727,4 +727,28 @@ def setupModels(jobData,db,args,libPathTop):
             except:
                 jobData.errMsg = "ERROR: Failure to link: " + sensPostRProgram
                 raise
+
+def generateCalibGroupScript(jobData,groupNum,scriptPath):
+    """
+    Function to generate the run script for a particular group of basins.
+    :param jobData:
+    :param groupNum:
+    :return:
+    """
+    if jobData.jobRunType == 2:
+        # We are running PBS
+        fileObj = open(scriptPath,'w')
+        fileObj.write('#!/bin/bash\n')
+        fileObj.write('#\n')
+        fileObj.write('# PBS Batch Script to Run WRF-Hydro Group Calibrations\n')
+        fileObj.write('#\n')
+        inStr = '#PBS -N WH_CALIB_GROUP_' + str(jobData.jobID) + '_' + str(groupNum) + '\n'
+        fileObj.write(inStr)
+        if len(jobData.acctKey.strip()) > 0:
+            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+            fileObj.write(inStr)
+        fileObj.write('#PBS -l walltime=12:00:00\n')
+        if len(jobData.queName.strip()) > 0:
+            inStr = "#PBS -q " + str(jobData.queName) + "\n"
+            fileObj.write(inStr)
             
