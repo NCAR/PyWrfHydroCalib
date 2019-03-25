@@ -14,10 +14,12 @@
 import os
 import sys
 import argparse
+import pwd
 from core import statusMod
 from core import dbMod
 from core import configMod
 from core import errMod
+from core import calibIoMod
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -54,6 +56,9 @@ def main(argv):
         if not os.path.isfile(dbPath):
             print("ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist.")
             sys.exit(1)
+
+    # Get current user who is running this program.
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
 
     # Initialize object to hold status and job information
     jobData = statusMod.statusMeta()
@@ -107,6 +112,97 @@ def main(argv):
     except:
         errMod.errOut(jobData)
 
+    # Some house keeping here. If the calibration is already complete, throw an error.
+    # Also ensure the spinup has been entered as complete. This is necessary for the
+    # calibration to run.
+    # also, if this is a re-initiation under a different user, require the new
+    # user to enter a new contact that will be unpdated in the database.
+    if int(jobData.spinComplete) != 1:
+        # Check to see if optional spinup options were enabled. If so, update the spinup status.
+        if staticData.coldStart == 1 or staticData.optSpinFlag != 0:
+            print("Found optional spinup alternatives")
+            jobData.spinComplete = 1
+            try:
+                db.updateSpinupStatus(jobData)
+            except:
+                errMod.errOut(jobData)
+        else:
+            jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
+                             " is NOT complete. You must complete the spinup in order" + \
+                             " to run calibration."
+            errMod.errOut(jobData)
+
+    if int(jobData.calibComplete) == 1:
+        jobData.errMsg = "ERROR: Calibration for job ID: " + str(jobData.jobID) + \
+                         " has already completed."
+        errMod.errOut(jobData)
+
+    if userTmp != jobData.owner:
+        print("User: " + userTmp + " is requesting to takeover jobID: " + \
+              str(jobData.jobID) + " from owner: " + str(jobData.owner))
+        strTmp = "Please enter new email address. Leave blank if no email " + \
+                 "change is desired. NOTE if you leave both email and Slack " + \
+                 "information blank, no change in contact will occur. Only " + \
+                 "the owner will be modified:"
+        newEmail = input(strTmp)
+        # strTmp = "Please enter Slack channel:"
+        # newSlackChannel = raw_input(strTmp)
+        # strTmp = "Please enter Slack token:"
+        # newSlackToken = raw_input(strTmp)
+        # strTmp = "Please enter Slack user name:"
+        # newSlackUName = raw_input(strTmp)
+        # V1.2 NOTE!!!!!
+        # Given the automation of the workflow on Yellowstone, we are simply
+        # keeping contact information the same, but only changing the ownership
+        # of the workflow
+        changeFlag = 1
+        # if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
+        #    print "ERROR: You must specify an associated Slacker API token."
+        #    sys.exit(1)
+        # if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
+        #    print "ERROR: You must specify an associated Slacker user name."
+        #    sys.exit(1)
+        # if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
+        #    print "ERROR: You must specify an associated Slacker channel name."
+        #    sys.exit(1)
+        # if len(newSlackToken) != 0 and len(newSlackUName) == 0:
+        #    print "ERROR: You must specify an associated Slacker user name."
+        #    sys.exit(1)
+        # if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
+        #    print "ERROR: You must specify an associated Slacker channel name."
+        #    sys.exit(1)
+        # if len(newSlackUName) != 0 and len(newSlackToken) == 0:
+        #    print "ERROR: You must specify an associated Slacker API token."
+        #    sys.exit(1)
+        # if len(newSlackChannel) != 0 and len(newEmail) != 0:
+        #    print "ERROR: You cannot specify both email and Slack for notifications."
+        #    sys.exit(1)
+        # if len(newSlackChannel) == 0 and len(newEmail) == 0:
+        #    changeFlag = 0
+
+        # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
+
+        jobData.genMsg = "MSG: User: " + userTmp + " Is Taking Over JobID: " + str(jobData.jobID) + \
+                         " From Owner: " + str(jobData.owner)
+        errMod.sendMsg(jobData)
+
+        # If a new owner takes over, simply change the owner, but keep all
+        # other contact information the same.
+        newEmail = jobData.email
+        newSlackChannel = jobData.slChan
+        newSlackToken = jobData.slToken
+        newSlackUName = jobData.slUser
+        if not newEmail:
+            newEmail = ''
+        if not newSlackChannel:
+            newSlackChannel = ''
+            newSlackToken = ''
+
+        try:
+            db.updateJobOwner(jobData, userTmp, newEmail, newSlackChannel, newSlackToken, newSlackUName, changeFlag)
+        except:
+            errMod.errOut(jobData)
+
     # Loop over each basin group. This program will check to see if a group job is running
     # which is an instance of the calib.py program looping over basins for a group.
     # If a group job is not running, this program will check the database file to see
@@ -129,7 +225,10 @@ def main(argv):
         # to instruct the workflow on which basins to process.
         runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + ".sh"
         if not os.path.isfile(runScript):
-            # CALL ROUTINE TO COMPOSE FILE.
+            try:
+                calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript)
+            except:
+                errMod.errOut(jobData)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

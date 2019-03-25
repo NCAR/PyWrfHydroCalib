@@ -736,19 +736,35 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath):
     :return:
     """
     if jobData.jobRunType == 2:
-        # We are running PBS
-        fileObj = open(scriptPath,'w')
-        fileObj.write('#!/bin/bash\n')
-        fileObj.write('#\n')
-        fileObj.write('# PBS Batch Script to Run WRF-Hydro Group Calibrations\n')
-        fileObj.write('#\n')
-        inStr = '#PBS -N WH_CALIB_GROUP_' + str(jobData.jobID) + '_' + str(groupNum) + '\n'
-        fileObj.write(inStr)
-        if len(jobData.acctKey.strip()) > 0:
-            inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+        try:
+            # We are running PBS
+            fileObj = open(scriptPath,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# PBS Batch Script to Run WRF-Hydro Group Calibrations\n')
+            fileObj.write('#\n')
+            inStr = '#PBS -N WH_CALIB_GROUP_' + str(jobData.jobID) + '_' + str(groupNum) + '\n'
             fileObj.write(inStr)
-        fileObj.write('#PBS -l walltime=12:00:00\n')
-        if len(jobData.queName.strip()) > 0:
-            inStr = "#PBS -q " + str(jobData.queName) + "\n"
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            fileObj.write('#PBS -l walltime=12:00:00\n')
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#PBS -q " + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#PBS -o " + jobData.topDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
+                str(groupNum) + ".out\n"
             fileObj.write(inStr)
-            
+            inStr = "#PBS -o " + jobData.topDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(jobData.nCoresPerNode) + \
+                ":mpiprocs=" + str(jobData.nCoresPerNode) + "\n"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            inStr = "python3 calib.py " + str(jobData.jobID) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
