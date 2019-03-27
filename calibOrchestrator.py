@@ -108,7 +108,7 @@ def main(argv):
 
     # Calculate the CPU/group layout for all basins.
     try:
-        staticData.calcGroupNum()
+        jobData.calcGroupNum()
     except:
         errMod.errOut(jobData)
 

@@ -94,7 +94,7 @@ def main(argv):
         print("Que Name: " + str(results[job][26]))
         print("Number of Cores for the Model: " + str(results[job][27]))
         print("Number of Nodes for the Model: " + str(results[job][28]))
-        print('Number of Cores per Node Available: ' + str(results[job[29]]))
+        print('Number of Cores per Node Available: ' + str(results[job][29]))
         print("Number of Cores for R: " + str(results[job][30]))
         print("Number of Nodes for R: " + str(results[job][31]))
         print("Job Run Type: " + str(results[job][32]))
