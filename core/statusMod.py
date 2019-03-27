@@ -45,6 +45,7 @@ class statusMeta:
         self.nIter = []
         self.nCoresMod = []
         self.nNodesMod = []
+        self.nCoresPerNode = []
         self.nCoresR = []
         self.nNodesR = []
         self.sensFlag = []
@@ -114,6 +115,53 @@ class statusMeta:
 
         self.gages = gagesTmp[:]
         self.gageIDs = gageIDsTmp[:]
+
+    def calcGroupNum(self):
+        """
+        Function to calculate the number of basin groups based on the CPU layout provided
+        by the user. This function also assigns a group number to each basin, along with
+        a pre-determined beginning/ending CPU number based on the user-provided CPU layout
+        informaiton in the configuration file.
+        :return:
+        """
+        nCoresAvail = self.nCoresPerNode * self.nNodesMod
+        self.numBasPerGroup = math.floor(nCoresAvail/self.nCoresMod)
+        self.nGroups = len(self.gages)/self.numBasPerGroup
+
+        print(self.gages)
+        print('NUM CORES PER NODE = ' + str(self.nCoresPerNode))
+        print('NUM CORES AVAIL = ' + str(nCoresAvail))
+        print('NUM BASINS PER GROUP = ' + str(self.numBasPerGroup))
+        print('NUM BASINS = ' + str(len(self.gages)))
+        print('NUM GROUPS = ' + str(self.nGroups))
+        # Temporary arrays to calculate groups, CPU layout, etc
+        gGroupTmp = []
+        gBcpuTmp = []
+        gEcpuTmp = []
+        gCompleteTmp = []
+        countTmp = 0
+
+        for groupTmp in range(0,self.nGroups):
+            begCpuTmpVal = 0
+            endCpuTmpVal = 0
+            # Initialize the complete flag for this group of basins to be 0. The
+            # orchestrator program will set things to 1 if they are already complete.
+            gCompleteTmp.append(0)
+            for basinTmp in range(0,self.numBasPerGroup):
+                endCpuTmpVal = endCpuTmpVal + self.nCoresMod
+                # Create CPU strides for each basin in this group.
+                if basinTmp == 0:
+                    begCpuTmpVal = begCpuTmpVal
+                else:
+                    begCpuTmpVal = begCpuTmpVal + endCpuTmpVal
+                gGroupTmp.append(groupTmp)
+                gBcpuTmp.append(begCpuTmpVal)
+                gEcpuTmp.append(endCpuTmpVal)
+
+        self.gageGroup = gGroupTmp
+        self.gageEndModelCpu = gEcpuTmp
+        self.gageBegModelCpu = gBcpuTmp
+        self.groupComplete = gCompleteTmp
         
 def checkBasJob(jobData,gageNum,pbsJobId):
     """

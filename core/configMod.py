@@ -166,10 +166,16 @@ class jobMeta:
         informaiton in the configuration file.
         :return:
         """
-        nCoresAvail = self.nCoresMod*self.nNodesMod
+        nCoresAvail = self.nCoresPerNode * self.nNodesMod
         self.numBasPerGroup = math.floor(nCoresAvail/self.nCoresMod)
         self.nGroups = len(self.gages)/self.numBasPerGroup
 
+        print(self.gages)
+        print('NUM CORES PER NODE = ' + str(self.nCoresPerNode))
+        print('NUM CORES AVAIL = ' + str(nCoresAvail))
+        print('NUM BASINS PER GROUP = ' + str(self.numBasPerGroup))
+        print('NUM BASINS = ' + str(len(self.gages)))
+        print('NUM GROUPS = ' + str(self.nGroups))
         # Temporary arrays to calculate groups, CPU layout, etc
         gGroupTmp = []
         gBcpuTmp = []
