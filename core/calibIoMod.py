@@ -752,17 +752,17 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath):
             if len(jobData.queName.strip()) > 0:
                 inStr = "#PBS -q " + str(jobData.queName) + "\n"
                 fileObj.write(inStr)
-            inStr = "#PBS -o " + jobData.topDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
+            inStr = "#PBS -o " + jobData.jobDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
                 str(groupNum) + ".out\n"
             fileObj.write(inStr)
-            inStr = "#PBS -o " + jobData.topDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
+            inStr = "#PBS -o " + jobData.jobDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
                     str(groupNum) + ".err\n"
             fileObj.write(inStr)
             inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(jobData.nCoresPerNode) + \
                 ":mpiprocs=" + str(jobData.nCoresPerNode) + "\n"
             fileObj.write(inStr)
             fileObj.write("\n")
-            inStr = "python3 calib.py " + str(jobData.jobID) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python3 calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close
         except:

@@ -11,6 +11,7 @@ import subprocess
 import pandas as pd
 import datetime
 import psutil
+import math
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -126,7 +127,7 @@ class statusMeta:
         """
         nCoresAvail = self.nCoresPerNode * self.nNodesMod
         self.numBasPerGroup = math.floor(nCoresAvail/self.nCoresMod)
-        self.nGroups = len(self.gages)/self.numBasPerGroup
+        self.nGroups = math.ceil(len(self.gages)/self.numBasPerGroup)
 
         print(self.gages)
         print('NUM CORES PER NODE = ' + str(self.nCoresPerNode))
@@ -153,7 +154,7 @@ class statusMeta:
                 if basinTmp == 0:
                     begCpuTmpVal = begCpuTmpVal
                 else:
-                    begCpuTmpVal = begCpuTmpVal + endCpuTmpVal
+                    begCpuTmpVal = begCpuTmpVal + self.nCoresMod
                 gGroupTmp.append(groupTmp)
                 gBcpuTmp.append(begCpuTmpVal)
                 gEcpuTmp.append(endCpuTmpVal)
