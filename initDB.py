@@ -112,10 +112,9 @@ def main(argv):
                        valid_end_date timestamp, valid_start_date_eval timestamp,
                        valid_complete integer, acct_key text, que_name text,
                        num_cores_model integer, num_nodes_model integer, num_cores_per_node integer,
-                       num_cores_R integer, num_nodes_R integer,
                        job_run_type integer, exe text, num_gages integer,
                        owner text, email text, slack_channel text, slack_token text,
-                       slack_user text, analysis_run_type integer, que_name_analysis text)''')
+                       slack_user text, mpi_cmd text, cpu_pin_cmd text)''')
     except:
         errOut(dbConn,"Unablet to create table: Job_Meta.",dbPath)
     

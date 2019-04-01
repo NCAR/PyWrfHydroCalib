@@ -113,7 +113,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
                 return
                 
     # Generate run script to generate parameters for this basin. Then execute the job.
-    if statusData.analysisRunType == 1:
+    if statusData.jobRunType == 1:
         #BSUB
         generateBsubPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         cmd = "bsub < " + workDir + "/run_WH_SENS_PREPROC.sh"
@@ -122,7 +122,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
         except:
             statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gage)
             raise
-    if statusData.analysisRunType == 2:
+    if statusData.jobRunType == 2:
         #PBS
         try:
             generatePbsPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
@@ -135,7 +135,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
         except:
             statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gageMeta.gage[basinNum])
             raise
-    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
+    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
         #SLURM
         generateSlurmPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         cmd = "sbatch " + workDir + "/run_WH_SENS_PREPROC.sh"
@@ -144,7 +144,7 @@ def preProc(preProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinNum
         except:
             statusData.errMsg = "ERROR: Unable to launch sensitivity pre-processing job for gage: " + str(gage)
             raise
-    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
         #MPIEXEC/MPIRUN
         generateMpiPreProcScript(statusData,gageID,workDir,workDir,gageMeta,staticData)
         cmd = workDir + "/run_WH_SENS_PREPROC.sh 1>" + workDir + "/WH_SENS_PREPROC_" + \
@@ -329,7 +329,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
                 
     if runStatus == True:
         # Generate run script to generate parameters for this basin. Then execute the job.
-        if statusData.analysisRunType == 1:
+        if statusData.jobRunType == 1:
             #BSUB
             generateBsubPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
             cmd = "bsub < " + workDir + "/run_WH_SENS_POSTPROC.sh"
@@ -338,7 +338,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
             except:
                 statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
                 raise
-        if statusData.analysisRunType == 2:
+        if statusData.jobRunType == 2:
             #PBS
             try:
                 generatePbsPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
@@ -351,7 +351,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
             except:
                 statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             #SLURM
             generateSlurmPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
             cmd = "sbatch " + workDir + "/run_WH_SENS_POSTPROC.sh"
@@ -360,7 +360,7 @@ def postProc(postProcStatus,statusData,staticData,db,gageID,gage,pbsJobId,basinN
             except:
                 statusData.errMsg = "ERROR: Unable to launch sensitivity post-processing job for gage: " + str(gage)
                 raise
-        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             #MPIEXEC/MPIRUN
             generateMpiPostProcScript(statusData,gageID,workDir,workDir,gageMeta)
             cmd = workDir + "/run_WH_SENS_POSTPROC.sh 1>" + workDir + "/WH_SENS_POSTPROC_" + \
@@ -450,25 +450,25 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             except:
                 raise
                 
-    if statusData.analysisRunType == 1:
+    if statusData.jobRunType == 1:
         collectScript = runDir + "/run_collection.sh"
         try:
             generateBsubCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
         except:
             raise
-    if statusData.analysisRunType == 2:
+    if statusData.jobRunType == 2:
         collectScript = runDir + "/run_collection.sh"
         try:
             generatePbsCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
         except:
             raise
-    if statusData.analysisRunType == 3:
+    if statusData.jobRunType == 3:
         collectScript = runDir + "/run_collection.sh"
         try:
             generateSlurmCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
         except:
             raise
-    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
         collectScript = runDir + "/SCOL" + str(statusData.jobID) + str(gageID) + str(iteration)
         try:
             generateMpiCollectScript(statusData,int(gageID),runDir,gageMeta,iteration,workDir)
@@ -742,7 +742,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
                 raise
-        if statusData.jobRunType == 3 or statusData.analysisRunType == 6:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
@@ -821,7 +821,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
                 raise
-        if statusData.jobRunType == 3 or statusData.analysisRunType == 6:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + runDir + "/run_WH.sh"
         if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
@@ -872,9 +872,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         # Ready to fire off collection program.
         print("FIRING OFF COLLECTION")
         # Fire off model.
-        if statusData.analysisRunType == 1:
+        if statusData.jobRunType == 1:
             cmd = "bsub < " + collectScript
-        if statusData.analysisRunType == 2:
+        if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',collectScript])
                 pbsCollectId[basinNum,iteration] = int(jobTmp.decode("UTF-8").split('.')[0])
@@ -882,17 +882,17 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
                                     str(gageMeta.gage[basinNum]) + " Iteration: " + str(iteration)
                 raise
-        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + collectScript
-        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = collectScript + " 1>" + runDir + "/SCOL_" + \
                   str(statusData.jobID) + "_" + str(gageID) + "_" + str(iteration) + ".out" + \
                   ' 2>' + runDir + "/SCOL_" + str(statusData.jobID) + "_" + \
                   str(gageID) + "_" + str(iteration) + ".err"
         try:
-            if statusData.analysisRunType == 1 or statusData.analysisRunType == 3:
+            if statusData.jobRunType == 1 or statusData.jobRunType == 3:
                 subprocess.call(cmd,shell=True)
-            if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+            if statusData.jobRunType == 4 or statusData.jobRunType == 5:
                 p = subprocess.Popen([cmd],shell=True)
         except:
             statusData.errMsg = "ERROR: Unable to launch collection job for gage: " + \
@@ -924,7 +924,7 @@ def genRNameList(jobData,workDir,gageMeta,gage):
         fileObj.write("\n")
         inStr = "objFn <- \"" + str(jobData.objFunc) + "\"\n"
         fileObj.write(inStr)
-        inStr = "nCores <- " + str(jobData.nCoresR) + "\n"
+        inStr = "nCores <- 1\n"
         fileObj.write(inStr)
         fileObj.write("\n")
         fileObj.write("# Model run directory\n")
@@ -1211,10 +1211,10 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             fileObj.write('#!/bin/bash\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            if jobData.analysisRunType == 4:
+            if jobData.jobRunType == 4:
                 inStr = 'mpiexec -n 1 ./SPRE' + \
                 str(jobData.jobID) + str(gageID) +'\n'
-            if jobData.analysisRunType == 5:
+            if jobData.jobRunType == 5:
                 inStr = 'mpirun -np 1 ./SPRE' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)
@@ -1670,10 +1670,10 @@ def generateMpiPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             fileObj.write('#!/bin/bash\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            if jobData.analysisRunType == 4:
+            if jobData.jobRunType == 4:
                 inStr = 'mpiexec -n 1 ./SPOS' + \
                 str(jobData.jobID) + str(gageID) +'\n'
-            if jobData.analysisRunType == 5:
+            if jobData.jobRunType == 5:
                 inStr = 'mpirun -np 1 ./SPOS' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)
@@ -1832,10 +1832,7 @@ def generatePbsCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
             inStr = '#PBS -e ' + runDir + "/WH_SENS_COLLECT_" + str(jobData.jobID) + \
                     "_" + str(gageID) + "_" + str(iteration) + '.err\n'
             fileObj.write(inStr)
-            nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
-            inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
-                    ":mpiprocs=" + str(nCoresPerNode) + "\n"
-            #inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
+            inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=01:00:00\n')
             if len(jobData.queNameAnalysis.strip()) > 0:

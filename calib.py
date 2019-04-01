@@ -359,7 +359,7 @@ def main(argv):
             for iteration in range(0,int(jobData.nIter)):
                 # Only process basins that are part of this group, per the argument passed into the
                 # program.
-                if jobData.gageGroup != int(args.groupNum):
+                if jobData.gageGroup[basin] != int(args.groupNum[0]):
                     keySlot[basin,iteration] = 1.0
                     continue
                 # Holding onto the status value before the workflow iterates for checking below.
@@ -413,13 +413,25 @@ def main(argv):
                     
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
-            jobData.calibComplete = 1
-            try:
-                db.updateCalibStatus(jobData)
-            except:
-                errMod.errout(jobData)
-            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
-            errMod.sendMsg(jobData)
+            if len(args.groupNum[0]) == 0:
+                # If we aren't doing groups, this means all basins are complete.
+                jobData.calibComplete = 1
+                try:
+                    db.updateCalibStatus(jobData)
+                except:
+                    errMod.errout(jobData)
+                jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+                errMod.sendMsg(jobData)
+            else:
+                # We are running with the orchestrator program. Touch the complete flag to let the
+                # calling program know this group of basins is complete.
+                basinCompleteFlag = str(jobData.jobDir) + "/CALIB_GROUP_" + str(args.groupNum[0]) + ".COMPLETE"
+                try:
+                    open(basinCompleteFlag, 'a').close()
+                except:
+                    jobData.errMsg = "Unable to create complete flag: " + basinCompleteFlag
+                    errMod.errOut(jobData)
+
             completeStatus = True
             
         # Open the Python LOCK file. Write a blank line to the file and close it.

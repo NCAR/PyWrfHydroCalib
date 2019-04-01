@@ -30,8 +30,6 @@ class jobMeta:
         self.queNameAnalysis = []
         self.nCoresMod = []
         self.nNodesMod = []
-        self.nCoresR = []
-        self.nNodesR = []
         self.nCoresPerNode = []
         self.sensFlag = []
         self.sensTbl = []
@@ -43,7 +41,8 @@ class jobMeta:
         self.optCalStripFlag = []
         self.optCalStripHrs = []
         self.jobRunType = []
-        self.analysisRunType = []
+        self.mpiCmd = []
+        self.cpuPinCmd = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -218,9 +217,9 @@ class jobMeta:
         self.optCalStripHrs = int(parser.get('logistics','stripCalibHours'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
-        self.nCoresR = 1
-        self.nNodesR = 1
         self.nCoresPerNode = int(parser.get('logistics','nCoresPerNode'))
+        self.mpiCmd = str(parser.get('logistics','mpiCmd'))
+        self.cpuPinCmd = str(parser.get('logistics','cpuPinCmd'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.sensFlag = int(parser.get('logistics','runSens'))
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
@@ -230,7 +229,6 @@ class jobMeta:
         self.coldStart = int(parser.get('logistics','coldStart'))
         self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
-        self.analysisRunType = int(parser.get('logistics','analysisRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
@@ -535,10 +533,11 @@ def checkConfig(parser):
     if check < 1 or check > 6:
         print("ERROR: Invalid jobRunType specified.")
         raise Exception()
-        
-    check = int(parser.get('logistics','analysisRunType'))
-    if check < 1 or check > 6:
-        print("ERROR: Invalid analysisRunType specified.")
+
+    # Make sure a proper MPI command was passed. This is required.
+    check = str(parser.get('logistics','mpiCmd'))
+    if len(check) == 0:
+        print('ERROR: Please specify an mpiCmd to use for running the model.')
         raise Exception()
         
     checkCoresPerNode = int(parser.get('logistics','nCoresPerNode'))

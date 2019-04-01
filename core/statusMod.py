@@ -47,8 +47,8 @@ class statusMeta:
         self.nCoresMod = []
         self.nNodesMod = []
         self.nCoresPerNode = []
-        self.nCoresR = []
-        self.nNodesR = []
+        self.mpiCmd = []
+        self.cpuPinCmd = []
         self.sensFlag = []
         self.sensTbl = []
         self.calibFlag = []
@@ -56,7 +56,6 @@ class statusMeta:
         self.dailyAnalysis = []
         self.coldStart = []
         self.jobRunType = []
-        self.analysisRunType = []
         self.acctKey = []
         self.queName = []
         self.queNameAnalysis = []
@@ -403,7 +402,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    if jobData.analysisRunType == 1:
+    if jobData.jobRunType == 1:
         csvPath = "./BJOBS_CALIB_LISTING_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -443,7 +442,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.analysisRunType == 2:
+    if jobData.jobRunType == 2:
         # We are running via qsub
         # Compile expected job name that the job should occupy.
         expName = "WH_CALIB_" + str(jobData.jobID) + "_" + str(jobData.gageIDs[gageNum])
@@ -499,7 +498,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -542,7 +541,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
         if not status:
             print("NO CALIB JOBS FOUND")
     
-    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -784,7 +783,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    if jobData.analysisRunType == 1:
+    if jobData.jobRunType == 1:
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -822,7 +821,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -866,7 +865,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
         if not status:
             print("NO EVAL JOBS FOUND")
         
-    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -896,7 +895,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
             else:
                 status = True
                 
-    if jobData.analysisRunType == 2:
+    if jobData.jobRunType == 2:
         # We are running via qsub
         expName = "WH_PARM_GEN_" + str(jobData.jobID) + "_" + \
                   str(jobData.gageIDs[gageNum])
@@ -968,7 +967,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
     
-    if jobData.analysisRunType == 1:
+    if jobData.jobRunType == 1:
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1006,7 +1005,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.analysisRunType == 2:
+    if jobData.jobRunType == 2:
         # We are running via qsub
         # Compile expected job name that job should occupy
         expName = "WH_EVAL_" + str(jobData.jobID) + "_" + \
@@ -1063,7 +1062,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1107,7 +1106,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
         if not status:
             print("NO EVAL JOBS FOUND")
                 
-    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -1153,7 +1152,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
         
-    if jobData.analysisRunType == 1:
+    if jobData.jobRunType == 1:
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1191,7 +1190,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.analysisRunType == 2:
+    if jobData.jobRunType == 2:
         # We are running via qsub
         # Compile expected job name that job should occupy
         expName = "WH_SENS_PREPROC_" + str(jobData.jobID) + "_" + \
@@ -1248,7 +1247,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1288,7 +1287,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
         else:
             status = False
         
-    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -1333,7 +1332,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
         
-    if jobData.analysisRunType == 1:
+    if jobData.jobRunType == 1:
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1371,7 +1370,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.analysisRunType == 2:
+    if jobData.jobRunType == 2:
         # We are running via qsub
         # Compile expected job name that job should occupy
         expName = "WH_SENS_POSTPROC_" + str(jobData.jobID) + "_" + \
@@ -1428,7 +1427,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
                 status = False
                 return status
             
-    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1468,7 +1467,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
         else:
             status = False
         
-    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -1700,7 +1699,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
         jobData.errMsg = "ERROR: you are not the owner of this job."
         raise Exception()
         
-    if jobData.analysisRunType == 1:
+    if jobData.jobRunType == 1:
         csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
         cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
         try:
@@ -1738,7 +1737,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
             if len(testDF) != 0:
                 status = True
                 
-    if jobData.analysisRunType == 2:
+    if jobData.jobRunType == 2:
         # We are running via qsub
         # Compile expected job name that job should occupy
         expName = "WH_SENS_COLLECT_" + str(jobData.jobID) + "_" + \
@@ -1795,7 +1794,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 status = False
                 return status
                   
-    if jobData.analysisRunType == 3 or jobData.analysisRunType == 6:
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
         # We are running via slurm
         csvPath = "./SLURM_" + str(pidUnique) + ".csv"
         cmd = "squeue -u " + str(jobData.owner) + \
@@ -1835,7 +1834,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
         else:
             status = False
         
-    if jobData.analysisRunType == 4 or jobData.analysisRunType == 5:
+    if jobData.jobRunType == 4 or jobData.jobRunType == 5:
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
         
@@ -1864,3 +1863,190 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
                 status = True
     
     return status
+
+
+def checkBasGroupJob(jobData, groupNum, pbsJobId):
+    """
+    Generic function to check the status of a basin group job.
+    """
+
+    # Get unique PID.
+    pidUnique = os.getpid()
+    userTmp = pwd.getpwuid(os.getuid()).pw_name
+
+    if userTmp != str(jobData.owner):
+        jobData.errMsg = "ERROR: you are not the owner of this job."
+        raise Exception()
+
+    if jobData.jobRunType == 1:
+        csvPath = "./BJOBS_" + str(pidUnique) + ".csv"
+        cmd = 'bjobs -u ' + str(jobData.owner) + ' -w -noheader > ' + csvPath
+        try:
+            subprocess.call(cmd, shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe BJOBS output to" + csvPath
+            raise
+
+        colNames = ['JOBID', 'USER', 'STAT', 'QUEUE', 'FROM_HOST', 'EXEC_HOST', 'JOB_NAME', \
+                    'SUBMIT_MONTH', 'SUBMIT_DAY', 'SUBMIT_HHMM']
+        try:
+            jobs = pd.read_csv(csvPath, delim_whitespace=True, header=None, names=colNames)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+
+        # Delete temporary CSV files
+        cmdTmp = 'rm -rf ' + csvPath
+        subprocess.call(cmdTmp, shell=True)
+
+        # Compile expected job name that the job should occupy.
+        expName = "WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + str(groupNum)
+
+        lenJobs = len(jobs.JOBID)
+
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+
+        if lenJobs == 0:
+            status = False
+        else:
+            # Find if any jobs for this basin are being ran.
+            testDF = jobs.query("JOB_NAME == '" + expName + "'")
+            if len(testDF) != 0:
+                status = True
+
+    if jobData.jobRunType == 2:
+        # We are running via qsub
+        # Compile expected job name that the job should occupy.
+        expName = "WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + str(groupNum)
+
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+
+        # Run the qstat command on the username IF we are running this command
+        # for the first time (restarting workflow, or new workflow instance).
+        # Once jobs are fired off, we will populate the jobId array with the values
+        # returned by qsub.
+        if pbsJobId[groupNum] == -9999:
+            # Run qstat for the user.
+            try:
+                jobsTmp = subprocess.check_output(['qstat', '-u', jobData.owner])
+            except:
+                jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
+                raise
+            if len(jobsTmp) == 0:
+                # This means no jobs are running for the user. We can safely
+                # assume the status is false.
+                status = False
+            else:
+                numLinesTmp = len(jobsTmp.split('\n'))
+                # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
+                if numLinesTmp < 7:
+                    jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
+                    raise Exception()
+                for lineNum in range(5, numLinesTmp):
+                    # This is a CRUDE assumption based on the behavior of qstat
+                    # on Cheyenne.
+                    lineTmp = jobsTmp.split('\n')[lineNum]
+                    if len(lineTmp) == 0:
+                        continue
+                    else:
+                        expCheck = lineTmp.split()[3]
+                        if expCheck == expName:
+                            # We have a match. This means a job running from a
+                            # previous instance of the workflow is still running.
+                            # Get the job id and set it into the jobIds array.
+                            pbsJobId[groupNum] = int((lineTmp.split()[0]).split('.')[0])
+                            status = True
+        else:
+            # We are checking for a job ID that has already been submitted by
+            # this instance of the workflow.
+            # Try running qstat for the job ID. If it's unsucessfull, then we
+            # can make a good assumption that the job is no longer running.
+            try:
+                jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
+                status = True
+            except:
+                # This means the job is no longer running.
+                status = False
+                return status
+
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
+        # We are running via slurm
+        csvPath = "./SLURM_" + str(pidUnique) + ".csv"
+        cmd = "squeue -u " + str(jobData.owner) + \
+              ' --format=\"%.18i %.9P %.32j %.8u %.2t %.10M %.6D %R\"' + \
+              ' > ' + csvPath
+        try:
+            subprocess.call(cmd, shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to pipe SLURM output to: " + csvPath
+            raise
+
+        if not os.path.isfile(csvPath):
+            jobData.errMsg = "ERROR: squeue did not create necessary CSV file with job names."
+            raise Exception()
+
+        try:
+            jobs = pd.read_csv(csvPath, delim_whitespace=True)
+        except:
+            jobData.errMsg = "ERROR: Failure to read in: " + csvPath
+            raise
+
+        # Delete temporary CSV files.
+        cmdTmp = "rm -rf " + csvPath
+        subprocess.call(cmd, shell=True)
+
+        # Compile expected job name that the job should occupy.
+        expName = "WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + str(groupNum)
+
+        # Assume no jobs for basin are being ran, unless found in the data frame.
+        status = False
+
+        if len(jobs.NAME) > 0:
+            for jobNum in range(0, len(jobs.NAME)):
+                if jobs.NAME[jobNum].strip() == expName:
+                    print("MODEL SIMULATIONS FOUND")
+                    status = True
+        else:
+            status = False
+
+        if not status:
+            print("NO MODEL SIMULATIONS FOUND")
+
+    return status
+
+def submitGroupCalibration(jobData,groupScript,pbsJobId,groupNum):
+    """
+    Generic function to submit a calibration group execution for a group of basins
+    from the calibration orchestrator program.
+    :param jobData:
+    :param groupScript:
+    :param pbsJobId:
+    :return:
+    """
+    if jobData.jobRunType == 1:
+        try:
+            jobTmp = subprocess.check_output(['bsub','<',groupScript])
+            pbsJobId[groupNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        except:
+            jobData.errMsg = "ERROR: Unable to launch: " + groupScript
+            raise
+
+    if jobData.jobRunType == 2:
+        try:
+            jobTmp = subprocess.check_output(['qsub',groupScript])
+            pbsJobId[groupNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        except:
+            jobData.errMsg = "ERROR: Unable to launch: " + groupScript
+            raise
+
+    if jobData.jobRunType == 3 or jobData.jobRunType == 6:
+        try:
+            jobTmp = subprocess.check_output(['sbatch',groupScript])
+            pbsJobId[groupNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        except:
+            jobData.errMsg = "ERROR: Unable to launch: " + groupScript
+            raise
+
+

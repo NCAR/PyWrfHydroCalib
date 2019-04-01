@@ -51,7 +51,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     except:
         raise
 
-    if statusData.analysisRunType == 1:
+    if statusData.jobRunType == 1:
         # Generate BSUB file necessary for running R calibration/analysis
         # code.
         try:
@@ -81,7 +81,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             raise
             
-    if statusData.analysisRunType == 2:
+    if statusData.jobRunType == 2:
         # Generate PBS file necessary to running R calibration/analysis code.
         try:
             generatePbsCalibScript(statusData,int(gageID),runDir,workDir,staticData)
@@ -109,7 +109,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             raise
             
-    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
+    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
         # Generate Slurm file necessary to run R calibration/analysis code.
         try:
             generateSlurmCalibScript(statusData,int(gageID),runDir,workDir,staticData)
@@ -137,7 +137,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             raise
             
-    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
         # Generate mpiexec/mpirun run script and R submission script for running
         # calibration/analysis code.
         try:
@@ -936,28 +936,28 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             
         print("FIRING OFF FIRST CALIBRATION CODE")
         # Fire off calibration programs.
-        if statusData.analysisRunType == 1:
+        if statusData.jobRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 2:
+        if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
                 pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -990,28 +990,28 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             
         print("FIRING OFF CALIB CODE")
         # Fire off calibration program.
-        if statusData.analysisRunType == 1:
+        if statusData.jobRunType == 1:
             cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 2:
+        if statusData.jobRunType == 2:
             try:
                 jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
                 pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
+        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
             cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
             try:
                 subprocess.call(cmd,shell=True)
             except:
                 statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
                 raise
-        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
+        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
             cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
                   str(statusData.jobID) + "_" + str(gageID) + ".out" + \
                   ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
@@ -1444,7 +1444,7 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
                  "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of cores to use\n')
-        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
+        inStr = "ncores <- 1\n"
         fileObj.write(inStr)
         fileObj.write('# Specify whether to run daily or hourly analysis\n')
         if jobData.dailyAnalysis == 1:
@@ -1481,7 +1481,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
             if len(jobData.acctKey.strip()) > 0:
                 inStr = "#BSUB -P " + str(jobData.acctKey) + '\n'
                 fileObj.write(inStr)
-            inStr = "#BSUB -n " + str(jobData.nCoresR) + '\n'
+            inStr = "#BSUB -n 1\n"
             fileObj.write(inStr)
             inStr = "#BSUB -J WH_CALIB_" + str(jobData.jobID) + "_" + str(gageID) + '\n'
             fileObj.write(inStr)
@@ -1561,9 +1561,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write(inStr)
             inStr = '#PBS -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
-            nCoresPerNode = int(jobData.nCoresR/jobData.nNodesR)
-            inStr = "#PBS -l select=" + str(jobData.nNodesR) + ":ncpus=" + str(nCoresPerNode) + \
-                    ":mpiprocs=" + str(nCoresPerNode) + "\n"
+            inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
             fileObj.write('#PBS -l walltime=02:00:00\n')
@@ -1638,7 +1636,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write(inStr)
             inStr = '#SBATCH -e ' + workDir + '/WH_CALIB_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
             fileObj.write(inStr)
-            inStr = "#SBATCH -N " + str(jobData.nNodesR) + "\n"
+            inStr = "#SBATCH -N 1\n"
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
             fileObj.write('#SBATCH -t 02:00:00\n')
@@ -1701,11 +1699,11 @@ def generateMpiCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('#!/bin/bash\n')
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
-            if jobData.analysisRunType == 4:
-                inStr = 'mpiexec -n ' + str(int(jobData.nCoresR)) + ' ./C' + \
+            if jobData.jobRunType == 4:
+                inStr = 'mpiexec -n 1 ./C' + \
                 str(jobData.jobID) + str(gageID) +'\n'
-            if jobData.analysisRunType == 5:
-                inStr = 'mpirun -np ' + str(int(jobData.nCoresR)) + ' ./C' + \
+            if jobData.jobRunType == 5:
+                inStr = 'mpirun -np 1 ./C' + \
                 str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)
             fileObj.close

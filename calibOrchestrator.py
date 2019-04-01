@@ -15,6 +15,7 @@ import os
 import sys
 import argparse
 import pwd
+import numpy as np
 from core import statusMod
 from core import dbMod
 from core import configMod
@@ -203,6 +204,13 @@ def main(argv):
         except:
             errMod.errOut(jobData)
 
+    # Create an array to hold systme job ID values. This will only be used for
+    # PBS as qstat has demonstrated slow behavior when doing a full qstat command.
+    # We will track job ID values and do a qstat <jobID> and populate this array
+    # to keep track of things.
+    pbsJobId = np.empty([jobData.nGroups], np.int64)
+    pbsJobId[:] = -9999
+
     # Loop over each basin group. This program will check to see if a group job is running
     # which is an instance of the calib.py program looping over basins for a group.
     # If a group job is not running, this program will check the database file to see
@@ -229,6 +237,21 @@ def main(argv):
                 calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript)
             except:
                 errMod.errOut(jobData)
+
+        # Check to see if this group is currently running.
+        groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId)
+
+        if not groupStatus:
+            # Check to see if the complete flag was generated.
+            if os.path.isfile(basinCompleteFlag):
+                jobData.groupComplete[basinGroup] = 1
+                continue
+            else:
+                # We need to fire off a new group job.
+                try:
+                    statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
+                except:
+                    errMod.errOut(jobData)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
