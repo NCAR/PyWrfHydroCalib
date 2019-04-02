@@ -189,7 +189,7 @@ class jobMeta:
             # orchestrator program will set things to 1 if they are already complete.
             gCompleteTmp.append(0)
             for basinTmp in range(0,self.numBasPerGroup):
-                endCpuTmpVal = endCpuTmpVal + self.nCoresMod
+                endCpuTmpVal = endCpuTmpVal + self.nCoresMod - 1
                 # Create CPU strides for each basin in this group.
                 if basinTmp == 0:
                     begCpuTmpVal = begCpuTmpVal
