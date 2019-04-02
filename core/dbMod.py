@@ -188,7 +188,7 @@ class Database(object):
                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,num_cores_per_node," + \
                  "job_run_type,exe,num_gages,owner,email," + \
                  "slack_channel,slack_token,slack_user,mpi_cmd,cpu_pin_cmd) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d %H:%M:%S'),\
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d %H:%M:%S'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d %H:%M:%S'),0,jobData.sensFlag,jobData.sensTbl,jobData.nSensSample,\
                  jobData.nSensIter,jobData.nSensBatch,jobData.bSensDate.strftime('%Y-%m-%d %H:%M:%S'),\
                  jobData.eSensDate.strftime('%Y-%m-%d %H:%M:%S'),jobData.bSensEvalDate.strftime('%Y-%m-%d %H:%M:%S'),0,\
