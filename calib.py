@@ -438,7 +438,6 @@ def main(argv):
 
             completeStatus = True
 
-        sys.exit(1)
         # Open the Python LOCK file. Write a blank line to the file and close it.
         # This action will simply modify the file modification time while only adding
         # a blank line.
