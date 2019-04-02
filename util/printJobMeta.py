@@ -103,6 +103,8 @@ def main(argv):
         print("Slack Channel: " + str(results[job][35]))
         print("Slack Token: " + str(results[job][36]))
         print("Slack User: " + str(results[job][37]))
+        print("MPI Command: " + str(results[job][38]))
+        print("CPU Pin Command: " + str(results[job][39]))
         print("--------------------------------------------------")
         
     # Close connection to DB
