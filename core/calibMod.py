@@ -1248,7 +1248,7 @@ def generateMpiRstScript(jobData,gageID,basinNum, runDir):
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         if len(jobData.cpuPinCmd) > 0:
-            inStr = jobData.mpiCmd + " 1 " + jobData.cpuPinCmd + \
+            inStr = jobData.mpiCmd + " " + jobData.cpuPinCmd + \
                 " " + str(jobData.gageBegModelCpu[basinNum]) + "-" + \
                 str(jobData.gageEndModelCpu[basinNum]) + " ./W" + \
                 str(jobData.jobID) + str(gageID) + '\n'
@@ -1445,7 +1445,7 @@ def generateMpiScript(jobData,gageID,basinNum,runDir):
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         if len(jobData.cpuPinCmd) > 0:
-            inStr = jobData.mpiCmd + " 1 " + jobData.cpuPinCmd + \
+            inStr = jobData.mpiCmd + " " + jobData.cpuPinCmd + \
                     " " + str(jobData.gageBegModelCpu[basinNum]) + "-" + \
                     str(jobData.gageEndModelCpu[basinNum]) + " ./W" + \
                     str(jobData.jobID) + str(gageID) + '\n'
@@ -1773,7 +1773,7 @@ def generateMpiCalibScript(jobData,gageID,basinNum,runDir,workDir,staticData):
             inStr = 'cd ' + workDir + '\n'
             fileObj.write(inStr)
             if len(jobData.cpuPinCmd) > 0:
-                inStr = jobData.mpiCmd + " 1 " + jobData.cpuPinCmd + \
+                inStr = jobData.mpiCmd + " " + jobData.cpuPinCmd + \
                         " " + str(jobData.gageBegModelCpu[basinNum]) + " ./C" + \
                         str(jobData.jobID) + str(gageID) + '\n'
             else:

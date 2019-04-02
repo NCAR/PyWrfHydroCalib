@@ -382,23 +382,23 @@ def main(argv):
                 # Put some spacing between launching model simulations to slow down que geting 
                 # overloaded.
                 if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.5:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.25:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.75:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.75 and keyStatusCheck2 == 0.9:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.9:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
-                    time.sleep(30)
+                    time.sleep(5)
                 if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 1.0:
-                    time.sleep(30)
+                    time.sleep(5)
                     
                 # TEMPORARY FOR CHEYENNE
                 # Check to make sure program hasn't passed a prescribed time limit. If it has,
