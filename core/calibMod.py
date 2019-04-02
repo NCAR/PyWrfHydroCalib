@@ -212,7 +212,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
     rDataFile = workDir + "/proj_data.Rdata"
-    
+
+    return
     # Initialize flags to False. These flags will help guide the workflow 
     # in decision making. 
     runFlag = False
@@ -1248,7 +1249,8 @@ def generateMpiRstScript(jobData,gageID,basinNum, runDir):
         fileObj.write(inStr)
         if len(jobData.cpuPinCmd) > 0:
             inStr = jobData.mpiCmd + " 1 " + jobData.cpuPinCmd + \
-                " " + str(jobData.gageBegModelCpu[basinNum]) + " ./W" + \
+                " " + str(jobData.gageBegModelCpu[basinNum]) + "-" + \
+                str(jobData.gageEndModelCpu[basinNum]) + " ./W" + \
                 str(jobData.jobID) + str(gageID) + '\n'
         else:
             inStr = jobData.mpiCmd + " 1 ./W" + \
@@ -1444,7 +1446,8 @@ def generateMpiScript(jobData,gageID,basinNum,runDir):
         fileObj.write(inStr)
         if len(jobData.cpuPinCmd) > 0:
             inStr = jobData.mpiCmd + " 1 " + jobData.cpuPinCmd + \
-                    " " + str(jobData.gageBegModelCpu[basinNum]) + " ./W" + \
+                    " " + str(jobData.gageBegModelCpu[basinNum]) + "-" + \
+                    str(jobData.gageEndModelCpu[basinNum]) + " ./W" + \
                     str(jobData.jobID) + str(gageID) + '\n'
         else:
             inStr = jobData.mpiCmd + " 1 ./W" + \

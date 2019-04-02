@@ -356,23 +356,27 @@ def main(argv):
         # manually by the user before the workflow can continue. 
 
         for basin in range(0,len(jobData.gages)):
+            print("PROCESSING BASIN: " + str(basin))
             for iteration in range(0,int(jobData.nIter)):
                 # Only process basins that are part of this group, per the argument passed into the
                 # program.
                 if jobData.gageGroup[basin] != int(args.groupNum[0]):
                     keySlot[basin,iteration] = 1.0
                     continue
+                print("PROCESSING ITERATION: " + str(iteration))
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
                 # If the status is already 1.0, then continue the loop as now work needs to be done.
                 if keyStatusCheck1 == 1.0:
                     continue
                 else:
-                    try:
-                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],
-                                          jobData.gages[basin],keySlot,basin,iteration,pbsJobId)
-                    except:
-                        errMod.errOut(jobData)
+                    calibMod.runModel(jobData, staticData, db, jobData.gageIDs[basin],
+                                      jobData.gages[basin], keySlot, basin, iteration, pbsJobId)
+                    #try:
+                    #    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],
+                    #                      jobData.gages[basin],keySlot,basin,iteration,pbsJobId)
+                    #except:
+                    #    errMod.errOut(jobData)
                 # Temporary for Cheyenne to slow down the strain on PBS. 
                 keyStatusCheck2 = keySlot[basin,iteration]
                 # Put some spacing between launching model simulations to slow down que geting 
@@ -433,7 +437,8 @@ def main(argv):
                     errMod.errOut(jobData)
 
             completeStatus = True
-            
+
+        sys.exit(1)
         # Open the Python LOCK file. Write a blank line to the file and close it.
         # This action will simply modify the file modification time while only adding
         # a blank line.
