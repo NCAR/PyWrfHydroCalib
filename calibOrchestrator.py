@@ -216,6 +216,7 @@ def main(argv):
     # If a group job is not running, this program will check the database file to see
     # if the basins in the group have a complete status for all calibration iterations.
     for basinGroup in range(0,jobData.nGroups):
+        print("WORKING ON GROUP: " + str(basinGroup))
         # If all groups are complete, the calibration experiment is complete.
         if sum(jobData.groupComplete) == jobData.nGroups:
             print("COMPLETE")
@@ -241,17 +242,18 @@ def main(argv):
         # Check to see if this group is currently running.
         groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId)
 
-        if not groupStatus:
-            # Check to see if the complete flag was generated.
-            if os.path.isfile(basinCompleteFlag):
-                jobData.groupComplete[basinGroup] = 1
-                continue
-            else:
-                # We need to fire off a new group job.
-                try:
-                    statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
-                except:
-                    errMod.errOut(jobData)
+        print('GROUP STATUS = ' + str(groupStatus))
+        #if not groupStatus:
+        #    # Check to see if the complete flag was generated.
+        #    if os.path.isfile(basinCompleteFlag):
+        #        jobData.groupComplete[basinGroup] = 1
+        #        continue
+        #    else:
+        #        # We need to fire off a new group job.
+        #        try:
+        #            statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
+        #        except:
+        #            errMod.errOut(jobData)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
