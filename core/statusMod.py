@@ -236,6 +236,7 @@ def checkBasJob(jobData,gageNum,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -270,6 +271,7 @@ def checkBasJob(jobData,gageNum,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -457,6 +459,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -491,6 +494,7 @@ def checkCalibJob(jobData,gageNum,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -647,6 +651,7 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -681,6 +686,7 @@ def checkBasJobValid(jobData,gageNum,modRun,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -910,6 +916,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -944,6 +951,7 @@ def checkParmGenJob(jobData,gageNum,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -1021,6 +1029,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -1055,6 +1064,7 @@ def checkEvalJob(jobData,gageNum,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -1206,6 +1216,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -1240,6 +1251,7 @@ def checkSensPreProcJob(jobData,gageID,gageNum,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -1386,6 +1398,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -1420,6 +1433,7 @@ def checkSensPostProcJob(jobData,gageID,gageNum,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -1569,6 +1583,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -1603,6 +1618,7 @@ def checkBasSensJob(jobData,gageNum,iteration,runDir,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum,iteration])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -1753,6 +1769,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
     #        # Run qstat for the user.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat','-u',jobData.owner])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #        except:
     #            jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
     #            raise
@@ -1787,6 +1804,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
     #        # can make a good assumption that the job is no longer running.
     #        try:
     #            jobsTmp = subprocess.check_output(['qstat',str(pbsJobId[gageNum,iteration])])
+    #            jobsTmp = str(jobsTmp,'utf-8')
     #            status = True
     #        except:
     #            # This means the job is no longer running.
@@ -1930,6 +1948,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
             # Run qstat for the user.
             try:
                 jobsTmp = subprocess.check_output(['qstat', '-u', jobData.owner])
+                jobsTmp = str(jobsTmp, 'utf-8')
             except:
                 jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
                 raise
@@ -1964,6 +1983,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
             # can make a good assumption that the job is no longer running.
             try:
                 jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
+                jobsTmp = str(jobsTmp, 'utf-8')
                 status = True
             except:
                 # This means the job is no longer running.
