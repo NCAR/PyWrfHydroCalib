@@ -235,7 +235,7 @@ def main(argv):
         runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + ".sh"
         if not os.path.isfile(runScript):
             try:
-                calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript)
+                calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript,topDir)
             except:
                 errMod.errOut(jobData)
 

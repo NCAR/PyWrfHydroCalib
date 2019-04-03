@@ -728,7 +728,7 @@ def setupModels(jobData,db,args,libPathTop):
                 jobData.errMsg = "ERROR: Failure to link: " + sensPostRProgram
                 raise
 
-def generateCalibGroupScript(jobData,groupNum,scriptPath):
+def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
     """
     Function to generate the run script for a particular group of basins.
     :param jobData:
@@ -762,6 +762,7 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath):
                 ":mpiprocs=" + str(jobData.nCoresPerNode) + "\n"
             fileObj.write(inStr)
             fileObj.write("\n")
+            fileObj.write('cd ' + topDir + '\n')
             inStr = "python3 calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close
