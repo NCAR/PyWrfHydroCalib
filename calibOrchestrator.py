@@ -211,49 +211,68 @@ def main(argv):
     pbsJobId = np.empty([jobData.nGroups], np.int64)
     pbsJobId[:] = -9999
 
-    # Loop over each basin group. This program will check to see if a group job is running
-    # which is an instance of the calib.py program looping over basins for a group.
-    # If a group job is not running, this program will check the database file to see
-    # if the basins in the group have a complete status for all calibration iterations.
-    for basinGroup in range(0,jobData.nGroups):
-        print("WORKING ON GROUP: " + str(basinGroup))
-        # If all groups are complete, the calibration experiment is complete.
+    # Initialize a complete status flag to be false. The orchestrator program
+    # will loop over each group, checking for a COMPLETE flag. Once all COMPLETE
+    # flags are present, the requirements for completetion have been met, and the
+    # program will exit successfully.
+    completeStatus = False
+
+    while not completeStatus:
+        # Loop over each basin group. This program will check to see if a group job is running
+        # which is an instance of the calib.py program looping over basins for a group.
+        # If a group job is not running, this program will check the database file to see
+        # if the basins in the group have a complete status for all calibration iterations.
+        for basinGroup in range(0,jobData.nGroups):
+            print("WORKING ON GROUP: " + str(basinGroup))
+            # If all groups are complete, the calibration experiment is complete.
+            if sum(jobData.groupComplete) == jobData.nGroups:
+                print("COMPLETE")
+                # STUB FOR EXITING PROGRAM WITH COMPLETION.
+
+            # Compose a complete flag for this specific group of basins. If this complete flag is present,
+            # that means these basins are complete.
+            basinCompleteFlag = str(jobData.jobDir) + "/CALIB_GROUP_" + str(basinGroup) + ".COMPLETE"
+
+            if os.path.isfile(basinCompleteFlag):
+                jobData.groupComplete[basinGroup] = 1
+                continue
+
+            # Setup a job script that will execute the calibration program, passing in the group number
+            # to instruct the workflow on which basins to process.
+            runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + ".sh"
+            if not os.path.isfile(runScript):
+                try:
+                    calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript,topDir)
+                except:
+                    errMod.errOut(jobData)
+
+            # Check to see if this group is currently running.
+            groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId)
+
+            print('GROUP STATUS = ' + str(groupStatus))
+            #if not groupStatus:
+            #    # Check to see if the complete flag was generated.
+            #    if os.path.isfile(basinCompleteFlag):
+            #        jobData.groupComplete[basinGroup] = 1
+            #        continue
+            #    else:
+            #        # We need to fire off a new group job.
+            #        try:
+            #            statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
+            #        except:
+            #            errMod.errOut(jobData)
+
+        # Check to see if the program requirements have been met.
         if sum(jobData.groupComplete) == jobData.nGroups:
-            print("COMPLETE")
-            # STUB FOR EXITING PROGRAM WITH COMPLETION.
-
-        # Compose a complete flag for this specific group of basins. If this complete flag is present,
-        # that means these basins are complete.
-        basinCompleteFlag = str(jobData.jobDir) + "/CALIB_GROUP_" + str(basinGroup) + ".COMPLETE"
-
-        if os.path.isfile(basinCompleteFlag):
-            jobData.groupComplete[basinGroup] = 1
-            continue
-
-        # Setup a job script that will execute the calibration program, passing in the group number
-        # to instruct the workflow on which basins to process.
-        runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + ".sh"
-        if not os.path.isfile(runScript):
+            jobData.calibComplete = 1
             try:
-                calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript,topDir)
+                db.updateCalibStatus(jobData)
             except:
-                errMod.errOut(jobData)
+                errMod.errout(jobData)
+            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
 
-        # Check to see if this group is currently running.
-        groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId)
-
-        print('GROUP STATUS = ' + str(groupStatus))
-        #if not groupStatus:
-        #    # Check to see if the complete flag was generated.
-        #    if os.path.isfile(basinCompleteFlag):
-        #        jobData.groupComplete[basinGroup] = 1
-        #        continue
-        #    else:
-        #        # We need to fire off a new group job.
-        #        try:
-        #            statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
-        #        except:
-        #            errMod.errOut(jobData)
+            completeStatus = True
 
 if __name__ == "__main__":
     main(sys.argv[1:])
