@@ -279,7 +279,7 @@ def main(argv):
             if jobData.gageGroup[basin] != int(args.groupNum[0]):
                 keySlot[basin] = 1.0
                 continue
-            keyStatusCheck1 = keySlot[basin, iteration]
+            keyStatusCheck1 = keySlot[basin]
             # If the status is already 1.0, then continue the loop as now work needs to be done.
             if keyStatusCheck1 == 1.0:
                 continue
