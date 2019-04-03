@@ -1920,7 +1920,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
         subprocess.call(cmdTmp, shell=True)
 
         # Compile expected job name that the job should occupy.
-        expName = "WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + str(groupNum)
+        expName = "WCG_" + str(jobData.jobID) + "_" + str(groupNum)
 
         lenJobs = len(jobs.JOBID)
 
@@ -1938,7 +1938,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
     if jobData.jobRunType == 2:
         # We are running via qsub
         # Compile expected job name that the job should occupy.
-        expName = "WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + str(groupNum)
+        expName = "WCG_" + str(jobData.jobID) + "_" + str(groupNum)
 
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
@@ -2020,7 +2020,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
         subprocess.call(cmd, shell=True)
 
         # Compile expected job name that the job should occupy.
-        expName = "WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + str(groupNum)
+        expName = "WCG_" + str(jobData.jobID) + "_" + str(groupNum)
 
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False

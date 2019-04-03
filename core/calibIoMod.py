@@ -743,7 +743,7 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('#\n')
             fileObj.write('# PBS Batch Script to Run WRF-Hydro Group Calibrations\n')
             fileObj.write('#\n')
-            inStr = '#PBS -N WH_CALIB_GROUP_' + str(jobData.jobID) + '_' + str(groupNum) + '\n'
+            inStr = '#PBS -N WCG_' + str(jobData.jobID) + '_' + str(groupNum) + '\n'
             fileObj.write(inStr)
             if len(jobData.acctKey.strip()) > 0:
                 inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
@@ -752,10 +752,10 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             if len(jobData.queName.strip()) > 0:
                 inStr = "#PBS -q " + str(jobData.queName) + "\n"
                 fileObj.write(inStr)
-            inStr = "#PBS -o " + jobData.jobDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
+            inStr = "#PBS -o " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
                 str(groupNum) + ".out\n"
             fileObj.write(inStr)
-            inStr = "#PBS -o " + jobData.jobDir + "/WH_CALIB_GROUP_" + str(jobData.jobID) + "_" + \
+            inStr = "#PBS -o " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
                     str(groupNum) + ".err\n"
             fileObj.write(inStr)
             inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(jobData.nCoresPerNode) + \
