@@ -250,17 +250,19 @@ def main(argv):
             groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId)
 
             print('GROUP STATUS = ' + str(groupStatus))
-            #if not groupStatus:
-            #    # Check to see if the complete flag was generated.
-            #    if os.path.isfile(basinCompleteFlag):
-            #        jobData.groupComplete[basinGroup] = 1
-            #        continue
-            #    else:
-            #        # We need to fire off a new group job.
-            #        try:
-            #            statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
-            #        except:
-            #            errMod.errOut(jobData)
+            if not groupStatus:
+                # Check to see if the complete flag was generated.
+                if os.path.isfile(basinCompleteFlag):
+                    jobData.groupComplete[basinGroup] = 1
+                    continue
+                else:
+                    # We need to fire off a new group job.
+                    print('SUBMITTING GROUP JOB')
+                    try:
+                        statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
+                    except:
+                        errMod.errOut(jobData)
+                    print(pbsJobId)
 
         # Check to see if the program requirements have been met.
         if sum(jobData.groupComplete) == jobData.nGroups:

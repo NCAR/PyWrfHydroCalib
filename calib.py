@@ -21,7 +21,6 @@ from core import dbMod
 from core import errMod
 from core import configMod
 from core import calibMod
-import pandas as pd
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -31,9 +30,6 @@ for j in range(1,len(pathSplit)-1):
     libPath = libPath + pathSplit[j] + '/'
 topDir = libPath
 libPathTop = libPath + 'core'
-
-#import warnings
-#warnings.filterwarnings("ignore")
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -63,7 +59,7 @@ def main(argv):
     
     # Establish the beginning timestamp for this program.
     begTimeStamp = datetime.datetime.now()
-    
+
     # Get current user who is running this program.
     userTmp = pwd.getpwuid(os.getuid()).pw_name
     
@@ -370,13 +366,11 @@ def main(argv):
                 if keyStatusCheck1 == 1.0:
                     continue
                 else:
-                    calibMod.runModel(jobData, staticData, db, jobData.gageIDs[basin],
-                                      jobData.gages[basin], keySlot, basin, iteration, pbsJobId)
-                    #try:
-                    #    calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],
-                    #                      jobData.gages[basin],keySlot,basin,iteration,pbsJobId)
-                    #except:
-                    #    errMod.errOut(jobData)
+                    try:
+                        calibMod.runModel(jobData,staticData,db,jobData.gageIDs[basin],
+                                          jobData.gages[basin],keySlot,basin,iteration,pbsJobId)
+                    except:
+                        errMod.errOut(jobData)
                 # Temporary for Cheyenne to slow down the strain on PBS. 
                 keyStatusCheck2 = keySlot[basin,iteration]
                 # Put some spacing between launching model simulations to slow down que geting 
@@ -399,21 +393,6 @@ def main(argv):
                     time.sleep(5)
                 if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 1.0:
                     time.sleep(5)
-                    
-                # TEMPORARY FOR CHEYENNE
-                # Check to make sure program hasn't passed a prescribed time limit. If it has,
-                # exit gracefully.
-                #timeCheckStamp = datetime.datetime.now()
-                #programDtCheck = timeCheckStamp - begTimeStamp
-                #if programDtCheck.seconds/60.0 > 90.0: 
-                #    # 90-minutes)
-                #    try:
-                #        fileObj = open(lockPath,'a')
-                #        fileObj.write('WORKFLOW HAS HIT TIME LIMIT - EXITING....\n')
-                #        fileObj.close()
-                #    except:
-                #        jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + lockPath
-                #        errMod.errOut(jobData)
                     
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:

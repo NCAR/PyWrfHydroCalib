@@ -242,10 +242,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 # Model crashed as simulation is not complete but no processes are running.
                 # Decided to comment this out for now. Not necessary, but may be nice for other
                 # experiments. 
-                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                #                    " Failed. Attempting to restart."
-                #print statusData.genMsg
-                #errMod.sendMsg(statusData)
                 print("MODEL HAS CRASHED ONCE")
                 keySlot[basinNum,iteration] = -0.25
                 keyStatus = -0.25
@@ -354,7 +350,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
             # to proceed with model simulation. 
             if os.path.isfile(calibCompleteFlag):
                 # Copy parameter files to the DEFAULT directory
-                #print calibCompleteFlag
                 try:
                     calibIoMod.copyDefaultParms(statusData,runDir,gage,staticData)
                 except:
@@ -538,7 +533,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                         if calibStatus:
                             # First calibration taking place to prepare parameters for
                             # first iteration.
-                            #print "FIRST CALIB CODE IS RUNNING"
                             keySlot[basinNum,iteration] = 0.25
                             keyStatus = 0.25
                             runFlag = False
@@ -1255,12 +1249,6 @@ def generateMpiRstScript(jobData,gageID,basinNum, runDir):
         else:
             inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " ./W" + \
                     str(jobData.jobID) + str(gageID) + '\n'
-        #if jobData.jobRunType == 4:
-        #    inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-        #    str(jobData.jobID) + str(gageID) + '\n'
-        #if jobData.jobRunType == 5:
-        #    inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-        #    str(jobData.jobID) + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1452,12 +1440,6 @@ def generateMpiScript(jobData,gageID,basinNum,runDir):
         else:
             inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " ./W" + \
                     str(jobData.jobID) + str(gageID) + '\n'
-        #if jobData.jobRunType == 4:
-        #    inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-        #    str(jobData.jobID) + str(gageID) + '\n'
-        #if jobData.jobRunType == 5:
-        #    inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./W' + \
-        #    str(jobData.jobID) + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1779,12 +1761,6 @@ def generateMpiCalibScript(jobData,gageID,basinNum,runDir,workDir,staticData):
             else:
                 inStr = jobData.mpiCmd + " 1 ./C" + \
                         str(jobData.jobID) + str(gageID) + '\n'
-            #if jobData.jobRunType == 4:
-            #    inStr = 'mpiexec -n 1 ./C' + \
-            #    str(jobData.jobID) + str(gageID) +'\n'
-            #if jobData.jobRunType == 5:
-            #    inStr = 'mpirun -np 1 ./C' + \
-            #    str(jobData.jobID) + str(gageID) +'\n'
             fileObj.write(inStr)
             fileObj.close
         except:
