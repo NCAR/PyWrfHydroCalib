@@ -769,3 +769,45 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
             raise
+
+def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
+    """
+    Function to generate the run script for a particular group of basins.
+    :param jobData:
+    :param groupNum:
+    :return:
+    """
+    if jobData.jobRunType == 2:
+        try:
+            # We are running PBS
+            fileObj = open(scriptPath,'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# PBS Batch Script to Run WRF-Hydro Group Spinups\n')
+            fileObj.write('#\n')
+            inStr = '#PBS -N WSG_' + str(jobData.jobID) + '_' + str(groupNum) + '\n'
+            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#PBS -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            fileObj.write('#PBS -l walltime=12:00:00\n')
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#PBS -q " + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#PBS -o " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
+                str(groupNum) + ".out\n"
+            fileObj.write(inStr)
+            inStr = "#PBS -o " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(jobData.nCoresPerNode) + \
+                ":mpiprocs=" + str(jobData.nCoresPerNode) + "\n"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            fileObj.write('cd ' + topDir + '\n')
+            inStr = "python3 spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise

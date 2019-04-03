@@ -1885,7 +1885,7 @@ def checkSensCollectJob(jobData,gageID,iteration,gageNum,pbsJobId):
     return status
 
 
-def checkBasGroupJob(jobData, groupNum, pbsJobId):
+def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
     """
     Generic function to check the status of a basin group job.
     """
@@ -1920,7 +1920,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
         subprocess.call(cmdTmp, shell=True)
 
         # Compile expected job name that the job should occupy.
-        expName = "WCG_" + str(jobData.jobID) + "_" + str(groupNum)
+        expName = programType + "_" + str(jobData.jobID) + "_" + str(groupNum)
 
         lenJobs = len(jobs.JOBID)
 
@@ -1938,7 +1938,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
     if jobData.jobRunType == 2:
         # We are running via qsub
         # Compile expected job name that the job should occupy.
-        expName = "WCG_" + str(jobData.jobID) + "_" + str(groupNum)
+        expName = programType + "_" + str(jobData.jobID) + "_" + str(groupNum)
 
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False
@@ -2020,7 +2020,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId):
         subprocess.call(cmd, shell=True)
 
         # Compile expected job name that the job should occupy.
-        expName = "WCG_" + str(jobData.jobID) + "_" + str(groupNum)
+        expName = programType + "_" + str(jobData.jobID) + "_" + str(groupNum)
 
         # Assume no jobs for basin are being ran, unless found in the data frame.
         status = False

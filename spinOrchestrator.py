@@ -37,7 +37,7 @@ libPathTop = libPath + 'core'
 def main(argv):
     # Parse arguments. User must input a job name.
     parser = argparse.ArgumentParser(description='Main orchestrator to start or restart ' + \
-                                                 'calibration for WRF-Hydro')
+                                                 'spinup for WRF-Hydro')
     parser.add_argument('jobID', metavar='jobID', type=str, nargs='+',
                         help='Job ID specific to calibration experiment.')
     parser.add_argument('--optDbPath', type=str, nargs='?',
@@ -81,12 +81,6 @@ def main(argv):
         print(jobData.errMsg)
         sys.exit(1)
 
-    # If the calibration flag is 0, simply exit gracefully as the user specified
-    # not to run calibration.
-    if jobData.calibFlag != 1:
-        print("ERROR: Calibration flag was set to 0 for this workflow.")
-        sys.exit(1)
-
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
     if not os.path.isfile(configPath):
@@ -97,6 +91,13 @@ def main(argv):
     except:
         print("ERROR: Failure to read configuration file: " + configPath)
         sys.exit(1)
+
+    if staticData.coldStart == 1:
+        print("ERROR: User has specified a cold-start option for calibration. Exiting....")
+        sys.exit(0)
+    if staticData.optSpinFlag == 1:
+        print("ERROR: User has specified an optional spinup file. Exiting....")
+        sys.exit(0)
 
     # Assign the SQL command from the config file into the jobData structure
     jobData.gSQL = staticData.gSQL
@@ -113,30 +114,12 @@ def main(argv):
     except:
         errMod.errOut(jobData)
 
-    # Some house keeping here. If the calibration is already complete, throw an error.
-    # Also ensure the spinup has been entered as complete. This is necessary for the
-    # calibration to run.
+    # Some house keeping here. If the spinup is already complete, throw an error.
     # also, if this is a re-initiation under a different user, require the new
     # user to enter a new contact that will be unpdated in the database.
-    if int(jobData.spinComplete) != 1:
-        # Check to see if optional spinup options were enabled. If so, update the spinup status.
-        if staticData.coldStart == 1 or staticData.optSpinFlag != 0:
-            print("Found optional spinup alternatives")
-            jobData.spinComplete = 1
-            try:
-                db.updateSpinupStatus(jobData)
-            except:
-                errMod.errOut(jobData)
-        else:
-            jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
-                             " is NOT complete. You must complete the spinup in order" + \
-                             " to run calibration."
-            errMod.errOut(jobData)
-
-    if int(jobData.calibComplete) == 1:
-        jobData.errMsg = "ERROR: Calibration for job ID: " + str(jobData.jobID) + \
+    if int(jobData.spinComplete) == 1:
+        jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
                          " has already completed."
-        errMod.errOut(jobData)
 
     if userTmp != jobData.owner:
         print("User: " + userTmp + " is requesting to takeover jobID: " + \
@@ -219,12 +202,12 @@ def main(argv):
 
     while not completeStatus:
         # Loop over each basin group. This program will check to see if a group job is running
-        # which is an instance of the calib.py program looping over basins for a group.
+        # which is an instance of the spinup.py program looping over basins for a group..
         for basinGroup in range(0,jobData.nGroups):
             print("WORKING ON GROUP: " + str(basinGroup))
             # Compose a complete flag for this specific group of basins. If this complete flag is present,
             # that means these basins are complete.
-            basinCompleteFlag = str(jobData.jobDir) + "/CALIB_GROUP_" + str(basinGroup) + ".COMPLETE"
+            basinCompleteFlag = str(jobData.jobDir) + "/SPINUP_GROUP_" + str(basinGroup) + ".COMPLETE"
 
             if os.path.isfile(basinCompleteFlag):
                 jobData.groupComplete[basinGroup] = 1
@@ -232,15 +215,15 @@ def main(argv):
 
             # Setup a job script that will execute the calibration program, passing in the group number
             # to instruct the workflow on which basins to process.
-            runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + ".sh"
+            runScript = jobData.jobDir + "/run_group_spinup" + str(basinGroup) + ".sh"
             if not os.path.isfile(runScript):
                 try:
-                    calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript,topDir)
+                    calibIoMod.generateSpinupGroupScript(jobData,basinGroup,runScript,topDir)
                 except:
                     errMod.errOut(jobData)
 
             # Check to see if this group is currently running.
-            groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId,'WCG')
+            groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId,'WSG')
 
             print('GROUP STATUS = ' + str(groupStatus))
             if not groupStatus:
@@ -259,12 +242,12 @@ def main(argv):
 
         # Check to see if the program requirements have been met.
         if sum(jobData.groupComplete) == jobData.nGroups:
-            jobData.calibComplete = 1
+            jobData.spinComplete = 1
             try:
-                db.updateCalibStatus(jobData)
+                db.updateSpinupStatus(jobData)
             except:
                 errMod.errout(jobData)
-            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            jobData.genMsg = "SPINUP FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
             errMod.sendMsg(jobData)
 
             completeStatus = True
