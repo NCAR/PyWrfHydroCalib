@@ -310,6 +310,8 @@ def main(argv):
                 except:
                     jobData.errMsg = "Unable to create complete flag: " + basinCompleteFlag
                     errMod.errOut(jobData)
+
+            completeStatus = True
             
         # Open the Python LOCK file. Write a blank line to the file and close it.
         # This action will simply modify the file modification time while only adding
