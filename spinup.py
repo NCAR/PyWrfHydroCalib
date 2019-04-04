@@ -291,7 +291,7 @@ def main(argv):
                 except:
                     errMod.errOut(jobData)
                 # Allow the program to wait before moving onto the next basin
-                time.sleep(5)
+            time.sleep(5)
             
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:

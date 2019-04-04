@@ -374,7 +374,7 @@ def main(argv):
                 # Temporary for Cheyenne to slow down the strain on PBS. 
                 keyStatusCheck2 = keySlot[basin,iteration]
                 # Put some spacing between launching model simulations.
-                time.sleep(5)
+            time.sleep(5)
 
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
