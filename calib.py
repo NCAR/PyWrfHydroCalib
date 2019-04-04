@@ -373,27 +373,9 @@ def main(argv):
                         errMod.errOut(jobData)
                 # Temporary for Cheyenne to slow down the strain on PBS. 
                 keyStatusCheck2 = keySlot[basin,iteration]
-                # Put some spacing between launching model simulations to slow down que geting 
-                # overloaded.
-                if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.5:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.25:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.75:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.75 and keyStatusCheck2 == 0.9:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.9:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
-                    time.sleep(5)
-                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 1.0:
-                    time.sleep(5)
-                    
+                # Put some spacing between launching model simulations.
+                time.sleep(5)
+
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
             if len(args.groupNum[0]) == 0:

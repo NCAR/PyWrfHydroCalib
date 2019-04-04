@@ -21,6 +21,7 @@ from core import dbMod
 from core import configMod
 from core import errMod
 from core import calibIoMod
+import time
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -256,6 +257,9 @@ def main(argv):
                     except:
                         errMod.errOut(jobData)
                     print(pbsJobId)
+
+            # Allow for some time in-between groups.
+            time.sleep(5)
 
         # Check to see if the program requirements have been met.
         if sum(jobData.groupComplete) == jobData.nGroups:

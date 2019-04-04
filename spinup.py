@@ -16,6 +16,7 @@ import pandas as pd
 import pwd
 import numpy as np
 import datetime
+import time
 
 from core import statusMod
 from core import dbMod
@@ -289,6 +290,8 @@ def main(argv):
                                        jobData.gages[basin],keySlot,basin,pbsJobId)
                 except:
                     errMod.errOut(jobData)
+                # Allow the program to wait before moving onto the next basin
+                time.sleep(5)
             
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
