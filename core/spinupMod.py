@@ -43,6 +43,15 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId):
     except:
         raise
 
+    # Create the shell scripts that will use the MPI command specified by the user to run
+    # or restart the model.
+    runFile = runDir + "/run_WH.sh"
+    rstFile = runDir + "/run_WH_Restart.sh"
+    if os.path.isfile(runFile):
+        os.remove(runFile)
+    if os.path.isfile(rstFile):
+        os.remove(rstFile)
+
     try:
         generateMpiScript(statusData,int(gageID),int(basinNum),runDir,gageMeta)
     except:
@@ -506,7 +515,7 @@ def generateMpiScript(jobData,gageID,basinNum,runDir,gageMeta):
     if os.path.isfile(outFile):
         jobData.errMsg = "ERROR: Run script: " + outFile + " already exists."
         raise Exception()
-        
+
     try:
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
