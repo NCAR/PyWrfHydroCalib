@@ -120,6 +120,7 @@ def main(argv):
     if int(jobData.spinComplete) == 1:
         jobData.errMsg = "ERROR: Spinup for job ID: " + str(jobData.jobID) + \
                          " has already completed."
+        errMod.errOut(jobData)
 
     if userTmp != jobData.owner:
         print("User: " + userTmp + " is requesting to takeover jobID: " + \
