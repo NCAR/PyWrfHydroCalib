@@ -21,6 +21,7 @@ from core import dbMod
 from core import configMod
 from core import errMod
 from core import calibIoMod
+import time
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -221,6 +222,61 @@ def main(argv):
     # flags are present, the requirements for completetion have been met, and the
     # program will exit successfully.
     completeStatus = False
+
+    while not completeStatus:
+        # Loop over each basin group. This program will check to see if a group job is running
+        # which is an instance of the calib.py program looping over basins for a group.
+        for basinGroup in range(0,jobData.nGroups):
+            print("WORKING ON GROUP: " + str(basinGroup))
+            # Compose a complete flag for this specific group of basins. If this complete flag is present,
+            # that means these basins are complete.
+            basinCompleteFlag = str(jobData.jobDir) + "/VALID_GROUP_" + str(basinGroup) + ".COMPLETE"
+
+            if os.path.isfile(basinCompleteFlag):
+                jobData.groupComplete[basinGroup] = 1
+                continue
+
+            # Setup a job script that will execute the calibration program, passing in the group number
+            # to instruct the workflow on which basins to process.
+            runScript = jobData.jobDir + "/run_group_valid" + str(basinGroup) + ".sh"
+            if not os.path.isfile(runScript):
+                try:
+                    calibIoMod.generateValidGroupScript(jobData,basinGroup,runScript,topDir)
+                except:
+                    errMod.errOut(jobData)
+
+            # Check to see if this group is currently running.
+            groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId,'WVG')
+
+            print('GROUP STATUS = ' + str(groupStatus))
+            if not groupStatus:
+                # Check to see if the complete flag was generated.
+                if os.path.isfile(basinCompleteFlag):
+                    jobData.groupComplete[basinGroup] = 1
+                    continue
+                else:
+                    # We need to fire off a new group job.
+                    print('SUBMITTING GROUP JOB')
+                    try:
+                        statusMod.submitGroupCalibration(jobData,runScript,pbsJobId,basinGroup)
+                    except:
+                        errMod.errOut(jobData)
+                    print(pbsJobId)
+
+            # Allow for some time in-between groups.
+            time.sleep(5)
+
+        # Check to see if the program requirements have been met.
+        if sum(jobData.groupComplete) == jobData.nGroups:
+            jobData.validComplete = 1
+            try:
+                db.updateValidationStatus(jobData)
+            except:
+                errMod.errout(jobData)
+            jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            errMod.sendMsg(jobData)
+
+            completeStatus = True
 
 if __name__ == "__main__":
     main(sys.argv[1:])
