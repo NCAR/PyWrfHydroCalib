@@ -84,7 +84,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         
     # Create symbolic links to Python/R code to generate parameters and evaluate
     # model output if it hasn't already been created.
-    parmGenProgram = libPathTop + "/Python/generate_parameters.py"
+    parmGenProgram = libPathTop + "/generate_parameters.py"
     evalProgram = libPathTop + "/R/valid_workflow.R"
     utilProgram = libPathTop + "/R/calib_utils.R"
     try:
