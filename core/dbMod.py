@@ -185,10 +185,10 @@ class Database(object):
                  "su_complete,sens_flag,sens_table,num_sens_sample,num_sens_iter,sens_batch,date_sens_start,date_sens_end," + \
                  "date_sens_start_eval,sens_complete,calib_flag,calib_table,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
                  "calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
-                 "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
+                 "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,num_cores_per_node," + \
                  "job_run_type,exe,num_gages,owner,email," + \
-                 "slack_channel,slack_token,slack_user,analysis_run_type,que_name_analysis) values " + \
-                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d %H:%M:%S'),\
+                 "slack_channel,slack_token,slack_user,mpi_cmd,cpu_pin_cmd) values " + \
+                 "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (jobDir,jobData.bSpinDate.strftime('%Y-%m-%d %H:%M:%S'),\
                  jobData.eSpinDate.strftime('%Y-%m-%d %H:%M:%S'),0,jobData.sensFlag,jobData.sensTbl,jobData.nSensSample,\
                  jobData.nSensIter,jobData.nSensBatch,jobData.bSensDate.strftime('%Y-%m-%d %H:%M:%S'),\
                  jobData.eSensDate.strftime('%Y-%m-%d %H:%M:%S'),jobData.bSensEvalDate.strftime('%Y-%m-%d %H:%M:%S'),0,\
@@ -196,9 +196,9 @@ class Database(object):
                  jobData.eCalibDate.strftime('%Y-%m-%d %H:%M:%S'),jobData.bCalibEvalDate.strftime('%Y-%m-%d %H:%M:%S'),\
                  jobData.nIter,0,jobData.bValidDate.strftime('%Y-%m-%d %H:%M:%S'),\
                  jobData.eValidDate.strftime('%Y-%m-%d %H:%M:%S'),jobData.bValidEvalDate.strftime('%Y-%m-%d %H:%M:%S'),\
-                 0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresR,jobData.nNodesR,\
+                 0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresPerNode,\
                  jobData.jobRunType,jobData.exe,len(jobData.gages),\
-                 jobData.owner,emailStr,slStr1,slStr2,slStr3,jobData.analysisRunType,jobData.queNameAnalysis)
+                 jobData.owner,emailStr,slStr1,slStr2,slStr3,jobData.mpiCmd,jobData.cpuPinCmd)
         try:
             self.dbCursor.execute(sqlCmd)
             self.conn.commit()
@@ -352,19 +352,18 @@ class Database(object):
         jobData.queName = results[26]
         jobData.nCoresMod = int(results[27])
         jobData.nNodesMod = int(results[28])
-        jobData.nCoresR = int(results[29])
-        jobData.nNodesR = int(results[30])
-        jobData.jobRunType = int(results[31])
-        jobData.exe = results[32]
-        jobData.nGages = int(results[33])
-        jobData.owner = results[34]
-        jobData.email = results[35]
-        jobData.slChan = results[36]
-        jobData.slToken = results[37]
-        jobData.slUser = results[38]
-        jobData.analysisRunType = int(results[39])
-        jobData.queNameAnalysis = results[40]
-        
+        jobData.nCoresPerNode = int(results[29])
+        jobData.jobRunType = int(results[30])
+        jobData.exe = results[31]
+        jobData.nGages = int(results[32])
+        jobData.owner = results[33]
+        jobData.email = results[34]
+        jobData.slChan = results[35]
+        jobData.slToken = results[36]
+        jobData.slUser = results[37]
+        jobData.mpiCmd = results[38]
+        jobData.cpuPinCmd = results[39]
+
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
         #    try:
@@ -552,7 +551,7 @@ class Database(object):
         if jobData.calibFlag == 1:
             # Open parameter table and read values in.
             tblData = pd.read_csv(jobData.calibTbl)
-            if len(tblData) != 19:
+            if len(tblData) != 20:
                 jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
                 raise Exception()
             
@@ -577,7 +576,7 @@ class Database(object):
         if jobData.sensFlag == 1:
             # Open parameter table and read values in.
             tblData = pd.read_csv(jobData.sensTbl)
-            if len(tblData) != 19:
+            if len(tblData) != 20:
                 jobData.errMsg = "ERROR: Unexpected sensitivity parameter table format."
                 raise Exception()
             

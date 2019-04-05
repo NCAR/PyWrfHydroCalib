@@ -563,10 +563,11 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! If using channel_option=2, activate the compound channel formulation? (Default=.FALSE.)\n')
-        if jobData.cmpdChan == 1:
-            fileObj.write('compound_channel = .TRUE.\n')
-        else:
-            fileObj.write('compound_channel = .FALSE.\n')
+        if jobData.enableCmpdChan == 1:
+            if jobData.cmpdChan == 1:
+                fileObj.write('compound_channel = .TRUE.\n')
+            else:
+                fileObj.write('compound_channel = .FALSE.\n')
         fileObj.write('! Specify the simulated lakes for NHDPlus reach-based routing\n')
         if str(gageData.lkFile) == '-9999':
             inStr = ' route_lake_f = \'\'' + '\n'
@@ -578,6 +579,11 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         inStr = ' GWBASESWCRT = ' + str(jobData.gwBaseFlag) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
+        if jobData.enableGwLoss == 1:
+            fileObj.write('! Switch to activate bucket model loss (0=no, 1=yes)\n')
+            inStr = ' bucket_loss = ' + str(jobData.gwLoss) + '\n'
+            fileObj.write(inStr)
+            fileObj.write('\n')
         fileObj.write('!Groundwater/baseflow mask specified on land surface model grid...\n')
         fileObj.write('!Note: Only required in baseflow bucket model is active\n')
         fileObj.write('!gwbasmskfil will not be used if UDMP_OPT = 1\n')

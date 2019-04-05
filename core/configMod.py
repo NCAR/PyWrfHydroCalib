@@ -14,6 +14,7 @@ import ast
 import pwd
 import pandas as pd
 import numpy as np
+import math
 #from slacker import Slacker
 
 import warnings
@@ -29,8 +30,7 @@ class jobMeta:
         self.queNameAnalysis = []
         self.nCoresMod = []
         self.nNodesMod = []
-        self.nCoresR = []
-        self.nNodesR = []
+        self.nCoresPerNode = []
         self.sensFlag = []
         self.sensTbl = []
         self.calibFlag = []
@@ -41,7 +41,8 @@ class jobMeta:
         self.optCalStripFlag = []
         self.optCalStripHrs = []
         self.jobRunType = []
-        self.analysisRunType = []
+        self.mpiCmd = []
+        self.cpuPinCmd = []
         self.nIter = []
         self.calibMethod = []
         self.objFunc = []
@@ -124,10 +125,19 @@ class jobMeta:
         self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
+        self.enableCmpdChan = []
         self.cmpdChan = []
+        self.enableGwLoss = []
+        self.gwLoss = []
         self.gages = []
         self.gageIDs = []
         self.dbPath = []
+        self.nGroups = None
+        self.numBasPerGroup = None
+        self.gageGroup = []
+        self.gageBegModelCpu = []
+        self.gageEndModelCpu = []
+        self.groupComplete = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -147,10 +157,61 @@ class jobMeta:
         self.gages = gagesTmp[:]
         self.gageIDs = gageIDsTmp[:]
 
+    def calcGroupNum(self):
+        """
+        Function to calculate the number of basin groups based on the CPU layout provided
+        by the user. This function also assigns a group number to each basin, along with
+        a pre-determined beginning/ending CPU number based on the user-provided CPU layout
+        informaiton in the configuration file.
+        :return:
+        """
+        nCoresAvail = self.nCoresPerNode * self.nNodesMod
+        self.numBasPerGroup = math.floor(nCoresAvail/self.nCoresMod)
+        self.nGroups = math.ceil(len(self.gages)/self.numBasPerGroup)
+
+        print(self.gages)
+        print('NUM CORES PER NODE = ' + str(self.nCoresPerNode))
+        print('NUM CORES AVAIL = ' + str(nCoresAvail))
+        print('NUM BASINS PER GROUP = ' + str(self.numBasPerGroup))
+        print('NUM BASINS = ' + str(len(self.gages)))
+        print('NUM GROUPS = ' + str(self.nGroups))
+        # Temporary arrays to calculate groups, CPU layout, etc
+        gGroupTmp = []
+        gBcpuTmp = []
+        gEcpuTmp = []
+        gCompleteTmp = []
+        countTmp = 0
+
+        for groupTmp in range(0,self.nGroups):
+            begCpuTmpVal = 0
+            endCpuTmpVal = 0
+            # Initialize the complete flag for this group of basins to be 0. The
+            # orchestrator program will set things to 1 if they are already complete.
+            gCompleteTmp.append(0)
+            for basinTmp in range(0,self.numBasPerGroup):
+                if basinTmp == 0:
+                    endCpuTmpVal = endCpuTmpVal + self.nCoresMod - 1
+                else:
+                    endCpuTmpVal = endCpuTmpVal + self.nCoresMod
+                # Create CPU strides for each basin in this group.
+                if basinTmp == 0:
+                    begCpuTmpVal = begCpuTmpVal
+                else:
+                    begCpuTmpVal = begCpuTmpVal + self.nCoresMod
+                gGroupTmp.append(groupTmp)
+                gBcpuTmp.append(begCpuTmpVal)
+                gEcpuTmp.append(endCpuTmpVal)
+
+        self.gageGroup = gGroupTmp
+        self.gageEndModelCpu = gEcpuTmp
+        self.gageBegModelCpu = gBcpuTmp
+        self.groupComplete = gCompleteTmp
+
+
     def readConfig(self,parser):
         """ Read in and check options passed by the config file.
         """
-        self.jobName = str(parser.get('logistics','jobName'))
+        self.jobName = str(parser.get('logistics','expName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
         self.queName = str(parser.get('logistics','optQueNameModel'))
@@ -159,8 +220,9 @@ class jobMeta:
         self.optCalStripHrs = int(parser.get('logistics','stripCalibHours'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
         self.nNodesMod = int(parser.get('logistics','nNodesModel'))
-        self.nCoresR = int(parser.get('logistics','nCoresR'))
-        self.nNodesR = int(parser.get('logistics','nNodesR'))
+        self.nCoresPerNode = int(parser.get('logistics','nCoresPerNode'))
+        self.mpiCmd = str(parser.get('logistics','mpiCmd'))
+        self.cpuPinCmd = str(parser.get('logistics','cpuPinCmd'))
         self.nIter = int(parser.get('logistics','numIter'))
         self.sensFlag = int(parser.get('logistics','runSens'))
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
@@ -170,7 +232,6 @@ class jobMeta:
         self.coldStart = int(parser.get('logistics','coldStart'))
         self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
-        self.analysisRunType = int(parser.get('logistics','analysisRunType'))
         self.objFunc = str(parser.get('logistics','objectiveFunction'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
@@ -281,7 +342,10 @@ class jobMeta:
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
         self.gwBaseFlag = int(parser.get('hydroPhysics','gwBaseSw'))
         self.gwRst = int(parser.get('hydroPhysics','gwRestart'))
+        self.enableCmpdChan = int(parser.get('hydroPhysics','enableCompoundChannel'))
         self.cmpdChan = int(parser.get('hydroPhysics','compoundChannel'))
+        self.enableGwLoss = int(parser.get('hydroPhysics','enableGwBucketLoss'))
+        self.gwLoss = int(parser.get('hydroPhysics','bucket_loss'))
         
 def readConfig(configFile):
     """
@@ -408,9 +472,9 @@ def checkConfig(parser):
         print("ERROR: Directory: " + check + " not found.")
         raise Exception()
 
-    check = str(parser.get('logistics','jobName'))
+    check = str(parser.get('logistics','expName'))
     if len(check) == 0:
-        print("ERROR: Zero length job name provided.")
+        print("ERROR: Zero length expName provided.")
         raise Exception()
         
     check = str(parser.get('logistics','acctKey'))
@@ -442,18 +506,18 @@ def checkConfig(parser):
     #    print "ERROR: You must enter a Slack user name."
     #    raise Exception()
 
-    check = int(parser.get('logistics','nCoresModel'))
+    checkCoresModel = int(parser.get('logistics','nCoresModel'))
     if not check:
         print("ERROR: Number of model cores to use not specified.")
         raise Exception()
-    if check <= 0:
+    if checkCoresModel <= 0:
         print("ERROR: Invalid number of model cores to use.")
         raise Exception()
-    check = int(parser.get('logistics','nNodesModel'))
-    if not check:
+    checkNodesModel = int(parser.get('logistics','nNodesModel'))
+    if not checkNodesModel:
         print("ERROR: Number of model nodes to use not specified.")
         raise Exception()
-    if check <= 0:
+    if checkNodesModel <= 0:
         print("ERROR: Invalid number of model nodes to use.")
         raise Exception()
         
@@ -472,24 +536,28 @@ def checkConfig(parser):
     if check < 1 or check > 6:
         print("ERROR: Invalid jobRunType specified.")
         raise Exception()
-        
-    check = int(parser.get('logistics','analysisRunType'))
-    if check < 1 or check > 6:
-        print("ERROR: Invalid analysisRunType specified.")
+
+    # Make sure a proper MPI command was passed. This is required.
+    check = str(parser.get('logistics','mpiCmd'))
+    if len(check) == 0:
+        print('ERROR: Please specify an mpiCmd to use for running the model.')
         raise Exception()
         
-    check = int(parser.get('logistics','nCoresR'))
-    if not check:
-        print("ERROR: Number of R Cores to use not specified.")
+    checkCoresPerNode = int(parser.get('logistics','nCoresPerNode'))
+    if not checkCoresPerNode:
+        print('ERROR: Number of nCoresPerNode to use not specified.')
         raise Exception()
-    check = int(parser.get('logistics','nNodesR'))
-    if not check:
-        print("ERROR: Number of R Nodes to use not specified.")
-        raise Exception()
-    if check <= 0:
-        print("ERROR: Invalid number of R Nodes to use.")
-        raise Exception()
-        
+    if checkNodesModel > 1:
+        if (checkCoresModel*checkNodesModel)%(checkCoresPerNode) != 0:
+            print("ERROR: Number of cores being used to run the model is not an equal divider " + \
+                  "of the number of cores per node.")
+            raise Exception()
+    else:
+        if checkCoresPerNode%checkCoresModel != 0:
+            print('ERROR Number of cores being sued to run the model is not an equal divider ' + \
+                  'of the number of cores per node.')
+            raise Exception()
+
     check = int(parser.get('logistics','dailyStats'))
     if check < 0 or check > 1:
         print("ERROR: Invalid dailyStats value specified.")
@@ -923,10 +991,19 @@ def checkConfig(parser):
     if check < 0 or check > 1:
         print("ERROR: Invalid ground water restart switch passed to program.")
         raise Exception()
+
+    check1 = int(parser.get('hydroPhysics','enableCompoundChannel'))
+    if check1 < 0 or check1 > 1:
+        print('ERROR: Inavlid enableCompoundChannel option passed to program.')
+        raise Exception()
         
-    check = int(parser.get('hydroPhysics','compoundChannel'))
-    if check < 0 or check > 1:
+    check2 = int(parser.get('hydroPhysics','compoundChannel'))
+    if check2 < 0 or check2 > 1:
         print("ERROR: Invalid compoundChannel switch passed to program.")
+        raise Exception()
+
+    if check1 == 0 and check2 == 1:
+        print("ERROR: Cannot turn on compound channel without enabling the namelist option.")
         raise Exception()
         
     # Ensure muskingum cunge routing has been chosen if compound channel is activated.
@@ -936,4 +1013,12 @@ def checkConfig(parser):
         print("ERROR: Compound channel can only be used with Muskingum Cunge Reach channel routing.")
         raise Exception()
     
-    
+    # Read in the groundwater loss options.
+    check1 = int(parser.get('hydroPhysics','enableGwBucketLoss'))
+    check2 = int(parser.get('hydroPhysics','bucket_loss'))
+    if check1 < 0 or check1 > 1:
+        print('ERROR: Invalid enableGwBucketLoss option specified in the configuration file.')
+        raise Exception()
+    if check1 == 0 and check2 == 1:
+        print('ERROR: Cannot activate bucket_loss in the namelist if enableGwBucketLoss is off.')
+        raise  Exception()

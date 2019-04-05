@@ -21,7 +21,6 @@ from core import dbMod
 from core import errMod
 from core import configMod
 from core import calibMod
-import pandas as pd
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -32,15 +31,14 @@ for j in range(1,len(pathSplit)-1):
 topDir = libPath
 libPathTop = libPath + 'core'
 
-#import warnings
-#warnings.filterwarnings("ignore")
-
 def main(argv):
     # Parse arguments. User must input a job name.
     parser = argparse.ArgumentParser(description='Main program to start or restart ' + \
              'calibration for WRF-Hydro')
     parser.add_argument('jobID',metavar='jobID',type=str,nargs='+',
-                        help='Job ID specific to calibration spinup.')
+                        help='Job ID specific to calibration calibration.')
+    parser.add_argument('groupNum',metavar='groupNum',type=str,nargs='+',
+                        help='Group number associated with basins to calibrate.')
     parser.add_argument('--optDbPath',type=str,nargs='?',
                         help='Optional alternative path to SQLite DB file.')
     
@@ -61,7 +59,7 @@ def main(argv):
     
     # Establish the beginning timestamp for this program.
     begTimeStamp = datetime.datetime.now()
-    
+
     # Get current user who is running this program.
     userTmp = pwd.getpwuid(os.getuid()).pw_name
     
@@ -95,55 +93,55 @@ def main(argv):
     # no other instances over-step here. This is mostly designed to deal
     # with nohup processes being kicked off Yellowstone/Cheyenne/Crontabs arbitrarily.
     # Just another check/balance here.
-    lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
-    if os.path.isfile(lockPath):
-        # Either a job is still running, or was running
-        # and was killed.
+    #lockPath = str(jobData.jobDir) + "/PYTHON.LOCK"
+    #if os.path.isfile(lockPath):
+    #    # Either a job is still running, or was running
+    #    # and was killed.
 
-        print('LOCK FILE FOUND.')
-        # Read in to get PID number
-        pidObj = pd.read_csv(lockPath)
-        pidCheck = int(pidObj.PID[0])
-        if errMod.check_pid(pidCheck):
-                print("JOB: " + str(pidCheck) + \
-                      " Is still running.")
-                sys.exit(0)
-        else:
-                print("JOB: " + str(pidCheck) + \
-                      " Has Failed. Removing LOCK " + \
-                      " file.")
-                os.remove(lockPath)
-                fileObj = open(lockPath,'w')
-                fileObj.write('\"PID\"\n')
-                fileObj.write(str(os.getpid()))
-                fileObj.close()
-        # TEMPORARY FOR CHEYENNE. Since all cron jobs are launched
-        # from an administrative node, we cannot monitor the process at 
-        # all, which is an inconvenience. So.... we will check the last
-        # modified time. If it's more than 30 minutes old, we will assume
-        # the process is no longer running and can continue on with calibration.
-        #dtRunCheck = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(lockPath))
-        #if dtRunCheck.seconds/60.0 < 15.0:
-        #    # We are going to assume a previous process is still running on the system. 
-        #    # exit gracefully.
-        #    print 'ASSUMING PROCESS STILL RUNNING'
-        #    sys.exit(0)
-        #else:
-        #    # We are assuming the process is no longer running on the system. Alow
-        #    # the workflow to continue. 
-        #    print 'ALLOWING WORKFLOW TO CONINUE. REMOVING LOCK FILE'
-        #    os.remove(lockPath)
-        #    fileObj = open(lockPath,'w')
-        #    fileObj.write('\"PID\"\n')
-        #    fileObj.write(str(os.getpid()))
-        #    fileObj.close()
-    else:
-        print('LOCK FILE NOT FOUND.')
-        # Write a LOCK file for this program.
-        fileObj = open(lockPath,'w')
-        fileObj.write('\"PID\"\n')
-        fileObj.write(str(os.getpid()))
-        fileObj.close()
+    #    print('LOCK FILE FOUND.')
+    #    # Read in to get PID number
+    #    pidObj = pd.read_csv(lockPath)
+    #    pidCheck = int(pidObj.PID[0])
+    #    if errMod.check_pid(pidCheck):
+    #            print("JOB: " + str(pidCheck) + \
+    #                  " Is still running.")
+    #            sys.exit(0)
+    #    else:
+    #            print("JOB: " + str(pidCheck) + \
+    #                  " Has Failed. Removing LOCK " + \
+    #                  " file.")
+    #            os.remove(lockPath)
+    #            fileObj = open(lockPath,'w')
+    #            fileObj.write('\"PID\"\n')
+    #            fileObj.write(str(os.getpid()))
+    #            fileObj.close()
+    #    # TEMPORARY FOR CHEYENNE. Since all cron jobs are launched
+    #    # from an administrative node, we cannot monitor the process at
+    #    # all, which is an inconvenience. So.... we will check the last
+    #    # modified time. If it's more than 30 minutes old, we will assume
+    #    # the process is no longer running and can continue on with calibration.
+    #    #dtRunCheck = datetime.datetime.now() - datetime.datetime.fromtimestamp(os.path.getmtime(lockPath))
+    #    #if dtRunCheck.seconds/60.0 < 15.0:
+    #    #    # We are going to assume a previous process is still running on the system.
+    #    #    # exit gracefully.
+    #    #    print 'ASSUMING PROCESS STILL RUNNING'
+    #    #    sys.exit(0)
+    #    #else:
+    #    #    # We are assuming the process is no longer running on the system. Alow
+    #    #    # the workflow to continue.
+    #    #    print 'ALLOWING WORKFLOW TO CONINUE. REMOVING LOCK FILE'
+    #    #    os.remove(lockPath)
+    #    #    fileObj = open(lockPath,'w')
+    #    #    fileObj.write('\"PID\"\n')
+    #    #    fileObj.write(str(os.getpid()))
+    #    #    fileObj.close()
+    #else:
+    #    print('LOCK FILE NOT FOUND.')
+    #    # Write a LOCK file for this program.
+    #    fileObj = open(lockPath,'w')
+    #    fileObj.write('\"PID\"\n')
+    #    fileObj.write(str(os.getpid()))
+    #    fileObj.close()
         
     # Pull extensive meta-data describing the job from the config file.
     configPath = str(jobData.jobDir) + "/setup.config"
@@ -162,6 +160,12 @@ def main(argv):
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages2(db)
+    except:
+        errMod.errOut(jobData)
+
+    # Calculate the CPU/group layout for all basins.
+    try:
+        jobData.calcGroupNum()
     except:
         errMod.errOut(jobData)
     
@@ -190,71 +194,71 @@ def main(argv):
                          " has already completed."
         errMod.errOut(jobData)
         
-    if userTmp != jobData.owner:
-        print("User: " + userTmp + " is requesting to takeover jobID: " + \
-              str(jobData.jobID) + " from owner: " + str(jobData.owner))
-        strTmp = "Please enter new email address. Leave blank if no email " + \
-                 "change is desired. NOTE if you leave both email and Slack " + \
-                 "information blank, no change in contact will occur. Only " + \
-                 "the owner will be modified:"
-        newEmail = input(strTmp)
-        #strTmp = "Please enter Slack channel:"
-        #newSlackChannel = raw_input(strTmp)
-        #strTmp = "Please enter Slack token:"
-        #newSlackToken = raw_input(strTmp)
-        #strTmp = "Please enter Slack user name:"
-        #newSlackUName = raw_input(strTmp)
-        # V1.2 NOTE!!!!!
-        # Given the automation of the workflow on Yellowstone, we are simply 
-        # keeping contact information the same, but only changing the ownership
-        # of the workflow
-        changeFlag = 1
-        #if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
-        #    print "ERROR: You must specify an associated Slacker API token."
-        #    sys.exit(1)
-        #if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
-        #    print "ERROR: You must specify an associated Slacker user name."
-        #    sys.exit(1)
-        #if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
-        #    print "ERROR: You must specify an associated Slacker channel name."
-        #    sys.exit(1)
-        #if len(newSlackToken) != 0 and len(newSlackUName) == 0:
-        #    print "ERROR: You must specify an associated Slacker user name."
-        #    sys.exit(1)
-        #if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
-        #    print "ERROR: You must specify an associated Slacker channel name."
-        #    sys.exit(1)
-        #if len(newSlackUName) != 0 and len(newSlackToken) == 0:
-        #    print "ERROR: You must specify an associated Slacker API token."
-        #    sys.exit(1)
-        #if len(newSlackChannel) != 0 and len(newEmail) != 0:
-        #    print "ERROR: You cannot specify both email and Slack for notifications."
-        #    sys.exit(1)
-        #if len(newSlackChannel) == 0 and len(newEmail) == 0:
-        #    changeFlag = 0
-            
-        # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
-            
-        jobData.genMsg = "MSG: User: " + userTmp + " Is Taking Over JobID: " + str(jobData.jobID) + \
-                         " From Owner: " + str(jobData.owner)
-        errMod.sendMsg(jobData)
-        
-        # If a new owner takes over, simply change the owner, but keep all 
-        # other contact information the same.
-        newEmail = jobData.email
-        newSlackChannel = jobData.slChan
-        newSlackToken = jobData.slToken
-        newSlackUName = jobData.slUser
-        if not newEmail:
-            newEmail = ''
-        if not newSlackChannel:
-            newSlackChannel = ''
-            newSlackToken = ''
-            
-        try:
-            db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
-        except:
-            errMod.errOut(jobData)
+    #if userTmp != jobData.owner:
+    #    print("User: " + userTmp + " is requesting to takeover jobID: " + \
+    #          str(jobData.jobID) + " from owner: " + str(jobData.owner))
+    #    strTmp = "Please enter new email address. Leave blank if no email " + \
+    #             "change is desired. NOTE if you leave both email and Slack " + \
+    #             "information blank, no change in contact will occur. Only " + \
+    #             "the owner will be modified:"
+    #    newEmail = input(strTmp)
+    #    #strTmp = "Please enter Slack channel:"
+    #    #newSlackChannel = raw_input(strTmp)
+    #    #strTmp = "Please enter Slack token:"
+    #    #newSlackToken = raw_input(strTmp)
+    #    #strTmp = "Please enter Slack user name:"
+    #    #newSlackUName = raw_input(strTmp)
+    #    # V1.2 NOTE!!!!!
+    #    # Given the automation of the workflow on Yellowstone, we are simply
+    #    # keeping contact information the same, but only changing the ownership
+    #    # of the workflow
+    #    changeFlag = 1
+    #    #if len(newSlackChannel) != 0 and len(newSlackToken) == 0:
+    #    #    print "ERROR: You must specify an associated Slacker API token."
+    #    #    sys.exit(1)
+    #    #if len(newSlackChannel) != 0 and len(newSlackUName) == 0:
+    #    #    print "ERROR: You must specify an associated Slacker user name."
+    #    #    sys.exit(1)
+    #    #if len(newSlackToken) != 0 and len(newSlackChannel) == 0:
+    #    #    print "ERROR: You must specify an associated Slacker channel name."
+    #    #    sys.exit(1)
+    #    #if len(newSlackToken) != 0 and len(newSlackUName) == 0:
+    #    #    print "ERROR: You must specify an associated Slacker user name."
+    #    #    sys.exit(1)
+    #    #if len(newSlackUName) != 0 and len(newSlackChannel) == 0:
+    #    #    print "ERROR: You must specify an associated Slacker channel name."
+    #    #    sys.exit(1)
+    #    #if len(newSlackUName) != 0 and len(newSlackToken) == 0:
+    #    #    print "ERROR: You must specify an associated Slacker API token."
+    #    #    sys.exit(1)
+    #    #if len(newSlackChannel) != 0 and len(newEmail) != 0:
+    #    #    print "ERROR: You cannot specify both email and Slack for notifications."
+    #    #    sys.exit(1)
+    #    #if len(newSlackChannel) == 0 and len(newEmail) == 0:
+    #    #    changeFlag = 0
+    #
+    #    # PLACEHOLDER FOR CHECKING SLACK CREDENTIALS
+    #
+    #    jobData.genMsg = "MSG: User: " + userTmp + " Is Taking Over JobID: " + str(jobData.jobID) + \
+    #                     " From Owner: " + str(jobData.owner)
+    #    errMod.sendMsg(jobData)
+    #
+    #    # If a new owner takes over, simply change the owner, but keep all
+    #    # other contact information the same.
+    #    newEmail = jobData.email
+    #    newSlackChannel = jobData.slChan
+    #    newSlackToken = jobData.slToken
+    #    newSlackUName = jobData.slUser
+    #    if not newEmail:
+    #        newEmail = ''
+    #    if not newSlackChannel:
+    #        newSlackChannel = ''
+    #        newSlackToken = ''
+    #
+    #    try:
+    #        db.updateJobOwner(jobData,userTmp,newEmail,newSlackChannel,newSlackToken,newSlackUName,changeFlag)
+    #    except:
+    #        errMod.errOut(jobData)
             
     # Begin an "infinite" do loop. This loop will continue to loop through all 
     # the basins until calibrations are complete. Basins are allowed ONE failure. A restart
@@ -348,7 +352,14 @@ def main(argv):
         # manually by the user before the workflow can continue. 
 
         for basin in range(0,len(jobData.gages)):
+            print("PROCESSING BASIN: " + str(basin))
             for iteration in range(0,int(jobData.nIter)):
+                # Only process basins that are part of this group, per the argument passed into the
+                # program.
+                if jobData.gageGroup[basin] != int(args.groupNum[0]):
+                    keySlot[basin,iteration] = 1.0
+                    continue
+                print("PROCESSING ITERATION: " + str(iteration))
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
                 # If the status is already 1.0, then continue the loop as now work needs to be done.
@@ -362,66 +373,45 @@ def main(argv):
                         errMod.errOut(jobData)
                 # Temporary for Cheyenne to slow down the strain on PBS. 
                 keyStatusCheck2 = keySlot[basin,iteration]
-                # Put some spacing between launching model simulations to slow down que geting 
-                # overloaded.
-                if keyStatusCheck1 == 0.25 and keyStatusCheck2 == 0.5:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.5:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.5:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.0 and keyStatusCheck2 == 0.25:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.75:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.75 and keyStatusCheck2 == 0.9:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.5 and keyStatusCheck2 == 0.9:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 0.9:
-                    time.sleep(30)
-                if keyStatusCheck1 == 0.9 and keyStatusCheck2 == 1.0:
-                    time.sleep(30)
-                    
-                # TEMPORARY FOR CHEYENNE
-                # Check to make sure program hasn't passed a prescribed time limit. If it has,
-                # exit gracefully.
-                #timeCheckStamp = datetime.datetime.now()
-                #programDtCheck = timeCheckStamp - begTimeStamp
-                #if programDtCheck.seconds/60.0 > 90.0: 
-                #    # 90-minutes)
-                #    try:
-                #        fileObj = open(lockPath,'a')
-                #        fileObj.write('WORKFLOW HAS HIT TIME LIMIT - EXITING....\n')
-                #        fileObj.close()
-                #    except:
-                #        jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + lockPath
-                #        errMod.errOut(jobData)
-                    
+                # Put some spacing between launching model simulations.
+            time.sleep(5)
+
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
-            jobData.calibComplete = 1
-            try:
-                db.updateCalibStatus(jobData)
-            except:
-                errMod.errout(jobData)
-            jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
-            errMod.sendMsg(jobData)
+            if len(args.groupNum[0]) == 0:
+                # If we aren't doing groups, this means all basins are complete.
+                jobData.calibComplete = 1
+                try:
+                    db.updateCalibStatus(jobData)
+                except:
+                    errMod.errout(jobData)
+                jobData.genMsg = "CALIBRATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+                errMod.sendMsg(jobData)
+            else:
+                # We are running with the orchestrator program. Touch the complete flag to let the
+                # calling program know this group of basins is complete.
+                basinCompleteFlag = str(jobData.jobDir) + "/CALIB_GROUP_" + str(args.groupNum[0]) + ".COMPLETE"
+                try:
+                    open(basinCompleteFlag, 'a').close()
+                except:
+                    jobData.errMsg = "Unable to create complete flag: " + basinCompleteFlag
+                    errMod.errOut(jobData)
+
             completeStatus = True
-            
+
         # Open the Python LOCK file. Write a blank line to the file and close it.
         # This action will simply modify the file modification time while only adding
         # a blank line.
-        try:
-            fileObj = open(lockPath,'a')
-            fileObj.write('\n')
-            fileObj.close()
-        except:
-            jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + lockPath
-            errMod.errOut(jobData)
+        #try:
+        #    fileObj = open(lockPath,'a')
+        #    fileObj.write('\n')
+        #    fileObj.close()
+        #except:
+        #    jobData.errMsg = "ERROR: Unable to update workflow LOCK file: " + lockPath
+        #    errMod.errOut(jobData)
             
     # Remove LOCK file
-    os.remove(lockPath)
-    
+    #os.remove(lockPath)
+
 if __name__ == "__main__":
     main(sys.argv[1:])

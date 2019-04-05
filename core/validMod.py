@@ -84,9 +84,9 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         
     # Create symbolic links to Python/R code to generate parameters and evaluate
     # model output if it hasn't already been created.
-    parmGenProgram = libPathTop + "/Python/generate_parameters.py"
-    evalProgram = libPathTop + "/R/valid_workflow.R"
-    utilProgram = libPathTop + "/R/calib_utils.R"
+    parmGenProgram = libPathTop + "/generate_parameters.py"
+    evalProgram = libPathTop + "/valid_workflow.R"
+    utilProgram = libPathTop + "/calib_utils.R"
     try:
         link = bestDir + "/generate_parameters.py"
         if not os.path.islink(link):
@@ -131,62 +131,74 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
         generateParmScript(statusData,bestDir,gage,parmInDir,staticData)
     except:
         raise
-        
-    if statusData.analysisRunType == 1:
-        # Generate the BSUB script to run the parameter generation code. 
-        try:
-            generateBsubParmRunScript(statusData,bestDir,gageID)
-        except:
-            raise
-            
-    if statusData.jobRunType == 1:
-        # Generate the BSUB run script to run the model simulations. 
-        try:
-            generateBsubRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
-        except:
-            raise
-            
-    if statusData.analysisRunType == 2:
-        # Generate the PBS script to run the parameter generation code.
-        try:
-            generatePbsParmRunScript(statusData,bestDir,gageID)
-        except:
-            raise
-            
-    if statusData.jobRunType == 2:
-        # Generate the PBS script to run the model simulations.
-        try:
-            generatePbsRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
-        except:
-            raise
-            
-    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
-        # Generate the Slurm script to run the parameter generation code.
-        try:
-            generateSlurmParmRunScript(statusData,bestDir,gageID)
-        except:
-            raise
-            
-    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        # Generate the Slurm script to run the model simulations.
-        try:
-            generateSlurmRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
-        except:
-            raise
-            
-    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
-        # Generate the mpiexec/mpirun script to run the parameter generation 
-        try:
-            generateMpiParmRunScript(statusData,bestDir,gageID)
-        except:
-            raise
-            
-    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        # Generate the BSUB run script to run the model simulations. 
-        try:
-            generateMpiRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
-        except:
-            raise
+
+    # Generate the mpiexec/mpirun script to run the parameter generation
+    try:
+        generateMpiParmRunScript(statusData, bestDir, gageID)
+    except:
+        raise
+
+    # Generate the MPI run script to run the model simulations.
+    try:
+        generateMpiRunScript(statusData, gageID, int(basinNum), runDir, gageMeta, 'CTRL')
+    except:
+        raise
+
+    #if statusData.jobRunType == 1:
+    #    # Generate the BSUB script to run the parameter generation code.
+    #    try:
+    #        generateBsubParmRunScript(statusData,bestDir,gageID)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 1:
+    #    # Generate the BSUB run script to run the model simulations.
+    #    try:
+    #        generateBsubRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 2:
+    #    # Generate the PBS script to run the parameter generation code.
+    #    try:
+    #        generatePbsParmRunScript(statusData,bestDir,gageID)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 2:
+    #    # Generate the PBS script to run the model simulations.
+    #    try:
+    #        generatePbsRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+    #    # Generate the Slurm script to run the parameter generation code.
+    #    try:
+    #        generateSlurmParmRunScript(statusData,bestDir,gageID)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+    #    # Generate the Slurm script to run the model simulations.
+    #    try:
+    #        generateSlurmRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+    #    # Generate the mpiexec/mpirun script to run the parameter generation
+    #    try:
+    #        generateMpiParmRunScript(statusData,bestDir,gageID)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+    #    # Generate the BSUB run script to run the model simulations.
+    #    try:
+    #        generateMpiRunScript(statusData,gageID,runDir,gageMeta,'CTRL')
+    #    except:
+    #        raise
 
     # Calculate datetime objects
     begDate = statusData.bValidDate
@@ -257,10 +269,6 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
-                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                #                    " Failed. Attempting to restart."
-                #print statusData.genMsg
-                #errMod.sendMsg(statusData)
                 keySlot[basinNum,0] = -0.25
                 keyStatus = -0.25
                 runFlag = True
@@ -412,40 +420,49 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 errMod.cleanRunDir(statusData,runDir)
             except:
                 raise
-                
-        if statusData.jobRunType == 1:
-            # Fire off model.
-            cmd = "bsub < " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 2:
-            # Fire off model.
-            try:
-                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-            # Fire off model.
-            cmd = "sbatch " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
-                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-            try:
-                p = subprocess.Popen([cmd],shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
+
+        cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p = subprocess.Popen([cmd], shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+
+        #if statusData.jobRunType == 1:
+        #    # Fire off model.
+        #    cmd = "bsub < " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 2:
+        #    # Fire off model.
+        #    try:
+        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+        #    # Fire off model.
+        #    cmd = "sbatch " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        #    cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        #    try:
+        #        p = subprocess.Popen([cmd],shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
             
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
@@ -484,75 +501,93 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 errMod.cleanRunDir(statusData,runDir)
             except:
                 raise
-                
-        if statusData.jobRunType == 1:
-            # Fire off model.
-            cmd = "bsub < " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 2:
-            # Fire off model.
-            try:
-                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-            # Fire off model.
-            cmd = "sbatch " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
-                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-            try:
-                p = subprocess.Popen([cmd],shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
+
+        cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p = subprocess.Popen([cmd], shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+
+        #if statusData.jobRunType == 1:
+        #    # Fire off model.
+        #    cmd = "bsub < " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 2:
+        #    # Fire off model.
+        #    try:
+        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+        #    # Fire off model.
+        #    cmd = "sbatch " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        #    cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        #    try:
+        #        p = subprocess.Popen([cmd],shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
             
         keyStatus = 0.5
         keySlot[basinNum,0] = 0.5
         
     if keyStatus == 0.0 and not runFlag:
+        cmd = bestDir + "/P" + str(statusData.jobID) + str(gageID)
+        try:
+            p2 = subprocess.Popen([str(cmd)], shell=True)
+            time.sleep(5)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(
+                gageMeta.gage[basinNum])
+            raise
+
         # We need to run parameter generation code.
-        if statusData.analysisRunType == 1:
-            cmd = "bsub < " + bestDir + "/run_params.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.analysisRunType == 2:
-            try:
-                jobTmp = subprocess.check_output(['qsub',bestDir + '/run_params.sh'])
-                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-            except:
-                statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
-            cmd = "sbatch " + bestDir + "/run_params.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
-            cmd = bestDir + "/P" + str(statusData.jobID) + str(gageID)
-            try:
-                p2 = subprocess.Popen([str(cmd)],shell=True)
-                time.sleep(5)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
+        #if statusData.jobRunType == 1:
+        #    cmd = "bsub < " + bestDir + "/run_params.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 2:
+        #    try:
+        #        jobTmp = subprocess.check_output(['qsub',bestDir + '/run_params.sh'])
+        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+        #    cmd = "sbatch " + bestDir + "/run_params.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        #    cmd = bestDir + "/P" + str(statusData.jobID) + str(gageID)
+        #    try:
+        #        p2 = subprocess.Popen([str(cmd)],shell=True)
+        #        time.sleep(5)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch parameter generation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
             
         keyStatus = 0.1
         keySlot[basinNum,0] = 0.1
@@ -616,115 +651,141 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
             linkToRst(statusData,gage,runDir,gageMeta,staticData)
         except:
             raise
-        
+
     # Create two run scripts:
     # 1.) Job script to run the model with best parameters.
     # 2.) Job script to run the R code for evaluation/plotting.
-    if statusData.analysisRunType == 1:
-        bsubEvalScript = validWorkDir + "/run_eval.sh"
-    
-        # If the files exist, remove them and re-create.
-        if os.path.isfile(bsubEvalScript):
-            os.remove(bsubEvalScript)
-        
-        # Generate scripts to do evaluation on both 
-        # the control and best simulations. 
-        try:
-            generateBsubEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
-        except:
-            raise
-            
-    if statusData.jobRunType == 1:
-        bsubRunScript = runDir + "/run_WH.sh"
-        
-        # If the files exist, remove them and re-create.
-        if os.path.isfile(bsubRunScript):
-            os.remove(bsubRunScript)
-        # Generate the BSUB run script to run the model simulations. 
-        try:
-            generateBsubRunScript(statusData,gageID,runDir,gageMeta,'BEST')
-        except:
-            raise
-            
-    if statusData.analysisRunType == 2:
-        pbsEvalScript = validWorkDir + "/run_eval.sh"
-        
-        # If the file exists, remove them and re-create.
-        if os.path.isfile(pbsEvalScript):
-            os.remove(pbsEvalScript)
-            
-        # Generate scripts to do evaluation on both
-        # the control and best simulations.
-        try:
-            generatePbsEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
-        except:
-            raise
-            
-    if statusData.jobRunType == 2:
-        pbsRunScript = runDir + "/run_WH.sh"
-        
-        # If the file exists, remove them and re-create.
-        if os.path.isfile(pbsRunScript):
-            os.remove(pbsRunScript)
-        # Generate the PBS run script to run the model simulations.
-        try:
-            generatePbsRunScript(statusData,gageID,runDir,gageMeta,'BEST')
-        except:
-            raise
-            
-    if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
-        slurmEvalScript = validWorkDir + "/run_eval.sh"
-        
-        # If the file exists, remove them and re-create.
-        if os.path.isfile(slurmEvalScript):
-            os.remove(slurmEvalScript)
-            
-        # Generate scripts to do evaluation on both
-        # the control and best simulations.
-        try:
-            generateSlurmEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
-        except:
-            raise
-            
-    if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        slurmRunScript = runDir + "/run_WH.sh"
-        
-        # If the file exists, remove them and re-create.
-        if os.path.isfile(slurmRunScript):
-            os.remove(slurmRunScript)
-            
-        # Generate the Slurm run script to run the model simulations.
-        try:
-            generateSlurmRunScript(statusData,gageID,runDir,gageMeta,'BEST')
-        except:
-            raise
-            
-    if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
-        evalScript = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
-    
-        # If the files exist, remove them and re-create.
-        if os.path.isfile(evalScript):
-            os.remove(evalScript)
-            
-        try:
-            generateMpiEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
-        except:
-            raise
-        
-    if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        # Generate scripts to do evaluation on both 
-        # the control and best simulations. 
-    
-        runScript = runDir + "/run_WH.sh"
-        
-        # If the files exist, remove them and re-create.
-        if os.path.isfile(runScript):
-            os.remove(runScript)
-        # Generate the BSUB run script to run the model simulations. 
-        try:
-            generateMpiRunScript(statusData,gageID,runDir,gageMeta,'BEST')
-        except:
-            raise
+    evalScript = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
+    # If the files exist, remove them and re-create.
+    if os.path.isfile(evalScript):
+        os.remove(evalScript)
+
+    try:
+        generateMpiEvalRunScript(staticData, statusData.jobID, gageID, runDir, gageMeta, calibWorkDir, validWorkDir)
+    except:
+        raise
+
+    # Generate scripts to do evaluation on both
+    # the control and best simulations.
+
+    runScript = runDir + "/run_WH.sh"
+    # If the files exist, remove them and re-create.
+    if os.path.isfile(runScript):
+        os.remove(runScript)
+    # Generate the BSUB run script to run the model simulations.
+    try:
+        generateMpiRunScript(statusData, gageID, int(basinNum), runDir, gageMeta, 'BEST')
+    except:
+        raise
+
+    # Create two run scripts:
+    # 1.) Job script to run the model with best parameters.
+    # 2.) Job script to run the R code for evaluation/plotting.
+    #if statusData.jobRunType == 1:
+    #    bsubEvalScript = validWorkDir + "/run_eval.sh"
+    #
+    #    # If the files exist, remove them and re-create.
+    #    if os.path.isfile(bsubEvalScript):
+    #        os.remove(bsubEvalScript)
+    #
+    #    # Generate scripts to do evaluation on both
+    #    # the control and best simulations.
+    #    try:
+    #        generateBsubEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 1:
+    #    bsubRunScript = runDir + "/run_WH.sh"
+    #
+    #    # If the files exist, remove them and re-create.
+    #    if os.path.isfile(bsubRunScript):
+    #        os.remove(bsubRunScript)
+    #    # Generate the BSUB run script to run the model simulations.
+    #    try:
+    #        generateBsubRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 2:
+    #    pbsEvalScript = validWorkDir + "/run_eval.sh"
+    #
+    #    # If the file exists, remove them and re-create.
+    #    if os.path.isfile(pbsEvalScript):
+    #        os.remove(pbsEvalScript)
+    #
+    #    # Generate scripts to do evaluation on both
+    #    # the control and best simulations.
+    #    try:
+    #        generatePbsEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 2:
+    #    pbsRunScript = runDir + "/run_WH.sh"
+    #
+    #    # If the file exists, remove them and re-create.
+    #    if os.path.isfile(pbsRunScript):
+    #        os.remove(pbsRunScript)
+    #    # Generate the PBS run script to run the model simulations.
+    #    try:
+    #        generatePbsRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+    #    slurmEvalScript = validWorkDir + "/run_eval.sh"
+    #
+    #    # If the file exists, remove them and re-create.
+    #    if os.path.isfile(slurmEvalScript):
+    #        os.remove(slurmEvalScript)
+    #
+    #    # Generate scripts to do evaluation on both
+    #    # the control and best simulations.
+    #    try:
+    #        generateSlurmEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+    #    slurmRunScript = runDir + "/run_WH.sh"
+    #
+    #    # If the file exists, remove them and re-create.
+    #    if os.path.isfile(slurmRunScript):
+    #        os.remove(slurmRunScript)
+    #
+    #    # Generate the Slurm run script to run the model simulations.
+    #    try:
+    #        generateSlurmRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+    #    evalScript = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
+    #
+    #    # If the files exist, remove them and re-create.
+    #    if os.path.isfile(evalScript):
+    #        os.remove(evalScript)
+    #
+    #    try:
+    #        generateMpiEvalRunScript(staticData,statusData.jobID,gageID,runDir,gageMeta,calibWorkDir,validWorkDir)
+    #    except:
+    #        raise
+    #
+    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+    #    # Generate scripts to do evaluation on both
+    #    # the control and best simulations.
+    #
+    #    runScript = runDir + "/run_WH.sh"
+    #
+    #    # If the files exist, remove them and re-create.
+    #    if os.path.isfile(runScript):
+    #        os.remove(runScript)
+    #    # Generate the BSUB run script to run the model simulations.
+    #    try:
+    #        generateMpiRunScript(statusData,gageID,runDir,gageMeta,'BEST')
+    #    except:
+    #        raise
         
     # Calculate datetime objects
     begDate = statusData.bValidDate
@@ -803,10 +864,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
             runFlag = runStatus[2]
             if runFlag:
                 # Model crashed as simulation is not complete but no processes are running.
-                #statusData.genMsg = "WARNING: Simulation for gage: " + statusData.gages[basinNum] + \
-                #                    " Failed. Attempting to restart."
-                #print statusData.genMsg
-                #errMod.sendMsg(statusData)
                 keySlot[basinNum,1] = -0.25
                 keyStatus = -0.25
                 runFlag = True
@@ -960,38 +1017,47 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 errMod.cleanRunDir(statusData,runDir)
             except:
                 raise
+
+        cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p = subprocess.Popen([cmd], shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            raise
                 
         # Fire off model.
-        if statusData.jobRunType == 1:   
-            cmd = "bsub < " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 2:
-            try:
-                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-            cmd = "sbatch " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
-                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-            try:
-                p = subprocess.Popen([cmd],shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
+        #if statusData.jobRunType == 1:
+        #    cmd = "bsub < " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 2:
+        #    try:
+        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+        #    cmd = "sbatch " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        #    cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        #    try:
+        #        p = subprocess.Popen([cmd],shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
                 
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
@@ -1032,36 +1098,45 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 raise
                 
         # Fire off model.
-        if statusData.jobRunType == 1:
-            cmd = "bsub < " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 2:
-            try:
-                jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-            cmd = "sbatch " + runDir + "/run_WH.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-            cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
-                  str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-                  ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-            try:
-                p = subprocess.Popen([cmd],shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-                raise
+        cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p = subprocess.Popen([cmd], shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+
+        #if statusData.jobRunType == 1:
+        #    cmd = "bsub < " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 2:
+        #    try:
+        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
+        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+        #    cmd = "sbatch " + runDir + "/run_WH.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        #    cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
+        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        #    try:
+        #        p = subprocess.Popen([cmd],shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
             
         keyStatus = 0.5
         keySlot[basinNum,1] = 0.5
@@ -1070,36 +1145,45 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         # Note the control simulation needs to be completed as well in 
         # order for the evaluation code to complete. 
         # We need to run parameter generation code.
-        if statusData.analysisRunType == 1:
-            cmd = "bsub < " + validWorkDir + "/run_eval.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.analysisRunType == 2:
-            try:
-                jobTmp = subprocess.check_output(['qsub',validWorkDir + '/run_eval.sh'])
-                pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-            except:
-                statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.analysisRunType == 3 or statusData.analysisRunType == 6:
-            cmd = "sbatch " + validWorkDir + "/run_eval.sh"
-            try:
-                subprocess.call(cmd,shell=True)
-            except:
-                statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
-        if statusData.analysisRunType == 4 or statusData.analysisRunType == 5:
-            cmd = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
-            try:
-                p2 = subprocess.Popen([str(cmd)],shell=True)
-                time.sleep(20)
-                p2.communicate
-            except:
-                statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
-                raise
+        cmd = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
+        try:
+            p2 = subprocess.Popen([str(cmd)], shell=True)
+            time.sleep(20)
+            p2.communicate
+        except:
+            statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+
+        #if statusData.jobRunType == 1:
+        #    cmd = "bsub < " + validWorkDir + "/run_eval.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 2:
+        #    try:
+        #        jobTmp = subprocess.check_output(['qsub',validWorkDir + '/run_eval.sh'])
+        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
+        #    cmd = "sbatch " + validWorkDir + "/run_eval.sh"
+        #    try:
+        #        subprocess.call(cmd,shell=True)
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
+        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
+        #    cmd = validWorkDir + "/E" + str(statusData.jobID) + str(gageID)
+        #    try:
+        #        p2 = subprocess.Popen([str(cmd)],shell=True)
+        #        time.sleep(20)
+        #        p2.communicate
+        #    except:
+        #        statusData.errMsg = "ERROR: Unable to launch evaluation job for gage: " + str(gageMeta.gage[basinNum])
+        #        raise
             
         keyStatus = 0.9
         keySlot[basinNum,1] = 0.9
@@ -1184,7 +1268,7 @@ def generatePbsRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
-        fileObj.write('mpiexec_mpt ./wrf_hydro.exe\n')
+        fileObj.write('mpiexec ./wrf_hydro.exe\n')
         fileObj.write('\n')
         fileObj.close
     except:
@@ -1224,11 +1308,13 @@ def generateSlurmRunScript(jobData,gageID,runDir,gageMeta,modName):
         fileObj.write(inStr)
         inStr = "#SBATCH -N " + str(jobData.nNodesMod) + "\n"
         fileObj.write(inStr)
+        inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+        fileObj.write(inStr)
         fileObj.write("\n")
         inStr = 'cd ' + runDir + '\n'
         fileObj.write(inStr)
         if jobData.jobRunType == 3:
-            inStr = "srun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
+            inStr = "srun ./wrf_hydro.exe\n"
         if jobData.jobRunType == 6:
             inStr = "mpirun -n " + str(jobData.nCoresMod) + " ./wrf_hydro.exe\n"
         fileObj.write(inStr)
@@ -1238,7 +1324,7 @@ def generateSlurmRunScript(jobData,gageID,runDir,gageMeta,modName):
         jobData.errMsg = "ERROR: Failure to create: " + outFile
         raise
         
-def generateMpiRunScript(jobData,gageID,runDir,gageMeta,modName):
+def generateMpiRunScript(jobData,gageID,basinNum,runDir,gageMeta,modName):
     """
     Generic function to create a run script that will use mpiexec/mpirun to run
     the model
@@ -1259,19 +1345,23 @@ def generateMpiRunScript(jobData,gageID,runDir,gageMeta,modName):
         inStr = 'for FILE in RESTART.*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
         fileObj.write(inStr)
         if modName == "BEST":
-            if jobData.jobRunType == 4:
-                inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./WB' + \
-                str(jobData.jobID) + str(gageID) + '\n'
-            if jobData.jobRunType == 5:
-                inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./WB' + \
-                str(jobData.jobID) + str(gageID) + '\n'
+            if len(jobData.cpuPinCmd) > 0:
+                inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " " + jobData.cpuPinCmd + \
+                        str(jobData.gageBegModelCpu[basinNum]) + "-" + \
+                        str(jobData.gageEndModelCpu[basinNum]) + " ./WB" + \
+                        str(jobData.jobID) + str(gageID) + '\n'
+            else:
+                inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " ./WB" + \
+                        str(jobData.jobID) + str(gageID) + '\n'
         if modName == "CTRL":
-            if jobData.jobRunType == 4:
-                inStr = 'mpiexec -n ' + str(int(jobData.nCoresMod)) + ' ./WC' + \
-                str(jobData.jobID) + str(gageID) + '\n'
-            if jobData.jobRunType == 5:
-                inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./WC' + \
-                str(jobData.jobID) + str(gageID) + '\n'
+            if len(jobData.cpuPinCmd) > 0:
+                inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " " + jobData.cpuPinCmd + \
+                        str(jobData.gageBegModelCpu[basinNum]) + "-" + \
+                        str(jobData.gageEndModelCpu[basinNum]) + " ./WC" + \
+                        str(jobData.jobID) + str(gageID) + '\n'
+            else:
+                inStr = jobData.mpiCmd + " " + str(jobData.nCoresMod) + " ./WC" + \
+                        str(jobData.jobID) + str(gageID) + '\n'
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1385,7 +1475,7 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
                  "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of cores to use\n')
-        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
+        inStr = "ncores <- 1\n"
         fileObj.write(inStr)
         fileObj.write('# Specify whether to run daily or hourly analysis\n')
         if jobData.dailyAnalysis == 1:
@@ -1482,7 +1572,7 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
                  "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of cores to use\n')
-        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
+        inStr = "ncores <- 1\n"
         fileObj.write(inStr)
         fileObj.write('# Specify whether to run daily or hourly analysis\n')
         if jobData.dailyAnalysis == 1:
@@ -1565,7 +1655,7 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
                  "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of cores to use\n')
-        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
+        inStr = "ncores <- 1\n"
         fileObj.write(inStr)
         fileObj.write('# Specify whether to run daily or hourly analysis\n')
         if jobData.dailyAnalysis == 1:
@@ -1648,7 +1738,7 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
                  "format=\"%Y-%m-%d\", tz=\"UTC\")\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of cores to use\n')
-        inStr = "ncores <- " + str(jobData.nCoresR) + "\n"
+        inStr = "ncores <- 1\n"
         fileObj.write(inStr)
         fileObj.write('# Specify whether to run daily or hourly analysis\n')
         if jobData.dailyAnalysis == 1:
