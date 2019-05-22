@@ -238,10 +238,15 @@ def main(argv):
 
             # Setup a job script that will execute the calibration program, passing in the group number
             # to instruct the workflow on which basins to process.
-            runScript = jobData.jobDir + "/run_group_valid" + str(basinGroup) + ".sh"
+            if jobData.jobRunType == 4:
+                # This is for MPI scripts as we don't have a scheduler.
+                runScript = jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
+                            str(basinGroup)
+            else:
+                runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + ".sh"
             if not os.path.isfile(runScript):
                 try:
-                    calibIoMod.generateValidGroupScript(jobData,basinGroup,runScript,topDir)
+                    calibIoMod.generateValidGroupScript(jobData, basinGroup, runScript, topDir)
                 except:
                     errMod.errOut(jobData)
 

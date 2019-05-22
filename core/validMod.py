@@ -1393,7 +1393,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir,staticData):
     try:
         fileObj = open(outFile,'w')
         fileObj.write('#!/bin/bash\n')
-        fileObj.write('python3 ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
+        fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' ' + str(staticData.gwBaseFlag) + \
                       ' ' + str(staticData.chnRtOpt) + ' \n')
         fileObj.write('exit\n')
@@ -1528,8 +1528,8 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         inStr = '#BSUB -e ' + validWorkDir + '/%J.err\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -W 1:00\n')
-        if len(jobData.queNameAnalysis.strip()) > 0:
-            inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + validWorkDir + '\n'
@@ -1609,8 +1609,8 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = '#PBS -e ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#PBS -l walltime=01:00:00\n')
-        if len(jobData.queNameAnalysis.strip()) > 0:
-            inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#PBS -q ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
         fileObj.write(inStr)
@@ -1692,8 +1692,8 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         inStr = '#SBATCH -e ' + validWorkDir + '/WH_EVAL_' + str(jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#SBATCH -t 01:00:00\n')
-        if len(jobData.queNameAnalysis.strip()) > 0:
-            inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#SBATCH -N 1\n"
         fileObj.write(inStr)
@@ -1777,8 +1777,8 @@ def generateBsubParmRunScript(jobData,runDir,gageID):
         inStr = '#BSUB -e ' + runDir + '/%J.err\n'
         fileObj.write(inStr)
         fileObj.write('#BSUB -W 0:20\n')
-        if len(jobData.queNameAnalysis.strip()) > 0:
-            inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         fileObj.write('\n')
         inStr = 'cd ' + runDir + '\n'
@@ -1813,8 +1813,8 @@ def generatePbsParmRunScript(jobData,runDir,gageID):
         inStr = '#PBS -e ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#PBS -l walltime=00:20:00\n')
-        if len(jobData.queNameAnalysis.strip()) > 0:
-            inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#PBS -q ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
         fileObj.write(inStr)
@@ -1851,8 +1851,8 @@ def generateSlurmParmRunScript(jobData,runDir,gageID):
         inStr = '#SBATCH -e ' + runDir + '/WH_PARM_GEN_' + str(jobData.jobID) + '_' + str(gageID) + '.err\n'
         fileObj.write(inStr)
         fileObj.write('#SBATCH -t 00:20:00\n')
-        if len(jobData.queNameAnalysis.strip()) > 0:
-            inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+        if len(jobData.queName.strip()) > 0:
+            inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
             fileObj.write(inStr)
         inStr = "#SBATCH -N 1\n"
         fileObj.write(inStr)

@@ -58,7 +58,6 @@ class statusMeta:
         self.jobRunType = []
         self.acctKey = []
         self.queName = []
-        self.queNameAnalysis = []
         self.exe = []
         self.errMsg = []
         self.genMsg = []
@@ -2028,13 +2027,41 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
         if len(jobs.NAME) > 0:
             for jobNum in range(0, len(jobs.NAME)):
                 if jobs.NAME[jobNum].strip() == expName:
-                    print("MODEL SIMULATIONS FOUND")
+                    print("MODEL GROUP JOBS FOUND")
                     status = True
         else:
             status = False
 
         if not status:
-            print("NO MODEL SIMULATIONS FOUND")
+            print("NO GROUP JOBS FOUND")
+
+    if jobData.jobRunType == 4:
+        # We are using mpiexec.
+        pidActive = []
+        # Compile expected job name that the job should occupy.
+        expName = programType + "_" + str(jobData.jobID) + "_" + str(groupNum)
+        for proc in psutil.process_iter():
+            try:
+                if proc.name() == expName:
+                    pidActive.append(proc.pid)
+            except:
+                print(expName + " Found, but ended before Python could get the PID.")
+        if len(pidActive) == 0:
+            status = False
+            print("NO GROUP JOBS FOUND")
+        else:
+            print("GROUP JOBS FOUND")
+            # Ensure these are being ran by the proper user.
+            proc_stat_file = os.stat('/proc/%d' % pidActive[0])
+            uid = proc_stat_file.st_uid
+            userCheck = pwd.getpwuid(uid)[0]
+            if userCheck != str(jobData.owner):
+                jobData.errMsg = "ERROR: " + expName + " is being ran by: " + \
+                                 userCheck + " When it should be ran by: " + jobData.owner
+                status = False
+                raise Exception()
+            else:
+                status = True
 
     return status
 
@@ -2071,4 +2098,15 @@ def submitGroupCalibration(jobData,groupScript,pbsJobId,groupNum):
             jobData.errMsg = "ERROR: Unable to launch: " + groupScript
             raise
 
-
+    if jobData.jobRunType == 4:
+        # Compose stdout and stderr files to pipe output too.
+        stdOut = jobData.jobDir + "/GROUP_JOB_OUT_" + str(jobData.jobID) + "_" + \
+            str(groupNum) + ".out"
+        stdErr = jobData.jobDir + "/GROUP_JOB_OUT_" + str(jobData.jobID) + "_" + \
+                 str(groupNum) + ".err"
+        cmd = groupScript + " 1>" + stdOut + " 2>" + stdErr
+        try:
+            p = subprocess.Popen([cmd], shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to launch: " + groupScript
+            raise

@@ -1546,8 +1546,8 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
             fileObj.write('#BSUB -W 2:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1570,7 +1570,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
@@ -1620,8 +1620,8 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
             fileObj.write('#PBS -l walltime=02:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#PBS -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1644,7 +1644,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
                           runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
                           str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
@@ -1695,8 +1695,8 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write(inStr)
             # We are using 2 hours to be safe here. 
             fileObj.write('#SBATCH -t 02:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1719,7 +1719,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + \
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
                           str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
@@ -1788,7 +1788,7 @@ def generateMpiCalibScript(jobData,gageID,basinNum,runDir,workDir,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters.py ' + workDir + \
+            fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
                           str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')

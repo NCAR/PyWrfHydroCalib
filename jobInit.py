@@ -44,6 +44,8 @@ def main(argv):
                         help='Config file to initialize job.')
     parser.add_argument('--optDbPath',type=str,nargs='?',
                         help='Optional alternative path to SQLite DB file.')
+    parser.add_argument('--optExpID',type=int,nargs='?',
+                        help='Optional user-defined experiment ID for this calibration.')
             
     args = parser.parse_args()       
 
@@ -58,7 +60,18 @@ def main(argv):
         dbPath = topDir + "wrfHydroCalib.db"
         if not os.path.isfile(dbPath):
             print("ERROR: SQLite3 DB file: " + dbPath + " Does Not Exist.")
-            sys.exit(1)     
+            sys.exit(1)
+
+    # If the user passed an optional experiment ID to use, check to make sure it's a
+    # non-zero number.
+    if args.optExpID is not None:
+        if args.optExpID <= 0:
+            print("ERROR: Please specify an optional experiment ID that is non-zero.")
+            sys.exit(1)
+        else:
+            optExpId = args.optExpID
+    else:
+        optExpId = -9999
 
     # Initialize job using setup.parm and calibration DB.
     try:
@@ -116,7 +129,7 @@ def main(argv):
         
     # Create DB entries for job name
     try:
-        db.enterJobID(jobData)
+        db.enterJobID(jobData,optExpId)
     except:
         errMod.errOut(jobData)
         

@@ -152,7 +152,7 @@ class Database(object):
 
         return results
         
-    def enterJobID(self,jobData):
+    def enterJobID(self,jobData,optExpID):
         """
         Function to create unique Job ID that defines the job being ran.
         This will be uniquely constrained by the job name, along with 
@@ -205,7 +205,37 @@ class Database(object):
         except:
             jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
             raise
-            
+
+        jobDir = jobData.outDir + "/" + jobData.jobName
+
+        sqlCmd = "select \"jobID\" from \"Job_Meta\" where \"Job_Directory\"='%s'" % (jobDir) + ";"
+
+        try:
+            self.dbCursor.execute(sqlCmd)
+            result = self.dbCursor.fetchone()
+        except:
+            jobData.errMsg = "ERROR: Unable to execute sql command to inquire job ID."
+            raise
+
+        if not result:
+            jobData.errMsg = "ERROR: Unable to locate newly created jobID."
+            raise Exception()
+        else:
+            tmpID = result[0]
+
+        if optExpID != -9999:
+            # The user has specified a differend experiment ID.
+            sqlCmd1 = "update \"Job_Meta\" set \"jobID\"=" + str(optExpID) + \
+                      " where \"jobID\"=" + str(tmpID) + ";"
+            try:
+                # Update the owner of the job, regardless of whatever options were filled.
+                self.dbCursor.execute(sqlCmd1)
+                self.conn.commit()
+            except:
+                jobData.errMsg = "ERROR: Failure to update jobID in jobMeta"
+                raise
+
+
     def queryGageList(self,jobData):
         """
         Function to extract list of gages based on user-provided SQL command.
@@ -409,7 +439,7 @@ class Database(object):
                   
         try:
             # Update the owner of the job, regardless of whatever options were filled.
-            self.dbCursosr.execute(sqlCmd1)
+            self.dbCursor.execute(sqlCmd1)
             self.conn.commit()
             jobData.owner = str(newOwner)
         except:

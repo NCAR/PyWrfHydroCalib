@@ -8,6 +8,7 @@ import os
 import pandas as pd
 from core import errMod
 import shutil
+import subprocess
 
 class gageMeta:
     def __init__(self):
@@ -763,11 +764,35 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
-            inStr = "python3 calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+    if jobData.jobRunType == 4:
+        try:
+            # We are running MPI
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('#Script to Run WRF-Hydro Group Calibrations\n')
+            fileObj.write('#\n')
+            fileObj.write('cd ' + topDir + '\n')
+            inStr = "python calib.py " + str(jobData.jobID) + " " + str(
+                groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+
+        # Make the file an executable
+        cmd = "chmod +x " + scriptPath
+        try:
+            subprocess.call(cmd, shell=True)
+        except:
+            jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise
 
 def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
@@ -805,11 +830,35 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
-            inStr = "python3 spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+    if jobData.jobRunType == 4:
+        try:
+            # We are running MPI
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('#Script to Run WRF-Hydro Group Spinups\n')
+            fileObj.write('#\n')
+            fileObj.write('cd ' + topDir + '\n')
+            inStr = "python spinup.py " + str(jobData.jobID) + " " + str(
+                groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+
+        # Make the file an executable
+        cmd = "chmod +x " + scriptPath
+        try:
+            subprocess.call(cmd, shell=True)
+        except:
+            jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise
 
 def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
@@ -847,9 +896,33 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
-            inStr = "python3 validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+    if jobData.jobRunType == 4:
+        try:
+            # We are running MPI
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('#Script to Run WRF-Hydro Group Validations\n')
+            fileObj.write('#\n')
+            fileObj.write('cd ' + topDir + '\n')
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(
+                groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+
+        # Make the file an executable
+        cmd = "chmod +x " + scriptPath
+        try:
+            subprocess.call(cmd, shell=True)
+        except:
+            jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise

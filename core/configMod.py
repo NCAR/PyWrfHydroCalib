@@ -27,7 +27,6 @@ class jobMeta:
         self.jobID = []
         self.acctKey = []
         self.queName = []
-        self.queNameAnalysis = []
         self.nCoresMod = []
         self.nNodesMod = []
         self.nCoresPerNode = []
@@ -214,8 +213,7 @@ class jobMeta:
         self.jobName = str(parser.get('logistics','expName'))
         self.outDir = str(parser.get('logistics','outDir'))
         self.acctKey = str(parser.get('logistics','acctKey'))
-        self.queName = str(parser.get('logistics','optQueNameModel'))
-        self.queNameAnalysis = str(parser.get('logistics','optQueNameAnalysis'))
+        self.queName = str(parser.get('logistics','optQueName'))
         self.optCalStripFlag = int(parser.get('logistics','stripCalibOutputs'))
         self.optCalStripHrs = int(parser.get('logistics','stripCalibHours'))
         self.nCoresMod = int(parser.get('logistics','nCoresModel'))
@@ -507,7 +505,7 @@ def checkConfig(parser):
     #    raise Exception()
 
     checkCoresModel = int(parser.get('logistics','nCoresModel'))
-    if not check:
+    if not checkCoresModel:
         print("ERROR: Number of model cores to use not specified.")
         raise Exception()
     if checkCoresModel <= 0:
