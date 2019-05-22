@@ -1010,8 +1010,8 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData)
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
             fileObj.write('#BSUB -W 1:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             # Temporary handling of Cheyenne/Geyser environment for NCAR.
             fileObj.write('\n')
@@ -1034,7 +1034,7 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData)
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
@@ -1082,8 +1082,8 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=01:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#PBS -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1105,7 +1105,7 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
@@ -1153,8 +1153,8 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             inStr = "#SBATCH -N 1\n"
             fileObj.write(inStr)
             fileObj.write('#SBATCH -t 01:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1176,7 +1176,7 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
@@ -1243,7 +1243,7 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
@@ -1478,8 +1478,8 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             inStr = '#BSUB -e ' + workDir + '/%J.err\n'
             fileObj.write(inStr)
             fileObj.write('#BSUB -W 3:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1501,7 +1501,7 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
-            fileObj.write('python3 ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
+            fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
                           gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
@@ -1549,8 +1549,8 @@ def generatePbsPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=03:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#PBS -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1616,8 +1616,8 @@ def generateSlurmPostProcScript(jobData,gageID,runDir,workDir,gageMeta):
             inStr = "#SBATCH -N 1\n"
             fileObj.write(inStr)
             fileObj.write('#SBATCH -t 03:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + workDir + '\n'
@@ -1754,8 +1754,8 @@ def generateBsubCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
             inStr = '#BSUB -e ' + runDir + '/%J.err\n'
             fileObj.write(inStr)
             fileObj.write('#BSUB -W 3:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#BSUB -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#BSUB -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
@@ -1835,8 +1835,8 @@ def generatePbsCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir):
             inStr = "#PBS -l select=1:ncpus=1:mpiprocs=1\n"
             fileObj.write(inStr)
             fileObj.write('#PBS -l walltime=01:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#PBS -q ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#PBS -q ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
@@ -1916,8 +1916,8 @@ def generateSlurmCollectScript(jobData,gageID,runDir,gageMeta,iteration,workDir)
             inStr = "#SBATCH -N 1\n"
             fileObj.write(inStr)
             fileObj.write('#SBATCH -t 03:00:00\n')
-            if len(jobData.queNameAnalysis.strip()) > 0:
-                inStr = '#SBATCH -p ' + str(jobData.queNameAnalysis) + '\n'
+            if len(jobData.queName.strip()) > 0:
+                inStr = '#SBATCH -p ' + str(jobData.queName) + '\n'
                 fileObj.write(inStr)
             fileObj.write('\n')
             inStr = 'cd ' + runDir + '\n'
