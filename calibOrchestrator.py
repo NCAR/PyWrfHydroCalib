@@ -244,6 +244,14 @@ def main(argv):
                     calibIoMod.generateCalibGroupScript(jobData,basinGroup,runScript,topDir)
                 except:
                     errMod.errOut(jobData)
+            else:
+                # We will regenerate the run script each time to ensure no previous group
+                # scripts are not being used.
+                try:
+                    os.remove(runScript)
+                except:
+                    jobData.errMsg = "Unable to remove old run script file: " + runScript
+                    errMod.errOut(jobData)
 
             # Check to see if this group is currently running.
             groupStatus = statusMod.checkBasGroupJob(jobData,basinGroup,pbsJobId,'WCG')
