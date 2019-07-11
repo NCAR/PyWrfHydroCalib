@@ -317,15 +317,20 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot(data=x_archive, aes(x=iter, y=obj)) + 
               geom_point() + theme_bw() + 
               labs(x="run", y="objective function")
+   gg <- gg + geom_point(data = x_archive[iter_best,], aes(x=iter, y=obj,size = "Best Iteration"), color = "red", shape = 8)
+   gg <- gg + scale_size_manual(name = "", values = 2) 
+   gg <- gg + scale_x_continuous(name = "Iteration") + scale_y_continuous(name="Objective Function")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_run_obj_outlier.png"),
-              plot=gg, units="in", width=6, height=5, dpi=300)
+              plot=gg, units="in", width=6, height=4, dpi=300)
 
    # Update the Objective function versus the parameter variable
    write("Obj function vs. params...", stdout())
    DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive), c(metrics, "iter", "obj")))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+   DT.m1.best <- melt(x_archive[iter_best, setdiff(names(x_archive), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive), c(metrics, "iter", "obj")))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
-   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
+   gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
+   gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(value, obj), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_x")
    gg <- gg + ggplot2::ggtitle(paste0("Scatter Plot of Obj. function versus parameters: ", siteId))
    gg <- gg + ggplot2::xlab("Parameter Values")+theme_bw()+ggplot2::ylab("Objective Function")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run_outlier.png"),
@@ -336,8 +341,10 @@ if (any(x_archive$obj > objFunThreshold)) {
    write("Params over runs...", stdout())
    DT.m1 = melt(x_archive[, setdiff(names(x_archive), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive), c("iter", metrics)))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+   DT.m1.best = melt(x_archive[iter_best, setdiff(names(x_archive), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive), c("iter", metrics)))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
-   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_y")
+   gg <- gg + ggplot2::geom_point(data = DT.m1.best,  ggplot2::aes(iter, value), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_y")
    gg <- gg + ggplot2::ggtitle(paste0("Parameter change with iteration: ", siteId))
    gg <- gg + ggplot2::xlab("Calibration Iteration")+theme_bw()
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_parameters_calib_run_outlier.png"),
@@ -350,8 +357,13 @@ if (any(x_archive$obj > objFunThreshold)) {
    DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
                iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+
+   DT.m1.best = melt(x_archive[iter_best,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
+               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
+
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
-   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::geom_point(data = DT.m1.best, ggplot2::aes(iter, value), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId))
    gg <- gg + ggplot2::xlab("Calibration Iteration No.")+theme_bw()+ylab("Value")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run_outlier.png"),
@@ -367,16 +379,22 @@ if (any(x_archive$obj > objFunThreshold)) {
               geom_point() + theme_bw() +
               labs(x="run", y="objective function") +
               ggtitle(paste0("ObjFun: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
+   gg <- gg + geom_point(data = x_archive[iter_best,], aes(x=iter, y=obj,size = "Best Iteration"), color = "red", shape = 8)
+   gg <- gg + scale_size_manual(name = "", values = 2)
+   gg <- gg + scale_x_continuous(name = "Iteration") + scale_y_continuous(name="Objective Function")
+
 
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_run_obj.png"),
-              plot=gg, units="in", width=6, height=5, dpi=300)
+              plot=gg, units="in", width=6, height=4, dpi=300)
 
    # Update the Objective function versus the parameter variable
    write("Obj function vs. params...", stdout())
    DT.m1 = melt(x_archive_plot[, setdiff(names(x_archive_plot), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive_plot), c(metrics, "iter", "obj")))
+   DT.m1.best <- melt(x_archive[iter_best, setdiff(names(x_archive_plot), metrics)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive), c(metrics, "iter", "obj")))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
-   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
+   gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
+   gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(value, obj), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_x")
    gg <- gg + ggplot2::ggtitle(paste0("ObjFun vs. Params: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
    gg <- gg + ggplot2::xlab("Parameter Values")+theme_bw()+ggplot2::ylab("Objective Function")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run.png"),
@@ -387,8 +405,11 @@ if (any(x_archive$obj > objFunThreshold)) {
    write("Params over runs...", stdout())
    DT.m1 = melt(x_archive_plot[, setdiff(names(x_archive_plot), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive_plot), c("iter", metrics)))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+   DT.m1.best = melt(x_archive_plot[iter_best, setdiff(names(x_archive_plot), metrics)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive_plot), c("iter", metrics)))
+
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
-   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_y")
+   gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(iter, value), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_y")
    gg <- gg + ggplot2::ggtitle(paste0("Parameter vs. iteration: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
    gg <- gg + ggplot2::xlab("Calibration Iteration")+theme_bw()
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_parameters_calib_run.png"),
@@ -401,8 +422,12 @@ if (any(x_archive$obj > objFunThreshold)) {
    DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
                iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+   DT.m1.best = melt(x_archive_plot[iter_best,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
+               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
+
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
-   gg <- gg + ggplot2::geom_point(size = 1, color = "red", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free")
+   gg <- gg + ggplot2::geom_point(data = DT.m1.best, ggplot2::aes(iter, value), size = 1, color = "red", shape = 8)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId, ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
    gg <- gg + ggplot2::xlab("Calibration Iteration No.")+theme_bw()+ylab("Value")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run.png"),
@@ -420,7 +445,8 @@ if (any(x_archive$obj > objFunThreshold)) {
    bestRun <- copy(get(paste0("chrt.obj.", iter_best)))
    bestRun [ , run := "Best Run"]
 
-   obsStrDataPlot <- copy(obs.obj)
+   obsStrDataPlot <- copy(chrt.obj)
+   obsStrDataPlot[, q_cms := NULL]
    setnames(obsStrDataPlot, "obs", "q_cms")
    obsStrDataPlot <- obsStrDataPlot[, c("q_cms", "POSIXct", "site_no"), with=FALSE]
    obsStrDataPlot <- obsStrDataPlot[as.integer(POSIXct) >= min(as.integer(controlRun$POSIXct)) & as.integer(POSIXct) <= max(as.integer(controlRun$POSIXct)),]
