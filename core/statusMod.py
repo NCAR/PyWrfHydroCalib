@@ -164,6 +164,19 @@ class statusMeta:
         self.gageEndModelCpu = gEcpuTmp
         self.gageBegModelCpu = gBcpuTmp
         self.groupComplete = gCompleteTmp
+
+    #def backupDatabase(self, dbMod):
+    #    """
+    #    Generic function to backup the local sql lite database file to an hourly directory
+    #    for a given hour. We first check to see if the proper backup directory for this hour
+    #    exists. If not, we create it. If a LOCK file already exists, we assume another
+    #    process is backing things up. If not, we backup our file, create a LOCK file to alert
+    #    other processes of our actions. Once the file has successfully been backed up,
+    #    we remove the LOCK file. If the LOCK file is older than 2 hours old, we assume the program
+    #    failed during a backup, or something went wrong, and error out to the user.
+    #    :param dbMod:
+    #    :return:
+    #    """
         
 def checkBasJob(jobData,gageNum,pbsJobId):
     """
@@ -2110,3 +2123,19 @@ def submitGroupCalibration(jobData,groupScript,pbsJobId,groupNum):
         except:
             jobData.errMsg = "ERROR: Unable to launch: " + groupScript
             raise
+
+#def backupDatabase(jobData, dbMod, statusMod):
+#    """
+#    Generic function to backup the local sql lite database file to an hourly directory
+#    for a given hour. We first check to see if the proper backup directory for this hour
+#    exists. If not, we create it. If a LOCK file already exists, we assume another
+#    process is backing things up. If not, we backup our file, create a LOCK file to alert
+#    other processes of our actions. Once the file has successfully been backed up,
+#    we remove the LOCK file. If the LOCK file is older than 2 hours old, we assume the program
+#    failed during a backup, or something went wrong, and error out to the user.
+#    :param jobData:
+#    :param dbMod:
+#    :return:
+#    """
+#    # First check to see if the top-level backup directory exists.
+#

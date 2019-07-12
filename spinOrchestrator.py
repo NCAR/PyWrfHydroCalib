@@ -22,6 +22,7 @@ from core import configMod
 from core import errMod
 from core import calibIoMod
 import time
+import datetime
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -69,6 +70,7 @@ def main(argv):
 
     # Establish database connection.
     db = dbMod.Database(jobData)
+    db.lockPath = dbPath + ".LOCK"
     try:
         db.connect(jobData)
     except:

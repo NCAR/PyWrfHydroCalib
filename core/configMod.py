@@ -131,6 +131,7 @@ class jobMeta:
         self.gages = []
         self.gageIDs = []
         self.dbPath = []
+        self.dbBackup = []
         self.nGroups = None
         self.numBasPerGroup = None
         self.gageGroup = []
@@ -227,6 +228,7 @@ class jobMeta:
         self.calibFlag = int(parser.get('logistics','runCalib'))
         self.calibTbl = str(parser.get('logistics','calibParmTbl'))
         self.dailyAnalysis = int(parser.get('logistics','dailyStats'))
+        self.dbBackup = int(parser.get('logistics','dbBackup'))
         self.coldStart = int(parser.get('logistics','coldStart'))
         self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
@@ -559,6 +561,11 @@ def checkConfig(parser):
     check = int(parser.get('logistics','dailyStats'))
     if check < 0 or check > 1:
         print("ERROR: Invalid dailyStats value specified.")
+        raise Exception()
+
+    check = int(parser.get('logistics','dbBackup'))
+    if check < 0 or check > 1:
+        print("ERROR: Invalid dbBackup value specified.")
         raise Exception()
         
     check = int(parser.get('logistics','coldStart'))

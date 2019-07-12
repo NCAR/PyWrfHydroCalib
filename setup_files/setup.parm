@@ -38,6 +38,10 @@ calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
 # 0 - Run hourly stats, 1 - Run daily stats
 dailyStats = 0
 
+# Flag to turn on/off database backup. If on, the database file will be locked and
+# backed up once an hour during the execution to the job directory output file.
+dbBackup = 0
+
 # This is a flag for the user to bypass the spinup and run calibrations/validations/sensitivity
 # analysis from cold starts. Note: This is highly discouraged as a spinup allows for
 # stable hydrologic states: 0 - Off, 1 - On.

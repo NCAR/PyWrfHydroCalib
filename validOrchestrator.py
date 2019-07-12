@@ -22,6 +22,7 @@ from core import configMod
 from core import errMod
 from core import calibIoMod
 import time
+import datetime
 
 # Set the Python path to include package specific functions.
 prPath = os.path.realpath(__file__)
@@ -69,6 +70,7 @@ def main(argv):
 
     # Establish database connection.
     db = dbMod.Database(jobData)
+    db.lockPath = dbPath + ".LOCK"
     try:
         db.connect(jobData)
     except:
@@ -226,6 +228,10 @@ def main(argv):
     while not completeStatus:
         # Loop over each basin group. This program will check to see if a group job is running
         # which is an instance of the calib.py program looping over basins for a group.
+        # First check to see if we need to backup the database file. We only do this IF:
+        # 1.) The user has specified backing up the database files.
+        # if staticData.dbBackup == 1:
+
         for basinGroup in range(0,jobData.nGroups):
             print("WORKING ON GROUP: " + str(basinGroup))
             # Compose a complete flag for this specific group of basins. If this complete flag is present,

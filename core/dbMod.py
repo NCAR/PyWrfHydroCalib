@@ -26,6 +26,7 @@ class Database(object):
         self.db = None
         self.conn = None
         self.dbCursor = None
+        self.lockPath = None
     
     def connect(self,jobData):
         """

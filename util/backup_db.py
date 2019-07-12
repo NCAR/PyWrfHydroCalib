@@ -34,6 +34,7 @@ def main(argv):
 
     dbInPath = args.dbPath[0]
 
+    # Connect to the input sqlite database file.
     if not os.path.isfile(dbInPath):
         print('Unable to locate specified input file: ' + dbInPath)
         sys.exit(1)
@@ -50,6 +51,15 @@ def main(argv):
         dbCursorIn = connIn.cursor()
     except:
         print('Unable to establish cursor object for: ' + dbInPath)
+        sys.exit(1)
+
+    # Connect to the external postgress DB.
+    strTmp = "dbname='" + args.dbName[0] + "' user='" + args.dbUserName[0] + "' host='" + args.host[0] + \
+             "' password='" + args.dbPwd[0] + "'"
+    try:
+        connExt = psycopg2.connect(strTmp)
+    except:
+        print("Unable to connect to external postgres database.")
         sys.exit(1)
 
     # First grab the experiment ID values associated with this
