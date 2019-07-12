@@ -198,6 +198,9 @@ def main(argv):
 
                 if param == "Loss":
                     idGw.variables['Loss'][:] = float(newParams.Loss[i])
+
+                if param == 'Coeff':
+                    idGw.variables['Coeff'][:] = float(newParams.Coeff[i])
         
             if param == "cwpvt":
                 idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[i])
