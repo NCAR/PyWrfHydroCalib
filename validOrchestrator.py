@@ -232,6 +232,12 @@ def main(argv):
         # 1.) The user has specified backing up the database files.
         # if staticData.dbBackup == 1:
 
+        # Backup our database file, if needed (logic will dictate in function).
+        try:
+            jobData.backupDatabase(configMod, db)
+        except:
+            errMod.errOut(jobData)
+
         for basinGroup in range(0,jobData.nGroups):
             print("WORKING ON GROUP: " + str(basinGroup))
             # Compose a complete flag for this specific group of basins. If this complete flag is present,

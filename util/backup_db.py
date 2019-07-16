@@ -13,7 +13,7 @@ import sys
 import os
 import argparse
 import sqlite3
-import psycopg2
+#import psycopg2
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -62,6 +62,13 @@ def main(argv):
         print("Unable to connect to external postgres database.")
         sys.exit(1)
 
+    # Establish a cursor object for the external postgres database.
+    try:
+        dbCursorExt = connExt.cursor()
+    except:
+        print("Unable to extablish cursor object for external postgres database.")
+        sys.exit(1)
+
     # First grab the experiment ID values associated with this
     cmd = "select \"jobID\" from \"Job_Meta\";"
     try:
@@ -71,19 +78,46 @@ def main(argv):
         print('Unable to query: ' + dbCursorIn + ' for calibration experiment ID values.')
         sys.exit(1)
 
+    if results == None:
+        print("No job data found in database file: " + dbInPath)
+        sys.exit(1)
+
     # Loop through each of the calibration experiments listed in the sqlite file.
     # 1.) First check to see if the metadata has been entered in for this experiment.
     # 2.) Check to see if the basin information for this sql file has been entered.
     # 3.) Loop through the calibration tables and either enter information, or update
     #     fields that need to be updated.
     for expTmp in results:
+        cmd = "select \"jobID\" from \"Job_Meta\" where \"jobID\"='" + str(expTmp) + "';"
+        try:
+            dbCursorIn.execute(cmd)
+            results = dbCursorIn.fetchone()
+        except:
+            print("Unable to query job ID: " + expTmp + " from external postgres database.")
+            sys.exit(1)
 
+        if results == None:
+            # We haven't entered in job meta information.
+            cmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(expTmp) + "';"
+            try:
+                dbCursorIn.execute(cmd)
+                results = dbCursorIn.fetchone()
+            except:
+                print("Unable to query job ID: " + str(expTmp) + " from: " + dbInPath)
+                sys.exit(1)
 
     # Close the sqlite connection.
     try:
-        conn.close()
+        connIn.close()
     except:
-        print('Unable to close connection to: ' + dbPath)
+        print('Unable to close connection to: ' + dbInPath)
+
+    # Close the connection to the postgres database.
+    try:
+        connExt.close()
+    except:
+        print("Unable to to close connection to external postgres database.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
