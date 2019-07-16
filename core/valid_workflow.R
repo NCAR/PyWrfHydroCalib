@@ -175,10 +175,10 @@ for (i in 1:length(runList[[1]])) {
       statCor <- cor(chrt.obj$q_cms, chrt.obj$obs)
       statRmse <- Rmse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
       statBias <- PBias(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-      statNse <- Nse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-      statNseLog <- NseLog(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statNse <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")
+      StatNseLog <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")
       statNseWt <- NseWt(chrt.obj$q_cms, chrt.obj$obs)
-      statKge <- Kge(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statKge <- hydroGOF::KGE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, method="2012", out.type="single")
       statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs)
       statHyperResMultiObj <- hyperResMultiObj(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
 
