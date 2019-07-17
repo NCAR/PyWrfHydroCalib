@@ -69,7 +69,20 @@ def main(argv):
         print("Unable to extablish cursor object for external postgres database.")
         sys.exit(1)
 
-    # First grab the experiment ID values associated with this
+    # Pull out the local basin ID values for this database file.
+    cmd = "select \"domainID\" from \"Domain_Meta\";"
+    try:
+        dbCursorIn.execute(cmd)
+        resultsBasins = dbCursorIn.fetchall()
+    except:
+        print('Unable to query: ' + dbCursorIn + ' for basin ID values.')
+        sys.exit(1)
+
+    if len(resultsBasins) == 0:
+        print("No basins found in database file: " + dbInPath)
+        sys.exit(1)
+
+    # Grab the experiment ID values associated with this database file.
     cmd = "select \"jobID\" from \"Job_Meta\";"
     try:
         dbCursorIn.execute(cmd)
@@ -78,7 +91,7 @@ def main(argv):
         print('Unable to query: ' + dbCursorIn + ' for calibration experiment ID values.')
         sys.exit(1)
 
-    if results == None:
+    if len(results) == 0:
         print("No job data found in database file: " + dbInPath)
         sys.exit(1)
 
@@ -96,7 +109,7 @@ def main(argv):
             print("Unable to query job ID: " + expTmp + " from external postgres database.")
             sys.exit(1)
 
-        if results == None:
+        if len(results) == 0:
             # We haven't entered in job meta information.
             cmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(expTmp) + "';"
             try:
