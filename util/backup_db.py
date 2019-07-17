@@ -13,7 +13,7 @@ import sys
 import os
 import argparse
 import sqlite3
-#import psycopg2
+ import psycopg2
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -86,21 +86,47 @@ def main(argv):
     cmd = "select \"jobID\" from \"Job_Meta\";"
     try:
         dbCursorIn.execute(cmd)
-        results = dbCursorIn.fetchall()
+        resultsExp = dbCursorIn.fetchall()
     except:
         print('Unable to query: ' + dbCursorIn + ' for calibration experiment ID values.')
         sys.exit(1)
 
-    if len(results) == 0:
+    if len(resultsExp) == 0:
         print("No job data found in database file: " + dbInPath)
         sys.exit(1)
+
+    # Loop through each of the basins in this database file. Domain ID values
+    # listed on the external database will utilize the domainID value in the
+    # database file, along with the first jobID found in this database file.
+    # It is up to the user to ensure unique job ID values exist for different
+    # files if multiple files are being backed up.
+    expRef = resultsExp[0][0]
+    for bsnTmp in resultsBasins:
+        bsnIdUnique = int(str(expRef) + str(bsnTmp[0]))
+        cmd = "select \"domainID\" from \"Domain_Meta\" where \"domainID\"='" + str(bsnIdUnique) + "';"
+        try:
+            dbCursorExt.execute(cmd)
+            resultsTmp = dbCursorExt.fetchone()
+        except:
+            print("Unable to query external database for unique basin ID:" + str(bsnIdUnique))
+            sys.exit(1)
+
+        if len(resultsTmp) == 0:
+            # We need to insert domain information into the external database.
+            cmd = "select * from \"Domain_Meta\" where \"domainID\"='" + str(bsnTmp[0]) + "';"
+            try:
+                dbCursorIn.execute(cmd)
+                resultsTmp = dbCursorIn.fetchall()
+            except:
+                print("Unable to query database file for domain ID: " + str(bsnTmp[0]))
+                sys.exit(1)
 
     # Loop through each of the calibration experiments listed in the sqlite file.
     # 1.) First check to see if the metadata has been entered in for this experiment.
     # 2.) Check to see if the basin information for this sql file has been entered.
     # 3.) Loop through the calibration tables and either enter information, or update
     #     fields that need to be updated.
-    for expTmp in results:
+    for expTmp in resultsExp:
         cmd = "select \"jobID\" from \"Job_Meta\" where \"jobID\"='" + str(expTmp) + "';"
         try:
             dbCursorIn.execute(cmd)
