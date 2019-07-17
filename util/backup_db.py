@@ -13,7 +13,7 @@ import sys
 import os
 import argparse
 import sqlite3
- import psycopg2
+import psycopg2
 
 def main(argv):
     # Parse arguments. User must input a job name.
@@ -111,14 +111,56 @@ def main(argv):
             print("Unable to query external database for unique basin ID:" + str(bsnIdUnique))
             sys.exit(1)
 
-        if len(resultsTmp) == 0:
-            # We need to insert domain information into the external database.
+        if resultsTmp == None:
+            # We need to insert domain information into the external database. First
+            # query the database file for the domain information.
             cmd = "select * from \"Domain_Meta\" where \"domainID\"='" + str(bsnTmp[0]) + "';"
             try:
                 dbCursorIn.execute(cmd)
                 resultsTmp = dbCursorIn.fetchall()
             except:
                 print("Unable to query database file for domain ID: " + str(bsnTmp[0]))
+                sys.exit(1)
+
+            # Sanity checking here.
+            if len(resultsTmp) != 1:
+                print("Unexpected multiple basin entries for ID: " + str(bsnTmp[0]) +
+                      " in external database file")
+                sys.exit(1)
+            if len(resultsTmp[0]) != 45:
+                print("Unexpected basin information for ID: " + str(bsnTmp[0]) +
+                      " in external database file")
+                sys.exit(1)
+
+            # Insert this information into the external database.
+            cmd = "INSERT INTO \"Domain_Meta\" (domainID,gage_id,link_id,domain_path,gage_agency,geo_e," + \
+                  "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
+                  "soil_file,fulldom_file,rtlink_file,spweight_file," + \
+                  "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
+                  "area_sqmi,area_sqkm,county_cd,state,huc2,huc4,huc6,huc8,ecol3,ecol4,rfc," + \
+                  "dx_hydro,agg_factor,hydro_tbl_spatial,opt_spin_land_path," + \
+                  "opt_spin_hydro_path,chan_parm_path) VALUES " + \
+                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
+                  "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
+                  "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
+                  "'%s','%s','%s','%s');" % (bsnIdUnique,resultsTmp[0][1],resultsTmp[0][2],resultsTmp[0][3],
+                                             resultsTmp[0][4],resultsTmp[0][5],resultsTmp[0][6],resultsTmp[0][7],
+                                             resultsTmp[0][8],resultsTmp[0][9],resultsTmp[0][10],resultsTmp[0][11],
+                                             resultsTmp[0][12],resultsTmp[0][13],resultsTmp[0][14],resultsTmp[0][15],
+                                             resultsTmp[0][16],resultsTmp[0][17],resultsTmp[0][18],resultsTmp[0][19],
+                                             resultsTmp[0][20],resultsTmp[0][21],resultsTmp[0][22],resultsTmp[0][23],
+                                             resultsTmp[0][24],resultsTmp[0][25],resultsTmp[0][26],resultsTmp[0][27],
+                                             resultsTmp[0][28],resultsTmp[0][29],resultsTmp[0][30],resultsTmp[0][31],
+                                             resultsTmp[0][32],resultsTmp[0][33],resultsTmp[0][34],resultsTmp[0][35],
+                                             resultsTmp[0][36],resultsTmp[0][37],resultsTmp[0][38],resultsTmp[0][39],
+                                             resultsTmp[0][40],resultsTmp[0][41],resultsTmp[0][42],resultsTmp[0][43],
+                                             resultsTmp[0][44])
+            try:
+                dbCursorExt.execute(cmd)
+                connExt.commit()
+            except:
+                print("Unable to enter in domain information for basin ID: " + str(bsnTmp[0]) +
+                      " from external database.")
                 sys.exit(1)
 
     # Loop through each of the calibration experiments listed in the sqlite file.
