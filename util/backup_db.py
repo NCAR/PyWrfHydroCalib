@@ -245,8 +245,8 @@ def main(argv):
                 bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Sens_Params\" where \"jobID\"=" + str(entryTmp[0]) + " and \"domainID\"=" + \
-                      str(bsnIdUnique) + " and iteration=" + str(entryTmp[2]) + " and paramName='" + str(entryTmp[3]) + \
-                      "' and paramValue=" + str(entryTmp[4])
+                      str(bsnIdUnique) + " and iteration=" + str(entryTmp[2]) + " and \"paramName\"='" + str(entryTmp[3]) + \
+                      "' and \"paramValue\"=" + str(entryTmp[4])
                 try:
                     dbCursorExt.execute(cmd)
                     updatesTmp = dbCursorExt.fetchone()
@@ -310,8 +310,8 @@ def main(argv):
                 bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Calib_Params\" where \"jobID\"=" + str(entryTmp[0]) + " and \"domainID\"=" + \
-                      str(bsnIdUnique) + " and iteration=" + str(entryTmp[2]) + " and paramName='" + str(entryTmp[3]) + \
-                      "' and paramValue=" + str(entryTmp[4])
+                      str(bsnIdUnique) + " and iteration=" + str(entryTmp[2]) + " and \"paramName\"='" + str(entryTmp[3]) + \
+                      "' and \"paramValue\"=" + str(entryTmp[4])
                 try:
                     dbCursorExt.execute(cmd)
                     updatesTmp = dbCursorExt.fetchone()
