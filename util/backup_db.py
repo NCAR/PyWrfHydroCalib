@@ -179,7 +179,7 @@ def main(argv):
 
         if resultsTmp == None:
             # We haven't entered in job meta information.
-            cmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(expTmp) + "';"
+            cmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(expTmp[0]) + "';"
             try:
                 dbCursorIn.execute(cmd)
                 resultsTmp = dbCursorIn.fetchone()
