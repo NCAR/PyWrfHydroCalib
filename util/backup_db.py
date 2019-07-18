@@ -271,7 +271,7 @@ def main(argv):
                     cmd = "update \"Sens_Params\" set \"jobID\"='" + entryTmp[0] + "', \"domainID\"='" + \
                           str(bsnIdUnique) + "', iteration='" + entryTmp[2] + "', \"paramName\"='" + str(entryTmp[3]) + \
                           "', \"paramValue\"='" + str(entryTmp[4]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
-                          "', and \"domainID\"='" + str(bsnIdUnique) + "', and iteration='" + str(updatesTmp[2]) + \
+                          "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + \
                           "' and \"paramName\"='" + str(updatesTmp[3]) + "' and \"paramValue\"='" + str(updatesTmp[4]) + "';"
                     try:
                         dbCursorExt.execute(cmd)
@@ -336,7 +336,7 @@ def main(argv):
                     cmd = "update \"Calib_Params\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
                           str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"paramName\"='" + str(entryTmp[3]) + \
                           "', \"paramValue\"='" + str(entryTmp[4]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
-                          "', and \"domainID\"='" + str(bsnIdUnique) + "', and iteration='" + str(updatesTmp[2]) + \
+                          "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + \
                           "' and \"paramName\"='" + str(updatesTmp[3]) + "' and \"paramValue\"='" + str(updatesTmp[4]) + "';"
                     try:
                         dbCursorExt.execute(cmd)
