@@ -193,7 +193,7 @@ def main(argv):
                 sys.exit(1)
 
             # Sanity checking here.
-            if len(resultsTmp[0]) != 40:
+            if len(resultsTmp) != 40:
                 print("Unexpected job information for ID: " + str(expTmp[0]) +
                       " in external database file")
                 sys.exit(1)
