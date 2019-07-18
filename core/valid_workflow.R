@@ -51,10 +51,10 @@ if (ncores>1) {
 }
 
 # Date bounds
-#minDate <- min(startCalibDate, startValidDate)
-#maxDate <- max(endCalibDate, endValidDate)
-minDate <- startValidDate
-maxDate <- endValidDate
+minDate <- min(startCalibDate, startValidDate)
+maxDate <- max(endCalibDate, endValidDate)
+#minDate <- startValidDate # this was used for the hyper res calibration 
+#maxDate <- endValidDate # this was used for the hyper res calibration
 
 # Read files
 write(paste0("Reading control run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
@@ -147,12 +147,12 @@ if (nrow(chrt.valid.obj) < 1) {
 
 # Setup for stats loop
 runList <- list(df=c("chrt.cont.obj", "chrt.valid.obj"), run=c("default", "calibrated"))
-#dtList <- list(start=c(startCalibDate, startValidDate, minDate), 
-#               end=c(endCalibDate, endValidDate, maxDate),
-#               period=c("calib", "valid", "full"))
-dtList <- list(start=c(startValidDate),
-               end=c(endValidDate),
-               period=c("valid"))
+dtList <- list(start=c(startCalibDate, startValidDate, minDate), 
+               end=c(endCalibDate, endValidDate, maxDate),
+               period=c("calib", "valid", "full"))
+#dtList <- list(start=c(startValidDate), # this was used for the hyper res 
+#               end=c(endValidDate),
+#               period=c("valid"))
 
 # Initialize stats table
 validStats <- as.data.frame(matrix(, nrow=1, ncol=length(metrics)+3))
@@ -175,10 +175,10 @@ for (i in 1:length(runList[[1]])) {
       statCor <- cor(chrt.obj$q_cms, chrt.obj$obs)
       statRmse <- Rmse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
       statBias <- PBias(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-      statNse <- Nse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-      statNseLog <- NseLog(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statNse <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")
+      statNseLog <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")
       statNseWt <- NseWt(chrt.obj$q_cms, chrt.obj$obs)
-      statKge <- Kge(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+      statKge <- hydroGOF::KGE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, method="2012", out.type="single")
       statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs)
       statHyperResMultiObj <- hyperResMultiObj(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
 
@@ -219,30 +219,30 @@ ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_hydrogr_log.png"),
 
 # Scatterplots
 maxval <- max(max(chrt.cont.obj$q_cms, na.rm=TRUE), max(chrt.valid.obj$q_cms, na.rm=TRUE), max(chrt.cont.obj$obs, na.rm=TRUE))
-#gg1 <- ggplot() +
-#              geom_point(data=chrt.cont.obj, aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
-#              geom_point(data=chrt.valid.obj, aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
-#              scale_shape_discrete(solid=FALSE) +
-#              geom_abline(intercept=0, slope=1, col='black', lty=1) +
-#              ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId)) +
-#              scale_color_manual(name="", values=c('dodgerblue', 'orange'),
-#                                limits=c('default','calibrated'),
-#                                label=c('default', 'calibrated')) +
-#              labs(x="", y="modeled streamflow (m3/s)") +
-#              theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
-#              xlim(0,maxval) + ylim(0,maxval)
-#gg2 <- ggplot() + 
-#              geom_point(data=chrt.cont.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
-#              geom_point(data=chrt.valid.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
-#              scale_shape_discrete(solid=FALSE) +
-#              geom_abline(intercept=0, slope=1, col='black', lty=1) +
-#              ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId)) +
-#              scale_color_manual(name="", values=c('dodgerblue', 'orange'),
-#                                limits=c('default','calibrated'),
-#                                label=c('default', 'calibrated')) +
-#              labs(x="observed streamflow (m3/s)", y="") +
-#              theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
-#              xlim(0,maxval) + ylim(0,maxval) 
+gg1 <- ggplot() +
+              geom_point(data=chrt.cont.obj, aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
+              geom_point(data=chrt.valid.obj, aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
+              scale_shape_discrete(solid=FALSE) +
+              geom_abline(intercept=0, slope=1, col='black', lty=1) +
+              ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId)) +
+              scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                                limits=c('default','calibrated'),
+                                label=c('default', 'calibrated')) +
+              labs(x="", y="modeled streamflow (m3/s)") +
+              theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
+              xlim(0,maxval) + ylim(0,maxval)
+gg2 <- ggplot() + 
+              geom_point(data=chrt.cont.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
+              geom_point(data=chrt.valid.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
+              scale_shape_discrete(solid=FALSE) +
+              geom_abline(intercept=0, slope=1, col='black', lty=1) +
+              ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId)) +
+              scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                                limits=c('default','calibrated'),
+                                label=c('default', 'calibrated')) +
+              labs(x="observed streamflow (m3/s)", y="") +
+              theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
+              xlim(0,maxval) + ylim(0,maxval) 
 
 gg3 <- ggplot() + 
               geom_point(data=chrt.cont.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
@@ -257,8 +257,8 @@ gg3 <- ggplot() +
               theme_bw() + theme(axis.text=element_text(size=20)) +
               theme(legend.position = c(0.2, 0.9),  legend.background = element_rect(colour = NA, fill = NA), legend.key.size = unit(1.25, "cm"),  legend.key = element_rect(colour = NA, fill = NA), legend.text = element_text(size=18)) +
               xlim(0,maxval) + ylim(0,maxval)
-#gg.all <- grid.arrange(gg1, gg2, gg3, ncol=3)
-gg.all <- grid.arrange(gg3,ncol=1)
+gg.all <- grid.arrange(gg1, gg2, gg3, ncol=3)
+# gg.all <- grid.arrange(gg3,ncol=1) For the hyper res calirbation the gg1 and gg2 were commented out
 
 ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_scatter.png"),
               plot=gg.all, units="in", width=16, height=8, dpi=300)
@@ -266,8 +266,8 @@ ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_scatter.png"),
 
 # Stats Barplots
 results.plot <- melt(validStats[,c("run", "period", "obj", metrics)], id=c("period", "run"))
-#results.plot$period <- factor(results.plot$period, levels=c("calib", "valid", "full"))
-results.plot$period <- factor(results.plot$period, levels=c("valid"))
+results.plot$period <- factor(results.plot$period, levels=c("calib", "valid", "full"))
+#results.plot$period <- factor(results.plot$period, levels=c("valid")) # The above line was commented out for the hyper res calibration and this one was used 
 results.plot$run <- factor(results.plot$run, levels=c("default", "calibrated"))
 results.plot <- results.plot[order(results.plot$variable, results.plot$period, results.plot$run),]
 results.plot$value <- as.numeric(results.plot$value)
