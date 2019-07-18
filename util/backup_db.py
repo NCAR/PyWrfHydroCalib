@@ -320,7 +320,7 @@ def main(argv):
                     sys.exit(1)
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
-                    print("Unable to run query on Sens_Params external.....")
+                    print("Unable to run query on Calib_Params external.....")
                     cmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " \
                           "values ('%s','%s','%s','%s','%s'); " % (str(updatesTmp[0]),str(bsnIdUnique),str(updatesTmp[2]),
                                                                    str(updatesTmp[3]),str(updatesTmp[4]))
