@@ -199,12 +199,15 @@ def main(argv):
 
             # Insert this information into the external Job_Meta table.
             cmd = "insert into \"Job_Meta\" (\"jobID\",\"Job_Directory\",date_su_start,date_su_end," + \
-                  "su_complete,date_calib_start,date_calib_end,date_calib_start_eval,num_iter," + \
-                  "iter_complete,calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
-                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,\"num_cores_R\",\"num_nodes_R\"," + \
-                  "sql_host,job_run_type,exe,num_gages,owner,email," + \
-                  "slack_channel,slack_token,slack_user,analysis_run_type,que_name_analysis) values " + \
-                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
+                  "su_complete,sens_flag,sens_table,num_sens_sample,num_sens_iter,sens_batch,date_sens_start," \
+                  "date_sens_end,date_sens_start_eval,sens_complete,calib_flag,calib_table,date_calib_start," \
+                  "date_calib_end,date_calib_start_eval,num_iter," + \
+                  "calib_complete,valid_start_date,valid_end_date,valid_start_date_eval," + \
+                  "valid_complete,acct_key,que_name,num_cores_model,num_nodes_model,num_cores_per_node," + \
+                  "job_run_type,exe,num_gages,owner,email," + \
+                  "slack_channel,slack_token,slack_user,mpi_cmd,cpu_pin_cmd) values " + \
+                  "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
+                  "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'"\
                   "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
                   "'%s');" % (expTmp[0],resultsTmp[0][1],resultsTmp[0][2],resultsTmp[0][3],resultsTmp[0][4],
                               resultsTmp[0][5],resultsTmp[0][6],resultsTmp[0][7],resultsTmp[0][8],
@@ -212,7 +215,9 @@ def main(argv):
                               resultsTmp[0][13],resultsTmp[0][14],resultsTmp[0][15],resultsTmp[0][16],
                               resultsTmp[0][17],resultsTmp[0][18],resultsTmp[0][19],resultsTmp[0][20],resultsTmp[0][21],
                               resultsTmp[0][22],resultsTmp[0][23],resultsTmp[0][24],resultsTmp[0][25],resultsTmp[0][26],
-                              resultsTmp[0][27],resultsTmp[0][28],resultsTmp[0][29],resultsTmp[0][30])
+                              resultsTmp[0][27],resultsTmp[0][28],resultsTmp[0][29],resultsTmp[0][30],resultsTmp[0][31],
+                              resultsTmp[0][32],resultsTmp[0][33],resultsTmp[0][34],resultsTmp[0][35],resultsTmp[0][36],
+                              resultsTmp[0][37],resultsTmp[0][38],resultsTmp[0][39])
 
             try:
                 dbCursorExt.execute(cmd)
