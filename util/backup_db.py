@@ -231,7 +231,7 @@ def main(argv):
 
         # Now, either enter information for calibration/sensitivity/validation into the various tables holding
         # the data. If the entry has already been created, update it. Otherwise, create a new entry.
-        print("Extrating Sens_Params from sqlite file.")
+        print("Extracting Sens_Params from sqlite file.")
         cmd = "select * from \"Sens_Params\" where \"jobID\"='" + str(expTmp[0]) + "';"
         try:
             dbCursorIn.execute(cmd)
@@ -257,8 +257,8 @@ def main(argv):
                     print("Inserting data into the postgres database...")
                     # This is a new entry, we need run an INSERT.
                     cmd = "insert into \"Sens_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " \
-                          "values ('%s','%s','%s','%s','%s'); " % (str(updatesTmp[0]),str(bsnIdUnique),str(updatesTmp[2]),
-                                                                   str(updatesTmp[3]),str(updatesTmp[4]))
+                          "values ('%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),str(entryTmp[2]),
+                                                                   str(entryTmp[3]),str(entryTmp[4]))
                     try:
                         dbCursorExt.execute(cmd)
                         connExt.commit()
@@ -268,9 +268,9 @@ def main(argv):
                 else:
                     print("Updating entry on postgres database entry....")
                     # We are running an UPDATE on an existing entry.
-                    cmd = "update \"Sens_Params\" set \"jobID\"='" + updatesTmp[0] + "', \"domainID\"='" + \
-                          str(bsnIdUnique) + "', iteration='" + updatesTmp[2] + "', \"paramName\"='" + str(updatesTmp[3]) + \
-                          "', \"paramValue\"='" + str(updatesTmp[4]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
+                    cmd = "update \"Sens_Params\" set \"jobID\"='" + entryTmp[0] + "', \"domainID\"='" + \
+                          str(bsnIdUnique) + "', iteration='" + entryTmp[2] + "', \"paramName\"='" + str(entryTmp[3]) + \
+                          "', \"paramValue\"='" + str(entryTmp[4]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "', and \"domainID\"='" + str(bsnIdUnique) + "', and iteration='" + str(updatesTmp[2]) + \
                           "' and \"paramName\"='" + str(updatesTmp[3]) + "' and \"paramValue\"='" + str(updatesTmp[4]) + "';"
                     try:
@@ -320,10 +320,10 @@ def main(argv):
                     sys.exit(1)
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
-                    print("Unable to run query on Calib_Params external.....")
+                    print("Inserting data into the postgres database...")
                     cmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " \
-                          "values ('%s','%s','%s','%s','%s'); " % (str(updatesTmp[0]),str(bsnIdUnique),str(updatesTmp[2]),
-                                                                   str(updatesTmp[3]),str(updatesTmp[4]))
+                          "values ('%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),str(entryTmp[2]),
+                                                                   str(entryTmp[3]),str(entryTmp[4]))
                     try:
                         dbCursorExt.execute(cmd)
                         connExt.commit()
@@ -333,9 +333,9 @@ def main(argv):
                 else:
                     print("Updating entry on postgres database entry....")
                     # We are running an UPDATE on an existing entry.
-                    cmd = "update \"Calib_Params\" set \"jobID\"='" + str(updatesTmp[0]) + "', \"domainID\"='" + \
-                          str(bsnIdUnique) + "', iteration='" + str(updatesTmp[2]) + "', \"paramName\"='" + str(updatesTmp[3]) + \
-                          "', \"paramValue\"='" + str(updatesTmp[4]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
+                    cmd = "update \"Calib_Params\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
+                          str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"paramName\"='" + str(entryTmp[3]) + \
+                          "', \"paramValue\"='" + str(entryTmp[4]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "', and \"domainID\"='" + str(bsnIdUnique) + "', and iteration='" + str(updatesTmp[2]) + \
                           "' and \"paramName\"='" + str(updatesTmp[3]) + "' and \"paramValue\"='" + str(updatesTmp[4]) + "';"
                     try:
