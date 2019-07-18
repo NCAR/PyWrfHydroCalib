@@ -9,7 +9,7 @@ library(data.table)
 library(ggplot2)
 library(ncdf4)
 library(plyr)
-
+library(hydroGOF)
 #########################################################
 # SETUP
 #########################################################
@@ -213,10 +213,10 @@ if (cyclecount > 0) {
    statCor <- cor(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
    statRmse <- Rmse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
    statBias <- PBias(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-   statNse <- Nse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-   statNseLog <- NseLog(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   statNse <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")
+   statNseLog <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")
    statNseWt <- NseWt(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
-   statKge <- Kge(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
+   statKge <- hydroGOF::KGE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, method="2012", out.type="single")
    statHyperResMultiObj <- hyperResMultiObj(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
    if (calcDailyStats) {
       statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,10,30))

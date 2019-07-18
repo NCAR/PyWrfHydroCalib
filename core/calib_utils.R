@@ -181,15 +181,18 @@ NseLog <- function (m, o, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) {
 # Weighted NSE LogNSE
 NseWt <- function (m, o, w=0.5, p=1) { 
     # NSE
-    err1 <- sum((m - o)^2, na.rm=T)
-    err2 <- sum((o - mean(o, na.rm=T))^2, na.rm=T)
-    nse <- 1 - (err1/err2)
+#    err1 <- sum((m - o)^2, na.rm=T)
+#    err2 <- sum((o - mean(o, na.rm=T))^2, na.rm=T)
+#    nse <- 1 - (err1/err2)
     # Ln NSE
-    lnm <- log(m + 1e-04)
-    lno <- log(o + 1e-04)
-    err1 <- sum((lnm - lno)^2, na.rm=T)
-    err2 <- sum((lno - mean(lno, na.rm=T))^2, na.rm=T)
-    lnnse <- 1 - (err1/err2)
+#    lnm <- log(m + 1e-04)
+#    lno <- log(o + 1e-04)
+#    err1 <- sum((lnm - lno)^2, na.rm=T)
+#    err2 <- sum((lno - mean(lno, na.rm=T))^2, na.rm=T)
+#    lnnse <- 1 - (err1/err2)
+ 
+    nse   <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")
+    lnnse <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")   
     # Weighted mean
     res <- ((w^p) * (nse^p) + (w^p) * (lnnse^p))^(1/p)
 }
