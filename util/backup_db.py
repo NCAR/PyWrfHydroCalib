@@ -231,6 +231,58 @@ def main(argv):
 
         # Now, either enter information for calibration/sensitivity/validation into the various tables holding
         # the data. If the entry has already been created, update it. Otherwise, create a new entry.
+        print("Extracting Job_Params information from the sqlite file.")
+        cmd = "select * from \"Job_Params\" where \"jobID\"='" + str(expTmp[0]) + "';"
+        try:
+            dbCursorIn.execute(cmd)
+            resultsTmp = dbCursorIn.fetchall()
+        except:
+            print("Unable to query Job_Params for job ID: " + expTmp + " from sqlite file.")
+            sys.exit(1)
+        if len(resultsTmp) != 0:
+            print("Updating or Inserting Job_Params in postgres DB....")
+            # We have data to either enter into the postgres DB, or need to update.
+            for entryTmp in resultsTmp:
+                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First check to see if we need to run an INSERT or an UPDATE.
+                cmd = "select * from \"Job_Params\" where \"jobID\"='" + str(entryTmp[0]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    updatesTmp = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Job_Params external.....")
+                    sys.exit(1)
+                if updatesTmp == None:
+                    # This is a new entry, we need run an INSERT.
+                    cmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max,sens_flag,calib_flag " \
+                          "values ('%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]), str(entryTmp[1]),
+                                                                             str(entryTmp[2]), str(entryTmp[3]),
+                                                                             str(entryTmp[4]), str(entryTmp[5]),
+                                                                             str(entryTmp[6]))
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to insert data into external Job_Params table.")
+                        sys.exit(1)
+                else:
+                    # We are running an UPDATE on an existing entry.
+                    cmd = "update \"Job_Params\" set \"jobID\"='" + str(entryTmp[0]) + "', param='" + \
+                          str(entryTmp[1]) + "', \"defaultValue\"='" + str(entryTmp[2]) + "', min='" + str(entryTmp[3]) + \
+                          "', max='" + str(entryTmp[4]) + "', sens_flag='" + str(entryTmp[5]) + "', calib_flag='" + \
+                          str(entryTmp[6]) + "' where \"jobID\"='" + str(updatesTmp[0]) + "';"
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to update entry in external Job_Params table.")
+                        sys.exit(1)
+        else:
+            print("We have no information to update or enter for Job_Params.")
+
+
+
+
         print("Extracting Sens_Params from sqlite file.")
         cmd = "select * from \"Sens_Params\" where \"jobID\"='" + str(expTmp[0]) + "';"
         try:
@@ -341,10 +393,6 @@ def main(argv):
                         sys.exit(1)
         else:
             print("We have no information to update or enter for Sens_Stats.")
-
-
-
-
 
         print("Extracting Calib_Params information from the sqlite file.")
         cmd = "select * from \"Calib_Params\" where \"jobID\"='" + str(expTmp[0]) + "';"
