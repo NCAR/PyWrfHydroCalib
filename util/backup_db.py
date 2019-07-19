@@ -510,7 +510,9 @@ def main(argv):
                           "', bias='" + str(entryTmp[5]) + "', rmse='" + str(entryTmp[6]) + "', cor='" + str(entryTmp[7]) + \
                           "', nse='" + entryTmp[8] + "', nselog='" + str(entryTmp[9]) + "', \"nseWt\"='" + str(entryTmp[10]) + \
                           "', kge='" + str(entryTmp[11]) + "', msof='" + str(entryTmp[12]) + "', \"hyperResMultiObj\"='" + \
-                          str(entryTmp[13]) + "';"
+                          str(entryTmp[13]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
+                          "' and \"domainID\"='" + str(bsnIdUnique) + "' and simulation='" + str(updatesTmp[2]) + \
+                          "' and \"evalPeriod\"='" + str(updatesTmp[3]) + "';"
                     try:
                         dbCursorExt.execute(cmd)
                         connExt.commit()
