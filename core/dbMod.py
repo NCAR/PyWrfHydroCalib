@@ -81,8 +81,12 @@ class Database(object):
         want to add more constraints in the future.
         """
         # Pause while backup process completes.
-        while os.path.isfile(self.lockPath):
-            time.sleep(1)
+        if self.lockPath == None:
+            # The experiment hasn't been initialized yet. We are assuming jobInit is being ran here.
+            break
+        else:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
 
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
