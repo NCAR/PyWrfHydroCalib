@@ -487,7 +487,7 @@ def main(argv):
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
                     cmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\",\"objfnVal\"," \
-                          "bias,rmse,cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\") " \
+                          "bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\") " \
                           "values ('%s','%s','%s','%s','%s'," \
                           "'%s','%s','%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),
                                                                                str(entryTmp[2]),str(entryTmp[3]),
@@ -508,8 +508,8 @@ def main(argv):
                           str(bsnIdUnique) + "', simulation='" + str(entryTmp[2]) + "', \"evalPeriod\"='" + str(entryTmp[3]) \
                           + "', \"objfnVal\"='" + str(entryTmp[4]) + \
                           "', bias='" + str(entryTmp[5]) + "', rmse='" + str(entryTmp[6]) + "', cor='" + str(entryTmp[7]) + \
-                          "', nse='" + entryTmp[8] + "', nselog='" + str(entryTmp[9]) + "', kge='" + str(entryTmp[10]) + \
-                          "', fdcerr='" + str(entryTmp[11]) + "', msof='" + str(entryTmp[12]) + "', \"hyperResMultiObj\"='" + \
+                          "', nse='" + entryTmp[8] + "', nselog='" + str(entryTmp[9]) + "', \"nseWt\"='" + str(entryTmp[10]) + \
+                          "', kge='" + str(entryTmp[11]) + "', msof='" + str(entryTmp[12]) + "', \"hyperResMultiObj\"='" + \
                           str(entryTmp[13]) + "';"
                     try:
                         dbCursorExt.execute(cmd)
