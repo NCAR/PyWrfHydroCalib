@@ -243,7 +243,6 @@ def main(argv):
             print("Updating or Inserting Job_Params in postgres DB....")
             # We have data to either enter into the postgres DB, or need to update.
             for entryTmp in resultsTmp:
-                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Job_Params\" where \"jobID\"='" + str(entryTmp[0]) + "';"
                 try:
