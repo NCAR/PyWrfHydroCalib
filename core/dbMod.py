@@ -81,10 +81,7 @@ class Database(object):
         want to add more constraints in the future.
         """
         # Pause while backup process completes.
-        if self.lockPath == None:
-            # The experiment hasn't been initialized yet. We are assuming jobInit is being ran here.
-            break
-        else:
+        if self.lockPath != None:
             while os.path.isfile(self.lockPath):
                 time.sleep(1)
 
