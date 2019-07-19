@@ -327,9 +327,9 @@ def main(argv):
                     # We are running an UPDATE on an existing entry.
                     cmd = "update \"Sens_Stats\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
                           str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"objfnVal\"='" + str(entryTmp[3]) + \
-                          "', bias='" + str(entryTmp[4]) + ", rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
+                          "', bias='" + str(entryTmp[4]) + "', rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
                           "', nse='" + str(entryTmp[7]) + "', nselog='" + str(entryTmp[8]) + "', kge='" + str(entryTmp[9]) + \
-                          ", fdcerr='" + str(entryTmp[10]) + "', msof='" + entryTmp[11] + "', \"hyperResMultiObj\"='" + \
+                          "', fdcerr='" + str(entryTmp[10]) + "', msof='" + entryTmp[11] + "', \"hyperResMultiObj\"='" + \
                           str(entryTmp[12]) + "', timestep='" + str(entryTmp[13]) + "', complete='" + str(entryTmp[14]) + \
                           "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + "';"
@@ -443,9 +443,9 @@ def main(argv):
                     # We are running an UPDATE on an existing entry.
                     cmd = "update \"Calib_Stats\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
                           str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"objfnVal\"='" + str(entryTmp[3]) + \
-                          "', bias='" + str(entryTmp[4]) + ", rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
+                          "', bias='" + str(entryTmp[4]) + "', rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
                           "', nse='" + str(entryTmp[7]) + "', nselog='" + str(entryTmp[8]) + "', kge='" + str(entryTmp[9]) + \
-                          ", fdcerr='" + str(entryTmp[10]) + "', msof='" + str(entryTmp[11]) + "', \"hyperResMultiObj\"='" + \
+                          "', fdcerr='" + str(entryTmp[10]) + "', msof='" + str(entryTmp[11]) + "', \"hyperResMultiObj\"='" + \
                           str(entryTmp[12]) + "', best='" + str(entryTmp[13]) + "', complete='" + str(entryTmp[14]) + \
                           "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + "';"
@@ -506,9 +506,9 @@ def main(argv):
                     cmd = "update \"Valid_Stats\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
                           str(bsnIdUnique) + "', simulation='" + str(entryTmp[2]) + "', \"evalPeriod\"='" + str(entryTmp[3]) \
                           + "', \"objfnVal\"='" + str(entryTmp[4]) + \
-                          "', bias='" + str(entryTmp[5]) + ", rmse='" + str(entryTmp[6]) + "', cor='" + str(entryTmp[7]) + \
+                          "', bias='" + str(entryTmp[5]) + "', rmse='" + str(entryTmp[6]) + "', cor='" + str(entryTmp[7]) + \
                           "', nse='" + entryTmp[8] + "', nselog='" + str(entryTmp[9]) + "', kge='" + str(entryTmp[10]) + \
-                          ", fdcerr='" + str(entryTmp[11]) + "', msof='" + str(entryTmp[12]) + "', \"hyperResMultiObj\"='" + \
+                          "', fdcerr='" + str(entryTmp[11]) + "', msof='" + str(entryTmp[12]) + "', \"hyperResMultiObj\"='" + \
                           str(entryTmp[13]) + "';"
                     try:
                         dbCursorExt.execute(cmd)
