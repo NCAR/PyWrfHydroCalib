@@ -325,12 +325,12 @@ def main(argv):
                         sys.exit(1)
                 else:
                     # We are running an UPDATE on an existing entry.
-                    cmd = "update \"Sens_Stats\" set \"jobID\"='" + entryTmp[0] + "', \"domainID\"='" + \
-                          str(bsnIdUnique) + "', iteration='" + entryTmp[2] + "', \"objfnVal\"='" + str(entryTmp[3]) + \
-                          "', bias='" + str(entryTmp[4]) + ", rmse='" + entryTmp[5] + "', cor='" + entryTmp[6] + \
-                          "', nse='" + entryTmp[7] + "', nselog='" + entryTmp[8] + "', kge='" + entryTmp[9] + \
-                          ", fdcerr='" + entryTmp[10] + "', msof='" + entryTmp[11] + "', \"hyperResMultiObj\"='" + \
-                          entryTmp[12] + "', timestep='" + entryTmp[13] + "', complete='" + entryTmp[14] + \
+                    cmd = "update \"Sens_Stats\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
+                          str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"objfnVal\"='" + str(entryTmp[3]) + \
+                          "', bias='" + str(entryTmp[4]) + ", rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
+                          "', nse='" + str(entryTmp[7]) + "', nselog='" + str(entryTmp[8]) + "', kge='" + str(entryTmp[9]) + \
+                          ", fdcerr='" + str(entryTmp[10]) + "', msof='" + entryTmp[11] + "', \"hyperResMultiObj\"='" + \
+                          str(entryTmp[12]) + "', timestep='" + str(entryTmp[13]) + "', complete='" + str(entryTmp[14]) + \
                           "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + "';"
                     try:
@@ -340,7 +340,7 @@ def main(argv):
                         print("Unable to update entry in external Sens_Stats table.")
                         sys.exit(1)
         else:
-            print("We have no information to update or enter for Sens_Params.")
+            print("We have no information to update or enter for Sens_Stats.")
 
 
 
@@ -394,7 +394,7 @@ def main(argv):
                         print("Unable to update entry in external Calib_Params table.")
                         sys.exit(1)
         else:
-            print("We have no information to update or enter for Sens_Params.")
+            print("We have no information to update or enter for Calib_Params.")
 
 
 
@@ -406,7 +406,57 @@ def main(argv):
         except:
             print("Unable to query Calib_Stats for job ID: " + expTmp + " from sqlite file.")
             sys.exit(1)
-
+        if len(resultsTmp) != 0:
+            # We have data to either enter into the postgres DB, or need to update.
+            print("Updating or Inserting Calib_Stats in postgres DB....")
+            for entryTmp in resultsTmp:
+                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First check to see if we need to run an INSERT or an UPDATE.
+                cmd = "select * from \"Calib_Stats\" where \"jobID\"=" + str(entryTmp[0]) + " and \"domainID\"=" + \
+                      str(bsnIdUnique) + " and iteration=" + str(entryTmp[2]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    updatesTmp = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Calib_Stats external.....")
+                    sys.exit(1)
+                if updatesTmp == None:
+                    # This is a new entry, we need run an INSERT.
+                    cmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias," \
+                          "rmse,cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",best,complete) " \
+                          "values ('%s','%s','%s','%s','%s','%s'," \
+                          "'%s','%s','%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),
+                                                                               str(entryTmp[2]),str(entryTmp[3]),
+                                                                               str(entryTmp[4]),str(entryTmp[5]),
+                                                                               str(entryTmp[6]),str(entryTmp[7]),
+                                                                               str(entryTmp[8]),str(entryTmp[9]),
+                                                                               str(entryTmp[10]),str(entryTmp[11]),
+                                                                               str(entryTmp[12]),str(entryTmp[13]),
+                                                                               str(entryTmp[14]))
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to insert data into external Calib_Stats table.")
+                        sys.exit(1)
+                else:
+                    # We are running an UPDATE on an existing entry.
+                    cmd = "update \"Calib_Stats\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
+                          str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"objfnVal\"='" + str(entryTmp[3]) + \
+                          "', bias='" + str(entryTmp[4]) + ", rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
+                          "', nse='" + str(entryTmp[7]) + "', nselog='" + str(entryTmp[8]) + "', kge='" + str(entryTmp[9]) + \
+                          ", fdcerr='" + str(entryTmp[10]) + "', msof='" + str(entryTmp[11]) + "', \"hyperResMultiObj\"='" + \
+                          str(entryTmp[12]) + "', best='" + str(entryTmp[13]) + "', complete='" + str(entryTmp[14]) + \
+                          "' where \"jobID\"='" + str(updatesTmp[0]) + \
+                          "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + "';"
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to update entry in external Calib_Stats table.")
+                        sys.exit(1)
+        else:
+            print("We have no information to update or enter for Calib_Stats.")
 
 
 
@@ -419,7 +469,55 @@ def main(argv):
         except:
             print("Unable to query Valid_Stats for job ID: " + expTmp + " from sqlite file.")
             sys.exit(1)
-
+        if len(resultsTmp) != 0:
+            # We have data to either enter into the postgres DB, or need to update.
+            print("Updating or Inserting Valid_Stats in postgres DB....")
+            for entryTmp in resultsTmp:
+                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First check to see if we need to run an INSERT or an UPDATE.
+                cmd = "select * from \"Valid_Stats\" where \"jobID\"=" + str(entryTmp[0]) + " and \"domainID\"=" + \
+                      str(bsnIdUnique) + " and iteration=" + str(entryTmp[2]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    updatesTmp = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Valid_Stats external.....")
+                    sys.exit(1)
+                if updatesTmp == None:
+                    # This is a new entry, we need run an INSERT.
+                    cmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\",\"objfnVal\"," \
+                          "bias,rmse,cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\") " \
+                          "values ('%s','%s','%s','%s','%s'," \
+                          "'%s','%s','%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),
+                                                                               str(entryTmp[2]),str(entryTmp[3]),
+                                                                               str(entryTmp[4]),str(entryTmp[5]),
+                                                                               str(entryTmp[6]),str(entryTmp[7]),
+                                                                               str(entryTmp[8]),str(entryTmp[9]),
+                                                                               str(entryTmp[10]),str(entryTmp[11]),
+                                                                               str(entryTmp[12]),str(entryTmp[13]))
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to insert data into external Calib_Stats table.")
+                        sys.exit(1)
+                else:
+                    # We are running an UPDATE on an existing entry.
+                    cmd = "update \"Valid_Stats\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
+                          str(bsnIdUnique) + "', simulation='" + str(entryTmp[2]) + "', \"evalPeriod\"='" + str(entryTmp[3]) \
+                          + "', \"objfnVal\"='" + str(entryTmp[4]) + \
+                          "', bias='" + str(entryTmp[5]) + ", rmse='" + str(entryTmp[6]) + "', cor='" + str(entryTmp[7]) + \
+                          "', nse='" + entryTmp[8] + "', nselog='" + str(entryTmp[9]) + "', kge='" + str(entryTmp[10]) + \
+                          ", fdcerr='" + str(entryTmp[11]) + "', msof='" + str(entryTmp[12]) + "', \"hyperResMultiObj\"='" + \
+                          str(entryTmp[13]) + "';"
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to update entry in external Calib_Stats table.")
+                        sys.exit(1)
+        else:
+            print("We have no information to update or enter for Calib_Stats.")
 
 
 
