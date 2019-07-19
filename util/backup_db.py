@@ -254,7 +254,7 @@ def main(argv):
                     sys.exit(1)
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
-                    cmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max,sens_flag,calib_flag " \
+                    cmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max,sens_flag,calib_flag) " \
                           "values ('%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]), str(entryTmp[1]),
                                                                              str(entryTmp[2]), str(entryTmp[3]),
                                                                              str(entryTmp[4]), str(entryTmp[5]),
