@@ -244,7 +244,8 @@ def main(argv):
             # We have data to either enter into the postgres DB, or need to update.
             for entryTmp in resultsTmp:
                 # First check to see if we need to run an INSERT or an UPDATE.
-                cmd = "select * from \"Job_Params\" where \"jobID\"='" + str(entryTmp[0]) + "';"
+                cmd = "select * from \"Job_Params\" where \"jobID\"='" + str(entryTmp[0]) + "' and param='" + \
+                      str(entryTmp[1]) + "';"
                 try:
                     dbCursorExt.execute(cmd)
                     updatesTmp = dbCursorExt.fetchone()
@@ -269,7 +270,8 @@ def main(argv):
                     cmd = "update \"Job_Params\" set \"jobID\"='" + str(entryTmp[0]) + "', param='" + \
                           str(entryTmp[1]) + "', \"defaultValue\"='" + str(entryTmp[2]) + "', min='" + str(entryTmp[3]) + \
                           "', max='" + str(entryTmp[4]) + "', sens_flag='" + str(entryTmp[5]) + "', calib_flag='" + \
-                          str(entryTmp[6]) + "' where \"jobID\"='" + str(updatesTmp[0]) + "';"
+                          str(entryTmp[6]) + "' where \"jobID\"='" + str(updatesTmp[0]) + "' and param='" + \
+                          str(updatesTmp[1]) + "';"
                     try:
                         dbCursorExt.execute(cmd)
                         connExt.commit()
