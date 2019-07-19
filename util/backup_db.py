@@ -241,6 +241,7 @@ def main(argv):
             sys.exit(1)
         if len(resultsTmp) != 0:
             # We have data to either enter into the postgres DB, or need to update.
+            print("Updating or Inserting Sens_Params in postgres DB....")
             for entryTmp in resultsTmp:
                 bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
                 # First check to see if we need to run an INSERT or an UPDATE.
@@ -254,7 +255,6 @@ def main(argv):
                     print("Unable to run query on Sens_Params external.....")
                     sys.exit(1)
                 if updatesTmp == None:
-                    print("Inserting data into the postgres database...")
                     # This is a new entry, we need run an INSERT.
                     cmd = "insert into \"Sens_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " \
                           "values ('%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),str(entryTmp[2]),
@@ -266,7 +266,6 @@ def main(argv):
                         print("Unable to insert data into external Sens_Params table.")
                         sys.exit(1)
                 else:
-                    print("Updating entry on postgres database entry....")
                     # We are running an UPDATE on an existing entry.
                     cmd = "update \"Sens_Params\" set \"jobID\"='" + entryTmp[0] + "', \"domainID\"='" + \
                           str(bsnIdUnique) + "', iteration='" + entryTmp[2] + "', \"paramName\"='" + str(entryTmp[3]) + \
@@ -291,6 +290,57 @@ def main(argv):
         except:
             print("Unable to query Sens_Stats for job ID: " + expTmp + " from sqlite file.")
             sys.exit(1)
+        if len(resultsTmp) != 0:
+            # We have data to either enter into the postgres DB, or need to update.
+            print("Updating or Inserting Sens_Stats in postgres DB....")
+            for entryTmp in resultsTmp:
+                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First check to see if we need to run an INSERT or an UPDATE.
+                cmd = "select * from \"Sens_Stats\" where \"jobID\"=" + str(entryTmp[0]) + " and \"domainID\"=" + \
+                      str(bsnIdUnique) + " and iteration=" + str(entryTmp[2]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    updatesTmp = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Sens_Stats external.....")
+                    sys.exit(1)
+                if updatesTmp == None:
+                    # This is a new entry, we need run an INSERT.
+                    cmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias," \
+                          "rmse,cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",timestep,complete) " \
+                          "values ('%s','%s','%s','%s','%s','%s'," \
+                          "'%s','%s','%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),
+                                                                               str(entryTmp[2]),str(entryTmp[3]),
+                                                                               str(entryTmp[4]),str(entryTmp[5]),
+                                                                               str(entryTmp[6]),str(entryTmp[7]),
+                                                                               str(entryTmp[8]),str(entryTmp[9]),
+                                                                               str(entryTmp[10]),str(entryTmp[11]),
+                                                                               str(entryTmp[12]),str(entryTmp[13]),
+                                                                               str(entryTmp[14]))
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to insert data into external Sens_Stats table.")
+                        sys.exit(1)
+                else:
+                    # We are running an UPDATE on an existing entry.
+                    cmd = "update \"Sens_Stats\" set \"jobID\"='" + entryTmp[0] + "', \"domainID\"='" + \
+                          str(bsnIdUnique) + "', iteration='" + entryTmp[2] + "', \"objfnVal\"='" + str(entryTmp[3]) + \
+                          "', bias='" + str(entryTmp[4]) + ", rmse='" + entryTmp[5] + "', cor='" + entryTmp[6] + \
+                          "', nse='" + entryTmp[7] + "', nselog='" + entryTmp[8] + "', kge='" + entryTmp[9] + \
+                          ", fdcerr='" + entryTmp[10] + "', msof='" + entryTmp[11] + "', \"hyperResMultiObj\"='" + \
+                          entryTmp[12] + "', timestep='" + entryTmp[13] + "', complete='" + entryTmp[14] + \
+                          "' where \"jobID\"='" + str(updatesTmp[0]) + \
+                          "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + "';"
+                    try:
+                        dbCursorExt.execute(cmd)
+                        connExt.commit()
+                    except:
+                        print("Unable to update entry in external Sens_Stats table.")
+                        sys.exit(1)
+        else:
+            print("We have no information to update or enter for Sens_Params.")
 
 
 
@@ -305,6 +355,7 @@ def main(argv):
             print("Unable to query Calib_Params for job ID: " + expTmp + " from sqlite file.")
             sys.exit(1)
         if len(resultsTmp) != 0:
+            print("Updating or Inserting Calib_Params in postgres DB....")
             # We have data to either enter into the postgres DB, or need to update.
             for entryTmp in resultsTmp:
                 bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
@@ -320,7 +371,6 @@ def main(argv):
                     sys.exit(1)
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
-                    print("Inserting data into the postgres database...")
                     cmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " \
                           "values ('%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),str(entryTmp[2]),
                                                                    str(entryTmp[3]),str(entryTmp[4]))
@@ -331,7 +381,6 @@ def main(argv):
                         print("Unable to insert data into external Calib_Params table.")
                         sys.exit(1)
                 else:
-                    print("Updating entry on postgres database entry....")
                     # We are running an UPDATE on an existing entry.
                     cmd = "update \"Calib_Params\" set \"jobID\"='" + str(entryTmp[0]) + "', \"domainID\"='" + \
                           str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"paramName\"='" + str(entryTmp[3]) + \
