@@ -476,7 +476,7 @@ def main(argv):
                 bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Valid_Stats\" where \"jobID\"='" + str(entryTmp[0]) + "' and \"domainID\"='" + \
-                      str(bsnIdUnique) + "' and simulation='" + str(entryTmp[2]) + "' and evalPeriod='" + \
+                      str(bsnIdUnique) + "' and simulation='" + str(entryTmp[2]) + "' and \"evalPeriod\"='" + \
                       str(entryTmp[3]) + "';"
                 try:
                     dbCursorExt.execute(cmd)
