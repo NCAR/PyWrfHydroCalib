@@ -182,6 +182,12 @@ class statusMeta:
         dCurrent = datetime.datetime.utcnow()
         # First check to see if the backup directory for this particular hour exists.
         backupDir = configMod.outDir + "/DB_BACKUP_" + dCurrent.strftime('%Y%m%d%H')
+        if not os.path.isdir(backupDir):
+            try:
+                os.mkdir(backupDir)
+            except:
+                self.errMsg = "Unable to create database backup directory: " + backupDir
+                raise Exception()
 
         backupFlag = False
 
