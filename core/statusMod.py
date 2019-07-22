@@ -181,7 +181,7 @@ class statusMeta:
         """
         dCurrent = datetime.datetime.utcnow()
         # First check to see if the backup directory for this particular hour exists.
-        backupDir = configMod.outDir + "/DB_BACKUP_" + dCurrent.strftime('%Y%m%d%H')
+        backupDir = configMod.outDir + "/" + configMod.jobName + "/DB_BACKUP_" + dCurrent.strftime('%Y%m%d%H')
         if not os.path.isdir(backupDir):
             try:
                 os.mkdir(backupDir)
