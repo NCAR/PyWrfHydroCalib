@@ -234,7 +234,7 @@ def main(argv):
 
         # Backup our database file, if needed (logic will dictate in function).
         try:
-            jobData.backupDatabase(configMod, db)
+            jobData.backupDatabase(staticData, db)
         except:
             errMod.errOut(jobData)
 
