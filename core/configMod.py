@@ -988,7 +988,7 @@ def checkConfig(parser):
         raise Exception()
         
     check = int(parser.get('hydroPhysics','gwBaseSw'))
-    if check < 0 or check > 1:
+    if check < 0 or check > 3:
         print("ERROR: Invalid groundwater bucket switch passed to program.")
         raise Exception()
     

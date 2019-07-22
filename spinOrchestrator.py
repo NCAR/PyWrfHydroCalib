@@ -205,6 +205,12 @@ def main(argv):
     completeStatus = False
 
     while not completeStatus:
+        # Backup our database file, if needed (logic will dictate in function).
+        try:
+            jobData.backupDatabase(staticData, db)
+        except:
+            errMod.errOut(jobData)
+
         # Loop over each basin group. This program will check to see if a group job is running
         # which is an instance of the spinup.py program looping over basins for a group..
         for basinGroup in range(0,jobData.nGroups):

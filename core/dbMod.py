@@ -11,6 +11,7 @@ import datetime
 import pandas as pd
 import os
 import shutil
+import time
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -79,6 +80,11 @@ class Database(object):
         a top-level directory by the user. This should be unique. May
         want to add more constraints in the future.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -108,6 +114,11 @@ class Database(object):
         Generic function to return unique ID value for a given basin based on
         the name of the gage.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -132,6 +143,11 @@ class Database(object):
         Function to return all domain metadata for this particular workflow, based on
         the SQL command placed into the configuration file. 
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -161,6 +177,11 @@ class Database(object):
         information specific to the job (start/stop dates,iterations,
         job status,etc) will also be entered in.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -241,6 +262,11 @@ class Database(object):
         """
         Function to extract list of gages based on user-provided SQL command.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         listOut = []
         gageNames = []
         gageIDs = []
@@ -273,6 +299,11 @@ class Database(object):
         Generic function to check if gage exists in metadata table.
         This is mostly used to ensure the user specified the correct gage.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -295,6 +326,11 @@ class Database(object):
         Function to query the gages meta table for information specific to
         each GAGES II basin, such as domain files, indices, etc."
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -338,6 +374,11 @@ class Database(object):
         Function to extract job metadata (including status information) for
         a given job ID.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -415,6 +456,11 @@ class Database(object):
         for situations where a different user is re-starting the job and needs
         to take over.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -502,6 +548,11 @@ class Database(object):
         """
         Generic function to update the status of the spinup for a particular job.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -520,6 +571,11 @@ class Database(object):
         """
         Generic function to update the status of the sensitivity for a particular job.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -538,6 +594,11 @@ class Database(object):
         """
         Generic function to update the status of the calibration for a particular job.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -556,6 +617,11 @@ class Database(object):
         """
         Generic function to update the status of the validation for a particular job.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -575,6 +641,11 @@ class Database(object):
         Generic function to enter model parameter values being calibrated/sensitivity analysis, along
         with their default, min, and max values. This is done one time.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -635,6 +706,11 @@ class Database(object):
         sensitivity parameter values (or adjustments) for each basin, 
         for each calibration iteration, for each parameter.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -732,6 +808,11 @@ class Database(object):
         information for each iteration, for each basin, for each job. This information
         will be updated as the calibration workflow progresses.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -773,6 +854,11 @@ class Database(object):
         information for each iteration, for each basin, for each job. This information
         will be updated as the workflow progresses.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -827,6 +913,11 @@ class Database(object):
         """
         Generic function to extract the complete status for a given job/basin. 
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -850,6 +941,11 @@ class Database(object):
         """
         Generic function to extract the complete status for a given job/basin. 
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -874,6 +970,11 @@ class Database(object):
         """
         Generic function to update the status of each basin as things progress.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -897,6 +998,11 @@ class Database(object):
         """
         Generic function to update the status of each basin sensitivity simulation as it progresses.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -921,6 +1027,11 @@ class Database(object):
         Generic function for logging newly created parameter values created
         by R into the database Calib_Params table.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         # Iterations start as 0 in the workflow
         iteration = int(iteration) + 1
         
@@ -962,6 +1073,11 @@ class Database(object):
         Generic function for entering calibration statistics into Calib_Stats to
         keep track of performance statistics for each calibration iteration.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         iteration = int(iteration) + 1
         
         if not self.connected:
@@ -1153,6 +1269,11 @@ class Database(object):
         situation that will be extremely rare. All parameter values and statistics
         will stay at -9999.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -1175,6 +1296,11 @@ class Database(object):
         are available. A parameter table is written to the validation directory,
         which will be used to generate parameter files. 
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -1242,6 +1368,11 @@ class Database(object):
         Generic function to log validation workflow statistics generated from 
         R code. 
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -1293,6 +1424,11 @@ class Database(object):
         Generic function that will check Calib_Params, Calib_Stats, Job_Params, and Valid_Stats,
         Sens_Stats, and Sens_Params.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -1372,6 +1508,11 @@ class Database(object):
         Generic function to cleanup Calib_Params, Calib_Stats, Job_Params, and Valid Stats,
         Sens_Stats, and Sens_Params of an old orphaned job.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -1453,6 +1594,11 @@ class Database(object):
         Function to log sensitivity parameters created during the sensitivity pre-processing
         stage. These values will be logged into the Sens_Params table.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
+
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
@@ -1496,6 +1642,10 @@ class Database(object):
         """
         Function to log sensitivity error statistics into the DB Sens_Stats table.
         """
+        # Pause while backup process completes.
+        if self.lockPath != None:
+            while os.path.isfile(self.lockPath):
+                time.sleep(1)
 
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
