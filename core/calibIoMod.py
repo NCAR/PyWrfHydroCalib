@@ -756,7 +756,7 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "#PBS -o " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
                 str(groupNum) + ".out\n"
             fileObj.write(inStr)
-            inStr = "#PBS -o " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
+            inStr = "#PBS -e " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
                     str(groupNum) + ".err\n"
             fileObj.write(inStr)
             inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(jobData.nCoresPerNode) + \
@@ -766,7 +766,43 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('cd ' + topDir + '\n')
             inStr = "python calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
-            fileObj.close
+            fileObj.close()
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+    if jobData.jobRunType == 3:
+        try:
+            # We are running Slurm
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# Slurm Batch Script to Run WRF-Hydro Group Calibrations\n')
+            fileObj.write('#\n')
+            inStr = "#SBATCH -J WCG_" + str(jobData.jobID) + "_" + str(groupNum) + '\n'
+            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#SBATCH -t 12:00:00\n"
+            fileObj.write(inStr)
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#SBATCH -o " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".out\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -e " + jobData.jobDir + "/WCG_" + str(jobData.jobID) + "_" + \
+                        str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            fileObj.write(inStr)
+            inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            fileObj.write('cd ' + topDir + '\n')
+            inStr = "python calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close()
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
             raise
@@ -782,7 +818,7 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "python calib.py " + str(jobData.jobID) + " " + str(
                 groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
-            fileObj.close
+            fileObj.close()
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
             raise
@@ -822,7 +858,7 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "#PBS -o " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
                 str(groupNum) + ".out\n"
             fileObj.write(inStr)
-            inStr = "#PBS -o " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
+            inStr = "#PBS -e " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
                     str(groupNum) + ".err\n"
             fileObj.write(inStr)
             inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(jobData.nCoresPerNode) + \
@@ -832,7 +868,43 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('cd ' + topDir + '\n')
             inStr = "python spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
-            fileObj.close
+            fileObj.close()
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+    if jobData.jobRunType == 3:
+        try:
+            # We are running Slurm
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# Slurm Batch Script to Run WRF-Hydro Group Spinups\n')
+            fileObj.write('#\n')
+            inStr = "#SBATCH -J WSG_" + str(jobData.jobID) + "_" + str(groupNum) + '\n'
+            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#SBATCH -t 12:00:00\n"
+            fileObj.write(inStr)
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#SBATCH -o " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".out\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -e " + jobData.jobDir + "/WSG_" + str(jobData.jobID) + "_" + \
+                        str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            fileObj.write(inStr)
+            inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            fileObj.write('cd ' + topDir + '\n')
+            inStr = "python spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close()
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
             raise
@@ -848,7 +920,7 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "python spinup.py " + str(jobData.jobID) + " " + str(
                 groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
-            fileObj.close
+            fileObj.close()
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
             raise
@@ -888,7 +960,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "#PBS -o " + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
                 str(groupNum) + ".out\n"
             fileObj.write(inStr)
-            inStr = "#PBS -o " + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
+            inStr = "#PBS -e " + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
                     str(groupNum) + ".err\n"
             fileObj.write(inStr)
             inStr = "#PBS -l select=" + str(jobData.nNodesMod) + ":ncpus=" + str(jobData.nCoresPerNode) + \
@@ -898,7 +970,43 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('cd ' + topDir + '\n')
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
-            fileObj.close
+            fileObj.close()
+        except:
+            jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
+            raise
+    if jobData.jobRunType == 3:
+        try:
+            # We are running Slurm
+            fileObj = open(scriptPath, 'w')
+            fileObj.write('#!/bin/bash\n')
+            fileObj.write('#\n')
+            fileObj.write('# Slurm Batch Script to Run WRF-Hydro Group Validations\n')
+            fileObj.write('#\n')
+            inStr = "#SBATCH -J WVG_" + str(jobData.jobID) + "_" + str(groupNum) + '\n'
+            fileObj.write(inStr)
+            if len(jobData.acctKey.strip()) > 0:
+                inStr = "#SBATCH -A " + str(jobData.acctKey) + '\n'
+                fileObj.write(inStr)
+            inStr = "#SBATCH -t 12:00:00\n"
+            fileObj.write(inStr)
+            if len(jobData.queName.strip()) > 0:
+                inStr = "#SBATCH -p " + str(jobData.queName) + "\n"
+                fileObj.write(inStr)
+            inStr = "#SBATCH -o " + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
+                    str(groupNum) + ".out\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -e " + jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
+                        str(groupNum) + ".err\n"
+            fileObj.write(inStr)
+            inStr = "#SBATCH -N " + str(jobData.nNodesMod) + '\n'
+            fileObj.write(inStr)
+            inStr = "#SBATCH -n " + str(jobData.nCoresMod) + "\n"
+            fileObj.write(inStr)
+            fileObj.write("\n")
+            fileObj.write('cd ' + topDir + '\n')
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            fileObj.write(inStr)
+            fileObj.close()
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
             raise
@@ -914,7 +1022,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(
                 groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
-            fileObj.close
+            fileObj.close()
         except:
             jobData.errMsg = 'ERROR: Failure to create: ' + scriptPath
             raise
