@@ -228,10 +228,6 @@ def main(argv):
     while not completeStatus:
         # Loop over each basin group. This program will check to see if a group job is running
         # which is an instance of the calib.py program looping over basins for a group.
-        # First check to see if we need to backup the database file. We only do this IF:
-        # 1.) The user has specified backing up the database files.
-        # if staticData.dbBackup == 1:
-
         # Backup our database file, if needed (logic will dictate in function).
         try:
             jobData.backupDatabase(staticData, db)
