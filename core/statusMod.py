@@ -179,6 +179,9 @@ class statusMeta:
         :param dbMod:
         :return:
         """
+        if configMod.dbBackup == 0:
+            return
+
         dCurrent = datetime.datetime.utcnow()
         # First check to see if the backup directory for this particular hour exists.
         backupDir = configMod.outDir + "/" + configMod.jobName + "/DB_BACKUP_" + dCurrent.strftime('%Y%m%d%H')
