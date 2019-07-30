@@ -1390,8 +1390,7 @@ class Database(object):
             raise
             
         numStats = len(tblData.run)
-        #if numStats != 6:
-        if numStats != 2:
+        if numStats != 6:
             jobData.errMsg = "ERROR: Unexpected length of validation stats table: " + statsTbl
             raise Exception()
             
