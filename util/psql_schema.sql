@@ -57,6 +57,7 @@ ALTER TABLE "Sens_Stats" OWNER TO "WH_Calib_rw";
 DROP TABLE IF EXISTS "Domain_Meta";
 CREATE TABLE "Domain_Meta" (
    "domainID" SERIAL PRIMARY KEY,
+   "localDomainID" integer DEFAULT NULL,
    "gage_id" character varying(32),
    "link_id" integer DEFAULT NULL,
    "domain_path" character varying(512),
