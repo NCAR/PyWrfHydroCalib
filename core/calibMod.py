@@ -261,6 +261,155 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 keyStatus = 0.75
                 runFlag = False
                 runCalib = True
+
+    # For when the R/Python DDS code failed once.
+    if keyStatus == -0.70 or keyStatus == -0.05:
+        if calibStatus:
+            print("Running calibration code")
+            # Calib code running, upgrade status.
+            if keyStatus == -0.70:
+                keySlot[basinNum, iteration] = 0.90
+                keyStatus = 0.90
+                runFlag = False
+                runCalib = False
+            if keyStatus == -0.05:
+                keySlot[basinNum, iteration] = 0.25
+                keyStatus = 0.25
+                runFlag = False
+                runCalib = False
+        else:
+            if keyStatus == -0.05:
+                # If calibration COMPLETE flag listed, upgrade status to 0.0 with runFlag on, signalling
+                # to proceed with model simulation.
+                if os.path.isfile(calibCompleteFlag):
+                    # Copy parameter files to the DEFAULT directory
+                    try:
+                        calibIoMod.copyDefaultParms(statusData, runDir, gage, staticData)
+                    except:
+                        raise
+                    # Enter in parameters for iteration update.
+                    try:
+                        db.logCalibParams(statusData, int(statusData.jobID), int(gageID), calibTbl, int(iteration))
+                    except:
+                        raise
+                    print("FIRST CALIB/PARAM CODE DONE, READY TO RUN THE MODEL")
+                    keySlot[basinNum, iteration] = 0.0
+                    keyStatus = 0.0
+                    runFlag = True
+                    runCalib = False
+                elif os.path.isfile(missingFlag):
+                    # This is a unique situation where either an improper COMID (linkID) was passed to
+                    # the R program, pulling NA from the model. Or, the observations file contains
+                    # all missing values. For this, convey this to the user through a message, set the
+                    # status for all iterations to 1.
+                    statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                        "observations for the evaluation period."
+                    errMod.sendMsg(statusData)
+                    # Copy parameter files to the DEFAULT directory
+                    try:
+                        calibIoMod.copyDefaultParms(statusData, runDir, gage, staticData)
+                    except:
+                        raise
+                    # set the status for all iterations to 1.
+                    try:
+                        db.fillMisingBasin(statusData, int(statusData.jobID), int(gageID))
+                    except:
+                        raise
+                    # Clean everything up.
+                    try:
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    keySlot[basinNum, :] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                    runCalib = False
+                else:
+                    # This means the calibration code failed TWICE. Lock up and send an error message.
+                    statusData.genMsg = "ERROR: 1st Calibration Scripts failed a second time for gage: " + \
+                                        statusData.gages[basinNum] + \
+                                        " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + \
+                                        calibLockPath
+                    # Scrub calib-related files that were created as everything will need to be re-ran.
+                    try:
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    print("CALIB CODE HAS CRASHED TWICE.")
+                    open(calibLockPath, 'a').close()
+                    errMod.sendMsg(statusData)
+                    keySlot[basinNum, iteration] = -0.1
+                    keyStatus = -0.1
+                    runFlag = False
+                    runCalib = False
+            if keyStatus == -0.70:
+                # If calibration COMPLETE flag listed, upgrade status to 1.0, and make entry into
+                # database as this iteration being completed.
+                # Also scrub calib-related files (minus new parameters).
+                if os.path.isfile(calibCompleteFlag):
+                    try:
+                        # If we are on the last iteration, no new parameters are created.
+                        if int(iteration + 1) < int(statusData.nIter):
+                            # The if statment is to handle the last iteration where no
+                            # new parameters are generated at the end.
+                            try:
+                                db.logCalibParams(statusData, int(statusData.jobID), int(gageID), calibTbl,
+                                                  int(iteration) + 1)
+                            except:
+                                raise
+                        db.logCalibStats(statusData, int(statusData.jobID), int(gageID), str(gage), int(iteration),
+                                         statsTbl, staticData)
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                    except:
+                        raise
+                    print("CALIB/PARAM CODE COMPLETE")
+                    keySlot[basinNum, iteration] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                    runCalib = False
+                elif os.path.isfile(missingFlag):
+                    # This is a unique situation where either an improper COMID (linkID) was passed to
+                    # the R program, pulling NA from the model. Or, the observations file contains
+                    # all missing values. For this, convey this to the user through a message, set the
+                    # status for all iterations to 1.
+                    statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                        "observations for the evaluation period."
+                    errMod.sendMsg(statusData)
+                    # set the status for all iterations to 1. This will force the workflow to skip
+                    # over this basin in the future.
+                    try:
+                        db.fillMisingBasin(statusData, int(statusData.jobID), int(gageID))
+                    except:
+                        raise
+                    # Clean everything up.
+                    try:
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    keySlot[basinNum, :] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                    runCalib = False
+                else:
+                    # This means the calibration code failed TWICE. Lock up and send error message
+                    statusData.genMsg = "ERROR: Calibration Scripts failed a second time for gage: " + \
+                                        statusData.gages[basinNum] + \
+                                        " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + \
+                                        calibLockPath
+                    # Scrub calib-related files that were created as everything will need to be re-ran.
+                    try:
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    open(calibLockPath, 'a').close()
+                    errMod.sendMsg(statusData)
+                    keySlot[basinNum, iteration] = -0.75
+                    keyStatus = -0.75
+                    runFlag = False
+                    runCalib = False
                 
     # For when the model simulation has completed, but the calibration is still 
     # listed as running.
@@ -761,151 +910,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 keyStatus = 0.75
                 runFlag = False
                 runCalib = True
-
-    # For when the R/Python DDS code failed once.
-    if keyStatus == -0.70 or keyStatus == -0.05:
-        if calibStatus:
-            print("Running calibration code")
-            # Calib code running, upgrade status.
-            if keyStatus == -0.70:
-                keySlot[basinNum, iteration] = 0.90
-                keyStatus = 0.90
-                runFlag = False
-                runCalib = False
-            if keyStatus == -0.05:
-                keySlot[basinNum, iteration] = 0.25
-                keyStatus = 0.25
-                runFlag = False
-                runCalib = False
-        else:
-            if keyStatus == -0.05:
-                # If calibration COMPLETE flag listed, upgrade status to 0.0 with runFlag on, signalling
-                # to proceed with model simulation.
-                if os.path.isfile(calibCompleteFlag):
-                    # Copy parameter files to the DEFAULT directory
-                    try:
-                        calibIoMod.copyDefaultParms(statusData, runDir, gage, staticData)
-                    except:
-                        raise
-                    # Enter in parameters for iteration update.
-                    try:
-                        db.logCalibParams(statusData, int(statusData.jobID), int(gageID), calibTbl, int(iteration))
-                    except:
-                        raise
-                    print("FIRST CALIB/PARAM CODE DONE, READY TO RUN THE MODEL")
-                    keySlot[basinNum, iteration] = 0.0
-                    keyStatus = 0.0
-                    runFlag = True
-                    runCalib = False
-                elif os.path.isfile(missingFlag):
-                    # This is a unique situation where either an improper COMID (linkID) was passed to
-                    # the R program, pulling NA from the model. Or, the observations file contains
-                    # all missing values. For this, convey this to the user through a message, set the
-                    # status for all iterations to 1.
-                    statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
-                                        "observations for the evaluation period."
-                    errMod.sendMsg(statusData)
-                    # Copy parameter files to the DEFAULT directory
-                    try:
-                        calibIoMod.copyDefaultParms(statusData, runDir, gage, staticData)
-                    except:
-                        raise
-                    # set the status for all iterations to 1.
-                    try:
-                        db.fillMisingBasin(statusData, int(statusData.jobID), int(gageID))
-                    except:
-                        raise
-                    # Clean everything up.
-                    try:
-                        errMod.cleanCalib(statusData, workDir, runDir)
-                        errMod.scrubParams(statusData, runDir, staticData)
-                    except:
-                        raise
-                    keySlot[basinNum, :] = 1.0
-                    keyStatus = 1.0
-                    runFlag = False
-                    runCalib = False
-                else:
-                    # This means the calibration code failed TWICE. Lock up and send an error message.
-                    statusData.genMsg = "ERROR: 1st Calibration Scripts failed a second time for gage: " + statusData.gages[basinNum] + \
-                                        " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
-                    # Scrub calib-related files that were created as everything will need to be re-ran.
-                    try:
-                        errMod.scrubParams(statusData,runDir,staticData)
-                    except:
-                        raise
-                    print("CALIB CODE HAS CRASHED TWICE.")
-                    open(calibLockPath,'a').close()
-                    errMod.sendMsg(statusData)
-                    keySlot[basinNum,iteration] = -0.1
-                    keyStatus = -0.1
-                    runFlag = False
-                    runCalib = False
-            if keyStatus == -0.70:
-                # If calibration COMPLETE flag listed, upgrade status to 1.0, and make entry into
-                # database as this iteration being completed.
-                # Also scrub calib-related files (minus new parameters).
-                if os.path.isfile(calibCompleteFlag):
-                    try:
-                        # If we are on the last iteration, no new parameters are created.
-                        if int(iteration + 1) < int(statusData.nIter):
-                            # The if statment is to handle the last iteration where no
-                            # new parameters are generated at the end.
-                            try:
-                                db.logCalibParams(statusData, int(statusData.jobID), int(gageID), calibTbl,
-                                                  int(iteration) + 1)
-                            except:
-                                raise
-                        db.logCalibStats(statusData, int(statusData.jobID), int(gageID), str(gage), int(iteration),
-                                         statsTbl, staticData)
-                        errMod.cleanCalib(statusData, workDir, runDir)
-                    except:
-                        raise
-                    print("CALIB/PARAM CODE COMPLETE")
-                    keySlot[basinNum, iteration] = 1.0
-                    keyStatus = 1.0
-                    runFlag = False
-                    runCalib = False
-                elif os.path.isfile(missingFlag):
-                    # This is a unique situation where either an improper COMID (linkID) was passed to
-                    # the R program, pulling NA from the model. Or, the observations file contains
-                    # all missing values. For this, convey this to the user through a message, set the
-                    # status for all iterations to 1.
-                    statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
-                                        "observations for the evaluation period."
-                    errMod.sendMsg(statusData)
-                    # set the status for all iterations to 1. This will force the workflow to skip
-                    # over this basin in the future.
-                    try:
-                        db.fillMisingBasin(statusData, int(statusData.jobID), int(gageID))
-                    except:
-                        raise
-                    # Clean everything up.
-                    try:
-                        errMod.cleanCalib(statusData, workDir, runDir)
-                        errMod.scrubParams(statusData, runDir, staticData)
-                    except:
-                        raise
-                    keySlot[basinNum, :] = 1.0
-                    keyStatus = 1.0
-                    runFlag = False
-                    runCalib = False
-                else:
-                    # This means the calibration code failed TWICE. Lock up and send error message
-                    statusData.genMsg = "ERROR: Calibration Scripts failed a second time for gage: " + statusData.gages[basinNum] + \
-                                        " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + calibLockPath
-                    # Scrub calib-related files that were created as everything will need to be re-ran.
-                    try:
-                        errMod.cleanCalib(statusData,workDir,runDir)
-                        errMod.scrubParams(statusData,runDir,staticData)
-                    except:
-                        raise
-                    open(calibLockPath,'a').close()
-                    errMod.sendMsg(statusData)
-                    keySlot[basinNum,iteration] = -0.75
-                    keyStatus = -0.75
-                    runFlag = False
-                    runCalib = False
                 
     if keyStatus == -0.25:
         # Restarting model from one crash
