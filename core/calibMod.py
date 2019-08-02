@@ -73,118 +73,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     except:
         raise
 
-    #if statusData.jobRunType == 1:
-    #    # Generate BSUB file necessary for running R calibration/analysis
-    #    # code.
-    #    try:
-    #        generateBsubCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 1:
-    #
-    #    # If BSUB run script doesn't exist, create it here.
-    #    bsubFile = runDir + "/run_WH.sh"
-    #    bsubFileRst = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(bsubFile):
-    #        # Going to override for now.
-    #        os.remove(bsubFile)
-    #    if os.path.isfile(bsubFileRst):
-    #        # Going to override for now.
-    #        os.remove(bsubFileRst)
-    #
-    #    # Create new BSUB files
-    #    try:
-    #        generateBsubScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #    try:
-    #        generateRestartBsubScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 2:
-    #    # Generate PBS file necessary to running R calibration/analysis code.
-    #    try:
-    #        generatePbsCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 2:
-    #
-    #    # If PBS run script doesn't exist, create it here.
-    #    pbsFile = runDir + "/run_WH.sh"
-    #    pbsFileRst = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(pbsFile):
-    #        os.remove(pbsFile)
-    #    if os.path.isfile(pbsFileRst):
-    #        os.remove(pbsFileRst)
-    #
-    ##    # Create new PBS files
-    #    try:
-    #        generatePbsScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #
-    #    try:
-    #        generateRestartPbsScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-    #    # Generate Slurm file necessary to run R calibration/analysis code.
-    #    try:
-    #        generateSlurmCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-    #
-    #    # If PBS run script doesn't exist, create it here.
-    #    pbsFile = runDir + "/run_WH.sh"
-    #    pbsFileRst = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(pbsFile):
-    #        os.remove(pbsFile)
-    #    if os.path.isfile(pbsFileRst):
-    #        os.remove(pbsFileRst)
-    #
-    #    # Create new Slurm files
-    #    try:
-    #        generateSlurmScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #
-    #    try:
-    #        generateRestartSlurmScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-    #    # Generate mpiexec/mpirun run script and R submission script for running
-    #    # calibration/analysis code.
-    #    try:
-    #        generateMpiCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-    #    # If run script doesn't exist, create it here.
-    #    runFile = runDir + "/run_WH.sh"
-    #    rstFile = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(runFile):
-    #        os.remove(runFile)
-    #    if os.path.isfile(rstFile):
-    #        os.remove(rstFile)
-    #
-    #    try:
-    #        generateMpiScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #    try:
-    #        generateMpiRstScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    
     # Calculate datetime objects
     begDate = statusData.bCalibDate
     endDate = statusData.eCalibDate
@@ -263,7 +151,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 runCalib = True
 
     # For when the R/Python DDS code failed once.
-    if keyStatus == -0.70 or keyStatus == -0.05:
+    if keyStatus == -0.7 or keyStatus == -0.05:
         if calibStatus:
             print("Running calibration code")
             # Calib code running, upgrade status.
@@ -484,8 +372,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.genMsg = "Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
                 errMod.sendMsg(statusData)
                 print("CALIB CODE HAS CRASHED ONCE.")
-                keySlot[basinNum, iteration] = -0.70
-                keyStatus = -0.70
+                keySlot[basinNum, iteration] = -0.705
+                keyStatus = -0.705
                 runFlag = False
                 runCalib = True
                 #keySlot[basinNum,iteration] = -0.75
@@ -561,8 +449,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 statusData.genMsg = "1st Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
                 errMod.sendMsg(statusData)
                 print("CALIB CODE HAS CRASHED ONCE.")
-                keySlot[basinNum, iteration] = -0.05
-                keyStatus = -0.05
+                keySlot[basinNum, iteration] = -0.0505
+                keyStatus = -0.0505
                 runFlag = False
                 runCalib = True
                 #open(calibLockPath,'a').close()
@@ -973,38 +861,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + runDir + "/run_WH_Restart.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH_Restart.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + runDir + "/run_WH_Restart.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = runDir + "/run_WH_Restart.sh 1>" + runDir + "/WH_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p = subprocess.Popen([cmd],shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
         keySlot[basinNum,iteration] = -0.5
@@ -1069,37 +926,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + runDir + "/run_WH.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + runDir + "/run_WH.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p = subprocess.Popen([cmd],shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         keyStatus = 0.5
         keySlot[basinNum,iteration] = 0.5
         
@@ -1142,42 +969,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p2 = subprocess.Popen([str(cmd)],shell=True)
-        #        time.sleep(5)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         keyStatus = 0.25
         keySlot[basinNum,iteration] = 0.25
 
-    if keyStatus == -0.05 and runCalib:
+    if keyStatus == -0.0505 and runCalib:
         # Situation where the first calibration code failed. We need to restart.
         # First cleanup any old model output or calibration output that
         # is from previous iterations.
@@ -1213,8 +1009,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        keyStatus = 0.25
-        keySlot[basinNum, iteration] = 0.25
+        # Set values to check on next pass-around.
+        keyStatus = -0.05
+        keySlot[basinNum, iteration] = -0.05
 
     if keyStatus == 0.75 and runCalib:
         # Fire off calibration for simulation.
@@ -1244,42 +1041,11 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p3 = subprocess.Popen([cmd],shell=True)
-        #        time.sleep(5)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         keyStatus = 0.90
         keySlot[basinNum,iteration] = 0.90
 
-    if keyStatus == -0.70 and runCalib:
+    if keyStatus == -0.705 and runCalib:
         # Situation where we are restarting the calibration code.
         # First cleanup any old calibration related files. This should have
         # already been done per workflow, but this is a fail safe.
@@ -1306,8 +1072,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        keyStatus = 0.90
-        keySlot[basinNum, iteration] = 0.90
+        # Set values to check on next pass-around.
+        keyStatus = -0.7
+        keySlot[basinNum, iteration] = -0.7
         
     # Update job status in the Database table.
     try:
