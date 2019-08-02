@@ -107,6 +107,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to execute postgres command to inquire job ID."
                     raise
@@ -147,6 +148,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to locate ID for gage: " + str(gageName)
                     raise
@@ -184,6 +186,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to extract Domain metadata for job: " + str(jobData.jobID)
                     raise Exception()
@@ -264,6 +267,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
                     raise
@@ -285,6 +289,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to execute sql command to inquire job ID."
                     raise
@@ -314,6 +319,7 @@ class Database(object):
                     jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                      str(jobData.jobID)
                     errMod.sendMsg(jobData)
+                    time.sleep(5)
                     if attempts == 9:
                         jobData.errMsg = "ERROR: Failure to update jobID in jobMeta"
                         raise
@@ -348,6 +354,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
                     raise
@@ -394,6 +401,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
                     raise
@@ -431,6 +439,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
                     raise
@@ -489,6 +498,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID)
                     raise
@@ -600,6 +610,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to update new owner for: " + str(newOwner)
                     raise
@@ -619,6 +630,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner)
                             raise
@@ -638,6 +650,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner) + " to MISSING"
                             raise
@@ -704,6 +717,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
                     raise
@@ -737,6 +751,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to update sensitivity status for job ID: " + str(jobData.jobID)
                     raise
@@ -770,6 +785,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to update calibration status for job ID: " + str(jobData.jobID)
                     raise
@@ -803,6 +819,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
                     raise
@@ -852,6 +869,7 @@ class Database(object):
                             jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                              str(jobData.jobID)
                             errMod.sendMsg(jobData)
+                            time.sleep(5)
                             if attempts == 9:
                                 jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
                                 raise
@@ -887,6 +905,7 @@ class Database(object):
                             jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                              str(jobData.jobID)
                             errMod.sendMsg(jobData)
+                            time.sleep(5)
                             if attempts == 9:
                                 jobData.errMsg = "ERROR: Unable to enter sensitivity parameter information for parameter: " + paramName
                                 raise
@@ -939,6 +958,10 @@ class Database(object):
                                 results = self.dbCursor.fetchone()
                                 success = True
                             except:
+                                jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
+                                                 str(jobData.jobID)
+                                errMod.sendMsg(jobData)
+                                time.sleep(5)
                                 if attempts == 9:
                                     jobData.errMsg = "ERROR: Unable to extract calibration parameter information for " + \
                                                      "job ID: " + str(jobID) + " gage: " + gageStr + \
@@ -965,6 +988,7 @@ class Database(object):
                                         attempts) + " for JOB: " + \
                                                      str(jobData.jobID)
                                     errMod.sendMsg(jobData)
+                                    time.sleep(5)
                                     if attempts == 9:
                                         jobData.errMsg = "ERROR: Unable to create empty calibration parameter information for " + \
                                                          "job ID: " + str(jobID) + " gage: " + gageStr + \
@@ -1003,6 +1027,7 @@ class Database(object):
                                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                                  str(jobData.jobID)
                                 errMod.sendMsg(jobData)
+                                time.sleep(5)
                                 if attempts == 9:
                                     jobData.errMsg = "ERROR: Unable to extract sensitivity parameter information for " + \
                                                      "job ID: " + str(jobID) + " gage: " + gageStr + \
@@ -1029,6 +1054,7 @@ class Database(object):
                                         attempts) + " for JOB: " + \
                                                      str(jobData.jobID)
                                     errMod.sendMsg(jobData)
+                                    time.sleep(5)
                                     if attempts == 9:
                                         jobData.errMsg = "ERROR: Unable to create empty sensitivity parameter information for " + \
                                                          "job ID: " + str(jobID) + " gage: " + gageStr + \
@@ -1071,6 +1097,7 @@ class Database(object):
                     jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                      str(jobData.jobID)
                     errMod.sendMsg(jobData)
+                    time.sleep(5)
                     if attempts == 9:
                         jobData.errMsg = "ERROR: Unable to extract calib stats for job ID: " + str(jobID) + \
                                          " domainID: " + str(domainID) + " Iteration: " + str(iteration)
@@ -1096,6 +1123,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Unable to create empty table entry into Calib_Stats for " + \
                                              "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
@@ -1139,6 +1167,7 @@ class Database(object):
                     jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                      str(jobData.jobID)
                     errMod.sendMsg(jobData)
+                    time.sleep(5)
                     if attempts == 9:
                         jobData.errMsg = "ERROR: Unable to extract sensitivity stats for job ID: " + str(jobID) + \
                                          " domainID: " + str(domainID) + " Iteration: " + str(iteration)
@@ -1165,6 +1194,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
                                              "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
@@ -1190,6 +1220,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
                                              "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
@@ -1227,6 +1258,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to extract calibration status for job ID: " + str(jobID) + \
                                      " domainID: " + str(domainID)
@@ -1267,6 +1299,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to extract sensitivity status for job ID: " + str(jobID) + \
                                      " domainID: " + str(domainID)
@@ -1307,6 +1340,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
                                      " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
@@ -1345,6 +1379,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Unable to update sensitivity status for job ID: " + str(jobID) + \
                                      " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
@@ -1401,6 +1436,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
                                              " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
@@ -1570,6 +1606,7 @@ class Database(object):
                     jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                      str(jobData.jobID)
                     errMod.sendMsg(jobData)
+                    time.sleep(5)
                     if attempts == 9:
                         jobData.errMsg = "ERROR: Failure to downgrade 'best' status of previous " + \
                                          "calibration iteration for jobID: " + str(jobID) + \
@@ -1595,6 +1632,7 @@ class Database(object):
                     jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                      str(jobData.jobID)
                     errMod.sendMsg(jobData)
+                    time.sleep(5)
                     if attempts == 9:
                         jobData.errMsg = "ERROR: Failure to upgrade 'best' status for jobID: " + \
                                          str(jobID) + " domainID: " + str(domainID) + \
@@ -1626,6 +1664,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
                                      str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
@@ -1664,6 +1703,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to fill basin status to 1 for missing data " + \
                                      "for jobID: " + str(jobID) + " for domainID: " + str(domainID)
@@ -1705,6 +1745,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to extract the best iteration value " + \
                                      " for domainID: " + str(domainID) + " for jobID: " + \
@@ -1735,6 +1776,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to extract best parameters for domainID: " + \
                                      str(domainID) + " for jobID: " + str(jobID)
@@ -1825,6 +1867,7 @@ class Database(object):
                     jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                      str(jobData.jobID)
                     errMod.sendMsg(jobData)
+                    time.sleep(5)
                     if attempts == 9:
                         jobData.errMsg = "ERROR: Failure to enter validation statistics for jobID: " + \
                                          str(jobID) + " domainID: " + str(gageID)
@@ -1861,6 +1904,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to pull information from Calib_Params"
                     raise
@@ -1884,6 +1928,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to pull information from Sens_Params"
                     raise
@@ -1907,6 +1952,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to pull information from Calib_Stats"
                     raise
@@ -1930,6 +1976,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to pull information from Job_Params"
                     raise
@@ -1951,6 +1998,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to pull information from Valid_Stats"
                     raise
@@ -1972,6 +2020,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to pull information from Sens_Stats"
                     raise
@@ -2009,6 +2058,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Calib_Params for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2028,6 +2078,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2047,6 +2098,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Calib_Stats for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2066,6 +2118,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2085,6 +2138,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Job_Params for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2104,6 +2158,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Valid_Stats for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2123,6 +2178,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2142,6 +2198,7 @@ class Database(object):
                 jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                  str(jobData.jobID)
                 errMod.sendMsg(jobData)
+                time.sleep(5)
                 if attempts == 9:
                     jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
                     raise Exception()
@@ -2193,6 +2250,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Failure to enter sensitivity parameters for job: " + \
                                              str(jobData.jobID) + " basin: " + str(gageID) + " iteration: " + str(iteration)
@@ -2265,6 +2323,7 @@ class Database(object):
                         jobData.genMsg = "DB Connection Failed on Attempt: " + str(attempts) + " for JOB: " + \
                                          str(jobData.jobID)
                         errMod.sendMsg(jobData)
+                        time.sleep(5)
                         if attempts == 9:
                             jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \
                                              str(jobData.jobID) + " domainID: " + str(gageID)

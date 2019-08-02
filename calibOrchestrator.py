@@ -284,7 +284,7 @@ def main(argv):
                     print(pbsJobId)
 
             # Allow for some time in-between groups.
-            time.sleep(5)
+            time.sleep(15)
 
         # Check to see if the program requirements have been met.
         if sum(jobData.groupComplete) == jobData.nGroups:
