@@ -369,8 +369,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 #    raise
                 #open(calibLockPath,'a').close()
                 #errMod.sendMsg(statusData)
-                statusData.genMsg = "Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
-                errMod.sendMsg(statusData)
+                #statusData.genMsg = "Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
+                #errMod.sendMsg(statusData)
                 print("CALIB CODE HAS CRASHED ONCE.")
                 keySlot[basinNum, iteration] = -0.705
                 keyStatus = -0.705
@@ -446,8 +446,8 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 #    errMod.scrubParams(statusData,runDir,staticData)
                 #except:
                 #    raise
-                statusData.genMsg = "1st Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
-                errMod.sendMsg(statusData)
+                #statusData.genMsg = "1st Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
+                #errMod.sendMsg(statusData)
                 print("CALIB CODE HAS CRASHED ONCE.")
                 keySlot[basinNum, iteration] = -0.0505
                 keyStatus = -0.0505
