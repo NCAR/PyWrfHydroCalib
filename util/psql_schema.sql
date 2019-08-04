@@ -95,7 +95,7 @@ CREATE TABLE "Domain_Meta" (
    "huc8" character varying(64),
    "ecol3" character varying(64),
    "ecol4" character varying(64),
-   "rfc" character varying(16),
+   "rfc" character varying(32),
    "dx_hydro" real DEFAULT NULL,
    "agg_factor" integer DEFAULT NULL,
    "hydro_tbl_spatial" character varying(512),
