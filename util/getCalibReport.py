@@ -24,8 +24,8 @@ pathSplit = prPath.split('/')
 libPath = '/'
 for j in range(1,len(pathSplit)-2):
     libPath = libPath + pathSplit[j] + '/'
-libPath = libPath + 'lib/Python'
-sys.path.insert(0,libPath)
+#libPath = libPath + 'core'
+sys.path.insert(0, libPath)
 
 from core import statusMod
 from core import dbMod
@@ -149,30 +149,30 @@ def main(argv):
         for iteration in range(0,int(jobData.nIter)):
             keyStatus = float(statusData[iteration][1])
             iterationTmp = int(statusData[iteration][0])
-	    iterArray[iteration] = iterationTmp
+            iterArray[iteration] = iterationTmp
             completeArray[iteration] = keyStatus
 
-	indComplete = np.where(completeArray == 1)
-	indCheck1 = np.where(completeArray != 1.0)
-	indCheck2 = np.where(completeArray == 0.0)
-	meanSum = meanSum + len(indComplete[0])
-	if len(indComplete[0]) == int(jobData.nIter):
-	    msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
+        indComplete = np.where(completeArray == 1)
+        indCheck1 = np.where(completeArray != 1.0)
+        indCheck2 = np.where(completeArray == 0.0)
+        meanSum = meanSum + len(indComplete[0])
+        if len(indComplete[0]) == int(jobData.nIter):
+            msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                      ": CALIBRATION COMPLETE.\n"
-	else:
+        else:
             if len(indCheck2[0]) == int(jobData.nIter):
                 msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
                          " - HAS NOT BEGUN CALIBRATION.\n"
             else:
                 iterLastComplete = len(indComplete[0])
-		iterCurrent = iterLastComplete + 1
-		indCurrent = np.where(iterArray == iterCurrent)
-		statusCurrent = completeArray[indCurrent[0][0]]
+                iterCurrent = iterLastComplete + 1
+                indCurrent = np.where(iterArray == iterCurrent)
+                statusCurrent = completeArray[indCurrent[0][0]]
                 ind2 = np.where(completeArray != 0.0) and np.where(completeArray != 1.0)
                 iterTmp = iterArray[ind2[0][0]]
-		msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
-		         ": " + str(msgDict[str(statusCurrent)]) + \
-		         " - ITERATION: " + str(iterCurrent) + "\n"
+                msgOut = msgOut + "BASIN: " + str(jobData.gages[basin]) + \
+                         ": " + str(msgDict[str(statusCurrent)]) + \
+                         " - ITERATION: " + str(iterCurrent) + "\n"
                   
     print("MEAN COMPLETENESS = " + str(float(meanSum)/len(jobData.gages)))
     jobData.genMsg = msgOut
