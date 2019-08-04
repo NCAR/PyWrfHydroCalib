@@ -73,7 +73,7 @@ def main(argv):
 
     print("Extracting domain ID values from sqlite file.")
     # Pull out the local basin ID values for this database file.
-    cmd = "select \"domainID\" from \"Domain_Meta\";"
+    cmd = "select \"domainID\",domain_path from \"Domain_Meta\";"
     try:
         dbCursorIn.execute(cmd)
         resultsBasins = dbCursorIn.fetchall()
@@ -107,13 +107,14 @@ def main(argv):
     expRef = resultsExp[0][0]
     print("Entering in domain information into the external postgres DB")
     for bsnTmp in resultsBasins:
-        bsnIdUnique = int(str(expRef) + str(bsnTmp[0]))
-        cmd = "select \"domainID\" from \"Domain_Meta\" where \"domainID\"='" + str(bsnIdUnique) + "';"
+        #bsnIdUnique = int(str(expRef) + str(bsnTmp[0]))
+        cmd = "select \"domainID\" from \"Domain_Meta\" where \"localDomainID\"='" + str(bsnTmp[0]) +\
+              "' and domain_path='" + str(bsnTmp[1]) + "';"
         try:
             dbCursorExt.execute(cmd)
             resultsTmp = dbCursorExt.fetchone()
         except:
-            print("Unable to query external database for unique basin ID:" + str(bsnIdUnique))
+            print("Unable to query external database for basin ID:" + str(bsnTmp[0]))
             sys.exit(1)
 
         if resultsTmp == None:
@@ -138,7 +139,8 @@ def main(argv):
                 sys.exit(1)
 
             # Insert this information into the external database.
-            cmd = "INSERT INTO \"Domain_Meta\" (\"domainID\",gage_id,link_id,domain_path,gage_agency,geo_e," + \
+            cmd = "INSERT INTO \"Domain_Meta\" (\"localDomainID\",gage_id,link_id," \
+                  "domain_path,gage_agency,geo_e," + \
                   "geo_w,geo_s,geo_n,hyd_e,hyd_w,hyd_s,hyd_n,geo_file,land_spatial_meta_file,wrfinput_file," + \
                   "soil_file,fulldom_file,rtlink_file,spweight_file," + \
                   "gw_file,gw_mask,lake_file,forcing_dir,obs_file,site_name,lat,lon," + \
@@ -148,7 +150,7 @@ def main(argv):
                   "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
                   "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
                   "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'," \
-                  "'%s','%s','%s','%s');" % (bsnIdUnique,resultsTmp[0][1],resultsTmp[0][2],resultsTmp[0][3],
+                  "'%s','%s','%s','%s');" % (str(bsnTmp[0]),resultsTmp[0][1],resultsTmp[0][2],resultsTmp[0][3],
                                              resultsTmp[0][4],resultsTmp[0][5],resultsTmp[0][6],resultsTmp[0][7],
                                              resultsTmp[0][8],resultsTmp[0][9],resultsTmp[0][10],resultsTmp[0][11],
                                              resultsTmp[0][12],resultsTmp[0][13],resultsTmp[0][14],resultsTmp[0][15],
@@ -296,7 +298,25 @@ def main(argv):
             # We have data to either enter into the postgres DB, or need to update.
             print("Updating or Inserting Sens_Params in postgres DB....")
             for entryTmp in resultsTmp:
-                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First, get the domain path from the input DB file.
+                cmd = "select domain_path from \"Domain_Meta\" where \"domainID\"='" + str(entryTmp[1]) + "';"
+                try:
+                    dbCursorIn.execute(cmd)
+                    resultsTmpPath = dbCursorIn.fetchone()
+                except:
+                    print("Unable to run domain_path search for basin ID: " + str(entryTmp[1]) + " on local DB file.")
+                    sys.exit(1)
+                # Second get the unique domain ID for this basin.
+                cmd = "select \"domainID\" from \"Domain_Meta\" where \"localDomainID\"='" + str(entryTmp[1]) + \
+                      "' and domain_path='" + str(resultsTmpPath[0]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    resultsTmpBasin = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Domain_Meta for basin ID: " + str(entryTmp[1])) + " for DB: " + \
+                    dbInPath
+                    sys.exit(1)
+                bsnIdUnique = resultsTmpBasin[0]
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Sens_Params\" where \"jobID\"='" + str(entryTmp[0]) + "' and \"domainID\"='" + \
                       str(bsnIdUnique) + "' and iteration='" + str(entryTmp[2]) + "' and \"paramName\"='" + str(entryTmp[3]) + \
@@ -347,7 +367,25 @@ def main(argv):
             # We have data to either enter into the postgres DB, or need to update.
             print("Updating or Inserting Sens_Stats in postgres DB....")
             for entryTmp in resultsTmp:
-                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First, get the domain path from the input DB file.
+                cmd = "select domain_path from \"Domain_Meta\" where \"domainID\"='" + str(entryTmp[1]) + "';"
+                try:
+                    dbCursorIn.execute(cmd)
+                    resultsTmpPath = dbCursorIn.fetchone()
+                except:
+                    print("Unable to run domain_path search for basin ID: " + str(entryTmp[1]) + " on local DB file.")
+                    sys.exit(1)
+                # Second get the unique domain ID for this basin.
+                cmd = "select \"domainID\" from \"Domain_Meta\" where \"localDomainID\"='" + str(entryTmp[1]) + \
+                      "' and domain_path='" + str(resultsTmpPath[0]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    resultsTmpBasin = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Domain_Meta for basin ID: " + str(entryTmp[1])) + " for DB: " + \
+                    dbInPath
+                    sys.exit(1)
+                bsnIdUnique = resultsTmpBasin[0]
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Sens_Stats\" where \"jobID\"='" + str(entryTmp[0]) + "' and \"domainID\"='" + \
                       str(bsnIdUnique) + "' and iteration='" + str(entryTmp[2]) + "';"
@@ -407,7 +445,25 @@ def main(argv):
             print("Updating or Inserting Calib_Params in postgres DB....")
             # We have data to either enter into the postgres DB, or need to update.
             for entryTmp in resultsTmp:
-                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First, get the domain path from the input DB file.
+                cmd = "select domain_path from \"Domain_Meta\" where \"domainID\"='" + str(entryTmp[1]) + "';"
+                try:
+                    dbCursorIn.execute(cmd)
+                    resultsTmpPath = dbCursorIn.fetchone()
+                except:
+                    print("Unable to run domain_path search for basin ID: " + str(entryTmp[1]) + " on local DB file.")
+                    sys.exit(1)
+                # Second get the unique domain ID for this basin.
+                cmd = "select \"domainID\" from \"Domain_Meta\" where \"localDomainID\"='" + str(entryTmp[1]) + \
+                      "' and domain_path='" + str(resultsTmpPath[0]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    resultsTmpBasin = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Domain_Meta for basin ID: " + str(entryTmp[1])) + " for DB: " + \
+                    dbInPath
+                    sys.exit(1)
+                bsnIdUnique = resultsTmpBasin[0]
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Calib_Params\" where \"jobID\"='" + str(entryTmp[0]) + "' and \"domainID\"='" + \
                       str(bsnIdUnique) + "' and iteration='" + str(entryTmp[2]) + "' and \"paramName\"='" + str(entryTmp[3]) + \
@@ -459,7 +515,25 @@ def main(argv):
             # We have data to either enter into the postgres DB, or need to update.
             print("Updating or Inserting Calib_Stats in postgres DB....")
             for entryTmp in resultsTmp:
-                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First, get the domain path from the input DB file.
+                cmd = "select domain_path from \"Domain_Meta\" where \"domainID\"='" + str(entryTmp[1]) + "';"
+                try:
+                    dbCursorIn.execute(cmd)
+                    resultsTmpPath = dbCursorIn.fetchone()
+                except:
+                    print("Unable to run domain_path search for basin ID: " + str(entryTmp[1]) + " on local DB file.")
+                    sys.exit(1)
+                # Second get the unique domain ID for this basin.
+                cmd = "select \"domainID\" from \"Domain_Meta\" where \"localDomainID\"='" + str(entryTmp[1]) + \
+                      "' and domain_path='" + str(resultsTmpPath[0]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    resultsTmpBasin = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Domain_Meta for basin ID: " + str(entryTmp[1])) + " for DB: " + \
+                    dbInPath
+                    sys.exit(1)
+                bsnIdUnique = resultsTmpBasin[0]
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Calib_Stats\" where \"jobID\"='" + str(entryTmp[0]) + "' and \"domainID\"='" + \
                       str(bsnIdUnique) + "' and iteration='" + str(entryTmp[2]) + "';"
@@ -522,7 +596,25 @@ def main(argv):
             # We have data to either enter into the postgres DB, or need to update.
             print("Updating or Inserting Valid_Stats in postgres DB....")
             for entryTmp in resultsTmp:
-                bsnIdUnique = int(str(entryTmp[0]) + str(entryTmp[1]))
+                # First, get the domain path from the input DB file.
+                cmd = "select domain_path from \"Domain_Meta\" where \"domainID\"='" + str(entryTmp[1]) + "';"
+                try:
+                    dbCursorIn.execute(cmd)
+                    resultsTmpPath = dbCursorIn.fetchone()
+                except:
+                    print("Unable to run domain_path search for basin ID: " + str(entryTmp[1]) + " on local DB file.")
+                    sys.exit(1)
+                # Second get the unique domain ID for this basin.
+                cmd = "select \"domainID\" from \"Domain_Meta\" where \"localDomainID\"='" + str(entryTmp[1]) + \
+                      "' and domain_path='" + str(resultsTmpPath[0]) + "';"
+                try:
+                    dbCursorExt.execute(cmd)
+                    resultsTmpBasin = dbCursorExt.fetchone()
+                except:
+                    print("Unable to run query on Domain_Meta for basin ID: " + str(entryTmp[1])) + " for DB: " + \
+                    dbInPath
+                    sys.exit(1)
+                bsnIdUnique = resultsTmpBasin[0]
                 # First check to see if we need to run an INSERT or an UPDATE.
                 cmd = "select * from \"Valid_Stats\" where \"jobID\"='" + str(entryTmp[0]) + "' and \"domainID\"='" + \
                       str(bsnIdUnique) + "' and simulation='" + str(entryTmp[2]) + "' and \"evalPeriod\"='" + \
@@ -566,10 +658,10 @@ def main(argv):
                         dbCursorExt.execute(cmd)
                         connExt.commit()
                     except:
-                        print("Unable to update entry in external Calib_Stats table.")
+                        print("Unable to update entry in external Valid_Stats table.")
                         sys.exit(1)
         else:
-            print("We have no information to update or enter for Calib_Stats.")
+            print("We have no information to update or enter for Valid_Stats.")
 
 
 

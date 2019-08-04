@@ -12,6 +12,7 @@ import pandas as pd
 import os
 import shutil
 import time
+from core import errMod
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -94,13 +95,21 @@ class Database(object):
         jobDir = jobData.outDir + "/" + jobData.jobName
         
         sqlCmd = "select \"jobID\" from \"Job_Meta\" where \"Job_Directory\"='%s'" % (jobDir) + ";"
-        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            result = self.dbCursor.fetchone()
-        except:
-            jobData.errMsg = "ERROR: Unable to execute postgres command to inquire job ID."
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                result = self.dbCursor.fetchone()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to execute postgres command to inquire job ID."
+                    raise
+                else:
+                    attempts = attempts + 1
         
         if not result:
             # This will be a unique value specific to indicating no Job ID has 
@@ -124,13 +133,21 @@ class Database(object):
             raise Exception()
             
         sqlCmd = "select \"domainID\" from \"Domain_Meta\" where \"gage_id\"='%s'" % (str(gageName)) + ";"
-        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            result = self.dbCursor.fetchone()
-        except:
-            jobData.errMsg = "ERROR: Unable to locate ID for gage: " + str(gageName)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                result = self.dbCursor.fetchone()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to locate ID for gage: " + str(gageName)
+                    raise
+                else:
+                    attempts = attempts + 1
             
         if not result:
             jobData.errMsg = "ERROR: gage: " + str(gageName) + " not found in database."
@@ -152,12 +169,20 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
 
-        try:
-            self.dbCursor.execute(jobData.gSQL)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Unable to extract Domain metadata for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(jobData.gSQL)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to extract Domain metadata for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
 
         # Double check to make sure the extracted number of gages matches what's in the DB for this
         # workflow.
@@ -221,23 +246,40 @@ class Database(object):
                  0,jobData.acctKey,jobData.queName,jobData.nCoresMod,jobData.nNodesMod,jobData.nCoresPerNode,\
                  jobData.jobRunType,jobData.exe,len(jobData.gages),\
                  jobData.owner,emailStr,slStr1,slStr2,slStr3,jobData.mpiCmd,jobData.cpuPinCmd)
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
+                    raise
+                else:
+                    attempts = attempts + 1
 
         jobDir = jobData.outDir + "/" + jobData.jobName
 
         sqlCmd = "select \"jobID\" from \"Job_Meta\" where \"Job_Directory\"='%s'" % (jobDir) + ";"
 
-        try:
-            self.dbCursor.execute(sqlCmd)
-            result = self.dbCursor.fetchone()
-        except:
-            jobData.errMsg = "ERROR: Unable to execute sql command to inquire job ID."
-            raise
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                result = self.dbCursor.fetchone()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to execute sql command to inquire job ID."
+                    raise
+                else:
+                    attempts = attempts + 1
 
         if not result:
             jobData.errMsg = "ERROR: Unable to locate newly created jobID."
@@ -249,13 +291,22 @@ class Database(object):
             # The user has specified a differend experiment ID.
             sqlCmd1 = "update \"Job_Meta\" set \"jobID\"=" + str(optExpID) + \
                       " where \"jobID\"=" + str(tmpID) + ";"
-            try:
-                # Update the owner of the job, regardless of whatever options were filled.
-                self.dbCursor.execute(sqlCmd1)
-                self.conn.commit()
-            except:
-                jobData.errMsg = "ERROR: Failure to update jobID in jobMeta"
-                raise
+
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    # Update the owner of the job, regardless of whatever options were filled.
+                    self.dbCursor.execute(sqlCmd1)
+                    self.conn.commit()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Failure to update jobID in jobMeta"
+                        raise
+                    else:
+                        attempts = attempts + 1
 
 
     def queryGageList(self,jobData):
@@ -273,13 +324,21 @@ class Database(object):
         if not self.connected:
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
-            
-        try:
-            self.dbCursor.execute(str(jobData.gSQL))
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(str(jobData.gSQL))
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to query domain metadata for gages list. Double check your SQL syntax...."
+                    raise
+                else:
+                    attempts = attempts + 1
             
         if len(results) == 0:
             jobData.errMsg = "ERROR: Gage query returned 0 gages for calibration."
@@ -309,13 +368,21 @@ class Database(object):
             raise Exception()
             
         sqlCmd = "Select * from \"Domain_Meta\" where gage_id='" + str(gageName) + "';"
-        
-        try:
-            self.conn.execute(sqlCmd)
-            results = self.conn.fetchone()
-        except:
-            jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.conn.execute(sqlCmd)
+                results = self.conn.fetchone()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
+                    raise
+                else:
+                    attempts = attempts + 1
             
         if not results:
             jobData.errMsg = "ERROR: Unable to locate gage: " + str(gageName)
@@ -336,13 +403,21 @@ class Database(object):
             raise Exception()
             
         sqlCmd = "select * from \"Domain_Meta\" where \"domainID\"=" + str(tmpMeta['domainID']) + ";"
-        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchone()
-        except:
-            jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchone()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to query domain meta table for gages metadata."
+                    raise
+                else:
+                    attempts = attempts + 1
             
         if not results:
             jobData.errMsg = "ERROR: No gage data for: " + tmpMeta['gageName']
@@ -384,13 +459,21 @@ class Database(object):
             raise Exception()
             
         sqlCmd = "select * from \"Job_Meta\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchone()
-        except:
-            jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchone()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to extract metadata for job ID: " + str(jobData.jobID)
+                    raise
+                else:
+                    attempts = attempts + 1
             
         if not results:
             jobData.errMsg = "ERROR: No job data for matching ID of: " + str(jobData.jobID)
@@ -483,33 +566,57 @@ class Database(object):
         #          " where \"jobID\"='" + str(jobData.jobID) + "';"
         #sqlCmd9 = "update \"Job_Meta\" set slack_user='MISSING'" + \
         #          " where \"jobID\"='" + str(jobData.jobID) + "';"
-                  
-        try:
-            # Update the owner of the job, regardless of whatever options were filled.
-            self.dbCursor.execute(sqlCmd1)
-            self.conn.commit()
-            jobData.owner = str(newOwner)
-        except:
-            jobData.errMsg = "ERROR: Failure to update new owner for: " + str(newOwner)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                # Update the owner of the job, regardless of whatever options were filled.
+                self.dbCursor.execute(sqlCmd1)
+                self.conn.commit()
+                jobData.owner = str(newOwner)
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to update new owner for: " + str(newOwner)
+                    raise
+                else:
+                    attempts = attempts + 1
             
         if changeFlag != 0:
             if len(newEmail) != 0:
-                try:
-                    self.dbCursor.execute(sqlCmd2)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner)
-                    raise
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd2)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner)
+                            raise
+                        else:
+                            attempts = attempts + 1
                 jobData.email = str(newEmail)
             else:
                 # Enter in MISSING for email
-                try:
-                    self.dbCursor.execute(sqlCmd6)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner) + " to MISSING"
-                    raise
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd6)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Failure to update email for: " + str(newOwner) + " to MISSING"
+                            raise
+                        else:
+                            attempts = attempts + 1
                 jobData.email = None
                 
             #if len(newSlackChannel) != 0:
@@ -559,13 +666,21 @@ class Database(object):
         
         sqlCmd = "update \"Job_Meta\" set su_complete='" + str(jobData.spinComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
-                 
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to update spinup status for job ID: " + str(jobData.jobID)
+                    raise
+                else:
+                    attempts = attempts + 1
         
     def updateSensStatus(self,jobData):
         """
@@ -582,13 +697,21 @@ class Database(object):
         
         sqlCmd = "update \"Job_Meta\" set \"sens_complete\"='" + str(jobData.sensComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
-                 
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to update sensitivity status for job ID: " + str(jobData.jobID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to update sensitivity status for job ID: " + str(jobData.jobID)
+                    raise
+                else:
+                    attempts = attempts + 1
             
     def updateCalibStatus(self,jobData):
         """
@@ -605,13 +728,21 @@ class Database(object):
         
         sqlCmd = "update \"Job_Meta\" set calib_complete='" + str(jobData.calibComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
-                 
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to update calibration status for job ID: " + str(jobData.jobID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to update calibration status for job ID: " + str(jobData.jobID)
+                    raise
+                else:
+                    attempts = attempts + 1
             
     def updateValidationStatus(self,jobData):
         """
@@ -628,13 +759,21 @@ class Database(object):
         
         sqlCmd = "update \"Job_Meta\" set valid_complete='" + str(jobData.validComplete) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
-                 
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
+                    raise
+                else:
+                    attempts = attempts + 1
     
     def enterJobParms(self,jobData):
         """
@@ -668,12 +807,20 @@ class Database(object):
                     sqlCmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max,sens_flag,calib_flag) " + \
                              "values ('%s','%s','%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue,0,1)
 
-                    try:
-                        self.dbCursor.execute(sqlCmd)
-                        self.conn.commit()
-                    except:
-                        jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
-                        raise
+                    attempts = 0
+                    success = False
+                    while attempts < 10 and not success:
+                        try:
+                            self.dbCursor.execute(sqlCmd)
+                            self.conn.commit()
+                            success = True
+                        except:
+                            time.sleep(5)
+                            if attempts == 9:
+                                jobData.errMsg = "ERROR: Unable to enter calibration parameter information for parameter: " + paramName
+                                raise
+                            else:
+                                attempts = attempts + 1
                         
         if jobData.sensFlag == 1:
             # Open parameter table and read values in.
@@ -693,12 +840,20 @@ class Database(object):
                     sqlCmd = "insert into \"Job_Params\" (\"jobID\",param,\"defaultValue\",min,max,sens_flag,calib_flag) " + \
                              "values ('%s','%s','%s','%s','%s','%s','%s');" % (jobID,paramName,defaultValue,minValue,maxValue,1,0)
 
-                    try:
-                        self.dbCursor.execute(sqlCmd)
-                        self.conn.commit()
-                    except:
-                        jobData.errMsg = "ERROR: Unable to enter sensitivity parameter information for parameter: " + paramName
-                        raise
+                    attempts = 0
+                    success = False
+                    while attempts < 10 and not success:
+                        try:
+                            self.dbCursor.execute(sqlCmd)
+                            self.conn.commit()
+                            success = True
+                        except:
+                            time.sleep(5)
+                            if attempts == 9:
+                                jobData.errMsg = "ERROR: Unable to enter sensitivity parameter information for parameter: " + paramName
+                                raise
+                            else:
+                                attempts = attempts + 1
                         
     def populateParmTable(self,jobData):
         """
@@ -738,28 +893,45 @@ class Database(object):
                         sqlCmd = "select * from \"Calib_Params\" where \"jobID\"='" + str(jobID) + "'" + \
                                  " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                                  itStr + "'" + " and \"paramName\"='" + parmName + "';"
-                        try:
-                            self.dbCursor.execute(sqlCmd)
-                            results = self.dbCursor.fetchone()
-                        except:
-                            jobData.errMsg = "ERROR: Unable to extract calibration parameter information for " + \
-                                             "job ID: " + str(jobID) + " gage: " + gageStr + \
-                                             " iteration: " + itStr + " parameter: " + parmName
-                            raise
+                        attempts = 0
+                        success = False
+                        while attempts < 10 and not success:
+                            try:
+                                self.dbCursor.execute(sqlCmd)
+                                results = self.dbCursor.fetchone()
+                                success = True
+                            except:
+                                time.sleep(5)
+                                if attempts == 9:
+                                    jobData.errMsg = "ERROR: Unable to extract calibration parameter information for " + \
+                                                     "job ID: " + str(jobID) + " gage: " + gageStr + \
+                                                     " iteration: " + itStr + " parameter: " + parmName
+                                    raise
+                                else:
+                                    attempts = attempts + 1
                         
                         if not results:
                             # Create "empty" entry into table.
                             sqlCmd = "insert into \"Calib_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
                                      "values (" + str(jobID) + "," + str(domainID) + "," + \
                                      str(iteration) + ",'" + parmName + "',-9999);"
-                            try:
-                                self.dbCursor.execute(sqlCmd)
-                                self.conn.commit()
-                            except:
-                                jobData.errMsg = "ERROR: Unable to create empty calibration parameter information for " + \
-                                                 "job ID: " + str(jobID) + " gage: " + gageStr + \
-                                                 " iteration: " + itStr + " parameter: " + parmName
-                                raise
+
+                            attempts = 0
+                            success = False
+                            while attempts < 10 and not success:
+                                try:
+                                    self.dbCursor.execute(sqlCmd)
+                                    self.conn.commit()
+                                    success = True
+                                except:
+                                    time.sleep(5)
+                                    if attempts == 9:
+                                        jobData.errMsg = "ERROR: Unable to create empty calibration parameter information for " + \
+                                                         "job ID: " + str(jobID) + " gage: " + gageStr + \
+                                                         " iteration: " + itStr + " parameter: " + parmName
+                                        raise
+                                    else:
+                                        attempts = attempts + 1
         if jobData.sensFlag == 1:
             # Read in CSV file containing parameters being ran through sensitivity analysis.
             baseParms = pd.read_csv(jobData.sensTbl)
@@ -779,28 +951,46 @@ class Database(object):
                         sqlCmd = "select * from \"Sens_Params\" where \"jobID\"='" + str(jobID) + "'" + \
                                  " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                                  itStr + "'" + " and \"paramName\"='" + parmName + "';"
-                        try:
-                            self.dbCursor.execute(sqlCmd)
-                            results = self.dbCursor.fetchone()
-                        except:
-                            jobData.errMsg = "ERROR: Unable to extract sensitivity parameter information for " + \
-                                             "job ID: " + str(jobID) + " gage: " + gageStr + \
-                                             " iteration: " + itStr + " parameter: " + parmName
-                            raise
+
+                        attempts = 0
+                        success = False
+                        while attempts < 10 and not success:
+                            try:
+                                self.dbCursor.execute(sqlCmd)
+                                results = self.dbCursor.fetchone()
+                                success = True
+                            except:
+                                time.sleep(5)
+                                if attempts == 9:
+                                    jobData.errMsg = "ERROR: Unable to extract sensitivity parameter information for " + \
+                                                     "job ID: " + str(jobID) + " gage: " + gageStr + \
+                                                     " iteration: " + itStr + " parameter: " + parmName
+                                    raise
+                                else:
+                                    attempts = attempts + 1
                         
                         if not results:
                             # Create "empty" entry into table.
                             sqlCmd = "insert into \"Sens_Params\" (\"jobID\",\"domainID\",iteration,\"paramName\",\"paramValue\") " + \
                                      "values (" + str(jobID) + "," + str(domainID) + "," + \
                                      str(iteration) + ",'" + parmName + "',-9999);"
-                            try:
-                                self.dbCursor.execute(sqlCmd)
-                                self.conn.commit()
-                            except:
-                                jobData.errMsg = "ERROR: Unable to create empty sensitivity parameter information for " + \
-                                                 "job ID: " + str(jobID) + " gage: " + gageStr + \
-                                                 " iteration: " + itStr + " parameter: " + parmName
-                                raise
+
+                            attempts = 0
+                            success = False
+                            while attempts < 10 and not success:
+                                try:
+                                    self.dbCursor.execute(sqlCmd)
+                                    self.conn.commit()
+                                    success = True
+                                except:
+                                    time.sleep(5)
+                                    if attempts == 9:
+                                        jobData.errMsg = "ERROR: Unable to create empty sensitivity parameter information for " + \
+                                                         "job ID: " + str(jobID) + " gage: " + gageStr + \
+                                                         " iteration: " + itStr + " parameter: " + parmName
+                                        raise
+                                    else:
+                                        attempts = attempts + 1
                     
     def populateCalibTable(self,jobData,domainID,gageName):
         """
@@ -825,13 +1015,21 @@ class Database(object):
             sqlCmd = "select * from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                      " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                      str(iteration) + "';"
-            try:
-                self.dbCursor.execute(sqlCmd)
-                results = self.dbCursor.fetchone()
-            except:
-                jobData.errMsg = "ERROR: Unable to extract calib stats for job ID: " + str(jobID) + \
-                                 " domainID: " + str(domainID) + " Iteration: " + str(iteration)
-                raise
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    self.dbCursor.execute(sqlCmd)
+                    results = self.dbCursor.fetchone()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Unable to extract calib stats for job ID: " + str(jobID) + \
+                                         " domainID: " + str(domainID) + " Iteration: " + str(iteration)
+                        raise
+                    else:
+                        attempts = attempts + 1
             
             if not results:
                 # Create "empty" entry into table.
@@ -839,14 +1037,23 @@ class Database(object):
                          "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
-                try:
-                    self.dbCursor.execute(sqlCmd)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Unable to create empty table entry into Calib_Stats for " + \
-                                     "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
-                                     " iteration: " + str(iteration)
-                    raise
+
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Unable to create empty table entry into Calib_Stats for " + \
+                                             "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                             " iteration: " + str(iteration)
+                            raise
+                        else:
+                            attempts = attempts + 1
                     
     def populateSensTable(self,jobData,domainID,gageName):
         """
@@ -871,13 +1078,22 @@ class Database(object):
             sqlCmd = "select * from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                      " and \"domainID\"='" + str(domainID) + "'" + " and iteration='" + \
                      str(iteration) + "';"
-            try:
-                self.dbCursor.execute(sqlCmd)
-                results = self.dbCursor.fetchone()
-            except:
-                jobData.errMsg = "ERROR: Unable to extract sensitivity stats for job ID: " + str(jobID) + \
-                                 " domainID: " + str(domainID) + " Iteration: " + str(iteration)
-                raise
+
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    self.dbCursor.execute(sqlCmd)
+                    results = self.dbCursor.fetchone()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Unable to extract sensitivity stats for job ID: " + str(jobID) + \
+                                         " domainID: " + str(domainID) + " Iteration: " + str(iteration)
+                        raise
+                    else:
+                        attempts = attempts + 1
             
             if not results:
                 # Create "empty" entry into table.
@@ -886,28 +1102,46 @@ class Database(object):
                          "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
-                try:
-                    self.dbCursor.execute(sqlCmd)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
-                                     "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
-                                     " iteration: " + str(iteration) + " for hourly stats."
-                    raise
+
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
+                                             "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                             " iteration: " + str(iteration) + " for hourly stats."
+                            raise
+                        else:
+                            attempts = attempts + 1
                     
                 # Next for daily stats
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
                          "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
                          "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
-                try:
-                    self.dbCursor.execute(sqlCmd)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
-                                     "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
-                                     " iteration: " + str(iteration) + " for daily stats."
-                    raise
+
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Unable to create empty table entry into Sens_Stats for " + \
+                                             "job ID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                             " iteration: " + str(iteration) + " for daily stats."
+                            raise
+                        else:
+                            attempts = attempts + 1
                     
     def iterationStatus(self,jobData,domainID,gageName):
         """
@@ -926,14 +1160,22 @@ class Database(object):
         
         sqlCmd = "select iteration,complete from \"Calib_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "';"
-	
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Unable to extract calibration status for job ID: " + str(jobID) + \
-                             " domainID: " + str(domainID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to extract calibration status for job ID: " + str(jobID) + \
+                                     " domainID: " + str(domainID)
+                    raise
+                else:
+                    attempts = attempts + 1
             
         return results
     
@@ -956,13 +1198,22 @@ class Database(object):
         # status values for each basin. 
         sqlCmd = "select iteration,complete from \"Sens_Stats\" where \"jobID\"='" + str(jobID) + "'" + \
                  " and \"domainID\"='" + str(domainID) + "' and \"timeStep\"='daily';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Unable to extract sensitivity status for job ID: " + str(jobID) + \
-                             " domainID: " + str(domainID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to extract sensitivity status for job ID: " + str(jobID) + \
+                                     " domainID: " + str(domainID)
+                    raise
+                else:
+                    attempts = attempts + 1
             
         return results
         
@@ -985,14 +1236,22 @@ class Database(object):
         sqlCmd = "update \"Calib_Stats\" set complete='" + str(newStatus) + "' " + \
                  "where \"jobID\"='" + str(jobID) + "'" + " and \"domainID\"='" + str(domainID) + \
                  "'" + " and iteration='" + str(iterTmp) + "';"
-                 
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
-                             " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to update calibration status for job ID: " + str(jobID) + \
+                                     " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
+                    raise
+                else:
+                    attempts = attempts + 1
             
     def updateSensIterationStatus(self,jobData,domainID,iteration,gageName,newStatus):
         """
@@ -1013,14 +1272,22 @@ class Database(object):
         sqlCmd = "update \"Sens_Stats\" set complete='" + str(newStatus) + "' " + \
                  "where \"jobID\"='" + str(jobID) + "'" + " and \"domainID\"='" + str(domainID) + \
                  "'" + " and iteration='" + str(iterTmp) + "';"
-                 
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Unable to update sensitivity status for job ID: " + str(jobID) + \
-                             " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Unable to update sensitivity status for job ID: " + str(jobID) + \
+                                     " domainID: " + str(domainID) + " Iteration: " + str(iterTmp)
+                    raise
+                else:
+                    attempts = attempts + 1
         
     def logCalibParams(self,jobData,jobID,domainID,calibTbl,iteration):
         """
@@ -1059,14 +1326,23 @@ class Database(object):
                          "' where \"jobID\"='" + str(jobID) + "' and \"domainID\"='" + str(domainID) + \
                          "' and \"iteration\"='" + str(iteration) + "' and \"paramName\"='" + \
                          str(paramName) + "';"
-                try:
-                    self.dbCursor.execute(sqlCmd)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
-                                     " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
-                                     " iteration: " + str(iteration)
-                    raise
+
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Failure to enter value for parameter: " + str(paramName) + \
+                                             " jobID: " + str(jobID) + " domainID: " + str(domainID) + \
+                                             " iteration: " + str(iteration)
+                            raise
+                        else:
+                            attempts = attempts + 1
                 
     def logCalibStats(self,jobData,jobID,domainID,gage,iteration,statsTbl,staticData):
         """
@@ -1217,29 +1493,46 @@ class Database(object):
             sqlCmd = "update \"Calib_Stats\" set best='0' where best='1' and " + \
                      "\"jobID\"='" + str(jobID) + "' and \"domainID\"='" + str(domainID) + \
                      "';"
-            
-            try:
-                self.dbCursor.execute(sqlCmd)
-                self.conn.commit()
-            except:
-                jobData.errMsg = "ERROR: Failure to downgrade 'best' status of previous " + \
-                                 "calibration iteration for jobID: " + str(jobID) + \
-                                 " domainID: " + str(domainID) + " iteration: " + \
-                                 str(iteration)
-                raise
+
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    self.dbCursor.execute(sqlCmd)
+                    self.conn.commit()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Failure to downgrade 'best' status of previous " + \
+                                         "calibration iteration for jobID: " + str(jobID) + \
+                                         " domainID: " + str(domainID) + " iteration: " + \
+                                         str(iteration)
+                        raise
+                    else:
+                        attempts = attempts + 1
                 
             # Now update this iteration to be the "best"
             sqlCmd = "update \"Calib_Stats\" set best='1' where \"jobID\"='" + \
                      str(jobID) + "' and \"domainID\"='" + str(domainID) + "' and " + \
                      "iteration='" + str(iteration) + "';"
-            try:
-                self.dbCursor.execute(sqlCmd)
-                self.conn.commit()
-            except:
-                jobData.errMsg = "ERROR: Failure to upgrade 'best' status for jobID: " + \
-                                 str(jobID) + " domainID: " + str(domainID) + \
-                                 " iteration: " + str(iteration)
-                raise
+
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    self.dbCursor.execute(sqlCmd)
+                    self.conn.commit()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Failure to upgrade 'best' status for jobID: " + \
+                                         str(jobID) + " domainID: " + str(domainID) + \
+                                         " iteration: " + str(iteration)
+                        raise
+                    else:
+                        attempts = attempts + 1
                 
         # Update Calib_Stats table.
         sqlCmd = "update \"Calib_Stats\" set \"objfnVal\"='" + objF + "', " + \
@@ -1252,15 +1545,23 @@ class Database(object):
                  "', complete='1' where \"jobID\"='" + str(jobID) + "' and " + \
                  "\"domainID\"='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
-            
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
-                             str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
-                             str(iteration)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to enter calibration statistics for jobID: " + \
+                                     str(jobID) + " domainID: " + str(domainID) + " iteration: " + \
+                                     str(iteration)
+                    raise
+                else:
+                    attempts = attempts + 1
         
     def fillMisingBasin(self,jobData,jobID,domainID):
         """
@@ -1280,14 +1581,22 @@ class Database(object):
     
         sqlCmd = "update \"Calib_Stats\" set complete='1' where \"jobID\"='" + \
                  str(jobID) + "' and \"domainID\"='" + str(domainID) + "';"
-        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to fill basin status to 1 for missing data " + \
-                             "for jobID: " + str(jobID) + " for domainID: " + str(domainID)
-            raise
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to fill basin status to 1 for missing data " + \
+                                     "for jobID: " + str(jobID) + " for domainID: " + str(domainID)
+                    raise
+                else:
+                    attempts = attempts + 1
             
     def genValidParmTbl(self,jobData,jobID,domainID,gage):
         """
@@ -1311,14 +1620,23 @@ class Database(object):
         # First find the iteration that contains the best parameter values.
         sqlCmd = "select * from \"Calib_Stats\" where \"domainID\"='" + str(domainID) + \
                  "' and \"jobID\"='" + str(jobID) + "' and best='1';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchone()
-        except:
-            jobData.errMsg = "ERROR: Failure to extract the best iteration value " + \
-                             " for domainID: " + str(domainID) + " for jobID: " + \
-                             str(jobID)
-            raise Exception()
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchone()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to extract the best iteration value " + \
+                                     " for domainID: " + str(domainID) + " for jobID: " + \
+                                     str(jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         if not results:
             outStatus = -99
@@ -1330,13 +1648,22 @@ class Database(object):
         sqlCmd = "select * from \"Calib_Params\" where \"domainID\"='" + str(domainID) + \
                  "' and \"jobID\"='" + str(jobID) + "' and iteration='" + \
                  str(iterBest) + "' and \"paramValue\"!='-9999';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Failure to extract best parameters for domainID: " + \
-                             str(domainID) + " for jobID: " + str(jobID) 
-            raise Exception()
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to extract best parameters for domainID: " + \
+                                     str(domainID) + " for jobID: " + str(jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         outTbl = jobData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/BEST/parms_best.tbl"
         
@@ -1409,14 +1736,22 @@ class Database(object):
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
                      str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ',' + \
                      str(tblData.hyperResMultiObj[stat]) + ");"
-                     
-            try:
-                self.dbCursor.execute(sqlCmd)
-                self.conn.commit()
-            except:
-                jobData.errMsg = "ERROR: Failure to enter validation statistics for jobID: " + \
-                                 str(jobID) + " domainID: " + str(gageID)
-                raise
+
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    self.dbCursor.execute(sqlCmd)
+                    self.conn.commit()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Failure to enter validation statistics for jobID: " + \
+                                         str(jobID) + " domainID: " + str(gageID)
+                        raise
+                    else:
+                        attempts = attempts + 1
                 
     def checkPreviousEntries(self,jobData):
         """
@@ -1435,68 +1770,122 @@ class Database(object):
         statusTmp = True
 
         # Check Calib_Params        
-        sqlCmd = "select \"jobID\" from \"Calib_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Failure to pull information from Calib_Params"
-            raise            
+        sqlCmd = "select \"jobID\" from \"Calib_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to pull information from Calib_Params"
+                    raise
+                else:
+                    attempts = attempts + 1
+
         if len(results) != 0:
             statusTmp = False
             
         # Check Sens_Params
-        sqlCmd = "select \"jobID\" from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Failure to pull information from Sens_Params"
-            raise            
+        sqlCmd = "select \"jobID\" from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to pull information from Sens_Params"
+                    raise
+                else:
+                    attempts = attempts + 1
+
         if len(results) != 0:
             statusTmp = False
             
         # Check Calib_Stats        
-        sqlCmd = "select \"jobID\" from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Failure to pull information from Calib_Stats"
-            raise            
+        sqlCmd = "select \"jobID\" from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to pull information from Calib_Stats"
+                    raise
+                else:
+                    attempts = attempts + 1
+
         if len(results) != 0:
             statusTmp = False
             
         # Check Job_Params        
-        sqlCmd = "select \"jobID\" from \"Job_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Failure to pull information from Job_Params"
-            raise            
+        sqlCmd = "select \"jobID\" from \"Job_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
+
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to pull information from Job_Params"
+                    raise
+                else:
+                    attempts = attempts + 1
         if len(results) != 0:
             statusTmp = False
             
         # Check Valid_Stats        
-        sqlCmd = "select \"jobID\" from \"Valid_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Failure to pull information from Valid_Stats"
-            raise            
+        sqlCmd = "select \"jobID\" from \"Valid_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to pull information from Valid_Stats"
+                    raise
+                else:
+                    attempts = attempts + 1
         if len(results) != 0:
             statusTmp = False
             
         # Check Sens_Stats
-        sqlCmd = "select \"jobID\" from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"        
-        try:
-            self.dbCursor.execute(sqlCmd)
-            results = self.dbCursor.fetchall()
-        except:
-            jobData.errMsg = "ERROR: Failure to pull information from Sens_Stats"
-            raise            
+        sqlCmd = "select \"jobID\" from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                results = self.dbCursor.fetchall()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to pull information from Sens_Stats"
+                    raise
+                else:
+                    attempts = attempts + 1
         if len(results) != 0:
             statusTmp = False
             
@@ -1518,75 +1907,139 @@ class Database(object):
             
         # Cleanup Calib_Params
         sqlCmd = "delete from \"Calib_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Calib_Params for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Calib_Params for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         # Cleanup Sens_Params
         sqlCmd = "delete from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         # Cleanup Calib_Stats
         sqlCmd = "delete from \"Calib_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Calib_Stats for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Calib_Stats for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         # Cleanup Sens_Stats
         sqlCmd = "delete from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit(sqlCmd)
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit(sqlCmd)
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         # Cleanup Job_Params
         sqlCmd = "delete from \"Job_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit(sqlCmd)
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Job_Params for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit(sqlCmd)
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Job_Params for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         # Cleanup Valid_Stats
         sqlCmd = "delete from \"Valid_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Valid_Stats for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Valid_Stats for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         # Cleanup Sens_Params
         sqlCmd = "delete from \"Sens_Params\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Sens_Params for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
         # Cleanup Sens_Stats
         sqlCmd = "delete from \"Sens_Stats\" where \"jobID\"='" + str(jobData.jobID) + "';"
-        try:
-            self.dbCursor.execute(sqlCmd)
-            self.conn.commit()
-        except:
-            jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
-            raise Exception()
+        attempts = 0
+        success = False
+        while attempts < 10 and not success:
+            try:
+                self.dbCursor.execute(sqlCmd)
+                self.conn.commit()
+                success = True
+            except:
+                time.sleep(5)
+                if attempts == 9:
+                    jobData.errMsg = "ERROR: Failure to remove entries from Sens_Stats for job: " + str(jobData.jobID)
+                    raise Exception()
+                else:
+                    attempts = attempts + 1
             
     def insertSensParms(self,jobData,parmsLogged,parmTxtFile,gageID):
         """
@@ -1622,13 +2075,21 @@ class Database(object):
                          str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
                          "' and iteration='" + str(iteration+1) + "' and " + \
                          "\"paramName\"='" + parmName + "';"
-                try:
-                    self.dbCursor.execute(sqlCmd)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Failure to enter sensitivity parameters for job: " + \
-                                     str(jobData.jobID) + " basin: " + str(gageID) + " iteration: " + str(iteration)
-                    raise Exception()
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Failure to enter sensitivity parameters for job: " + \
+                                             str(jobData.jobID) + " basin: " + str(gageID) + " iteration: " + str(iteration)
+                            raise Exception()
+                        else:
+                            attempts = attempts + 1
                     
         # Touch a file indicating parameters have been logged 
         try:
@@ -1684,12 +2145,21 @@ class Database(object):
                          str(jobData.jobID) + "' and \"domainID\"='" + str(gageID) + \
                          "' and \"iteration\"='" + str(tblData['id'][entry]) + "' and " + \
                          "\"timeStep\"='" + tblData['timeStep'][entry] + "';"
-                try:
-                    self.dbCursor.execute(sqlCmd)
-                    self.conn.commit()
-                except:
-                    jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \
-                                     str(jobData.jobID) + " domainID: " + str(gageID)
+                attempts = 0
+                success = False
+                while attempts < 10 and not success:
+                    try:
+                        self.dbCursor.execute(sqlCmd)
+                        self.conn.commit()
+                        success = True
+                    except:
+                        time.sleep(5)
+                        if attempts == 9:
+                            jobData.errMsg = "ERROR: Failure to enter Sensitivity statistics for jobID: " + \
+                                             str(jobData.jobID) + " domainID: " + str(gageID)
+                            raise
+                        else:
+                            attempts = attempts + 1
                                         
         # Touch a file indicating parameters have been logged 
         try:

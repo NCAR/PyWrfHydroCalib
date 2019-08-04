@@ -73,118 +73,6 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
     except:
         raise
 
-    #if statusData.jobRunType == 1:
-    #    # Generate BSUB file necessary for running R calibration/analysis
-    #    # code.
-    #    try:
-    #        generateBsubCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 1:
-    #
-    #    # If BSUB run script doesn't exist, create it here.
-    #    bsubFile = runDir + "/run_WH.sh"
-    #    bsubFileRst = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(bsubFile):
-    #        # Going to override for now.
-    #        os.remove(bsubFile)
-    #    if os.path.isfile(bsubFileRst):
-    #        # Going to override for now.
-    #        os.remove(bsubFileRst)
-    #
-    #    # Create new BSUB files
-    #    try:
-    #        generateBsubScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #    try:
-    #        generateRestartBsubScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 2:
-    #    # Generate PBS file necessary to running R calibration/analysis code.
-    #    try:
-    #        generatePbsCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 2:
-    #
-    #    # If PBS run script doesn't exist, create it here.
-    #    pbsFile = runDir + "/run_WH.sh"
-    #    pbsFileRst = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(pbsFile):
-    #        os.remove(pbsFile)
-    #    if os.path.isfile(pbsFileRst):
-    #        os.remove(pbsFileRst)
-    #
-    ##    # Create new PBS files
-    #    try:
-    #        generatePbsScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #
-    #    try:
-    #        generateRestartPbsScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-    #    # Generate Slurm file necessary to run R calibration/analysis code.
-    #    try:
-    #        generateSlurmCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-    #
-    #    # If PBS run script doesn't exist, create it here.
-    #    pbsFile = runDir + "/run_WH.sh"
-    #    pbsFileRst = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(pbsFile):
-    #        os.remove(pbsFile)
-    #    if os.path.isfile(pbsFileRst):
-    #        os.remove(pbsFileRst)
-    #
-    #    # Create new Slurm files
-    #    try:
-    #        generateSlurmScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #
-    #    try:
-    #        generateRestartSlurmScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-    #    # Generate mpiexec/mpirun run script and R submission script for running
-    #    # calibration/analysis code.
-    #    try:
-    #        generateMpiCalibScript(statusData,int(gageID),runDir,workDir,staticData)
-    #    except:
-    #        raise
-            
-    #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-    #    # If run script doesn't exist, create it here.
-    #    runFile = runDir + "/run_WH.sh"
-    #    rstFile = runDir + "/run_WH_Restart.sh"
-    #    if os.path.isfile(runFile):
-    #        os.remove(runFile)
-    #    if os.path.isfile(rstFile):
-    #        os.remove(rstFile)
-    #
-    #    try:
-    #        generateMpiScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    #    try:
-    #        generateMpiRstScript(statusData,int(gageID),runDir)
-    #    except:
-    #        raise
-    
     # Calculate datetime objects
     begDate = statusData.bCalibDate
     endDate = statusData.eCalibDate
@@ -261,6 +149,155 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 keyStatus = 0.75
                 runFlag = False
                 runCalib = True
+
+    # For when the R/Python DDS code failed once.
+    if keyStatus == -0.7 or keyStatus == -0.05:
+        if calibStatus:
+            print("Running calibration code")
+            # Calib code running, upgrade status.
+            if keyStatus == -0.70:
+                keySlot[basinNum, iteration] = 0.90
+                keyStatus = 0.90
+                runFlag = False
+                runCalib = False
+            if keyStatus == -0.05:
+                keySlot[basinNum, iteration] = 0.25
+                keyStatus = 0.25
+                runFlag = False
+                runCalib = False
+        else:
+            if keyStatus == -0.05:
+                # If calibration COMPLETE flag listed, upgrade status to 0.0 with runFlag on, signalling
+                # to proceed with model simulation.
+                if os.path.isfile(calibCompleteFlag):
+                    # Copy parameter files to the DEFAULT directory
+                    try:
+                        calibIoMod.copyDefaultParms(statusData, runDir, gage, staticData)
+                    except:
+                        raise
+                    # Enter in parameters for iteration update.
+                    try:
+                        db.logCalibParams(statusData, int(statusData.jobID), int(gageID), calibTbl, int(iteration))
+                    except:
+                        raise
+                    print("FIRST CALIB/PARAM CODE DONE, READY TO RUN THE MODEL")
+                    keySlot[basinNum, iteration] = 0.0
+                    keyStatus = 0.0
+                    runFlag = True
+                    runCalib = False
+                elif os.path.isfile(missingFlag):
+                    # This is a unique situation where either an improper COMID (linkID) was passed to
+                    # the R program, pulling NA from the model. Or, the observations file contains
+                    # all missing values. For this, convey this to the user through a message, set the
+                    # status for all iterations to 1.
+                    statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                        "observations for the evaluation period."
+                    errMod.sendMsg(statusData)
+                    # Copy parameter files to the DEFAULT directory
+                    try:
+                        calibIoMod.copyDefaultParms(statusData, runDir, gage, staticData)
+                    except:
+                        raise
+                    # set the status for all iterations to 1.
+                    try:
+                        db.fillMisingBasin(statusData, int(statusData.jobID), int(gageID))
+                    except:
+                        raise
+                    # Clean everything up.
+                    try:
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    keySlot[basinNum, :] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                    runCalib = False
+                else:
+                    # This means the calibration code failed TWICE. Lock up and send an error message.
+                    statusData.genMsg = "ERROR: 1st Calibration Scripts failed a second time for gage: " + \
+                                        statusData.gages[basinNum] + \
+                                        " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + \
+                                        calibLockPath
+                    # Scrub calib-related files that were created as everything will need to be re-ran.
+                    try:
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    print("CALIB CODE HAS CRASHED TWICE.")
+                    open(calibLockPath, 'a').close()
+                    errMod.sendMsg(statusData)
+                    keySlot[basinNum, iteration] = -0.1
+                    keyStatus = -0.1
+                    runFlag = False
+                    runCalib = False
+            if keyStatus == -0.70:
+                # If calibration COMPLETE flag listed, upgrade status to 1.0, and make entry into
+                # database as this iteration being completed.
+                # Also scrub calib-related files (minus new parameters).
+                if os.path.isfile(calibCompleteFlag):
+                    try:
+                        # If we are on the last iteration, no new parameters are created.
+                        if int(iteration + 1) < int(statusData.nIter):
+                            # The if statment is to handle the last iteration where no
+                            # new parameters are generated at the end.
+                            try:
+                                db.logCalibParams(statusData, int(statusData.jobID), int(gageID), calibTbl,
+                                                  int(iteration) + 1)
+                            except:
+                                raise
+                        db.logCalibStats(statusData, int(statusData.jobID), int(gageID), str(gage), int(iteration),
+                                         statsTbl, staticData)
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                    except:
+                        raise
+                    print("CALIB/PARAM CODE COMPLETE")
+                    keySlot[basinNum, iteration] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                    runCalib = False
+                elif os.path.isfile(missingFlag):
+                    # This is a unique situation where either an improper COMID (linkID) was passed to
+                    # the R program, pulling NA from the model. Or, the observations file contains
+                    # all missing values. For this, convey this to the user through a message, set the
+                    # status for all iterations to 1.
+                    statusData.genMsg = "WARNING: Either a bad COMID exists for this gage, or there are no " + \
+                                        "observations for the evaluation period."
+                    errMod.sendMsg(statusData)
+                    # set the status for all iterations to 1. This will force the workflow to skip
+                    # over this basin in the future.
+                    try:
+                        db.fillMisingBasin(statusData, int(statusData.jobID), int(gageID))
+                    except:
+                        raise
+                    # Clean everything up.
+                    try:
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    keySlot[basinNum, :] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
+                    runCalib = False
+                else:
+                    # This means the calibration code failed TWICE. Lock up and send error message
+                    statusData.genMsg = "ERROR: Calibration Scripts failed a second time for gage: " + \
+                                        statusData.gages[basinNum] + \
+                                        " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + \
+                                        calibLockPath
+                    # Scrub calib-related files that were created as everything will need to be re-ran.
+                    try:
+                        errMod.cleanCalib(statusData, workDir, runDir)
+                        errMod.scrubParams(statusData, runDir, staticData)
+                    except:
+                        raise
+                    open(calibLockPath, 'a').close()
+                    errMod.sendMsg(statusData)
+                    keySlot[basinNum, iteration] = -0.75
+                    keyStatus = -0.75
+                    runFlag = False
+                    runCalib = False
                 
     # For when the model simulation has completed, but the calibration is still 
     # listed as running.
@@ -320,21 +357,29 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 runFlag = False
                 runCalib = False
             else:
-                # This means the calibration failed. Demote status and send message to user.
-                statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
-                                    " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + calibLockPath
+                # This means the calibration code failed ONCE. We will allow one re-try, like we do with
+                # the model code.
+                #statusData.genMsg = "ERROR: Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
+                #                    " Iteration: " + str(iteration) + " Failed. Please remove LOCKFILE: " + calibLockPath
                 # Scrub calib-related files that were created as everything will need to be re-ran.
-                try:
-                    errMod.cleanCalib(statusData,workDir,runDir)
-                    errMod.scrubParams(statusData,runDir,staticData)
-                except:
-                    raise
-                open(calibLockPath,'a').close()
-                errMod.sendMsg(statusData)
-                keySlot[basinNum,iteration] = -0.75
-                keyStatus = -0.75
+                #try:
+                #    errMod.cleanCalib(statusData,workDir,runDir)
+                #    errMod.scrubParams(statusData,runDir,staticData)
+                #except:
+                #    raise
+                #open(calibLockPath,'a').close()
+                #errMod.sendMsg(statusData)
+                #statusData.genMsg = "Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
+                #errMod.sendMsg(statusData)
+                print("CALIB CODE HAS CRASHED ONCE.")
+                keySlot[basinNum, iteration] = -0.705
+                keyStatus = -0.705
                 runFlag = False
-                runCalib = False
+                runCalib = True
+                #keySlot[basinNum,iteration] = -0.75
+                #keyStatus = -0.75
+                #runFlag = False
+                #runCalib = False
                 
     # For when the first calibration is running for the first iteration.
     if keyStatus == 0.25:
@@ -393,20 +438,27 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 runFlag = False
                 runCalib = False
             else:
-                # This means the calibration failed. Demote status and send message to user.
-                statusData.genMsg = "ERROR: 1st Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
-                                    " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
+                # This means the calibration code failed ONCE. We will allow one re-try, like we do with
+                #statusData.genMsg = "ERROR: 1st Calibration Scripts failed for gage: " + statusData.gages[basinNum] + \
+                #                    " Iteration: " + str(iteration) + " Failed. Please remove LOCK file: " + calibLockPath
                 # Scrub calib-related files that were created as everything will need to be re-ran.
-                try:
-                    errMod.scrubParams(statusData,runDir,staticData)
-                except:
-                    raise
-                open(calibLockPath,'a').close()
-                errMod.sendMsg(statusData)
-                keySlot[basinNum,iteration] = -0.1
-                keyStatus = -0.1
+                #try:
+                #    errMod.scrubParams(statusData,runDir,staticData)
+                #except:
+                #    raise
+                #statusData.genMsg = "1st Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
+                #errMod.sendMsg(statusData)
+                print("CALIB CODE HAS CRASHED ONCE.")
+                keySlot[basinNum, iteration] = -0.0505
+                keyStatus = -0.0505
                 runFlag = False
-                runCalib = False
+                runCalib = True
+                #open(calibLockPath,'a').close()
+                #errMod.sendMsg(statusData)
+                #keySlot[basinNum,iteration] = -0.1
+                #keyStatus = -0.1
+                #runFlag = False
+                #runCalib = False
            
     # For iterations that are ready for run. The first step is to clean out old model output
     # and fire off simulation with newly updated model parameter values. 
@@ -809,38 +861,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + runDir + "/run_WH_Restart.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH_Restart.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + runDir + "/run_WH_Restart.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = runDir + "/run_WH_Restart.sh 1>" + runDir + "/WH_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p = subprocess.Popen([cmd],shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         # Revert statuses to -0.5 for next loop to convey the model crashed once. 
         keyStatus = -0.5
         keySlot[basinNum,iteration] = -0.5
@@ -905,37 +926,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + runDir + "/run_WH.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',runDir + '/run_WH.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + runDir + "/run_WH.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = runDir + "/run_WH.sh 1>" + runDir + "/WH_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p = subprocess.Popen([cmd],shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         keyStatus = 0.5
         keySlot[basinNum,iteration] = 0.5
         
@@ -978,41 +969,50 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p2 = subprocess.Popen([str(cmd)],shell=True)
-        #        time.sleep(5)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         keyStatus = 0.25
         keySlot[basinNum,iteration] = 0.25
-        
+
+    if keyStatus == -0.0505 and runCalib:
+        # Situation where the first calibration code failed. We need to restart.
+        # First cleanup any old model output or calibration output that
+        # is from previous iterations.
+        try:
+            errMod.removeOutput(statusData, runDir)
+            errMod.cleanCalib(statusData, workDir, runDir)
+            errMod.scrubParams(statusData, runDir, staticData)
+        except:
+            raise
+
+        # If any proj_data.Rdata exists, remove it as it might have been from a failed first attempt.
+        if os.path.isfile(workDir + '/proj_data.Rdata'):
+            try:
+                os.remove(workDir + '/proj_data.Rdata')
+            except:
+                statusData.errMsg = "ERROR: Failure to remove: " + workDir + "/proj_data.Rdata"
+                raise
+
+        try:
+            generateRScript(staticData, gageMeta, gage, int(iteration))
+        except:
+            statusData.errMsg = "ERROR: Failure to write calibration R script."
+            raise
+
+        print("RESTARTING FIRST CALIBRATION CODE")
+        # Fire off calibration programs.
+        cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p2 = subprocess.Popen([str(cmd)], shell=True)
+            time.sleep(5)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+        # Set values to check on next pass-around.
+        keyStatus = -0.05
+        keySlot[basinNum, iteration] = -0.05
+
     if keyStatus == 0.75 and runCalib:
         # Fire off calibration for simulation.
         
@@ -1041,40 +1041,40 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
         except:
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
             raise
-        #if statusData.jobRunType == 1:
-        #    cmd = "bsub < " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 2:
-        #    try:
-        #        jobTmp = subprocess.check_output(['qsub',workDir + '/run_WH_CALIB.sh'])
-        #        pbsJobId[basinNum] = int(jobTmp.decode("UTF-8").split('.')[0])
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 3 or statusData.jobRunType == 6:
-        #    cmd = "sbatch " + workDir + "/run_WH_CALIB.sh"
-        #    try:
-        #        subprocess.call(cmd,shell=True)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-        #if statusData.jobRunType == 4 or statusData.jobRunType == 5:
-        #    cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
-        #          str(statusData.jobID) + "_" + str(gageID) + ".out" + \
-        #          ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
-        #    try:
-        #        p3 = subprocess.Popen([cmd],shell=True)
-        #        time.sleep(5)
-        #    except:
-        #        statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
-        #        raise
-            
+
         keyStatus = 0.90
         keySlot[basinNum,iteration] = 0.90
+
+    if keyStatus == -0.705 and runCalib:
+        # Situation where we are restarting the calibration code.
+        # First cleanup any old calibration related files. This should have
+        # already been done per workflow, but this is a fail safe.
+        try:
+            errMod.cleanCalib(statusData, workDir, runDir)
+            errMod.scrubParams(statusMod, runDir, staticData)
+        except:
+            raise
+
+        try:
+            generateRScript(staticData, gageMeta, gage, int(iteration) + 1)
+        except:
+            statusData.errMsg = "ERROR: Failure to write calibration R script."
+            raise
+
+        print("FIRING OFF CALIB CODE")
+        # Fire off calibration program.
+        cmd = workDir + "/run_WH_CALIB.sh 1>" + runDir + "/WH_CALIB_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/WH_CALIB_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p3 = subprocess.Popen([cmd], shell=True)
+            time.sleep(5)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro Calib job for gage: " + str(gageMeta.gage[basinNum])
+            raise
+        # Set values to check on next pass-around.
+        keyStatus = -0.7
+        keySlot[basinNum, iteration] = -0.7
         
     # Update job status in the Database table.
     try:
