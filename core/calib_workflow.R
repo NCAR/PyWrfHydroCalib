@@ -472,7 +472,7 @@ if (any(x_archive$obj > objFunThreshold)) {
 
 # Plot the scatter plot of the best, last and control run.
    write("Scatterplot...", stdout())
-   maxval <- max(chrt.obj_plot$q_cms, rm.na = TRUE)
+   maxval <- max(chrt.obj_plot$q_cms, na.rm = TRUE)
    gg <- ggplot()+ geom_point(data = merge(chrt.obj_plot [run %in% c("Control Run", "Last Run", "Best Run")], obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
                               aes (obs, q_cms, color = run), alpha = 0.5)
    gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
