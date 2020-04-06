@@ -57,30 +57,83 @@ maxDate <- max(endCalibDate, endValidDate)
 #maxDate <- endValidDate # this was used for the hyper res calibration
 
 # Read files
-write(paste0("Reading control run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
-system.time({
-  filesList <- list.files(path = outPathControl,
+if (hydro_SPLIT_OUTPUT_COUNT == 1) {
+   write(paste0("Reading control run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
+   system.time({
+    filesList <- list.files(path = outPathControl,
                         pattern = glob2rx("*.CHANOBS_DOMAIN*"),
                         full.names = TRUE)
-  filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
-  whFiles <- which(filesListDate >= minDate)
-  filesList <- filesList[whFiles]
-  if (length(filesList) == 0) stop("No matching files in specified directory.")
-  chrt.cont <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
-})
+    filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
+    whFiles <- which(filesListDate >= minDate)
+    filesList <- filesList[whFiles]
+    if (length(filesList) == 0) stop("No matching files in specified directory.")
+    chrt.cont <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
+   })
 
-write(paste0("Reading validation run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
-system.time({
-  filesList <- list.files(path = outPathValid,
+} else if (hydro_SPLIT_OUTPUT_COUNT == 0) {
+
+   write(paste0("Reading control run model out file : CHANOBS_DOMAIN1.nc"), stdout())
+   system.time({
+   chanobsFile <- list.files(outPathControl, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
+   q_cms = ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "streamflow")
+   if (length(dim(q_cms)) != 1) {
+      rotate <- function(x) t(apply(x, 2, rev))
+      q_cms <- rotate(q_cms) # R totate the matrix when it is reading it oin.
+      q_cms <- q_cms[, gageIndx]
+  }
+
+   POSIXct<-as.POSIXct(ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "time")*60,
+                       origin = "1970-01-01 00:00:00 UTC", tz = "UTC") # because the time is minutes from this origin
+   chrt.cont <- data.frame(POSIXct,q_cms)
+   chrt.cont <-as.data.table(chrt.cont)
+  })
+
+   # If the model crashes, then it would be append to the file after restarting the model,
+   # therefore, we need to remove the duplicates in order to not double count for those.
+   chrt.cont <- unique(chrt.cont)
+
+   # remove the spin up part
+   chrt.cont <- chrt.cont[POSIXct > minDate, ]
+}
+
+
+if (hydro_SPLIT_OUTPUT_COUNT == 1) {
+   write(paste0("Reading validation run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
+   system.time({
+     filesList <- list.files(path = outPathValid,
                         pattern = glob2rx("*.CHANOBS_DOMAIN*"),
                         full.names = TRUE)
-  filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
-  whFiles <- which(filesListDate >= minDate)
-  filesList <- filesList[whFiles]
-  if (length(filesList) == 0) stop("No matching files in specified directory.")
-  chrt.valid <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
-})
+     filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
+     whFiles <- which(filesListDate >= minDate)
+     filesList <- filesList[whFiles]
+     if (length(filesList) == 0) stop("No matching files in specified directory.")
+     chrt.valid <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
+   })
 
+} else if (hydro_SPLIT_OUTPUT_COUNT == 0) {
+
+   write(paste0("Reading validation run model out file : CHANOBS_DOMAIN1.nc"), stdout())
+   chanobsFile <- list.files(outPathValid, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
+   q_cms = ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "streamflow")
+   if (length(dim(q_cms)) != 1) {
+      rotate <- function(x) t(apply(x, 2, rev))
+      q_cms <- rotate(q_cms) # R totate the matrix when it is reading it oin.
+      q_cms <- q_cms[, gageIndx]
+  }
+
+   POSIXct<-as.POSIXct(ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "time")*60,
+                       origin = "1970-01-01 00:00:00 UTC", tz = "UTC") # because the time is minutes from this origin
+
+   chrt.valid <- data.frame(POSIXct,q_cms)
+   chrt.valid <-as.data.table(chrt.valid)
+
+   # If the model crashes, then it would be append to the file after restarting the model,
+   # therefore, we need to remove the duplicates in order to not double count for those.
+   chrt.valid <- unique(chrt.valid)
+
+   # remove the spin up part
+   chrt.valid <- chrt.valid[POSIXct > minDate, ]
+}
 # Stop cluster
 if (parallelFlag) stopCluster(cl)
 
