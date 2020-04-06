@@ -157,6 +157,10 @@ gageListSQL = select * from "Domain_Meta";
 gageListFile =
 
 [lsmPhysics]
+# Output-Specific option
+# 1 means that it will output 1 file per output time step
+# 0 means that it will append all the timesteps to one file called LDASOUT_DOMAIN1.nc, right now it is not working
+SplitOutputCount = 1
 # namelist.hrldas specific options/flags for NoahMP
 # Specify the DYNAMIC_VEG_OPTION
 dynVegOption = 4
@@ -228,6 +232,11 @@ hydroOutDt = 3600
 [hydroIO]
 # Flag for overwriting soil variables from routing restart file (0:Off,1:On)
 rstType = 1
+
+# Output-Specific option
+# 1 means that it will output 1 file for CHANOB per output time step
+# 0 means that it will append all the timesteps to one file called CHANOBS_DOMAIN1.nc
+SplitOutputCount = 0
 
 # Output-Specific output flags for outputs
 # Specify wrfHydro output config.    
