@@ -134,30 +134,66 @@ if (cyclecount > 0) {
         parallelFlag <- FALSE
    }
 
-   # Read files
-   write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
-   system.time({
-   filesList <- list.files(path = outPath,
-                          pattern = glob2rx("*.CHANOBS_DOMAIN*"),
-                          full.names = TRUE)
-   filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
-   whFiles <- which(filesListDate >= startDate)
-   filesList <- filesList[whFiles]
-   if (length(filesList) == 0) stop("No matching files in specified directory.")
+   ### Reading the Streamflow values (Later Snow and Soil Moisture and other variables would be added)
 
-   # Find the index of the gage from the first file in the list.
-   idTmp <- nc_open(filesList[1])
-   featureIdTmp <- ncvar_get(idTmp,'feature_id')
-   gageIndx <- which(featureIdTmp == linkId)
-   print(gageIndx)
-   print(whFiles[0])
-   nc_close(idTmp)
-   rm(idTmp)
-   rm(featureIdTmp)
+   if (hydro_SPLIT_OUTPUT_COUNT == 1) {
+      # Read files
+      write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
+      system.time({
+      filesList <- list.files(path = outPath,
+                             pattern = glob2rx("*.CHANOBS_DOMAIN*"),
+                             full.names = TRUE)
+      filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
+      whFiles <- which(filesListDate >= startDate)
+      filesList <- filesList[whFiles]
+      if (length(filesList) == 0) stop("No matching files in specified directory.")
+
+      # Find the index of the gage from the first file in the list.
+      idTmp <- nc_open(filesList[1])
+      featureIdTmp <- ncvar_get(idTmp,'feature_id')
+      gageIndx <- which(featureIdTmp == linkId)
+      print(gageIndx)
+      print(whFiles[0])
+      nc_close(idTmp)
+      rm(idTmp)
+      rm(featureIdTmp)
    
-   chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
-   })
+      chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
+      })
 
+   } else if (hydro_SPLIT_OUTPUT_COUNT == 0) {
+      write(paste0("Reading model out file : CHANOBS_DOMAIN1.nc"), stdout())
+      system.time({
+      chanobsFile <- list.files(outPath, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
+      q_cms = ncdf4::ncvar_get(nc_open(chanobsFile), varid = "streamflow")
+      if (length(dim(q_cms)) != 1) {
+         rotate <- function(x) t(apply(x, 2, rev))
+         q_cms <- rotate(q_cms) # R totate the matrix when it is reading it oin.
+
+         # Find the index of the gage from the first file in the list.
+
+         featureIdTmp <- ncdf4::ncvar_get(nc_open(chanobsFile), varid = "feature_id")
+         gageIndx <- which(featureIdTmp == linkId)
+         print(gageIndx)
+         rm(featureIdTmp)
+         q_cms <- q_cms[, gageIndx]
+     }
+
+      POSIXct<-as.POSIXct(ncdf4::ncvar_get(nc_open(chanobsFile), varid = "time")*60,
+                          origin = "1970-01-01 00:00:00 UTC", tz = "UTC") # because the time is minutes from this origin
+
+      chrt <- data.frame(POSIXct,q_cms)
+      chrt <-as.data.table(chrt)
+      })
+
+      # If the model crashes, then it would be append to the file after restarting the model,
+      # therefore, we need to remove the duplicates in order to not double count for those.
+      chrt <- unique(chrt)
+
+      # remove the spin up part
+      chrt <- chrt[POSIXct > startDate, ]
+   }
+   
    # Stop cluster
    if (parallelFlag) stopCluster(cl)
 
@@ -204,10 +240,6 @@ if (cyclecount > 0) {
       quit("no")
    }
 
-   # Calc objective function
-   F_new <- objFunc(chrt.obj$q_cms, chrt.obj$obs)
-   if (objFn %in% c("Nse", "NseLog", "NseWt", "Kge")) F_new <- 1 - F_new
-
    # Calc stats
    chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
    statCor <- cor(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
@@ -223,6 +255,16 @@ if (cyclecount > 0) {
    } else {
       statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,24))
    }
+
+   # Calc objective function
+   if (objFn == "NseWt") F_new <- 1 - statNseWt
+   if (objFn == "Nse") F_new <- 1 - statNse
+   if (objFn == "NseLog") F_new <- 1 - statNseLog
+   if (objFn == "Kge")  F_new <- 1 - statKge
+   if (objFn == "Rmse") F_new <- statRmse
+   if (objFn == "Cor") F_new <- 1 - statCor
+   if (objFn == "Msof")  F_new <- statMsof
+   if (objFn == "hyperResMultiObj")  F_new <- statHyperResMultiObj
 
    # Archive results
    #x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
@@ -498,6 +540,9 @@ if (any(x_archive$obj > objFunThreshold)) {
    # Write param files
    write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
    if (cyclecount <= m) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
+
+   # remove the CAHNOBS_DOMAIN file since we do not need it anymore , and the files gets appended if left there
+   if (hydro_SPLIT_OUTPUT_COUNT == 0) file.remove(chanobsFile)
 
    #system(paste0("touch ", runDir, "/R_COMPLETE"))
    fileConn <- file(paste0(runDir, "/R_COMPLETE"))
