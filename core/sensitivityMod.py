@@ -974,6 +974,12 @@ def genRNameList(jobData,workDir,gageMeta,gage):
         fileObj.write(inStr)
         fileObj.write("SA_bootstrap_replicates <- 1000 # Number of replicates for the bootstrap resmaplins\n")
         fileObj.write("SA_quantileFrac <- 0.9 # if not provided will use the 0.9 for 90% quantile\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rNameList
