@@ -56,7 +56,7 @@ def main(argv):
     soilOrig = str(args.soilOrig[0])
     if args.gwFlag[0] == 1:
         gwOrig = str(args.gwOrig[0])
-    if args.chrtFlag[0] == 3:
+    if args.chRtFlag[0] == 3:
         chanParmOrig = str(args.chanParmOrig[0])
     workDir = str(args.workDir[0])
     nIter = int(args.nIter[0])
@@ -118,7 +118,7 @@ def main(argv):
             except:
                 sys.exit(1)
                 
-        if args.chrtFlag[0] == 3:
+        if args.chRtFlag[0] == 3:
             try:
                 tmpPath = runDir + "/CHANPARM.TBL"
                 print(tmpPath)
