@@ -1034,9 +1034,10 @@ def generateBsubPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData)
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
+            print(gageMeta)
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          gageMeta.gwFile + ' ' + workDir + '/CHANPARM.TBL ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
@@ -1105,9 +1106,10 @@ def generatePbsPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
+            print(gageMeta)
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          gageMeta.gwFile + ' ' + workDir + '/CHANPARM.TBL '+ workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
@@ -1176,9 +1178,10 @@ def generateSlurmPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             fileObj = open(outFile2,'w')
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + '\n')
+            print(gageMeta)
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          gageMeta.gwFile + ' ' + workDir + '/CHANPARM.TBL ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
@@ -1245,7 +1248,7 @@ def generateMpiPreProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData):
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          gageMeta.gwFile + ' ' + workDir + '/CHANPARM.TBL ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
@@ -1432,7 +1435,7 @@ def generateMpiScript(jobData,gageID,runDir,gageMeta,iteration):
             inStr = 'mpirun -np ' + str(int(jobData.nCoresMod)) + ' ./WHS' + \
                     str(jobData.jobID) + str(gageID) + str(iteration) + '\n'
         fileObj.write(inStr)
-        inStr = "Rscript " + runDir + "/../Collect_simulated_flow.R " + runDir + "\n"
+        inStr = "Rscript " + runDir + "/Collect_simulated_flow.R " + runDir + "\n"
         fileObj.write(inStr)
         fileObj.close
     except:
@@ -1503,7 +1506,7 @@ def generateBsubPostProcScript(jobData,gageID,runDir,workDir,gageMeta,staticData
             fileObj.write('Rscript ' + runRProgram + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters_sensitivity.py ' + gageMeta.fullDom + \
                           ' ' + gageMeta.hydroSpatial + ' ' + gageMeta.soilFile + ' ' + \
-                          gageMeta.gwFile + ' ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
+                          gageMeta.gwFile + ' ' + workDir + '/CHANPARM.TBL ' + workDir + ' ' + str(jobData.nSensIter) + ' ' + \
                           str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
             fileObj.write('exit\n')
         except:
