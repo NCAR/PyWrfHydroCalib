@@ -138,6 +138,8 @@ class jobMeta:
         self.gageBegModelCpu = []
         self.gageEndModelCpu = []
         self.groupComplete = []
+        self.lsmSplitOutputCount = []
+        self.SplitOutputCount = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
