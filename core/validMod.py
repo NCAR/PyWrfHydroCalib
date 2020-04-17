@@ -1395,7 +1395,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir,staticData):
         fileObj.write('#!/bin/bash\n')
         fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' ' + str(staticData.gwBaseFlag) + \
-                      ' ' + str(staticData.chnRtOpt) + ' \n')
+                      ' ' + str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) + ' \n')
         fileObj.write('exit\n')
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
