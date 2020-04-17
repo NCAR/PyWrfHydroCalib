@@ -729,6 +729,32 @@ def setupModels(jobData,db,args,libPathTop):
                 jobData.errMsg = "ERROR: Failure to link: " + sensPostRProgram
                 raise
 
+        # Create symlink for the mask file if runnig calibration and enableMask is 1
+        
+        if jobData.calibFlag == 1 and jobData.enableMask == 1 :
+           try:
+               maskFile = gageData.forceDir[0:-7] + "mask.coarse.tif"
+               link = gageDir + "/RUN.CALIB/mask.coarse.tif"
+               os.symlink(maskFile,link)
+               link = gageDir + "/RUN.VALID/OUTPUT/BEST/mask.coarse.tif"
+               os.symlink(maskFile,link)
+
+               maskFile = gageData.forceDir[0:-7] + "mask.fine.tif"
+               link = gageDir + "/RUN.CALIB/mask.fine.tif"
+               os.symlink(maskFile,link)
+               link = gageDir + "/RUN.VALID/OUTPUT/BEST/mask.fine.tif"
+               os.symlink(maskFile,link)
+
+               maskFile = gageData.forceDir[0:-7] + "mask.GWBUCKET.csv"
+               link = gageDir + "/RUN.CALIB/mask.GWBUCKET.csv"
+               os.symlink(maskFile,link)
+               link = gageDir + "/RUN.VALID/OUTPUT/BEST/mask.GWBUCKET.csv"
+               os.symlink(maskFile,link)
+
+           except:
+               jobData.errMsg = "ERROR: Failure creating the symlink to the mask"
+               raise
+
 def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
     """
     Function to generate the run script for a particular group of basins.
