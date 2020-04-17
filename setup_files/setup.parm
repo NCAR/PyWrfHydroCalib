@@ -106,6 +106,14 @@ objectiveFunction = Nse
 # DDS specific parameters. Leave blank if not using DDS.
 ddsR = 0.2
 
+# Specify whether to use the mask to mask out some part of the basins from calibrating or not
+# if enableMask set to 0, no need to provide a mask
+# if enableMask set to 1, then a mask should be provided on the coarse grid, in tif format
+# the mask should be set to 1 where we want to keep the parameters as is and set to 0 where
+# we would like to calibrate the parameters. Note this capability does not exist for sensitivity analysis
+enableMask = 1
+#maskFile = mask.coare.tif # expecting exactly this name in the domain dir
+
 # Specify email to send updates/error messages to.
 email = john.doe@youremail.com
 
