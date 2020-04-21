@@ -74,7 +74,7 @@ def main(argv):
     # from lingering parallel processes.
     time.sleep(10)
     
-#    os.remove(rCompletePath)
+    os.remove(rCompletePath)
     
     # If the params_new file is not present, but the R Complete path was,
     # we are going to assume this was the last iteration and no parameters
@@ -270,7 +270,7 @@ def main(argv):
 		
             if args.gwFlag[0] == 1:   
                 if param == "zmax":
-                    idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = False)] = float(newParams.zmax[0])
+                    idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(newParams.zmax[0])
 
                 if param == "expon":
                     idGw.variables['Expon'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(newParams.expon[0])
