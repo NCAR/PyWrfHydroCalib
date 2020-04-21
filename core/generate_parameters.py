@@ -17,6 +17,7 @@ import os
 import shutil
 import pandas as pd
 import numpy as np
+import xarray as xr
 
 def main(argv):
     # Parse arguments. Only input necessary is the run directory.
@@ -34,6 +35,8 @@ def main(argv):
                         help='Flag to indicate if groundwater bucket model is being used.')
     parser.add_argument('chRtFlag',metavar='chRtFlag',type=int,nargs='+',
                         help='Flag to indicate the channel routing method being used.')
+    parser.add_argument('enableMask',metavar='enableMask',type=int,nargs='+',
+                        help='Flag to indicate the use of mask.')
                         
     args = parser.parse_args()
     bestDir = str(args.bestDir[0])
@@ -142,127 +145,145 @@ def main(argv):
     idSoil2D = Dataset(soilBest,'a')
     idGw = Dataset(gwBest,'a')
     idHydroTbl = Dataset(hydroBest,'a')
-    
+
+    # if we are going to use the mask, read in the file
+    if args.enableMask[0] == 1:
+       maskFile = bestDir + "/mask.coarse.tif"
+       mask = xr.open_rasterio(maskFile)
+       maskFile = bestDir + "/mask.fine.tif"
+       maskFine= xr.open_rasterio(maskFile)
+       maskFile = bestDir + "/mask.GWBUCKET.csv"
+       maskGW = pd.read_csv(maskFile,dtype={0: int})
+
     # Loop through and adjust each parameter accordingly.
     for param in paramNames:
-        print(param)
-        if param == "bexp":
-            idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(paramValues[np.where(paramNames == 'bexp')[0][0]])
+        if args.enableMask[0] == 0:
+            print(param)
+            if param == "bexp":
+                idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(paramValues[np.where(paramNames == 'bexp')[0][0]])
         
-        if param == "smcmax":
-            idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
+            if param == "smcmax":
+                idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
         
-        if param == "slope":
-            idSoil2D.variables['slope'][:,:,:] = float(paramValues[np.where(paramNames == 'slope')[0][0]])
+            if param == "slope":
+                idSoil2D.variables['slope'][:,:,:] = float(paramValues[np.where(paramNames == 'slope')[0][0]])
         
-        if param == "lksatfac":
-            idFullDom.variables['LKSATFAC'][:,:] = float(paramValues[np.where(paramNames == 'lksatfac')[0][0]])
+            if param == "lksatfac":
+                idFullDom.variables['LKSATFAC'][:,:] = float(paramValues[np.where(paramNames == 'lksatfac')[0][0]])
         
-        if args.gwFlag[0] == 1:
-            if param == "zmax":
-                idGw.variables['Zmax'][:] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
-        
-            if param == "expon":
-                idGw.variables['Expon'][:] = float(paramValues[np.where(paramNames == 'expon')[0][0]])
+            if args.gwFlag[0] == 1:
+                if param == "zmax":
+                    idGw.variables['Zmax'][:] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
+         
+                if param == "expon":
+                    idGw.variables['Expon'][:] = float(paramValues[np.where(paramNames == 'expon')[0][0]])
 
-            if param == "Loss":
-                idGw.variables['Loss'][:] = float(paramValues[np.where(paramNames == 'Loss')[0][0]])
+                if param == "Loss":
+                    idGw.variables['Loss'][:] = float(paramValues[np.where(paramNames == 'Loss')[0][0]])
 
-            if param == 'Coeff':
-                idGw.variables['Coeff'][:] = float(paramValues[np.where(paramNames == 'Coeff')[0][0]])
+                if param == 'Coeff':
+                    idGw.variables['Coeff'][:] = float(paramValues[np.where(paramNames == 'Coeff')[0][0]])
         
-        if param == "cwpvt":
-            idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(paramValues[np.where(paramNames == 'cwpvt')[0][0]])
+            if param == "cwpvt":
+                idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(paramValues[np.where(paramNames == 'cwpvt')[0][0]])
         
-        if param == "vcmx25":
-            idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(paramValues[np.where(paramNames == 'vcmx25')[0][0]])
+            if param == "vcmx25":
+                idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(paramValues[np.where(paramNames == 'vcmx25')[0][0]])
         
-        if param == "mp":
-            idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(paramValues[np.where(paramNames == 'mp')[0][0]])
+            if param == "mp":
+                idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(paramValues[np.where(paramNames == 'mp')[0][0]])
         
-        if param == "hvt":
-            idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(paramValues[np.where(paramNames == 'hvt')[0][0]])
+            if param == "hvt":
+                idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(paramValues[np.where(paramNames == 'hvt')[0][0]])
         
-        if param == "mfsno":
-            idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(paramValues[np.where(paramNames == 'mfsno')[0][0]])
+            if param == "mfsno":
+                idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(paramValues[np.where(paramNames == 'mfsno')[0][0]])
         
-        if param == "refkdt":
-            idSoil2D.variables['refkdt'][:,:,:] = float(paramValues[np.where(paramNames == 'refkdt')[0][0]])
+            if param == "refkdt":
+                idSoil2D.variables['refkdt'][:,:,:] = float(paramValues[np.where(paramNames == 'refkdt')[0][0]])
         
-        if param == "dksat":
-            idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
+            if param == "dksat":
+                idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
         
-        if param == "retdeprtfac":
-            idFullDom.variables['RETDEPRTFAC'][:,:] = float(paramValues[np.where(paramNames == 'retdeprtfac')[0][0]])
+            if param == "retdeprtfac":
+                idFullDom.variables['RETDEPRTFAC'][:,:] = float(paramValues[np.where(paramNames == 'retdeprtfac')[0][0]])
         
-        if param == "ovroughrtfac":
-            idFullDom.variables['OVROUGHRTFAC'][:,:] = float(paramValues[np.where(paramNames == 'ovroughrtfac')[0][0]])
+            if param == "ovroughrtfac":
+                idFullDom.variables['OVROUGHRTFAC'][:,:] = float(paramValues[np.where(paramNames == 'ovroughrtfac')[0][0]])
         
-        if param == "dksat":
-            idHydroTbl.variables['LKSAT'][:,:] = idHydroTbl.variables['LKSAT'][:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
+            if param == "dksat":
+                idHydroTbl.variables['LKSAT'][:,:] = idHydroTbl.variables['LKSAT'][:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]])
             
-        if param == "smcmax":
-            idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
+            if param == "smcmax":
+                idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]])
             
-        if param == "rsurfexp":
-            idSoil2D.variables['rsurfexp'][:,:,:] = float(paramValues[np.where(paramNames == 'rsurfexp')[0][0]])
+            if param == "rsurfexp":
+                idSoil2D.variables['rsurfexp'][:,:,:] = float(paramValues[np.where(paramNames == 'rsurfexp')[0][0]])
 
-        if param == "z0sno":
-            idSoil2D.variables['z0sno'][:,:,:] = float(paramValues[np.where(paramNames == 'z0sno')[0][0]])
+        if args.enableMask[0] == 1:
+            print(param)
+            if param == "bexp":
+                idSoil2D.variables['bexp'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['bexp'][:,:,:,:],idSoil2D.variables['bexp'][:,:,:,:]*float(paramValues[np.where(paramNames == 'bexp')[0][0]]))
 
-        if param == "ssi":
-            idSoil2D.variables['ssi'][:,:,:] = float(paramValues[np.where(paramNames == 'ssi')[0][0]])
+            if param == "smcmax":
+                idSoil2D.variables['smcmax'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['smcmax'][:,:,:,:],idSoil2D.variables['smcmax'][:,:,:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]]))
 
-        if param == "snowretfac":
-            idSoil2D.variables['snowretfac'][:,:,:] = float(paramValues[np.where(paramNames == 'snowretfac')[0][0]])
+            if param == "slope":
+                idSoil2D.variables['slope'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['slope'][:,:,:],idSoil2D.variables['slope'][:,:,:]*0+float(paramValues[np.where(paramNames == 'slope')[0][0]]))
 
-        if param == "swemx":
-            idSoil2D.variables['swemx'][:,:,:] = float(paramValues[np.where(paramNames == 'swemx')[0][0]])
+            if param == "lksatfac":
+                idFullDom.variables['LKSATFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['LKSATFAC'][:,:],idFullDom.variables['LKSATFAC'][:,:]*0+float(paramValues[np.where(paramNames == 'lksatfac')[0][0]]))
 
-        if param == "tau0":
-            idSoil2D.variables['tau0'][:,:,:] = float(paramValues[np.where(paramNames == 'tau0')[0][0]])
+            if args.gwFlag[0] == 1:
+                if param == "zmax":
+                    idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
 
-        if param == "graingrowth":
-            idSoil2D.variables['graingrowth'][:,:,:] = float(paramValues[np.where(paramNames == 'graingrowth')[0][0]])
+                if param == "expon":
+                    idGw.variables['Expon'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(paramValues[np.where(paramNames == 'expon')[0][0]])
 
-        if param == "extragrowth":
-            idSoil2D.variables['extragrowth'][:,:,:] = float(paramValues[np.where(paramNames == 'extragrowth')[0][0]])
+                if param == "Loss":
+                    idGw.variables['Loss'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(paramValues[np.where(paramNames == 'Loss')[0][0]])
 
-        if param == "dirtsoot":
-            idSoil2D.variables['dirtsoot'][:,:,:] = float(paramValues[np.where(paramNames == 'dirtsoot')[0][0]])
+                if param == 'Coeff':
+                    idGw.variables['Coeff'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(paramValues[np.where(paramNames == 'Coeff')[0][0]])
 
-        if param == "bats_cosz":
-            idSoil2D.variables['bats_cosz'][:,:,:] = float(paramValues[np.where(paramNames == 'bats_cosz')[0][0]])
+            if param == "cwpvt":
+                idSoil2D.variables['cwpvt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['cwpvt'][:,:,:],idSoil2D.variables['cwpvt'][:,:,:]*float(paramValues[np.where(paramNames == 'cwpvt')[0][0]]))
 
-        if param == "bats_visnew":
-            idSoil2D.variables['bats_visnew'][:,:,:] = float(paramValues[np.where(paramNames == 'bats_visnew')[0][0]])
+            if param == "vcmx25":
+                idSoil2D.variables['vcmx25'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['vcmx25'][:,:,:],idSoil2D.variables['vcmx25'][:,:,:]*float(paramValues[np.where(paramNames == 'vcmx25')[0][0]]))
 
-        if param == "bats_nirnew":
-            idSoil2D.variables['bats_nirnew'][:,:,:] = float(paramValues[np.where(paramNames == 'bats_nirnew')[0][0]])
+            if param == "mp":
+                idSoil2D.variables['mp'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['mp'][:,:,:],idSoil2D.variables['mp'][:,:,:]*float(paramValues[np.where(paramNames == 'mp')[0][0]]))
 
-        if param == "bats_visage":
-            idSoil2D.variables['bats_visage'][:,:,:] = float(paramValues[np.where(paramNames == 'bats_visage')[0][0]])
+            if param == "hvt":
+                idSoil2D.variables['hvt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['hvt'][:,:,:],idSoil2D.variables['hvt'][:,:,:]*float(paramValues[np.where(paramNames == 'hvt')[0][0]]))
 
-        if param == "bats_nirage":
-            idSoil2D.variables['bats_nirage'][:,:,:] = float(paramValues[np.where(paramNames == 'bats_nirage')[0][0]])
+            if param == "mfsno":
+                idSoil2D.variables['mfsno'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['mfsno'][:,:,:],idSoil2D.variables['mfsno'][:,:,:]*float(paramValues[np.where(paramNames == 'mfsno')[0][0]]))
 
-        if param == "bats_visdir":
-            idSoil2D.variables['bats_visdir'][:,:,:] = float(paramValues[np.where(paramNames == 'bats_visdir')[0][0]])
+            if param == "refkdt":
+                idSoil2D.variables['refkdt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['refkdt'][:,:,:],idSoil2D.variables['refkdt'][:,:,:]*0+float(paramValues[np.where(paramNames == 'refkdt')[0][0]]))
 
-        if param == "bats_nirdir":
-            idSoil2D.variables['bats_nirdir'][:,:,:] = float(paramValues[np.where(paramNames == 'bats_nirdir')[0][0]])
+            if param == "dksat":
+                idSoil2D.variables['dksat'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['dksat'][:,:,:,:],idSoil2D.variables['dksat'][:,:,:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]]))
 
-        if param == "rsurfsnow":
-            idSoil2D.variables['rsurfsnow'][:,:,:] = float(paramValues[np.where(paramNames == 'rsurfsnow')[0][0]])
+            if param == "retdeprtfac":
+                idFullDom.variables['RETDEPRTFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['RETDEPRTFAC'][:,:],idFullDom.variables['RETDEPRTFAC'][:,:]*0+float(paramValues[np.where(paramNames == 'retdeprtfac')[0][0]]))
 
-        if param == "refsnowdens":
-            idSoil2D.variables['refsnowdens'][:,:,:] = float(paramValues[np.where(paramNames == 'refsnowdens')[0][0]])
+            if param == "ovroughrtfac":
+                idFullDom.variables['OVROUGHRTFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['OVROUGHRTFAC'][:,:],idFullDom.variables['OVROUGHRTFAC'][:,:]*0+float(paramValues[np.where(paramNames == 'ovroughrtfac')[0][0]]))
 
-        if param == "frac_direct":
-            idSoil2D.variables['frac_direct'][:,:,:] = float(paramValues[np.where(paramNames == 'frac_direct')[0][0]])
+            if param == "dksat":
+                idHydroTbl.variables['LKSAT'][:,:] = np.where(np.flipud(mask[0])==1,idHydroTbl.variables['LKSAT'][:,:],idHydroTbl.variables['LKSAT'][:,:]*float(paramValues[np.where(paramNames == 'dksat')[0][0]]))
 
-        if param == "frac_visible":
-            idSoil2D.variables['frac_visible'][:,:,:] = float(paramValues[np.where(paramNames == 'frac_visible')[0][0]])
+            if param == "smcmax":
+                idHydroTbl.variables['SMCMAX1'][:,:] = np.where(np.flipud(mask[0])==1,idHydroTbl.variables['SMCMAX1'][:,:],idHydroTbl.variables['SMCMAX1'][:,:]*float(paramValues[np.where(paramNames == 'smcmax')[0][0]]))
+
+            if param == "rsurfexp":
+                idSoil2D.variables['rsurfexp'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['rsurfexp'][:,:,:],idSoil2D.variables['rsurfexp'][:,:,:]*0+float(paramValues[np.where(paramNames == 'rsurfexp')[0][0]]))
+
+
 
             
     # Close NetCDF files

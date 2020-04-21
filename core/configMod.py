@@ -140,6 +140,8 @@ class jobMeta:
         self.groupComplete = []
         self.lsmSplitOutputCount = []
         self.SplitOutputCount = []
+        self.enableMask = []
+        #self.maskFile = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -239,6 +241,8 @@ class jobMeta:
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
         self.email = str(parser.get('logistics','email'))
+        self.enableMask = int(parser.get('logistics','enableMask'))
+        #self.maskFile = str(parser.get('logistics','maskFile'))
         #self.slChan = str(parser.get('logistics','slackChannel'))
         #self.slToken = str(parser.get('logistics','slackToken'))
         #self.slUser = str(parser.get('logistics','slackUser'))
@@ -1031,3 +1035,16 @@ def checkConfig(parser):
     if check1 == 0 and check2 == 1:
         print('ERROR: Cannot activate bucket_loss in the namelist if enableGwBucketLoss is off.')
         raise  Exception()
+
+    # Read in the mask options.
+    check1 = int(parser.get('logistics','enableMask'))
+    #check2 = str(parser.get('logistics','maskFile'))
+    if check1 < 0 or check1 > 1:
+        print('ERROR: Invalid enableMask option specified in the configuration file.')
+        raise Exception()
+    #    if check1 == 1 and len(check2) <= 0:
+    #        print('ERROR: Name of the mask file should be specified and \
+    #            the mask should be located under the domain directory specified in the domainMeta.csv file.')
+    #        raise  Exception()
+
+
