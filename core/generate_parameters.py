@@ -236,7 +236,7 @@ def main(argv):
 
             if args.gwFlag[0] == 1:
                 if param == "zmax":
-                    idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = False)] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
+                    idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
 
                 if param == "expon":
                     idGw.variables['Expon'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(paramValues[np.where(paramNames == 'expon')[0][0]])
