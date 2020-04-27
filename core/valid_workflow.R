@@ -77,8 +77,7 @@ if (hydro_SPLIT_OUTPUT_COUNT == 1) {
    chanobsFile <- list.files(outPathControl, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
    q_cms = ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "streamflow")
    if (length(dim(q_cms)) != 1) {
-      rotate <- function(x) t(apply(x, 2, rev))
-      q_cms <- rotate(q_cms) # R totate the matrix when it is reading it oin.
+      q_cms <- t(q_cms) # R totate the matrix when it is reading it oin.
       q_cms <- q_cms[, gageIndx]
   }
 
@@ -116,8 +115,7 @@ if (hydro_SPLIT_OUTPUT_COUNT == 1) {
    chanobsFile <- list.files(outPathValid, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
    q_cms = ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "streamflow")
    if (length(dim(q_cms)) != 1) {
-      rotate <- function(x) t(apply(x, 2, rev))
-      q_cms <- rotate(q_cms) # R totate the matrix when it is reading it oin.
+      q_cms <- t(q_cms) # R totate the matrix when it is reading it oin.
       q_cms <- q_cms[, gageIndx]
   }
 
