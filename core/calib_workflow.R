@@ -167,8 +167,7 @@ if (cyclecount > 0) {
       chanobsFile <- list.files(outPath, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
       q_cms = ncdf4::ncvar_get(nc_open(chanobsFile), varid = "streamflow")
       if (length(dim(q_cms)) != 1) {
-         rotate <- function(x) t(apply(x, 2, rev))
-         q_cms <- rotate(q_cms) # R totate the matrix when it is reading it oin.
+         q_cms <- t(q_cms) # R totate the matrix when it is reading it oin.
 
          # Find the index of the gage from the first file in the list.
 
