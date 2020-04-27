@@ -108,11 +108,24 @@ ddsR = 0.2
 
 # Specify whether to use the mask to mask out some part of the basins from calibrating or not
 # if enableMask set to 0, no need to provide a mask
-# if enableMask set to 1, then a mask should be provided on the coarse grid, in tif format
+# if enableMask set to 1, then a mask should be provided on the coarse grid and fine grid, in tif format 
+# and also a csv file containing the GW ComIDs. 
+# the name of the files are hardcoded in the script and they should be located under the domain directory
+# here are the names: mask.coarse.tif, mask.fine.tif and mask.GWBUCKET.csv
 # the mask should be set to 1 where we want to keep the parameters as is and set to 0 where
 # we would like to calibrate the parameters. Note this capability does not exist for sensitivity analysis
-enableMask = 1
+enableMask = 0
 #maskFile = mask.coare.tif # expecting exactly this name in the domain dir
+
+# Specify whether to calibrate to more than one streamflow gages or not
+# if enableMultiSite set to 1, a file containing the list of the gages of interest and 
+# the corresponding weights in the calculation of the objective function is required. 
+# Name of the file is hardcoded to "calib_sites.csv" that is placed under the domain dir
+# and contains the following fields:
+# 1- FID : Feature id of the gage as it appears in the CHANOBS
+# 2- site_no : site identifier as it appears in the obsStrDate.Rdata file
+# 3- weight : weight to be given to site when caculating the objective functio
+enableMultiSites = 1
 
 # Specify email to send updates/error messages to.
 email = john.doe@youremail.com
