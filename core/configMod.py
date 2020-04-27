@@ -142,6 +142,8 @@ class jobMeta:
         self.SplitOutputCount = []
         self.enableMask = []
         #self.maskFile = []
+        self.enableMultiSites = []
+
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -243,6 +245,7 @@ class jobMeta:
         self.email = str(parser.get('logistics','email'))
         self.enableMask = int(parser.get('logistics','enableMask'))
         #self.maskFile = str(parser.get('logistics','maskFile'))
+        self.enableMultiSites=int(parser.get('logistics','enableMultiSites'))
         #self.slChan = str(parser.get('logistics','slackChannel'))
         #self.slToken = str(parser.get('logistics','slackToken'))
         #self.slUser = str(parser.get('logistics','slackUser'))
@@ -1047,4 +1050,10 @@ def checkConfig(parser):
     #            the mask should be located under the domain directory specified in the domainMeta.csv file.')
     #        raise  Exception()
 
+    # Read in the multis site calibraton option
+    check1 = int(parser.get('logistics','enableMultiSites'))
+    if check1 < 0 or check1 > 1:
+        print(check1)
+        print('ERROR: Invalid enableMultiSites specified in the configuration file.')
+        raise Exception()
 
