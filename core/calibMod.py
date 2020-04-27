@@ -1512,6 +1512,9 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
         inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
         fileObj.write(inStr)
+        fileObj.write('# Option to use multiple sites for calibration\n')
+        inStr = "enableMultiSites <- " + str(int(jobData.enableMultiSites)) + "\n"
+        fileObj.write(inStr)
 
         fileObj.close
     except:
