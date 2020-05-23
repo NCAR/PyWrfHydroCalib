@@ -28,9 +28,9 @@ Python required packages
 ## Quick instruction how to set up an experiment
 Defile the followings first: 
 * PATH_TO_PyWrfHydroCalib : Path to the PyWrfHydroCalib
-* PATH_TO_Database
-* PATH_TO_domainMeta.csv 
-* PATH_TO_setup.parm
+* PATH_TO_Database: path to the database
+* PATH_TO_domainMeta : Path to the domainMeta file containing information about the gages to be calibrated. 
+* PATH_TO_setupParm : Path to the setup.parm file which serve as the configuration file having all the information about the proprties of the calibration experiments and model setting. 
 
 Each steps needs to be finished before you run the command in next step. 
 Step 1: Create database
