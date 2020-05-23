@@ -26,8 +26,8 @@ Python required packages
 * psutil
 
 ## Quick instruction how to set up an experiment
-* Defile the followings first: 
-* PATH_TO_PyWrfHydroCalib 
+Defile the followings first: 
+* PATH_TO_PyWrfHydroCalib : Path to the PyWrfHydroCalib
 * PATH_TO_Database
 * PATH_TO_domainMeta.csv 
 * PATH_TO_setup.parm
@@ -49,12 +49,10 @@ Step 4: Run spinup
 ```bash
 python $PATH_TO_PyWrfHydroCalib/spinOrchestrator.py 1 --optDbPath $PATH_TO_Database`
 ```
-
 Step 5: Run calibration
 ```bash 
 python $PATH_TO_PyWrfHydroCalib/calibOrchestrator.py 1 --optDbPath $PATH_TO_Database
 ```
-
 Step 6: Run validation
 ```bash 
 python $PATH_TO_PyWrfHydroCalib/validOrchestrator.py 1 --optDbPath $PATH_TO_Database
