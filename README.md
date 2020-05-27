@@ -32,7 +32,8 @@ Defile the followings first:
 * PATH_TO_domainMeta : Path to the domainMeta file containing information about the gages to be calibrated. 
 * PATH_TO_setupParm : Path to the setup.parm file which serve as the configuration file having all the information about the proprties of the calibration experiments and model setting. 
 
-Each steps needs to be finished before you run the command in next step. 
+Each steps needs to be finished before you run the command in next step. 1 here is the jobID and can be any integer number. 
+
 Step 1: Create database
 ```bash
 python $PATH_TO_PyWrfHydroCalib/initDB.py --optDbPath $PATH_TO_Database`
