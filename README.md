@@ -2,7 +2,8 @@
 
 ## Disclaimer:
 This software is preliminary and is subject to revision. The software is provided in Beta status and under the condition that NCAR/UCAR will not be held liable for any damages resulting from the authorized or unauthorized use of the software. Until the official public release, this software is unsupported and “use at your own risk”.
-
+## Feedback:
+Since this software is currently in Beta status, we appreciate feedback to help improve the software. Please fill out this short [form] (https://forms.gle/5cpXfF96HQ8x57eX6)
 ## Introduction
 This package provides tools for calibration of WRF-Hydro. All the scripts here are either in Python or R. The user manual has the full description of the underlying concepts and technical details on what is included in the database and how to set a calibration run from start to finish. 
 
