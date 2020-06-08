@@ -13,8 +13,6 @@ GetNcdfFile <- function (file, variables = NULL, exclude = FALSE, quiet = FALSE,
   if (!file.exists(file))
     warning(paste0("The file ", file, "does not exist."),
             immediate. = TRUE)
-  if (!quiet)
-    ncdump(file)
   nc <- ncdf4::nc_open(file)
   varsInFile <- names(nc$var)
   dimVarsInFile <- names(nc$dim)
@@ -62,6 +60,13 @@ GetNcdfFile <- function (file, variables = NULL, exclude = FALSE, quiet = FALSE,
   outList
 }
 
+ReadChFile_Multi <- function(file) {
+  chanobs <- GetNcdfFile(file, variables = c("feature_id", "streamflow"), quiet = TRUE)
+  chanobs$POSIXct <-  as.POSIXct(strsplit(basename(file),"[.]")[[1]][1], format = "%Y%m%d%H%M", tz = "UTC")
+  return(chanobs)
+}
+
+
 CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
   timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone),
                                        tz=timeZone), "days"))
@@ -88,9 +93,9 @@ Convert2Daily <- function(str) {
    str$Date <- CalcDateTrunc(str$POSIXct)
    setkey(str, Date)
    if ("q_cms" %in% names(str)) {
-      str.d <- str[, list(q_cms=mean(q_cms, na.rm=TRUE)), by = "Date"]
+      str.d <- str[, list(q_cms=mean(q_cms, na.rm=TRUE)), by = c("Date", "site_no")]
    } else if ("obs" %in% names(str)) {
-      str.d <- str[, list(obs=mean(obs, na.rm=TRUE)), by = "Date"]
+      str.d <- str[, list(obs=mean(obs, na.rm=TRUE)), by = c("Date", "site_no")]
    }
    str.d$POSIXct <- as.POSIXct(paste0(str.d$Date, " 00:00"), tz="UTC")
    str.d

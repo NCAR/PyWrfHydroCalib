@@ -80,6 +80,10 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    x_archive <- as.data.frame(matrix(, nrow=1, ncol=length(xnames)+2+length(metrics)))
    names(x_archive) <- c("iter", xnames, "obj", metrics)
 
+   if (enableMultiSites == 1) {
+        x_archive_2 <- as.data.frame(matrix(, nrow=1, ncol=length(xnames)+2+length(metrics)+1))
+        names(x_archive_2) <- c("iter", xnames, "obj", metrics, "site_no")
+   }
    # Output parameter set
    x_new <- x0
    cyclecount <- 1
@@ -135,11 +139,10 @@ if (cyclecount > 0) {
    }
 
    ### Reading the Streamflow values (Later Snow and Soil Moisture and other variables would be added)
-
    if (hydro_SPLIT_OUTPUT_COUNT == 1) {
+
       # Read files
       write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
-      system.time({
       filesList <- list.files(path = outPath,
                              pattern = glob2rx("*.CHANOBS_DOMAIN*"),
                              full.names = TRUE)
@@ -147,52 +150,66 @@ if (cyclecount > 0) {
       whFiles <- which(filesListDate >= startDate)
       filesList <- filesList[whFiles]
       if (length(filesList) == 0) stop("No matching files in specified directory.")
+      chrt <- as.data.table(plyr::ldply(filesList, ReadChFile_Multi, .parallel = parallelFlag))
+      setnames(chrt, "streamflow", "q_cms")
+      setnames(chrt, "feature_id", "FID")
 
-      # Find the index of the gage from the first file in the list.
-      idTmp <- nc_open(filesList[1])
-      featureIdTmp <- ncvar_get(idTmp,'feature_id')
-      gageIndx <- which(featureIdTmp == linkId)
-      print(gageIndx)
-      print(whFiles[0])
-      nc_close(idTmp)
-      rm(idTmp)
-      rm(featureIdTmp)
-   
-      chrt <- as.data.table(plyr::ldply(filesList, ReadChFile, gageIndx, .parallel = parallelFlag))
-      })
+      if (enableMultiSites == 0) {
+        chrt <- subset(chrt, FID == linkId)
+        chrt$site_no = siteId   
+      } else { # enableMultiSites = 1
+        calib_sites <- read.csv(paste0(runDir, "/calib_sites.csv"), colClasses= c("integer", "character", "numeric"))
+        chrt <- merge(chrt, calib_sites[, c("FID", "site_no")],  by = "FID")
+      }
 
    } else if (hydro_SPLIT_OUTPUT_COUNT == 0) {
+
       write(paste0("Reading model out file : CHANOBS_DOMAIN1.nc"), stdout())
-      system.time({
       chanobsFile <- list.files(outPath, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
       q_cms = ncdf4::ncvar_get(nc_open(chanobsFile), varid = "streamflow")
+      featureIdTmp <- ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "feature_id", collapse_degen = FALSE)
+     
       if (length(dim(q_cms)) != 1) {
-         q_cms <- t(q_cms) # R totate the matrix when it is reading it oin.
+         q_cms <- as.data.frame(t(q_cms)) # R totate the matrix when it is reading it on
+      } else {
+         q_cms <- as.data.frame(q_cms)
+      }
 
-         # Find the index of the gage from the first file in the list.
+      names(q_cms) <- featureIdTmp
+      chrt <- as.data.table(q_cms)
 
-         featureIdTmp <- ncdf4::ncvar_get(nc_open(chanobsFile), varid = "feature_id")
-         gageIndx <- which(featureIdTmp == linkId)
-         print(gageIndx)
-         rm(featureIdTmp)
-         q_cms <- q_cms[, gageIndx]
-     }
-
-      POSIXct<-as.POSIXct(ncdf4::ncvar_get(nc_open(chanobsFile), varid = "time")*60,
+      q_cms$POSIXct<-as.POSIXct(ncdf4::ncvar_get(nc_open(chanobsFile), varid = "time")*60,
                           origin = "1970-01-01 00:00:00 UTC", tz = "UTC") # because the time is minutes from this origin
 
-      chrt <- data.frame(POSIXct,q_cms)
-      chrt <-as.data.table(chrt)
-      })
+     if (enableMultiSites == 0) {
+         q_cms <- q_cms[, c(as.character(linkId), "POSIXct")]
+     } else {
+         calib_sites <- read.csv(paste0(runDir, "/calib_sites.csv"), colClasses= c("integer", "character", "numeric"))
+         q_cms <- q_cms[, c(as.character(calib_sites$FID), "POSIXct")]
+     }
+     chrt <-as.data.table(q_cms)
 
-      # If the model crashes, then it would be append to the file after restarting the model,
-      # therefore, we need to remove the duplicates in order to not double count for those.
-      chrt <- unique(chrt)
+     # If the model crashes, then it would be append to the file after restarting the model,
+     # therefore, we need to remove the duplicates in order to not double count for those.
+     chrt <- unique(chrt)
 
-      # remove the spin up part
-      chrt <- chrt[POSIXct > startDate, ]
-   }
-   
+     # remove the spin up part
+     chrt <- chrt[POSIXct > startDate, ]
+
+     # melt the data.frame 
+     chrt = melt(chrt, id.vars = c("POSIXct"), variable.factor = FALSE)
+     setnames(chrt, "variable", "FID")
+     setnames(chrt, "value", "q_cms")
+     chrt$FID <- as.integer(chrt$FID)
+       
+     # add site_no information 
+     if (enableMultiSites == 0) {
+         chrt$site_no <- siteId
+     } else {
+         chrt <- merge(chrt, calib_sites[, c("FID", "site_no")], by = "FID")
+     }
+  }
+
    # Stop cluster
    if (parallelFlag) stopCluster(cl)
 
@@ -211,13 +228,10 @@ if (cyclecount > 0) {
    # Convert to daily if needed and tag object
    if (calcDailyStats) {
      chrt.d <- Convert2Daily(chrt)
-     chrt.d[, site_no := siteId]
      assign(paste0("chrt.obj.", cyclecount), chrt.d)
      chrt.obj <- copy(chrt.d)
      obs.obj <- Convert2Daily(obsStrData)
-     obs.obj[, site_no := siteId]
    } else {
-     chrt[, site_no := siteId]
      assign(paste0("chrt.obj.", cyclecount), chrt)
      chrt.obj <- copy(chrt)
      obs.obj <- copy(obsStrData)
@@ -238,6 +252,8 @@ if (cyclecount > 0) {
       close(fileConn)
       quit("no")
    }
+
+   if (enableMultiSites == 0) {
 
    # Calc stats
    chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
@@ -265,10 +281,55 @@ if (cyclecount > 0) {
    if (objFn == "Msof")  F_new <- statMsof
    if (objFn == "hyperResMultiObj")  F_new <- statHyperResMultiObj
 
-   # Archive results
-   #x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof)
-   x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)
+   } else { #enableMultiSites = 1
 
+   # Calc stats
+   chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
+
+   # add the weights for each gage: 
+   chrt.obj.nona <- merge(chrt.obj.nona, calib_sites, by = c("site_no"))
+   
+   statCor <- chrt.obj.nona[, .(statCor = cor(q_cms, obs)), by = c("site_no", "weight")]
+   statRmse <- chrt.obj.nona[, .(statRmse = Rmse(q_cms, obs)), by = c("site_no", "weight")]
+   statBias <- chrt.obj.nona[, .(statBias = PBias(q_cms, obs)), by = c("site_no", "weight")]
+   statNse    <- chrt.obj.nona[, .(statNse    = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")), by = c("site_no", "weight")]
+   statNseLog <- chrt.obj.nona[, .(statNseLog = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=log,  epsilon="Pushpalatha2012")), by = c("site_no", "weight")]
+   statNseWt  <- chrt.obj.nona[, .(statNseWtg = NseWt(q_cms, obs)), by = c("site_no", "weight")]
+   statKge <- chrt.obj.nona[, .(statKge = hydroGOF::KGE(q_cms, obs)), by = c("site_no", "weight")]
+   statHyperResMultiObj <- chrt.obj.nona[, .(statHyperResMultiObj = hyperResMultiObj(q_cms, obs)), by = c("site_no", "weight")]
+   if (calcDailyStats) {
+      statMsof <- chrt.obj.nona[, .(statMsof = Msof(q_cms, obs, scales=c(1,10,30))), by = c("site_no", "weight")]
+   } else {
+      statMsof <- chrt.obj.nona[, .(statMsof = Msof(q_cms, obs, scales=c(1,24))), by = c("site_no", "weight")]
+
+   }
+
+   # Calc objective function
+   if (objFn == "NseWt")             F_new <- 1 - statNseWt[, .(fn = sum(weight*statNseWtg))]$fn
+   if (objFn == "Nse")               F_new <- 1 - statNse[, .(fn = sum(weight*statNse))]$fn
+   if (objFn == "NseLog")            F_new <- 1 - statNseLog[, .(fn = sum(weight*statNseLog))]$fn
+   if (objFn == "Kge")               F_new <- 1 - statKge[, .(fn = sum(weight*statKge))]$fn
+   if (objFn == "Rmse")              F_new <-     statRmse[, .(fn = sum(weight*statRmse))]$fn
+   if (objFn == "Cor")               F_new <- 1 - statCor[, .(fn = sum(weight*statCor))]$fn
+   if (objFn == "Msof")              F_new <-     statMsof[, .(fn = sum(weight*statMsof))]$fn
+   if (objFn == "hyperResMultiObj")  F_new <-     statHyperResMultiObj[, .(fn = sum(weight*statHyperResMultiObj))]$fn
+   }
+
+   # Archive results
+  if (enableMultiSites == 0) {
+    x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)
+  } else {
+    x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor[, .(fn = sum(weight*statCor))]$fn, statRmse[, .(fn = sum(weight*statRmse))]$fn,
+                                statBias[, .(fn = sum(weight*statBias))]$fn,  statNse[, .(fn = sum(weight*statNse))]$fn, statNseLog[, .(fn = sum(weight*statNseLog))]$fn,
+                                statNseWt[, .(fn = sum(weight*statNseWtg))]$fn, statKge[, .(fn = sum(weight*statKge))]$fn, statMsof[, .(fn = sum(weight*statMsof))]$fn,
+                                statHyperResMultiObj[, .(fn = sum(weight*statHyperResMultiObj))]$fn)
+
+   index1 = (cyclecount - 1) *nrow(statCor) 
+   for(i in 1:nrow(statCor)) {
+      x_archive_2[index1+i,] <- c(cyclecount, x_new, F_new, statCor$statCor[i], statRmse$statRmse[i], statBias$statBias[i], statNse$statNse[i], statNseLog$statNseLog[i],
+                                  statNseWt$statNseWt[i], statKge$statKge[i], statMsof$statMsof[i], statHyperResMultiObj$statHyperResMultiObj[i], statCor$site_no[i])
+   }
+ }
    # Evaluate objective function
    if (cyclecount == 1) {
       x_best <- x_new
@@ -498,9 +559,9 @@ if (any(x_archive$obj > objFunThreshold)) {
    rm(controlRun, lastRun, bestRun, obsStrDataPlot)
 
 
-   gg <- ggplot2::ggplot(chrt.obj_plot, ggplot2::aes(POSIXct, q_cms, color = run))
+   gg <- ggplot2::ggplot(chrt.obj_plot, ggplot2::aes(POSIXct, q_cms, color = run)) + facet_wrap(~site_no, , scales="free_y", ncol = 1)
    gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
-   gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", siteId))
+  # gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", site_no))
    #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
    gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 15) + ylab ("Streamflow (cms)")
    gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "dark green"),
@@ -515,11 +576,11 @@ if (any(x_archive$obj > objFunThreshold)) {
    write("Scatterplot...", stdout())
    maxval <- max(chrt.obj_plot$q_cms, na.rm = TRUE)
    gg <- ggplot()+ geom_point(data = merge(chrt.obj_plot [run %in% c("Control Run", "Last Run", "Best Run")], obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
-                              aes (obs, q_cms, color = run), alpha = 0.5)
+                              aes (obs, q_cms, color = run), alpha = 0.5) + facet_wrap(~site_no)
    gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
                                  limits=c('Control Run', "Best Run", "Last Run"),
                                  label=c('Control Run', "Best Run", "Last Run"))
-   gg <- gg + ggtitle(paste0("Simulated vs observed flow : ", siteId )) + theme_bw( base_size = 15)
+#   gg <- gg + ggtitle(paste0("Simulated vs observed flow : ", siteId )) + theme_bw( base_size = 15)
    gg <- gg + geom_abline(intercept = 0, slope = 1) + coord_equal()+ xlim(0,maxval) + ylim(0,maxval)
    gg <- gg + xlab("Observed flow (cms)") + ylab ("Simulated flow (cms)")
 
