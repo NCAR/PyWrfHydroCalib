@@ -559,7 +559,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    rm(controlRun, lastRun, bestRun, obsStrDataPlot)
 
 
-   gg <- ggplot2::ggplot(chrt.obj_plot, ggplot2::aes(POSIXct, q_cms, color = run)) + facet_wrap(~site_no, ncol = 1)
+   gg <- ggplot2::ggplot(chrt.obj_plot, ggplot2::aes(POSIXct, q_cms, color = run)) + facet_wrap(~site_no, , scales="free_y", ncol = 1)
    gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
   # gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", site_no))
    #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
