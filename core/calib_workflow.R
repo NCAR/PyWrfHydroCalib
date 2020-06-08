@@ -168,7 +168,7 @@ if (cyclecount > 0) {
       chanobsFile <- list.files(outPath, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
       q_cms = ncdf4::ncvar_get(nc_open(chanobsFile), varid = "streamflow")
       featureIdTmp <- ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "feature_id", collapse_degen = FALSE)
-
+     
       if (length(dim(q_cms)) != 1) {
          q_cms <- as.data.frame(t(q_cms)) # R totate the matrix when it is reading it on
       } else {
