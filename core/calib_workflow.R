@@ -20,7 +20,8 @@ objFunc <- get(objFn)
 
 # Metrics
 #metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj", "POD", "FAR", "CSI", "corr1", "lbem", "lbemprime")
+metrics_DB <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
 
 #########################################################
 # MAIN CODE
@@ -166,9 +167,9 @@ if (cyclecount > 0) {
 
       write(paste0("Reading model out file : CHANOBS_DOMAIN1.nc"), stdout())
       chanobsFile <- list.files(outPath, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
-      q_cms = ncdf4::ncvar_get(nc_open(chanobsFile), varid = "streamflow")
+      q_cms = ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "streamflow")
       featureIdTmp <- ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "feature_id", collapse_degen = FALSE)
-     
+
       if (length(dim(q_cms)) != 1) {
          q_cms <- as.data.frame(t(q_cms)) # R totate the matrix when it is reading it on
       } else {
@@ -178,7 +179,7 @@ if (cyclecount > 0) {
       names(q_cms) <- featureIdTmp
       chrt <- as.data.table(q_cms)
 
-      q_cms$POSIXct<-as.POSIXct(ncdf4::ncvar_get(nc_open(chanobsFile), varid = "time")*60,
+      q_cms$POSIXct<-as.POSIXct(ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "time")*60,
                           origin = "1970-01-01 00:00:00 UTC", tz = "UTC") # because the time is minutes from this origin
 
      if (enableMultiSites == 0) {
@@ -253,82 +254,90 @@ if (cyclecount > 0) {
       quit("no")
    }
 
-   if (enableMultiSites == 0) {
-
    # Calc stats
    chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
-   statCor <- cor(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
-   statRmse <- Rmse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-   statBias <- PBias(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-   statNse <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")
-   statNseLog <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")
-   statNseWt <- NseWt(chrt.obj.nona$q_cms, chrt.obj.nona$obs)
-   statKge <- hydroGOF::KGE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, method="2012", out.type="single")
-   statHyperResMultiObj <- hyperResMultiObj(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-   if (calcDailyStats) {
-      statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,10,30))
-   } else {
-      statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,24))
-   }
 
-   # Calc objective function
-   if (objFn == "NseWt") F_new <- 1 - statNseWt
-   if (objFn == "Nse") F_new <- 1 - statNse
-   if (objFn == "NseLog") F_new <- 1 - statNseLog
-   if (objFn == "Kge")  F_new <- 1 - statKge
-   if (objFn == "Rmse") F_new <- statRmse
-   if (objFn == "Cor") F_new <- 1 - statCor
-   if (objFn == "Msof")  F_new <- statMsof
-   if (objFn == "hyperResMultiObj")  F_new <- statHyperResMultiObj
+    if (enableMultiSites == 0) {
+       if (any(c("POD", "FAR", "CSI") %in% metrics)) chrt.obj.nona.abcd1 <- calc_abcd1(data.frame(chrt.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "q_cms", headerCols=c('site_no'))
+       if (any(c("corr1", "lbem", "lbemprime") %in% metrics)) chrt.obj.nona.nozeros = noZeroFunction(chrt.obj.nona$q_cms, chrt.obj.nona$obs, lubridate::month(chrt.obj.nona$POSIXct))
+    }else{
+      # add the weights for each gage:
+      chrt.obj.nona <- merge(chrt.obj.nona, calib_sites, by = c("site_no"))
+      if (any(c("POD", "FAR", "CSI") %in% metrics))  chrt.obj.nona.abcd1 <- calc_abcd1(data.frame(chrt.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "q_cms", headerCols=c('site_no', 'weight'))
+      if (any(c("corr1", "lbem", "lbemprime") %in% metrics)) chrt.obj.nona.nozeros = chrt.obj.nona[, .(q_cms = noZeroFunction(q_cms, obs, lubridate::month(POSIXct))$q_cms,
+                                                obs = noZeroFunction(q_cms, obs, lubridate::month(POSIXct))$obs,
+                                                period = noZeroFunction(q_cms, obs, lubridate::month(POSIXct))$period) ,
+                                            by = c("site_no", "weight")] # take care of the non zeros for each site
+    }
+
+    if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+    my_exprs = quote(list(
+      cor = cor(q_cms, obs),
+      rmse = Rmse(q_cms, obs, na.rm=TRUE),
+      bias = PBias(q_cms, obs, na.rm=TRUE),
+      nse = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
+      nselog = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
+      nsewt = NseWt(q_cms, obs) ,
+      kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2012", out.type="single"),
+      hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
+      msof = Msof(q_cms, obs, scales)
+    ))
+    my_exprs2 = quote(list(
+      corr1 = r1(q_cms, obs), # Calculate Stedingers r1
+      lbem = LBEms_function(q_cms, obs, period)[1],
+      lbemprime =  LBEms_function(q_cms, obs, period)[2]
+    ))
+    w = which(names(my_exprs) %in% metrics)
+    w2 = which(names(my_exprs2) %in% metrics)
+
+# let s just take care of objective function being capital
+    objFn <- tolower(objFn)
+
+   if (enableMultiSites == 0) {
+      stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
+      if (length(w2) > 0) stat <- cbind(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
+
+      if (any(c("POD", "FAR", "CSI") %in% metrics)) {
+           stat$POD = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
+           stat$FAR = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$FAR
+           stat$CSI = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
+      }
+
+      # Calc objective function
+      if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
+      if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- stat[, objFn, with = FALSE]
+
+      # Archive results
+      x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, stat[, c(metrics), with = FALSE])
 
    } else { #enableMultiSites = 1
 
-   # Calc stats
-   chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
+      stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = c("site_no", "weight")]
+      if (length(w2) > 0){
+          stat <- merge(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
+      }
+      if (any(c("POD", "FAR", "CSI") %in% metrics)) {
+           stat <- merge(stat, calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "weight", "threshName")),
+                         by = c("site_no", "weight"))
+      }
 
-   # add the weights for each gage: 
-   chrt.obj.nona <- merge(chrt.obj.nona, calib_sites, by = c("site_no"))
-   
-   statCor <- chrt.obj.nona[, .(statCor = cor(q_cms, obs)), by = c("site_no", "weight")]
-   statRmse <- chrt.obj.nona[, .(statRmse = Rmse(q_cms, obs)), by = c("site_no", "weight")]
-   statBias <- chrt.obj.nona[, .(statBias = PBias(q_cms, obs)), by = c("site_no", "weight")]
-   statNse    <- chrt.obj.nona[, .(statNse    = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")), by = c("site_no", "weight")]
-   statNseLog <- chrt.obj.nona[, .(statNseLog = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=log,  epsilon="Pushpalatha2012")), by = c("site_no", "weight")]
-   statNseWt  <- chrt.obj.nona[, .(statNseWtg = NseWt(q_cms, obs)), by = c("site_no", "weight")]
-   statKge <- chrt.obj.nona[, .(statKge = hydroGOF::KGE(q_cms, obs)), by = c("site_no", "weight")]
-   statHyperResMultiObj <- chrt.obj.nona[, .(statHyperResMultiObj = hyperResMultiObj(q_cms, obs)), by = c("site_no", "weight")]
-   if (calcDailyStats) {
-      statMsof <- chrt.obj.nona[, .(statMsof = Msof(q_cms, obs, scales=c(1,10,30))), by = c("site_no", "weight")]
-   } else {
-      statMsof <- chrt.obj.nona[, .(statMsof = Msof(q_cms, obs, scales=c(1,24))), by = c("site_no", "weight")]
+      statW <- c() # calculate the weighted metrics
+      for (im in metrics){
+        statW <- c(statW, stat[, c(im, "weight"), with = FALSE][, .(fn = sum(weight*get(im)))]$fn)
+      }
+      names(statW) <- metrics
 
-   }
+      if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - statW[objFn]
+      if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- statW[objFn]
 
-   # Calc objective function
-   if (objFn == "NseWt")             F_new <- 1 - statNseWt[, .(fn = sum(weight*statNseWtg))]$fn
-   if (objFn == "Nse")               F_new <- 1 - statNse[, .(fn = sum(weight*statNse))]$fn
-   if (objFn == "NseLog")            F_new <- 1 - statNseLog[, .(fn = sum(weight*statNseLog))]$fn
-   if (objFn == "Kge")               F_new <- 1 - statKge[, .(fn = sum(weight*statKge))]$fn
-   if (objFn == "Rmse")              F_new <-     statRmse[, .(fn = sum(weight*statRmse))]$fn
-   if (objFn == "Cor")               F_new <- 1 - statCor[, .(fn = sum(weight*statCor))]$fn
-   if (objFn == "Msof")              F_new <-     statMsof[, .(fn = sum(weight*statMsof))]$fn
-   if (objFn == "hyperResMultiObj")  F_new <-     statHyperResMultiObj[, .(fn = sum(weight*statHyperResMultiObj))]$fn
-   }
+      # Archive results
+      x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statW)
+      index1 = (cyclecount - 1) *nrow(stat)
+      for(i in 1:nrow(stat)) {
+        x_archive_2[index1+i,] <- c(cyclecount, x_new, F_new, stat[i,c(metrics), with = FALSE],
+                                    stat$site_no[i])
+      }
 
-   # Archive results
-  if (enableMultiSites == 0) {
-    x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)
-  } else {
-    x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statCor[, .(fn = sum(weight*statCor))]$fn, statRmse[, .(fn = sum(weight*statRmse))]$fn,
-                                statBias[, .(fn = sum(weight*statBias))]$fn,  statNse[, .(fn = sum(weight*statNse))]$fn, statNseLog[, .(fn = sum(weight*statNseLog))]$fn,
-                                statNseWt[, .(fn = sum(weight*statNseWtg))]$fn, statKge[, .(fn = sum(weight*statKge))]$fn, statMsof[, .(fn = sum(weight*statMsof))]$fn,
-                                statHyperResMultiObj[, .(fn = sum(weight*statHyperResMultiObj))]$fn)
-
-   index1 = (cyclecount - 1) *nrow(statCor) 
-   for(i in 1:nrow(statCor)) {
-      x_archive_2[index1+i,] <- c(cyclecount, x_new, F_new, statCor$statCor[i], statRmse$statRmse[i], statBias$statBias[i], statNse$statNse[i], statNseLog$statNseLog[i],
-                                  statNseWt$statNseWt[i], statKge$statKge[i], statMsof$statMsof[i], statHyperResMultiObj$statHyperResMultiObj[i], statCor$site_no[i])
-   }
  }
    # Evaluate objective function
    if (cyclecount == 1) {
@@ -346,7 +355,7 @@ if (cyclecount > 0) {
    }
 
    # Add best flag and output
-   paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics)], data.frame(best=bestFlag))
+   paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_DB)], data.frame(best=bestFlag))
    #MOVE WRITE TO END: write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
 
    if (cyclecount < m) {
@@ -456,12 +465,12 @@ if (any(x_archive$obj > objFunThreshold)) {
    write("Metrics plot...", stdout())
    #DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
    #            iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
-   DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
-               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
+   DT.m1 = melt(x_archive[,which(names(x_archive) %in% c("iter", "obj", metrics))],
+               iter.vars = c("iter"), measure.vars = c("obj", metrics))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
 
-   DT.m1.best = melt(x_archive[iter_best,which(names(x_archive) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
-               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
+   DT.m1.best = melt(x_archive[iter_best,which(names(x_archive) %in% c("iter", "obj", metrics))],
+               iter.vars = c("iter"), measure.vars = c("obj", metrics))
 
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free")
@@ -521,11 +530,11 @@ if (any(x_archive$obj > objFunThreshold)) {
    write("Metrics plot...", stdout())
    #DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))],
    #            iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof"))
-   DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
-               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
+   DT.m1 = melt(x_archive_plot[,which(names(x_archive_plot) %in% c("iter", "obj", metrics))],
+               iter.vars = c("iter"), measure.vars = c("obj", metrics))
    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
-   DT.m1.best = melt(x_archive_plot[iter_best,which(names(x_archive_plot) %in% c("iter", "obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))],
-               iter.vars = c("iter"), measure.vars = c("obj", "cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj"))
+   DT.m1.best = melt(x_archive_plot[iter_best,which(names(x_archive_plot) %in% c("iter", "obj", metrics))],
+               iter.vars = c("iter"), measure.vars = c("obj", metrics))
 
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free")
