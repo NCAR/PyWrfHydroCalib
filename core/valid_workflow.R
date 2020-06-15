@@ -282,87 +282,95 @@ for (i in 1:length(runList[[1]])) {
       # Subset data
       chrt.obj <- get(runList[["df"]][i])
       chrt.obj <- chrt.obj[POSIXct >= dtList[["start"]][j] & POSIXct < dtList[["end"]][j],]
-      chrt.obj <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
-     
+      chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
+
       if (enableMultiSites == 0) {
+         if (any(c("POD", "FAR", "CSI") %in% metrics)) chrt.obj.nona.abcd1 <- calc_abcd1(data.frame(chrt.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "q_cms", headerCols=c('site_no'))
+         if (any(c("corr1", "lbem", "lbemprime") %in% metrics)) chrt.obj.nona.nozeros = noZeroFunction(chrt.obj.nona$q_cms, chrt.obj.nona$obs, lubridate::month(chrt.obj.nona$POSIXct))
+      }else{
+        # add the weights for each gage:
+        chrt.obj.nona <- merge(chrt.obj.nona, calib_sites, by = c("site_no"))
+        if (any(c("POD", "FAR", "CSI") %in% metrics))  chrt.obj.nona.abcd1 <- calc_abcd1(data.frame(chrt.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "q_cms", headerCols=c('site_no', 'weight'))
+        if (any(c("corr1", "lbem", "lbemprime") %in% metrics)) chrt.obj.nona.nozeros = chrt.obj.nona[, .(q_cms = noZeroFunction(q_cms, obs, lubridate::month(POSIXct))$q_cms,
+                                                obs = noZeroFunction(q_cms, obs, lubridate::month(POSIXct))$obs,
+                                                period = noZeroFunction(q_cms, obs, lubridate::month(POSIXct))$period) ,
+                                            by = c("site_no", "weight")] # take care of the non zeros for each site
+       }
 
-      # Calc stats
-      statCor <- cor(chrt.obj$q_cms, chrt.obj$obs)
-      statRmse <- Rmse(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-      statBias <- PBias(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-      statNse <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")
-      statNseLog <- hydroGOF::NSE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")
-      statNseWt <- NseWt(chrt.obj$q_cms, chrt.obj$obs)
-      statKge <- hydroGOF::KGE(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE, method="2012", out.type="single")
-      statHyperResMultiObj <- hyperResMultiObj(chrt.obj$q_cms, chrt.obj$obs, na.rm=TRUE)
-      if (calcDailyStats) {
-         statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,10,30))
-      } else {
-         statMsof <- Msof(chrt.obj$q_cms, chrt.obj$obs, scales=c(1,24))
-      }
+      if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+      my_exprs = quote(list(
+        cor = cor(q_cms, obs),
+        rmse = Rmse(q_cms, obs, na.rm=TRUE),
+        bias = PBias(q_cms, obs, na.rm=TRUE),
+        nse = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
+        nselog = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
+        nsewt = NseWt(q_cms, obs) ,
+        kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2012", out.type="single"),
+        hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
+        msof = Msof(q_cms, obs, scales)
+      ))
+      my_exprs2 = quote(list(
+        corr1 = r1(q_cms, obs), # Calculate Stedingers r1
+        lbem = LBEms_function(q_cms, obs, period)[1],
+        lbemprime =  LBEms_function(q_cms, obs, period)[2]
+      ))
+      w = which(names(my_exprs) %in% metrics)
+      w2 = which(names(my_exprs2) %in% metrics)
 
-      # Calc objective function
-     if (objFn == "NseWt") F_new <- 1 - statNseWt
-     if (objFn == "Nse") F_new <- 1 - statNse
-     if (objFn == "NseLog") F_new <- 1 - statNseLog
-     if (objFn == "Kge")  F_new <- 1 - statKge
-     if (objFn == "Rmse") F_new <- statRmse
-     if (objFn == "Cor") F_new <- 1 - statCor
-     if (objFn == "Msof")  F_new <- statMsof
-     if (objFn == "hyperResMultiObj")  F_new <- statHyperResMultiObj
+      # let s just take care of objective function being capital
+      objFn <- tolower(objFn)
 
-      # Archive results
-      validStats_new <- list(runList[["run"]][i], dtList[["period"]][j], F_new, statCor, statRmse, statBias, statNse, statNseLog, statNseWt, statKge, statMsof, statHyperResMultiObj)
-      validStats[loopcnt,] <- validStats_new
-      loopcnt <- loopcnt + 1
+      if (enableMultiSites == 0) {
+        stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
+        if (length(w2) > 0) stat <- cbind(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
+
+        if (any(c("POD", "FAR", "CSI") %in% metrics)) {
+           stat$POD = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
+           stat$FAR = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$FAR
+           stat$CSI = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
+        }
+
+        # Calc objective function
+        if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
+        if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- stat[, objFn, with = FALSE]
+
+        # Archive results
+        validStats_new <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics), with = FALSE])
+        validStats[loopcnt,] <- validStats_new
+        loopcnt <- loopcnt + 1
 
      } else { #enableMultiSites = 1
 
-     # add the weights for each gage:
-     chrt.obj.nona <- merge(chrt.obj, calib_sites, by = c("site_no"))
+        stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = c("site_no", "weight")]
+        if (length(w2) > 0){
+            stat <- merge(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
+        }
+        if (any(c("POD", "FAR", "CSI") %in% metrics)) {
+             stat <- merge(stat, calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "weight", "threshName")),
+                           by = c("site_no", "weight"))
+        }
 
-     statCor <- chrt.obj.nona[, .(statCor = cor(q_cms, obs)), by = c("site_no", "weight")]
-     statRmse <- chrt.obj.nona[, .(statRmse = Rmse(q_cms, obs)), by = c("site_no", "weight")]
-     statBias <- chrt.obj.nona[, .(statBias = PBias(q_cms, obs)), by = c("site_no", "weight")]
-     statNse    <- chrt.obj.nona[, .(statNse    = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")), by = c("site_no", "weight")]
-     statNseLog <- chrt.obj.nona[, .(statNseLog = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=log,  epsilon="Pushpalatha2012")), by = c("site_no", "weight")]
-     statNseWt  <- chrt.obj.nona[, .(statNseWtg = NseWt(q_cms, obs)), by = c("site_no", "weight")]
-     statKge <- chrt.obj.nona[, .(statKge = hydroGOF::KGE(q_cms, obs)), by = c("site_no", "weight")]
-     statHyperResMultiObj <- chrt.obj.nona[, .(statHyperResMultiObj = hyperResMultiObj(q_cms, obs)), by = c("site_no", "weight")]
-     if (calcDailyStats) {
-        statMsof <- chrt.obj.nona[, .(statMsof = Msof(q_cms, obs, scales=c(1,10,30))), by = c("site_no", "weight")]
-     } else {
-        statMsof <- chrt.obj.nona[, .(statMsof = Msof(q_cms, obs, scales=c(1,24))), by = c("site_no", "weight")]
-     } 
+        statW <- c() # calculate the weighted metrics
+        for (im in metrics){
+          statW <- c(statW, stat[, c(im, "weight"), with = FALSE][, .(fn = sum(weight*get(im)))]$fn)
+        }
+        names(statW) <- metrics
 
-   # Calc objective function
-   if (objFn == "NseWt")             F_new <- 1 - statNseWt[, .(fn = sum(weight*statNseWtg))]$fn
-   if (objFn == "Nse")               F_new <- 1 - statNse[, .(fn = sum(weight*statNse))]$fn
-   if (objFn == "NseLog")            F_new <- 1 - statNseLog[, .(fn = sum(weight*statNseLog))]$fn
-   if (objFn == "Kge")               F_new <- 1 - statKge[, .(fn = sum(weight*statKge))]$fn
-   if (objFn == "Rmse")              F_new <-     statRmse[, .(fn = sum(weight*statRmse))]$fn
-   if (objFn == "Cor")               F_new <- 1 - statCor[, .(fn = sum(weight*statCor))]$fn
-   if (objFn == "Msof")              F_new <-     statMsof[, .(fn = sum(weight*statMsof))]$fn
-   if (objFn == "hyperResMultiObj")  F_new <-     statHyperResMultiObj[, .(fn = sum(weight*statHyperResMultiObj))]$fn
+        if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - statW[objFn]
+        if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- statW[objFn]
 
       # Archive results
-      validStats_new <- list(runList[["run"]][i], dtList[["period"]][j], F_new, statCor[, .(fn = sum(weight*statCor))]$fn, statRmse[, .(fn = sum(weight*statRmse))]$fn,
-                                statBias[, .(fn = sum(weight*statBias))]$fn,  statNse[, .(fn = sum(weight*statNse))]$fn, statNseLog[, .(fn = sum(weight*statNseLog))]$fn,
-                                statNseWt[, .(fn = sum(weight*statNseWtg))]$fn, statKge[, .(fn = sum(weight*statKge))]$fn, statMsof[, .(fn = sum(weight*statMsof))]$fn,
-                                statHyperResMultiObj[, .(fn = sum(weight*statHyperResMultiObj))]$fn)
-      validStats[loopcnt,] <- validStats_new
-      loopcnt <- loopcnt + 1
+      validStats[loopcnt,] <- c(runList[["run"]][i], dtList[["period"]][j],  F_new, statW)
 
-   for(k in 1:nrow(statCor)) {
-      validStats_new <- list(runList[["run"]][i], dtList[["period"]][j], F_new, statCor$statCor[k], statRmse$statRmse[k], statBias$statBias[k], statNse$statNse[k], statNseLog$statNseLog[k],
-                             statNseWt$statNseWt[k], statKge$statKge[k], statMsof$statMsof[k], statHyperResMultiObj$statHyperResMultiObj[k], statCor$site_no[k])
-      validStats_2[loopcnt2,] <- validStats_new
-      loopcnt2 <- loopcnt2 + 1
-   }
-
+      index1 = (loopcnt - 1) *nrow(stat)
+      for(k in 1:nrow(stat)) {
+        validStats_2[index1+k,] <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics), with = FALSE], stat$site_no[k])
+      }
+      loopcnt = loopcnt  + 1
    }
  }
 }
+
 rm(chrt.obj, validStats_new)
 
 
