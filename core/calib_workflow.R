@@ -21,7 +21,7 @@ objFunc <- get(objFn)
 # Metrics
 #metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
 metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj", "POD", "FAR", "CSI", "corr1", "lbem", "lbemprime")
-metrics_DB <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
+#metrics_DB <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
 
 #########################################################
 # MAIN CODE
@@ -355,7 +355,7 @@ if (cyclecount > 0) {
    }
 
    # Add best flag and output
-   paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_DB)], data.frame(best=bestFlag))
+   paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics)], data.frame(best=bestFlag))
    #MOVE WRITE TO END: write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
 
    if (cyclecount < m) {
