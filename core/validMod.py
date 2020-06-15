@@ -1395,7 +1395,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir,staticData):
         fileObj.write('#!/bin/bash\n')
         fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' ' + str(staticData.gwBaseFlag) + \
-                      ' ' + str(staticData.chnRtOpt) + ' \n')
+                      ' ' + str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) + ' \n')
         fileObj.write('exit\n')
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1482,6 +1482,16 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Option to use multiple sites for calibration\n')
+        inStr = "enableMultiSites <- " + str(int(jobData.enableMultiSites)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript
@@ -1579,6 +1589,13 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript
@@ -1662,6 +1679,13 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript
@@ -1745,6 +1769,13 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript

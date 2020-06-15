@@ -56,7 +56,7 @@ def main(argv):
     soilOrig = str(args.soilOrig[0])
     if args.gwFlag[0] == 1:
         gwOrig = str(args.gwOrig[0])
-    if args.chrtFlag[0] == 3:
+    if args.chRtFlag[0] == 3:
         chanParmOrig = str(args.chanParmOrig[0])
     workDir = str(args.workDir[0])
     nIter = int(args.nIter[0])
@@ -118,7 +118,7 @@ def main(argv):
             except:
                 sys.exit(1)
                 
-        if args.chrtFlag[0] == 3:
+        if args.chRtFlag[0] == 3:
             try:
                 tmpPath = runDir + "/CHANPARM.TBL"
                 print(tmpPath)
@@ -237,6 +237,63 @@ def main(argv):
                 
             if param == "rsurfexp":
                 idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[i])
+
+            if param == "z0sno":
+                idSoil2D.variables['z0sno'][:,:,:] = float(newParams.z0sno[i])
+
+            if param == "ssi":
+                idSoil2D.variables['ssi'][:,:,:] = float(newParams.ssi[i])
+
+            if param == "snowretfac":
+                idSoil2D.variables['snowretfac'][:,:,:] = float(newParams.snowretfac[i])
+
+            if param == "swemx":
+                idSoil2D.variables['swemx'][:,:,:] = float(newParams.swemx[i])
+
+            if param == "tau0":
+                idSoil2D.variables['tau0'][:,:,:] = float(newParams.tau0[i])
+
+            if param == "graingrowth":
+                idSoil2D.variables['graingrowth'][:,:,:] = float(newParams.graingrowth[i])
+
+            if param == "extragrowth":
+                idSoil2D.variables['extragrowth'][:,:,:] = float(newParams.extragrowth[i])
+
+            if param == "dirtsoot":
+                idSoil2D.variables['dirtsoot'][:,:,:] = float(newParams.dirtsoot[i])
+
+            if param == "bats_cosz":
+                idSoil2D.variables['bats_cosz'][:,:,:] = float(newParams.bats_cosz[i])
+
+            if param == "bats_visnew":
+                idSoil2D.variables['bats_visnew'][:,:,:] = float(newParams.bats_visnew[i])
+
+            if param == "bats_nirnew":
+                idSoil2D.variables['bats_nirnew'][:,:,:] = float(newParams.bats_nirnew[i])
+
+            if param == "bats_visage":
+                idSoil2D.variables['bats_visage'][:,:,:] = float(newParams.bats_visage[i])
+
+            if param == "bats_nirage":
+                idSoil2D.variables['bats_nirage'][:,:,:] = float(newParams.bats_nirage[i])
+
+            if param == "bats_visdir":
+                idSoil2D.variables['bats_visdir'][:,:,:] = float(newParams.bats_visdir[i])
+
+            if param == "bats_nirdir":
+                idSoil2D.variables['bats_nirdir'][:,:,:] = float(newParams.bats_nirdir[i])
+
+            if param == "rsurfsnow":
+                idSoil2D.variables['rsurfsnow'][:,:,:] = float(newParams.rsurfsnow[i])
+
+            if param == "refsnowdens":
+                idSoil2D.variables['refsnowdens'][:,:,:] = float(newParams.refsnowdens[i])
+
+            if param == "frac_direct":
+                idSoil2D.variables['frac_direct'][:,:,:] = float(newParams.frac_direct[i])
+
+            if param == "frac_visible":
+                idSoil2D.variables['frac_visible'][:,:,:] = float(newParams.frac_visible[i])
         
             
     # Close NetCDF files

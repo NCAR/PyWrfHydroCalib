@@ -24,6 +24,9 @@ import shutil
 import pandas as pd
 import time
 import subprocess
+import numpy as np
+import xarray as xr  
+
 
 def main(argv):
     # Parse arguments. Only input necessary is the run directory.
@@ -37,7 +40,9 @@ def main(argv):
     parser.add_argument('gwFlag',metavar='gwFlag',type=int,nargs='+',
                         help='Flag to indicate if groundwater bucket model is being used.')
     parser.add_argument('chRtFlag',metavar='chRtFlag',type=int,nargs='+',
-                        help='Flag to indicate the type of channel routing.')
+                        help='Flag to indicate the type of channel routing.') 
+    parser.add_argument('enableMask',metavar='enableMask',type=int,nargs='+',
+                        help='Flag to indicate the use of mask.')
                         
     args = parser.parse_args()
     workDir = str(args.workDir[0])
@@ -141,70 +146,141 @@ def main(argv):
         idGw = Dataset(gwOut,'a')
     idHydroTbl = Dataset(hydroOut,'a')
     
-    # Loop through and adjust each parameter accordingly.
+    # if we are going to use the mask, read in the file
+    if args.enableMask[0] == 1:
+       maskFile = workDir + "/mask.coarse.tif"
+       mask = xr.open_rasterio(maskFile)
+       maskFile = workDir + "/mask.fine.tif"
+       maskFine= xr.open_rasterio(maskFile) 
+       maskFile = workDir + "/mask.GWBUCKET.csv"
+       maskGW = pd.read_csv(maskFile,dtype={0: int})
+
     for param in paramNames:
-        if param == "bexp":
-            idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0])
-        
-        if param == "smcmax":
-            idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(newParams.smcmax[0])
-        
-        if param == "slope":
-            idSoil2D.variables['slope'][:,:,:] = float(newParams.slope[0])
-        
-        if param == "lksatfac":
-            idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[0])
-        
-        if args.gwFlag[0] == 1:
-            if param == "zmax":
-                idGw.variables['Zmax'][:] = float(newParams.zmax[0])
-        
-            if param == "expon":
-                idGw.variables['Expon'][:] = float(newParams.expon[0])
+        if args.enableMask[0] == 0:
+            if param == "bexp":
+                idSoil2D.variables['bexp'][:,:,:,:] = idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0])
 
-            if param == "Loss":
-                idGw.variables['Loss'][:] = float(newParams.Loss[0])
+            if param == "smcmax":
+                idSoil2D.variables['smcmax'][:,:,:,:] = idSoil2D.variables['smcmax'][:,:,:,:]*float(newParams.smcmax[0])
 
-            if param == 'Coeff':
-                idGw.variables['Coeff'][:] = float(newParams.Coeff[0])
-        
-        if param == "cwpvt":
-            idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0])
-        
-        if param == "vcmx25":
-            idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(newParams.vcmx25[0])
-        
-        if param == "mp":
-            idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(newParams.mp[0])
-        
-        if param == "hvt":
-            idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(newParams.hvt[0])
-        
-        if param == "mfsno":
-            idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(newParams.mfsno[0])
-        
-        if param == "refkdt":
-            idSoil2D.variables['refkdt'][:,:,:] = float(newParams.refkdt[0])
-        
-        if param == "dksat":
-            idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(newParams.dksat[0])
-        
-        if param == "retdeprtfac":
-            idFullDom.variables['RETDEPRTFAC'][:,:] = float(newParams.retdeprtfac[0])
-        
-        if param == "ovroughrtfac":
-            idFullDom.variables['OVROUGHRTFAC'][:,:] = float(newParams.ovroughrtfac[0])
-            
-        if param == "dksat":
-            idHydroTbl.variables['LKSAT'][:,:] = idHydroTbl.variables['LKSAT'][:,:]*float(newParams.dksat[0])
-            
-        if param == "smcmax":
-            idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[0])
-            
-        if param == "rsurfexp":
-            idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[0])
-        
-            
+            if param == "slope":
+                idSoil2D.variables['slope'][:,:,:] = float(newParams.slope[0])
+
+            if param == "lksatfac":
+                idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[0])
+
+            if param == "cwpvt":
+                idSoil2D.variables['cwpvt'][:,:,:] = idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0])
+
+            if param == "vcmx25":
+                idSoil2D.variables['vcmx25'][:,:,:] = idSoil2D.variables['vcmx25'][:,:,:]*float(newParams.vcmx25[0])
+
+            if param == "mp":
+                idSoil2D.variables['mp'][:,:,:] = idSoil2D.variables['mp'][:,:,:]*float(newParams.mp[0])
+
+            if param == "hvt":
+                idSoil2D.variables['hvt'][:,:,:] = idSoil2D.variables['hvt'][:,:,:]*float(newParams.hvt[0])
+
+            if param == "mfsno":
+                idSoil2D.variables['mfsno'][:,:,:] = idSoil2D.variables['mfsno'][:,:,:]*float(newParams.mfsno[0])
+
+            if param == "refkdt":
+                idSoil2D.variables['refkdt'][:,:,:] = float(newParams.refkdt[0])
+
+            if param == "dksat":
+                idSoil2D.variables['dksat'][:,:,:,:] = idSoil2D.variables['dksat'][:,:,:,:]*float(newParams.dksat[0])
+
+            if param == "retdeprtfac":
+                idFullDom.variables['RETDEPRTFAC'][:,:] = float(newParams.retdeprtfac[0])
+
+            if param == "ovroughrtfac":
+                idFullDom.variables['OVROUGHRTFAC'][:,:] = float(newParams.ovroughrtfac[0])
+
+            if param == "dksat":
+                idHydroTbl.variables['LKSAT'][:,:] = idHydroTbl.variables['LKSAT'][:,:]*float(newParams.dksat[0])
+
+            if param == "smcmax":
+                idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[0])
+
+            if param == "rsurfexp":
+                idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[0])
+
+            if args.gwFlag[0] == 1:
+                if param == "zmax":
+                    idGw.variables['Zmax'][:] = float(newParams.zmax[0])
+
+                if param == "expon":
+                    idGw.variables['Expon'][:] = float(newParams.expon[0])
+
+                if param == "Loss":
+                    idGw.variables['Loss'][:] = float(newParams.Loss[0])
+
+                if param == 'Coeff':
+                    idGw.variables['Coeff'][:] = float(newParams.Coeff[0])
+
+
+        if args.enableMask[0] == 1:
+            if param == "bexp":
+                idSoil2D.variables['bexp'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['bexp'][:,:,:,:],idSoil2D.variables['bexp'][:,:,:,:]*float(newParams.bexp[0]))
+
+            if param == "smcmax":
+                idSoil2D.variables['smcmax'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['smcmax'][:,:,:,:],idSoil2D.variables['smcmax'][:,:,:,:]*float(newParams.smcmax[0]))
+
+            if param == "slope":
+                idSoil2D.variables['slope'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['slope'][:,:,:],idSoil2D.variables['slope'][:,:,:]*0+float(newParams.slope[0]))
+
+            if param == "lksatfac":
+                idFullDom.variables['LKSATFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['LKSATFAC'][:,:],idFullDom.variables['LKSATFAC'][:,:]*0+float(newParams.lksatfac[0]))
+
+            if param == "cwpvt":
+                idSoil2D.variables['cwpvt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['cwpvt'][:,:,:],idSoil2D.variables['cwpvt'][:,:,:]*float(newParams.cwpvt[0]))
+
+            if param == "vcmx25":
+                idSoil2D.variables['vcmx25'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['vcmx25'][:,:,:],idSoil2D.variables['vcmx25'][:,:,:]*float(newParams.vcmx25[0]))
+
+            if param == "mp":
+                idSoil2D.variables['mp'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['mp'][:,:,:],idSoil2D.variables['mp'][:,:,:]*float(newParams.mp[0]))
+
+            if param == "hvt":
+                idSoil2D.variables['hvt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['hvt'][:,:,:],idSoil2D.variables['hvt'][:,:,:]*float(newParams.hvt[0]))
+
+            if param == "mfsno":
+                idSoil2D.variables['mfsno'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['mfsno'][:,:,:],idSoil2D.variables['mfsno'][:,:,:]*float(newParams.mfsno[0]))
+
+            if param == "refkdt":
+                idSoil2D.variables['refkdt'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['refkdt'][:,:,:],idSoil2D.variables['refkdt'][:,:,:]*0+float(newParams.refkdt[0]))
+
+            if param == "dksat":
+                idSoil2D.variables['dksat'][:,:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['dksat'][:,:,:,:],idSoil2D.variables['dksat'][:,:,:,:]*float(newParams.dksat[0]))
+
+            if param == "retdeprtfac":
+                idFullDom.variables['RETDEPRTFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['RETDEPRTFAC'][:,:],idFullDom.variables['RETDEPRTFAC'][:,:]*0+float(newParams.retdeprtfac[0]))
+
+            if param == "ovroughrtfac":
+                idFullDom.variables['OVROUGHRTFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['OVROUGHRTFAC'][:,:],idFullDom.variables['OVROUGHRTFAC'][:,:]*0+float(newParams.ovroughrtfac[0]))
+
+            if param == "dksat":
+                idHydroTbl.variables['LKSAT'][:,:] = np.where(np.flipud(mask[0])==1,idHydroTbl.variables['LKSAT'][:,:],idHydroTbl.variables['LKSAT'][:,:]*float(newParams.dksat[0]))
+
+            if param == "smcmax":
+                idHydroTbl.variables['SMCMAX1'][:,:] = np.where(np.flipud(mask[0])==1,idHydroTbl.variables['SMCMAX1'][:,:],idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[0]))
+
+            if param == "rsurfexp":
+                idSoil2D.variables['rsurfexp'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['rsurfexp'][:,:,:],idSoil2D.variables['rsurfexp'][:,:,:]*0+float(newParams.rsurfexp[0]))
+		
+            if args.gwFlag[0] == 1:   
+                if param == "zmax":
+                    idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(newParams.zmax[0])
+
+                if param == "expon":
+                    idGw.variables['Expon'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(newParams.expon[0])
+
+                if param == "Loss":
+                    idGw.variables['Loss'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(newParams.Loss[0])
+
+                if param == 'Coeff':
+                    idGw.variables['Coeff'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(newParams.Coeff[0])
+           
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()

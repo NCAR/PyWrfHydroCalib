@@ -184,7 +184,8 @@ def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFl
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Split output after split_output_count output times\n')
-        fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
+        inStr = ' SPLIT_OUTPUT_COUNT = ' + str(int(jobData.lsmSplitOutputCount)) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Soil layer specification\n')
         fileObj.write(' NSOIL = 4\n')
@@ -424,7 +425,9 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write('!Specify the number of output times to be contained within each output history file...(integer)\n')
         fileObj.write('!  SET = 1 WHEN RUNNING CHANNEL ROUTING ONLY/CALIBRATION SIMS!!!!\n')
         fileObj.write('!  SET = 1 WHEN RUNNING COUPLED TO WRF!!!\n')
-        fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
+        fileObj.write('!  SET = 0 WHEN All outputs will be written into one file\n')
+        inStr = ' SPLIT_OUTPUT_COUNT = ' + str(int(jobData.SplitOutputCount)) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the minimum stream order to output to netcdf point file...(integer)\n')
         fileObj.write('!Note: lower value of stream order produces more output\n')

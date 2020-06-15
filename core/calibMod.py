@@ -1506,6 +1506,16 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Option to use multiple sites for calibration\n')
+        inStr = "enableMultiSites <- " + str(int(jobData.enableMultiSites)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outPath
@@ -1571,7 +1581,7 @@ def generateBsubCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('#!/bin/bash\n')
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + runDir + ' ' + \
-                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' \n')
+                          str(staticData.gwBaseFlag) + ' ' + str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) +' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1646,7 +1656,7 @@ def generatePbsCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + ' ' + \
                           runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
-                          str(staticData.chnRtOpt) + ' \n')
+                          str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1721,7 +1731,7 @@ def generateSlurmCalibScript(jobData,gageID,runDir,workDir,staticData):
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
-                          str(staticData.chnRtOpt) + ' \n')
+                          str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) +' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
@@ -1790,7 +1800,7 @@ def generateMpiCalibScript(jobData,gageID,basinNum,runDir,workDir,staticData):
             fileObj.write('Rscript ' + runRProgram + " " + srcScript + '\n')
             fileObj.write('python ' + workDir + '/adjust_parameters.py ' + workDir + \
                           ' ' + runDir + ' ' + str(staticData.gwBaseFlag) + ' ' + \
-                          str(staticData.chnRtOpt) + ' \n')
+                          str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) + ' \n')
             fileObj.write('exit\n')
         except:
             jobData.errMsg = "ERROR: Failure to create: " + outFile2
