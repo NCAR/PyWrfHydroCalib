@@ -289,6 +289,7 @@ hyperResMultiObj <- function(m, o, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) {
 # (whereby if there are zeros, an epsilon is added)
 # Line to be added to /glade/u/home/arezoo/wrf_hydro/PyWrfHydroCalib/core/calib_workflow.R 
 # statCorR1 = r1(chrt.obj.nona.nozeros$mod, chrt.obj.nona.nozeros$obs)
+# June12, 2020, added modification for Tau to be zero if (min(x) - tau <= 0) to avoid log(0) (happens with sites with many zeros)
 
 r1 <- function(mod, obs){
    S <- mod#data[,2]   # Specify similuations
@@ -319,6 +320,12 @@ r1 <- function(mod, obs){
    if (tau_O<0 | tau_S<0){
      tau_O <- 0
      tau_S <- 0
+   }
+   
+   # New added by Erin June 12, 2020, to deal with sites with many zeros, where tau ends up being min(O) or min(S); avoids log 0.
+   if ( (min(O) - tau_O <= 0) | (min(S) - tau_S <= 0) ) {
+     tau_O = 0 # As above, this means fitting LN2 at these sites.
+     tau_S = 0 # As above, this means fitting LN2 at these sites.
    }
    
    u <- log(O-tau_O)      # Compute u based on observations of LN2 to use for LBE equation
@@ -395,10 +402,24 @@ NSEs_noZeros <- function(mod, obs, w=0.5, p=1) { # Function reads in paired mode
 # Use Lamontagne github Rcode: https://github.com/JRLamontagne/Efficiency/blob/master/functions3BT.R
 # to create a deriviate R code to calculate BNL3 parameters.
 # This is called by the LBEms_function
+# June12, 2020, added modification for Tau to be zero if (min(x) - tau <= 0) to avoid log(0) (happens with sites with many zeros)
+#               and a jitter to the obs and mod if ther variance for a particular month is zero. (i.e., all values are zero or same value in a month)
 
 parms <- function(data){
   S <- data[,2]   # Specify similuations
   O <- data[,1]   # Specify observations
+  
+  # New added by Erin June 12, 2020. For some sites, an entire month may be zeros
+  # (or same value for entire month), which leads to var=0. Add small jitter. 
+  # Sometimes the first time run, a warning is issued, but does not seem to affect anything.
+  # Warning message:
+  # In stats::runif(length(x), -amount, amount) :
+  #  '.Random.seed[1]' is not a valid integer, so ignored
+  if (var(O)==0 | var(S)==0) {
+    O = jitter(O)
+    S = jitter(S)
+  }
+  
   # Get sample size of station data (how many observed and PRMS simulated streamflow data)
   n <- nrow(data)
   
@@ -424,6 +445,12 @@ parms <- function(data){
  if (tau_O<0 | tau_S<0){
     tau_O <- 0
     tau_S <- 0
+  }
+  
+  # New added by Erin June 12, 2020, to deal with sites with many zeros, where tau ends up being min(O) or min(S); avoids log 0.
+  if ( (min(O) - tau_O <= 0) | (min(S) - tau_S <= 0) ) {
+    tau_O = 0 # As above, this means fitting LN2 at these sites.
+    tau_S = 0 # As above, this means fitting LN2 at these sites.
   }
   
   u <- log(O-tau_O)      # Compute u based on observations of LN2 to use for LBE equation
@@ -464,6 +491,7 @@ parms <- function(data){
 # From Lamontagne, J. R., Barber C, Vogel RM (in review). 
 # Improved Estimators of Model Performance Efficiency for Skewed Hydrologic Data, 
 # Water Resources Research. 
+# June 12, 2020. Generalized the code for cases where there is not any data in a month (e.g., frozen rivers in Jan/Feb.)
 
 
 # Line to be added to /glade/u/home/arezoo/wrf_hydro/PyWrfHydroCalib/core/calib_workflow.R 
@@ -534,42 +562,44 @@ LBEms_function <- function(mod, obs, period) { # Function reads in paired model 
   
   for (m in 1:12){ # For calculations based on monthly data
     oneSite_month <- subset(allData, allData$month== m) # Pull data for individual site's month
-    LN3params_month <- parms(oneSite_month[,1:2])
-    mu_O_month[m] <- LN3params_month[1] # real space mean
-    rho_month[m] <- LN3params_month[2]
-    Co_month[m] <- LN3params_month[3]
-    delta_month[m] <- LN3params_month[4]
-    theta_month[m] <- LN3params_month[5]
-    tau_O_month[m] <- LN3params_month[6]
-    tau_S_month[m] <- LN3params_month[7]
-    mu_u_month[m] <- LN3params_month[8]
-    mu_v_month[m] <- LN3params_month[9]
-    sd_u_month[m] <- LN3params_month[10]
-    sd_v_month[m] <- LN3params_month[11]
-    rho_log_month[m] <- LN3params_month[12]
+    if (nrow(oneSite_month) > 0 ) { # added this line - Xia pointed out case where there's missing data for one month
+      LN3params_month <- parms(oneSite_month[,1:2])
+      mu_O_month[m] <- LN3params_month[1] # real space mean
+      rho_month[m] <- LN3params_month[2]
+      Co_month[m] <- LN3params_month[3]
+      delta_month[m] <- LN3params_month[4]
+      theta_month[m] <- LN3params_month[5]
+      tau_O_month[m] <- LN3params_month[6]
+      tau_S_month[m] <- LN3params_month[7]
+      mu_u_month[m] <- LN3params_month[8]
+      mu_v_month[m] <- LN3params_month[9]
+      sd_u_month[m] <- LN3params_month[10]
+      sd_v_month[m] <- LN3params_month[11]
+      rho_log_month[m] <- LN3params_month[12]
     
-    # Per Vogel's suggestion (11/1/2019) if tau values are negative set tau to zero. This means fitting LN2 at these sites.
-    if (tau_O_month[m]<0 | tau_S_month[m]<0){
-      tau_O_month[m] <- 0
-      tau_S_month[m] <- 0
-      LN2count_month <- LN2count_month + 1
-    }
+      # Per Vogel's suggestion (11/1/2019) if tau values are negative set tau to zero. This means fitting LN2 at these sites.
+      if (tau_O_month[m]<0 | tau_S_month[m]<0){
+        tau_O_month[m] <- 0
+        tau_S_month[m] <- 0
+        LN2count_month <- LN2count_month + 1
+      }
     
-    # mixture moment estimators
-    mu_mix_O_month[m] <- tau_O_month[m]+exp(mu_u_month[m]+sd_u_month[m]^2/2)
-    var_mix_O_month[m] <- (exp(2*mu_u_month[m]+sd_u_month[m]^2)*(exp(sd_u_month[m]^2)-1))
-    mu_mix_S_month[m] <- tau_S_month[m]+exp(mu_v_month[m]+sd_v_month[m]^2/2)
-    var_mix_S_month[m] <- (exp(2*mu_v_month[m]+sd_v_month[m]^2)*(exp(sd_v_month[m]^2)-1))
-    mu_mix_SO_month[m] <- (mu_mix_S_month[m]*mu_mix_O_month[m]+rho_month[m]*sqrt(var_mix_S_month[m])*sqrt(var_mix_O_month[m]))
-  }
+      # mixture moment estimators
+      mu_mix_O_month[m] <- tau_O_month[m]+exp(mu_u_month[m]+sd_u_month[m]^2/2)
+      var_mix_O_month[m] <- (exp(2*mu_u_month[m]+sd_u_month[m]^2)*(exp(sd_u_month[m]^2)-1))
+      mu_mix_S_month[m] <- tau_S_month[m]+exp(mu_v_month[m]+sd_v_month[m]^2/2)
+      var_mix_S_month[m] <- (exp(2*mu_v_month[m]+sd_v_month[m]^2)*(exp(sd_v_month[m]^2)-1))
+      mu_mix_SO_month[m] <- (mu_mix_S_month[m]*mu_mix_O_month[m]+rho_month[m]*sqrt(var_mix_S_month[m])*sqrt(var_mix_O_month[m]))
+    } # end if (nrow(oneSite_month) > 0 ) { # added this line.
+  } # end for (m in 1:12){ # For calculations based on monthly data
   
-  # mixture moments from RAW data 
-  mu_mix_O <- 1/12*sum(mu_mix_O_month)
-  var_mix_O <- 1/12*sum(var_mix_O_month+mu_mix_O_month^2)-mu_mix_O^2
-  mu_mix_S <- 1/12*sum(mu_mix_S_month)
-  var_mix_S <- 1/12*sum(var_mix_S_month+mu_mix_S_month^2)-mu_mix_S^2
+  # mixture moments from RAW data  - June 12, edited these to be mean( , na.rm =T), instead of 1/12*sum
+  mu_mix_O  <- mean(mu_mix_O_month, na.rm =T)
+  var_mix_O <- mean((var_mix_O_month+mu_mix_O_month^2), na.rm=T)-mu_mix_O^2
+  mu_mix_S  <- mean(mu_mix_S_month, na.rm=T)
+  var_mix_S <- mean((var_mix_S_month+mu_mix_S_month^2),na.rm=T)-mu_mix_S^2
   
-  mu_mix_SO <- 1/12*sum(mu_mix_SO_month)
+  mu_mix_SO <- mean(mu_mix_SO_month, na.rm=T)
   
   theta_mix <- sqrt(var_mix_S)/sqrt(var_mix_O)
   delta_mix <- 1-mu_mix_S/mu_mix_O
