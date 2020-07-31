@@ -2061,7 +2061,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
         if pbsJobId[groupNum] == -9999:
             # Run qstat for the user.
             try:
-                jobsTmp = subprocess.check_output(['qstat', '-u', jobData.owner])
+                jobsTmp = subprocess.check_output(['qstat', '-u ' + jobData.owner])
                 jobsTmp = str(jobsTmp, 'utf-8')
             except:
                 jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
