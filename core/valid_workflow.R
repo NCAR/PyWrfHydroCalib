@@ -388,7 +388,7 @@ gg <- ggplot() +
               geom_line(data=chrt.valid.obj, aes(x=POSIXct, y=q_cms, color='calibrated'), lwd=0.6) +
               geom_line(data=chrt.cont.obj, aes(x=POSIXct, y=obs, color='observed'), lwd=0.4) +
               geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
-#             ggtitle(paste0("Model Validation Hydrograph: ", siteId)) +
+              ggtitle(paste0("Model Validation Hydrograph: ", siteId, "/n", siteName)) +
               scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
                                 limits=c('default','calibrated','observed'),
                                 label=c('default', 'calibrated', 'observed')) +
@@ -407,7 +407,7 @@ gg1 <- ggplot() +
               geom_point(data=chrt.valid.obj, aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
               geom_abline(intercept=0, slope=1, col='black', lty=1) +
-              ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId)) +
+              ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId, "/n", siteName)) +
               scale_color_manual(name="", values=c('dodgerblue', 'orange'),
                                 limits=c('default','calibrated'),
                                 label=c('default', 'calibrated')) +
@@ -419,7 +419,7 @@ gg2 <- ggplot() +
               geom_point(data=chrt.valid.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
               geom_abline(intercept=0, slope=1, col='black', lty=1) +
-              ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId)) +
+              ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId, "/n", siteName)) +
               scale_color_manual(name="", values=c('dodgerblue', 'orange'),
                                 limits=c('default','calibrated'),
                                 label=c('default', 'calibrated')) +
@@ -433,7 +433,7 @@ gg3 <- ggplot() +
               geom_point(data=chrt.valid.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
               geom_abline(intercept=0, slope=1, col='black', lty=1) +
-              ggtitle(paste0("Validation Period (", startValidDate, " to ", endValidDate, "): \n", siteId)) +
+              ggtitle(paste0("Validation Period (", startValidDate, " to ", endValidDate, "): \n", siteId, "/n", siteName)) +
               scale_color_manual(name="", values=c('dodgerblue', 'orange'),
                                 limits=c('default','calibrated'),
                                 label=c('default', 'calibrated')) +
@@ -462,7 +462,7 @@ gg <- ggplot(data=results.plot, aes(x=factor(period), y=value, fill=run)) +
          scale_fill_manual(name="", values=c('dodgerblue', 'orange'),
              limits=c('default','calibrated'),
              label=c('default', 'calibrated')) +
-         ggtitle(paste0("Model Validation Performance Metrics: ", siteId)) +
+         ggtitle(paste0("Model Validation Performance Metrics: ", siteId, "/n", siteName)) +
          labs(x="run period", y="value") +
          theme_bw() + theme_bw(base_size = 20)
 ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics.png"),
