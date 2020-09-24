@@ -32,6 +32,7 @@ class gageMeta:
         self.hydroSpatial = []
         self.forceDir = []
         self.obsFile = []
+        self.siteName = []
         self.dxHydro = []
         self.aggFact = []
         self.optLandRstFile = []
@@ -43,7 +44,7 @@ class gageMeta:
         tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
-                   'obsFile':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
+                   'obsFile':'','siteName':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
                    'aggFactor':'','domainID':domainID,'optLandRstFile':'',\
                    'optHydroRstFile':'','chanParmFile':''}
         try:
@@ -66,6 +67,7 @@ class gageMeta:
         self.hydroSpatial = tmpMeta['hydroSpatial']
         self.forceDir = tmpMeta['forceDir']
         self.obsFile = tmpMeta['obsFile']
+        self.siteName = tmpMeta['siteName']
         self.comID = tmpMeta['comID']
         self.dxHydro = tmpMeta['dxHydro']
         self.aggFact = tmpMeta['aggFactor']

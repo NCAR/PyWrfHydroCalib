@@ -437,6 +437,7 @@ class Database(object):
         tmpMeta['lkFile'] = results[22]
         tmpMeta['forceDir'] = results[23]
         tmpMeta['obsFile'] = results[24]
+        tmpMeta['siteName'] = results[25]
         tmpMeta['dxHydro'] = results[39]
         tmpMeta['aggFactor'] = results[40]
         tmpMeta['hydroSpatial'] = results[41]
