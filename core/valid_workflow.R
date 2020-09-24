@@ -462,7 +462,7 @@ gg <- ggplot(data=results.plot, aes(x=factor(period), y=value, fill=run)) +
          scale_fill_manual(name="", values=c('dodgerblue', 'orange'),
              limits=c('default','calibrated'),
              label=c('default', 'calibrated')) +
-         ggtitle(paste0("Model Validation Performance Metrics: ", siteId, "/n", siteName)) +
+         ggtitle(paste0("Model Validation Performance Metrics: ", siteId, "\n", siteName)) +
          labs(x="run period", y="value") +
          theme_bw() + theme_bw(base_size = 20)
 ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics.png"),
