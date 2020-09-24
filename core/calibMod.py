@@ -1490,6 +1490,8 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         fileObj.write('# Basin-Specific Metadata\n')
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
+        inStr = "siteName <- '" + str(gageMeta.siteName) + "'\n"
+        fileObj.write(inStr)
         inStr = "rtlinkFile <- '" + str(gageMeta.rtLnk) + "'\n"
         fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
