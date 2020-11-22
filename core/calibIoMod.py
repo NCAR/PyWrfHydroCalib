@@ -121,7 +121,7 @@ def copyDefaultParms(jobData,runDir,gage,staticData):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    if staticData.gwBaseFlag == 1:
+    if staticData.gwBaseFlag == 1 or staticData.gwBaseFlag ==  4:
         inPath = runDir + "/GWBUCKPARM.nc"
         outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
         if not os.path.isfile(inPath):
@@ -596,7 +596,7 @@ def setupModels(jobData,db,args,libPathTop):
                     jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                     raise
             
-            if jobData.gwBaseFlag == 1:
+            if jobData.gwBaseFlag == 1 or jobData.gwBaseFlag == 4:
                 origPath = str(gageData.gwFile)
                 newPath = baseParmDir + "/GWBUCKPARM.nc"
                 try:
