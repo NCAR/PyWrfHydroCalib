@@ -54,7 +54,7 @@ def main(argv):
     fullDomOrig = str(args.fullDomOrig[0])
     hydroOrig = str(args.hydroOrig[0])
     soilOrig = str(args.soilOrig[0])
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         gwOrig = str(args.gwOrig[0])
     if args.chRtFlag[0] == 3:
         chanParmOrig = str(args.chanParmOrig[0])
@@ -110,7 +110,7 @@ def main(argv):
             shutil.copy(soilOrig,tmpPath)
         except:
             sys.exit(1)
-        if args.gwFlag[0] == 1:
+        if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             try:
                 tmpPath = runDir + "/GWBUCKPARM.nc"
                 print(tmpPath)
@@ -136,7 +136,7 @@ def main(argv):
         # Open NetCDF parameter files for adjustment.
         idFullDom = Dataset(fullDomOut,'a')
         idSoil2D = Dataset(soilOut,'a')
-        if args.gwFlag[0] == 1:
+        if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             idGw = Dataset(gwOut,'a')
         idHydroTbl = Dataset(hydroOut,'a')
         
@@ -189,7 +189,7 @@ def main(argv):
             if param == "lksatfac":
                 idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[i])
         
-            if args.gwFlag[0] == 1:
+            if args.gwFlag[0] == 1 or args.gwFlag[0] == 4 : 
                 if param == "zmax":
                     idGw.variables['Zmax'][:] = float(newParams.zmax[i])
         
@@ -299,7 +299,7 @@ def main(argv):
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         idGw.close()
     idHydroTbl.close()
             
