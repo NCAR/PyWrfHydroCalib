@@ -101,6 +101,9 @@ calibMethod = DDS
 # 5.) Kge
 # 6.) Msof
 # 7.) hyperResMultiObj
+# 8.) NNseSq
+# 9.) LBEmPrime
+# 10.) EventMultiObj
 objectiveFunction = Nse
 
 # DDS specific parameters. Leave blank if not using DDS.
@@ -125,7 +128,7 @@ enableMask = 0
 # 1- FID : Feature id of the gage as it appears in the CHANOBS
 # 2- site_no : site identifier as it appears in the obsStrDate.Rdata file
 # 3- weight : weight to be given to site when caculating the objective functio
-enableMultiSites = 1
+enableMultiSites = 0
 
 # Specify email to send updates/error messages to.
 email = john.doe@youremail.com
