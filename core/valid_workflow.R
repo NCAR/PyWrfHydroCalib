@@ -24,7 +24,6 @@ metrics <- metrics
 obsStrData <- obsStrData
 detach(calibdb)
 
-objFunc <- get(objFn)
 
 #########################################################
 # MAIN CODE
@@ -303,16 +302,18 @@ for (i in 1:length(runList[[1]])) {
         rmse = Rmse(q_cms, obs, na.rm=TRUE),
         bias = PBias(q_cms, obs, na.rm=TRUE),
         nse = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
-        nselog = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
-        nsewt = NseWt(q_cms, obs) ,
-        kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2012", out.type="single"),
+        nselog = NseLogM(q_cms, obs), # to consider adding constant value to station with the occurrence of zero flows 
+        nsewt = NseWtM(q_cms, obs), 
+        nnsesq = NNseSq(q_cms, obs), 
+        kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), 
         hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
-        msof = Msof(q_cms, obs, scales)
+        msof = Msof(q_cms, obs, scales),
+        eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
       ))
       my_exprs2 = quote(list(
         corr1 = r1(q_cms, obs), # Calculate Stedingers r1
-        lbem = LBEms_function(q_cms, obs, period)[1],
-        lbemprime =  LBEms_function(q_cms, obs, period)[2]
+        lbem = LBEms_function(q_cms, obs, period, calcDailyStats)[1],
+        lbemprime =  LBEms_function(q_cms, obs, period, calcDailyStats)[2]
       ))
       w = which(names(my_exprs) %in% metrics)
       w2 = which(names(my_exprs2) %in% metrics)
@@ -331,8 +332,8 @@ for (i in 1:length(runList[[1]])) {
         }
 
         # Calc objective function
-        if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
-        if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- stat[, objFn, with = FALSE]
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
+        if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- stat[, objFn, with = FALSE] 
 
         # Archive results
         validStats_new <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics), with = FALSE])
@@ -356,8 +357,8 @@ for (i in 1:length(runList[[1]])) {
         }
         names(statW) <- metrics
 
-        if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - statW[objFn]
-        if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- statW[objFn]
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE] 
+        if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- statW[objFn] 
 
       # Archive results
       validStats[loopcnt,] <- c(runList[["run"]][i], dtList[["period"]][j],  F_new, statW)
