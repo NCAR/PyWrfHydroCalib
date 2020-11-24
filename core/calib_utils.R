@@ -347,14 +347,14 @@ r1 <- function(mod, obs){
 # Journal of Hydrology, 420, 171-182. DOI: 10.1016/j.jhydrol.2011.11.055
 # If there are no zeros in the distribution, returns original dataframe.
 noZeroFunction = function(mod, obs, period){
-  zmin = min(mod, obs)
+  zmin = min(mod, obs, na.rm = T) # Xia added na.rm=T on 2020/06/17
   if (zmin ==0) {
     #Following Push2012, though I don't get identical results, they are very close
     epsilon = mean(obs, na.rm=T)/100
     obs = obs + epsilon
     mod = mod + epsilon
   } # end if (zmin =0)
-  df = data.table(q_cms = mod, obs = obs, period = period)
+  df = data.table::data.table(q_cms = mod, obs = obs, period = period)  # added library before function by Xia on 20200616
   return(df)
 } # end function
 
@@ -378,7 +378,7 @@ NSEs_noZeros <- function(mod, obs, w=0.5, p=1) { # Function reads in paired mode
   n <- length(O)
   
   ############## NSE ##############
-  # Nash-Sutcliffe Efficiency (NSE)
+  # Nash-Sutcliffe Efficiency (NSE)                              # Xia: n-1 instead of n in denomitor as in standard NSE on 20200616
   NSE <- 1-((1/n)*sum((S-O)^2))/((1/(n-1))*sum((O-mean(O))^2))   # Barber et al. 2019 eqn. 8b
   
   # Compute NSE using natural logs. Call this LogNSE
@@ -448,7 +448,8 @@ parms <- function(data){
   }
   
   # New added by Erin June 12, 2020, to deal with sites with many zeros, where tau ends up being min(O) or min(S); avoids log 0.
-  if ( (min(O) - tau_O <= 0) | (min(S) - tau_S <= 0) ) {
+  #if ( (min(O) - tau_O <= 0) | (min(S) - tau_S <= 0) ) { # commented out by Xia
+  if ( (min(O) - tau_O <= 0.0000000001) | (min(S) - tau_S <= 0.0000000001) ) { # Erin: New June 17, 2020, when there are many zeros, sometimes this is just barely positive, but TauO should be zero in that case 
     tau_O = 0 # As above, this means fitting LN2 at these sites.
     tau_S = 0 # As above, this means fitting LN2 at these sites.
   }
@@ -498,7 +499,10 @@ parms <- function(data){
 #statLBEms = LBEms_function(chrt.obj.nona.nozeros$mod, chrt.obj.nona.nozeros$obs, chrt.obj.nona.nozeros$period)
 
 # Function to be added to /glade/u/home/arezoo/wrf_hydro/PyWrfHydroCalib/core/calib_utils.R
-LBEms_function <- function(mod, obs, period) { # Function reads in paired model and obs without any NAs.
+LBEms_function <- function(mod, obs, period, calcDailyStats) { # Function reads in paired model and obs without any NAs. 
+                                                               # Xia added calcDailyStats which is provided in proj_data.Rdata on 20200617
+  # Remove NA
+  id<-!is.na(mod) &!is.na(obs); mod <- mod[id]; obs <- obs[id]; period<-period[id] # Xia on 20200617
   
   allData = data.frame("O"=obs, "S"= mod, "month" = period)
   
@@ -559,11 +563,12 @@ LBEms_function <- function(mod, obs, period) { # Function reads in paired model 
   LBE_mix <- matrix(nrow=1, ncol=1)
   LBEprime_mix <- matrix(nrow=1, ncol=1)
   rho <- matrix(nrow=1, ncol=1)
-  
+
+  if (!calcDailyStats) monsample <- 720  else monsample <- 30  # Xia: need at least 1-yr sample in each month for calibration at hourly (720) or monthly (30) scale on 20200617
   for (m in 1:12){ # For calculations based on monthly data
     oneSite_month <- subset(allData, allData$month== m) # Pull data for individual site's month
-    if (nrow(oneSite_month) > 0 ) { # added this line - Xia pointed out case where there's missing data for one month
-      LN3params_month <- parms(oneSite_month[,1:2])
+    if (nrow(oneSite_month) > monsample ) { # added this line - Xia pointed out case where there's missing data for one month
+      LN3params_month <- parms(oneSite_month[,1:2])  # Xia: 3-yr sample limit for 0 as we discussed? on 20200616
       mu_O_month[m] <- LN3params_month[1] # real space mean
       rho_month[m] <- LN3params_month[2]
       Co_month[m] <- LN3params_month[3]
@@ -702,6 +707,601 @@ calc_contingency_stats = function (abcd1DF, groupVars = c("feature_id", "threshN
   return(abcd1DF)
 }
 
+### Xia added NNseSq, NseLogM and NseWtM on 20200616.
+
+# NNSE on squared streamflow 
+NNseSq <- function (m, o) {
+    nse <- hydroGOF::NSE(m^2, o^2, na.rm=TRUE, FUN=NULL, epsilon=0)
+    nnse <- 1/(2-nse)
+}
+
+# Modifed LogNSE  
+NseLogM <- function (m, o) {
+    # Add 1/100 of mean observed flow to all values if zero flow occurs
+    if (min(m, o, na.rm=T)==0) {
+      lnse <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")
+    }else{
+      lnse <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=log)
+    }
+}
+
+# Modifed NseWt  
+NseWtM <- function (m, o, w=0.5, p=1) {
+    # Add 1/100 of mean observed flow to all values if zero flow occurs
+    if (min(m, o, na.rm=T)==0) {
+      nse   <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012")
+      lnnse <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012")
+    }else{
+      nse   <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=NULL)
+      lnnse <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=log)
+    }
+    # Weighted mean
+    res <- ((w^p) * (nse^p) + (w^p) * (lnnse^p))^(1/p)
+}
+
+# Event identification for hourly streamflow (model or observation) (written by Yuqiong)
+ 
+eventIdentification <- function(data,nwinSpan=36,threshold_prob=TRUE,
+  threshPeak=0.9,threshLowflow=0.5,threshFlowRange=0.3,maxGapFill=5,
+  minEventDuration=6,maxRiseDuration=120,maxRecessionDuration=240,
+  maxPeakDistCompound=120, nwinShift=12,minInterval=6,minLengthData=6) {
+
+########### Inputs #####################
+# data: data.frame for streamflow, 1st column is time in POSIXct format, 
+#       2nd column is the flow values
+# nwinSpan: window size (in hours) for smoothing; consider starting with
+#       240 hours for snow-driven streamflow with diel fluctuations and
+#       36 hours for non-snow-driven streamflow  
+# nwinShift: size of window (nwinShift*2+1) around smoothed peak to 
+#       identify actual peak, as there often exists a shift between smoothed
+#       and actual peaks (hours)
+# minInterval: minimum seperation between peaks; peaks that are too close 
+#       will be combined
+# minEventDuration: minimum event duration in hours; events with duration 
+#       shorter than the threshold will be combined with neighbour events
+# maxRiseDuration: maximum duration in hours for the rise limb
+# maxGapFill: maximum duration (in hours) of data gaps to be filled with 
+#       spline interpolation; gaps larger than this threshold will not be filled
+# maxRecessionDuration: maximum duration in hours for the recession limb
+# maxPeakDistCompound: maximum distance between adjacent peaks that can be
+#       considered combined into compound events
+# threshold_prob: logical varible to indicate whether the three threhold 
+#       parametes (threshPeak, threshLowflow, threshFlowRange) are climatological
+#       probabilities or the actual values in units of streamflow data 
+# threshPeak: threshold for event peaks; peaks below threshold are 
+#       disgarded
+# threshLowflow: threshold for low flows, used to determine event 
+#       start/end points
+# threshFlowRange: probability threshold for event flow range (i.e., flow 
+#       difference between peak and start point, or between peak and end point).
+#       Events with flow ranges below this threshold are discarded
+# minLengthData: mininum length of record to perform event separation (hours)
+#       flow time series is first devided into chunks with no missing values;
+#       chunks too short are ignored for event detection 
+
+######## outputs ##############
+# Output is a list of three data frames
+# 1st data frame (eventsAll): all single-peak events identified, with three
+#       POSIXct columns indicating the start, peak, and end hours of all events
+# 2nd data frame (eventsCompound): final list of events identified where adjcent 
+#       single-peak events are combined into a compound event
+# 3rd data frame: the original streamflow data frame with short gap filled 
+#       with spline interpolation, as well as the smoothed time series   
+
+
+# function to get the index of the last minimum value
+# which.min gets the first minimum value index
+which.min2 <- function(x, last.index = FALSE, ...){
+  if(last.index) max(which(x == min(x, ...))) else which.min(x)
+}
+
+# function to fine tune start and end points
+# start point should have the minimum flow value on the rising limb
+# end point should have the minimum flow value on the recession limb
+tuneEventStartEnd <- function(events, df1) {
+   for (k1 in 1:nrow(events)) {
+
+     iStart <- match(events$start[k1],df1$time)
+     iPeak <- match(events$peak[k1],df1$time)
+     iEnd <- match(events$end[k1],df1$time)
+
+     idx1 <- which.min2(df1$value[iStart:iPeak],last.index=TRUE)
+     if (idx1!=1) events$start[k1] <- events$start[k1]+(idx1-1)*3600
+
+     idx1 <- which.min(df1$value[iPeak:iEnd])
+     if (idx1!=(iEnd-iPeak+1)) events$end[k1] <- events$peak[k1]+(idx1-1)*3600
+   }
+   events
+}
+
+# function to identify event start/end points given peak time and data
+getEvents <- function(tPeaks,df1,thresh) {
+
+iLowflows <- which(df1$value < thresh)
+iPeaks <- match(tPeaks,df1$time)
+iStarts0 <- sapply(iPeaks, function(x) max(iLowflows[iLowflows<x]-1))
+iEnds0 <- sapply(iPeaks, function(x) min(iLowflows[iLowflows>x]+1))
+iStarts0[is.infinite(iStarts0) | is.na(iEnds0) | iStarts0<1] <- 1
+iEnds0[is.infinite(iEnds0) | is.na(iEnds0) | iEnds0>nrow(df1)] <- nrow(df1)
+
+n1 <- length(iPeaks)
+iStarts1 <- iEnds1 <- rep(NA,n1)
+for (k1 in 1:n1) {
+  if (k1 == 1) {
+    iStarts1[k1] <- iStarts0[k1]
+    if (n1==1) iEnds1[k1] <- iEnds0[k1]
+  } else {
+    j1 <- iPeaks[k1-1]-1+which.min(df1$value[iPeaks[k1-1]:iPeaks[k1]])
+    iStarts1[k1] <- j1
+    iEnds1[k1-1] <- j1
+    if (k1 == n1) iEnds1[k1] <- iEnds0[k1]
+}}
+
+iStarts <- sapply(1:n1, function(x) max(iStarts0[x],iStarts1[x]))
+iEnds <- sapply(1:n1, function(x) min(iEnds0[x],iEnds1[x]))
+iPeaks <- sapply(1:length(iPeaks),function(x) which.max(df1$value[iStarts[x]:iEnds[x]])+iStarts[x]-1)
+
+# events (start time, peak time, end time)
+eventDt <- data.frame(start=df1$time[iStarts],
+                      peak=df1$time[iPeaks],
+                      end=df1$time[iEnds])
+
+# fine tune start and end points 
+eventDt <- tuneEventStartEnd(eventDt, df1)
+
+eventDt
+}
+
+# function to identify compound events given a series single events
+compoundEvents <- function(events,df1,thresh,ix_cpd0) {
+
+ne1 <- nrow(events)
+events$ix_cpd <- NA
+events$start_cpd <- events$start
+events$peak_cpd <- events$peak
+events$end_cpd <- events$end
+
+# first label all the single events that belong to compound events
+if (ne1>1) {
+kk <- ix_cpd0
+for (k1 in 1:(ne1-1)) 
+  if (as.integer(difftime(events$start[k1+1],events$end[k1],units="hours"))<=5) {
+  if (as.integer(difftime(events$peak[k1+1],events$peak[k1],units="hours"))<=maxPeakDistCompound) {
+    min0 <- min(subset(df1,time %in% seq(events$end[k1],events$start[k1+1],by="hour"))$value,na.rm=T) 
+    if (min0 > thresh) {
+      if (!is.na(events$ix_cpd[k1])) {
+        events$ix_cpd[k1+1] <- events$ix_cpd[k1]
+      } else {
+        kk <- kk + 1; events$ix_cpd[k1:(k1+1)] <- kk
+      }}}}
+
+# then identify the start, peak, and end points of compound events
+if (kk>ix_cpd0) {
+  for (k1 in (ix_cpd0+1):kk) {
+    
+     ix1 <- which(!is.na(events$ix_cpd) & events$ix_cpd==k1)
+     events$start_cpd[ix1] <- events$start[min(ix1)]
+     events$end_cpd[ix1] <- events$end[max(ix1)]
+     ipeaks <- events$peak[ix1]
+     events$peak_cpd[ix1] <- ipeaks[which.max(df1$value[match(ipeaks,df1$time)])]
+
+}}
+}
+events
+}
+
+############## processing starts here #############
+data <- na.omit(data)
+names(data) <- c("time","value")
+if (threshold_prob) {
+thresh1 <- quantile(data$value, threshPeak)
+thresh2 <- quantile(data$value, threshLowflow)
+thresh3 <- quantile(data$value, threshFlowRange)
+} else {
+thresh1 <- threshPeak
+thresh2 <- threshLowflow
+thresh3 <- threshFlowRange
+}
+
+# minor adjustments to peak threshold
+if (thresh1 <= max(data$value)*0.01) thresh1 <- max(data$value)*0.01
+#if (thresh1 <= 1.0) thresh1 <- 1.0 #cms, convert to cfs if flow unit is cfs
+
+# fill short data gaps with spline interpolation
+dates <- seq(min(data$time),max(data$time), by="hour")
+dates1 <- dates[!dates %in% data$time]
+if (length(dates1)>0) {
+data <- rbind(data,data.frame(time=dates1,value=NA))
+data <- data[order(data$time),]
+data$value <- zoo::na.approx(data$value,maxgap=maxGapFill,na.rm=FALSE)
+data <- subset(data,!is.na(value))
+}
+
+# identify remaining data gaps and break into chunks with no missing data
+dates <- seq(min(data$time),max(data$time), by="hour")
+dates1 <- dates[!dates %in% data$time]
+chunks <- match(dates1, dates)
+nchunk <- length(chunks)+1
+
+# loop through chunks to identy peaks for each chunk and then put them back together
+dataAll <- eventsAll <- data.frame()
+for (i1 in 1:nchunk) {
+
+   # start index of current non-missing period
+   if (i1==1) { j1 <- 1
+   } else { j1 <- chunks[i1-1]+1 }
+
+   # end index of current non-missing period
+   if (i1==nchunk) { j2 <- length(dates)
+   } else { j2 <- chunks[i1]-1 }
+
+   if (j1>j2) next
+   if (length(j1:j2) < minLengthData) next 
+
+   # data for current chunk
+   data2 <- subset(data, time %in% dates[j1:j2])
+   if (max(data2$value) < thresh1) next
+
+   #local weighted regression smoothing
+   data2$hour <- 1:nrow(data2)
+   span <- nwinSpan/nrow(data2)
+   fit <- loess(value ~ hour, degree=1,span = span, data=data2)
+   data2$smooth <- fit$fitted
+
+   # identify peaks in smoothed data
+   d1 <- c(NA, diff(data2$smooth))
+   ipeak <- NULL
+   for (i2 in 2:(nrow(data2)-1)) 
+     if (d1[i2]>=0 & d1[i2+1]<=0) ipeak <- c(ipeak,i2)
+   if (length(ipeak)==0) next
+
+   # identify corresponding peaks in the original data
+   ipeak1 <- rep(NA, length(ipeak))
+   for (i2 in 1:length(ipeak)) {
+     j1 <- ipeak[i2]-nwinShift
+     j2 <- ipeak[i2]+nwinShift
+     if (j1<1) j1 <- 1
+     if (j2>nrow(data2)) j2 <- nrow(data2)
+     ix2 <- which.max(data2$value[j1:j2])
+     ipeak1[i2] <- ipeak[i2]-nwinShift-1+ix2
+   }
+   ipeak1 <- unique(ipeak1)
+   ipeak1[ipeak1 < 1] <- 1
+   ipeak1[ipeak1 > nrow(data2)] <- nrow(data2)
+
+   # peaks identified
+   peaks <- data2[ipeak1,]
+
+   # remove those below the threshold
+   peaks <- subset(peaks, value >= thresh1)
+   if (nrow(peaks)==0) next
+
+   # combine those peaks that are too close
+   int1 <- which(as.numeric(diff(peaks$time),"hours") < minInterval)
+   rowIdx <- 1:nrow(peaks)
+   rowIdx <- rowIdx[!rowIdx %in% (int1+1)]
+   peaks1 <- data.frame()
+   for (k1 in rowIdx) {
+      if (k1 %in% int1) {
+        if (peaks$value[k1] > peaks$value[k1+1]) {
+          peaks1 <- rbind(peaks1,peaks[k1,])
+        } else {
+          peaks1 <- rbind(peaks1,peaks[k1+1,])
+        }
+      } else {
+        peaks1 <- rbind(peaks1,peaks[k1,])
+      }
+   }
+   if (nrow(peaks1)==0) next
+
+   # identify start and end points of all events
+   events1 <- getEvents(peaks1$time, data2,thresh2)
+
+   # remove events with a rising/recession limb that is too short (verticallly)
+   iPeaks <- match(events1$peak,data2$time)
+   iStarts <- match(events1$start,data2$time)
+   iEnds <- match(events1$end,data2$time)
+   ix1 <- NULL
+   n1 <- length(iPeaks)
+   for (k1 in 1:n1) 
+     if (min(data2$value[iPeaks[k1]]-data2$value[iStarts[k1]],data2$value[iPeaks[k1]]-data2$value[iEnds[k1]]) >= thresh3) ix1 <- c(ix1,k1)
+   if (length(ix1)==0) next
+   events2 <- getEvents(events1$peak[ix1], data2,thresh2)
+
+   # remove events that are too short in duration
+   ix1 <- which(as.integer(difftime(events2$end,events2$start,units="hours")) >= minEventDuration)
+   if (length(ix1)==0) next
+   events3 <- getEvents(events2$peak[ix1], data2,thresh2)
+
+   # adjust long starts and long tails
+   for (k1 in 1:nrow(events3)) {
+      t1 <- as.integer(difftime(events3$peak[k1],events3$start[k1],units="hours"))
+      if (t1>maxRiseDuration) events3$start[k1] <- events3$peak[k1]-maxRiseDuration*3600
+      t1 <- as.integer(difftime(events3$end[k1],events3$peak[k1],units="hours"))
+      if (t1>maxRecessionDuration) events3$end[k1] <- events3$peak[k1]+maxRecessionDuration*3600
+  }
+
+  # final adjustments to start and end points
+  events3 <- tuneEventStartEnd(events3,data2)
+
+  # identify compound events
+  ix_cpd0 <- 0
+  if (nrow(eventsAll)>=1) ix_cpd0 <- max(eventsAll$ix_cpd,na.rm=T)
+  if (is.infinite(ix_cpd0)) ix_cpd0 <- 0
+  events3 <- compoundEvents(events3, data2, thresh2,ix_cpd0)
+
+  # put them back together
+  data2$hour <- NULL
+  dataAll <- rbind(dataAll, data2)
+  eventsAll <- rbind(eventsAll, events3)
+}
+
+# add in those chunks that have no peaks
+data1 <- subset(data, ! time %in% dataAll$time)
+if (nrow(data1)>0) {
+data1$smooth <- NA
+dataAll <- rbind(dataAll, data1)
+dataAll <- dataAll[order(dataAll$time),]
+}
+
+if (nrow(eventsAll)==0) {
+  eventsCompound <- eventsAll
+} else {
+# compile event list that combines regular events with compound events
+eventsAll$start0 <- eventsAll$peak0 <- eventsAll$end0 <- eventsAll$end
+ix1 <- which(is.na(eventsAll$ix_cpd))
+eventsAll$start0[ix1] <- eventsAll$start[ix1]
+eventsAll$peak0[ix1] <- eventsAll$peak[ix1]
+eventsAll$end0[ix1] <- eventsAll$end[ix1]
+ix1 <- which(!is.na(eventsAll$ix_cpd))
+eventsAll$start0[ix1] <- eventsAll$start_cpd[ix1]
+eventsAll$peak0[ix1] <- eventsAll$peak_cpd[ix1]
+eventsAll$end0[ix1] <- eventsAll$end_cpd[ix1]
+
+eventsCompound <- eventsAll[,c("start0","peak0","end0")]
+eventsCompound <- eventsCompound[!duplicated(eventsCompound),]
+names(eventsCompound) <- c("start","peak","end")
+
+eventsAll <- eventsAll[,c("start","peak","end")]
+
+# discard events at the start or end of periods with data missing
+ix1 <- match(eventsAll$start,dataAll$time)
+ix2 <- which(ix1 != 1 & !is.na(dataAll$value[ix1-1]))
+ix2 <- c(ix2,which(ix1==1 & dataAll$value[ix1]<=thresh2))
+eventsAll <- eventsAll[ix2,]
+ix1 <- match(eventsAll$end,dataAll$time)
+ix2 <- c(ix2, which(ix1==nrow(dataAll) & dataAll$value[ix1]<=thresh2))
+ix2 <- which(ix1 != nrow(dataAll) & !is.na(dataAll$value[ix1+1]))
+eventsAll <- eventsAll[ix2,]
+
+ix1 <- match(eventsCompound$start,dataAll$time)
+ix2 <- which(ix1 != 1 & !is.na(dataAll$value[ix1-1]))
+ix2 <- c(ix2,which(ix1==1 & dataAll$value[ix1]<=thresh2))
+eventsCompound <- eventsCompound[ix2,]
+ix1 <- match(eventsCompound$end,dataAll$time)
+ix2 <- which(ix1 != nrow(dataAll) & !is.na(dataAll$value[ix1+1]))
+ix2 <- c(ix2, which(ix1==nrow(dataAll) & dataAll$value[ix1]<=thresh2))
+eventsCompound <- eventsCompound[ix2,]
+}
+
+list(eventsAll,eventsCompound,dataAll)
+
+}
+
+# Match observed (compound) events with model events (written by Yuqiong)
+
+matchEvents <- function(data_mod, eventsAllMod, eventsCompoundMod,
+  eventsCompoundObs,maxDist=48) {
+
+###### Inputs ##############
+# data_mod: data.frame for model streamflow, 1st column is time in POSIXct format,
+#       2nd column is the flow values
+# eventsAllMod: data frame listing all single-peak events for model
+#    streamflow (identified by eventIdentification.R)
+# eventsCompoundMod: data frame of compound events for model streamflow
+# eventsCompoundObs: data frame of compound events for observed streamflow
+# maxDist: window size (in hours) for identifying model events for
+#    a given observed event. Consider starting with 48 hours for
+#    non-snow basins and 7*24 (i.e., one week) for snow basins
+
+##### Output ##############
+# data frame with columns corresponding to the start, peak, and end times of
+# matched observed and model events. It has the same number of rows as 
+#   eventsCompoundObs
+#   1st - 3rd columns: start, peak and end times of observed events
+#   4th - 6th columns: start, peak and end times of model events 
+#   7th column: match category 
+#       1 = matched with eventsCompoundMod
+#       2 = matched with eventsAllMod
+#       3 = missed by model
+
+no1 <- nrow(eventsCompoundObs)
+nm1 <- nrow(eventsCompoundMod)
+nm2 <- nrow(eventsAllMod) 
+
+if (no1==0) { 
+  print("WARNING: no events to match")
+  return(data.frame())
+}
+ 
+dfMatch <- data.frame(ix_obs=1:no1,match=rep(NA,no1),
+  ix_mod1=rep(NA,no1), ix_mod2=rep(NA,no1))
+
+for (k1 in 1:no1) {
+
+  # first assume obs event is unmatched
+  dfMatch$match[k1] <- 3
+
+  # first round: match observed compound events with model compound events
+  if (nm1>0) {
+  idx1 <- which(! (1:nm1) %in% dfMatch$ix_mod1)
+  dist1 <- abs(as.integer(difftime(eventsCompoundObs$peak[k1],eventsCompoundMod$peak[idx1],units="hours")))
+  mdist1 <- min(dist1)
+  i1 <- idx1[which.min(dist1)]
+  if (mdist1 <= maxDist) {
+     dfMatch$match[k1] <- 1
+     dfMatch$ix_mod1[k1] <- i1
+     next
+  }} else {
+    if (nm2>0) {
+  # 2nd round: match remaining observed events with model single-peak events
+    idx1 <- which(! (1:nm2) %in% dfMatch$ix_mod2[k1])
+    dist1 <- abs(as.integer(difftime(eventsCompoundObs$peak[k1],eventsAllMod$peak[idx1],units="hours")))
+    mdist1 <- min(dist1)
+    i1 <- idx1[which.min(dist1)]
+    if (mdist1 <= maxDist) {
+       dfMatch$match[k1] <- 2
+       dfMatch$ix_mod2[k1] <- i1
+       next
+    }}
+}}
+
+# assemble matched events of obs and mod
+peak_obs <- eventsCompoundObs$peak
+start_obs <- eventsCompoundObs$start
+end_obs <- eventsCompoundObs$end
+
+peak_mod <- peak_obs
+start_mod <- start_obs
+end_mod <- end_obs
+
+ix1 <- which(dfMatch$match==1)
+if (length(ix1)>0) {
+  peak_mod[ix1] <- eventsCompoundMod$peak[dfMatch$ix_mod1[ix1]]
+  start_mod[ix1] <- eventsCompoundMod$start[dfMatch$ix_mod1[ix1]]
+  end_mod[ix1] <- eventsCompoundMod$end[dfMatch$ix_mod1[ix1]]
+}
+ix1 <- which(dfMatch$match==2)
+if (length(ix1)>0) {
+  peak_mod[ix1] <- eventsAllMod$peak[dfMatch$ix_mod2[ix1]]
+  start_mod[ix1] <- eventsAllMod$start[dfMatch$ix_mod2[ix1]]
+  end_mod[ix1] <- eventsAllMod$end[dfMatch$ix_mod2[ix1]]
+}
+ix1 <- which(dfMatch$match==3)
+if (length(ix1)>0) {
+names(data_mod) <- c("time","value")
+for (k1 in ix1) {
+tmp <- subset(data_mod,time>=eventsCompoundObs$start[k1] & time<=eventsCompoundObs$end[k1])
+peak_mod[k1] <- tmp$time[which.max(tmp$value)]
+}}
+
+eventsMatched <- data.frame(start_obs,peak_obs,end_obs,start_mod,peak_mod,end_mod)
+eventsMatched$match <- dfMatch$match
+eventsMatched
+
+}
+
+# Xia added EventMultiObj on 20200626 and modified on 20200723.
+
+EventMultiObj <- function(m, o, weight1, weight2, period, siteId) {
+
+# Function to calculate event-based performance measure  
+# The subroutines were provided by Yuqiong on 25 June 2020 and updated in July 2020.
+# Xia adjsuted and incorporated scripts into calibration workflow on 26 June 2020, and then updated in July 2020.
+# Input: 
+#       m: model simulated streamflow time series
+#       o: observed streamflow time series
+#       w1: weight for percentage bias of peak flow
+#       w2: weight for percentage bias of flow volume 
+#       period: time and date for streamflow time series  
+#       siteId: site no used for differentiating snowy or snowy basins
+# Ouput:
+#      obj: performance measure  
+
+
+# construct data frame
+data1 <- data.frame(mod = m, obs = o, Date = period)
+data1 <- data1[!duplicated(data1$Date), ]
+
+# subjective parameters for snowy or non-snowy basin 
+# we will set the parameters for the non snowy basins for now, needs to be namelist options later
+#load("/glade/p/cisl/nwc/nwmv30_calibration/Task_2/setup_files/files/calib_shp_conus_oconus.Rdata")
+#if (df.shp[df.shp$site_no%in%siteId,"snowy"] == 0 ){  
+
+# parameters for non-snow basins
+nwinSpan1 <- 36
+minEventDuration1 <- 12
+maxRiseDuration1 <- 2*24
+maxRecessionDuration1 <- 5*24
+maxPeakDistCompound1 <- 5*24
+maxDist1 <- 2*24
+
+# parameters for snow basins
+#}else{
+#nwinSpan1 <- 240
+#minEventDuration1 <- 36
+#maxRiseDuration1 <- 30*24
+#maxRecessionDuration1 <- 60*24
+#maxPeakDistCompound1 <- 15*24
+#maxDist1 <- 7*24
+#}
+
+# smoothing time window (Xia added on 20200723)
+nwinSpan1 <- 36
+
+# peak flow threshold (Xia added on 20200723)
+th1 <- 0.9
+
+# identify events for observed streamflow
+print("identify events for observed streamflow")
+listObs <- eventIdentification(data1[,c("Date","obs")],nwinSpan=nwinSpan1,minEventDuration=minEventDuration1, maxRiseDuration=maxRiseDuration1,maxPeakDistCompound=maxPeakDistCompound1,maxRecessionDuration=maxRecessionDuration1,threshPeak=th1)
+
+# identify events for model streamflow
+print("identify events for model streamflow")
+listMod <- eventIdentification(data1[,c("Date","mod")],nwinSpan=nwinSpan1,minEventDuration=minEventDuration1, maxRiseDuration=maxRiseDuration1,maxPeakDistCompound=maxPeakDistCompound1,maxRecessionDuration=maxRecessionDuration1,threshPeak=th1)
+
+# match observed events with model events
+print("match observed events with model events")
+eventsMatched <- matchEvents(data1[,c("Date","mod")],listMod[[1]], listMod[[2]], listObs[[2]], maxDist=maxDist1)
+
+n1 <- sum(eventsMatched$match %in% c(1,2), na.rm=T)
+n2 <- sum(eventsMatched$match==3, na.rm=T)
+print(paste0("+++++ Number of events detected and matched: ", n1))
+print(paste0("+++++ Number of events detected but missed by model: ", n2))
+ne <- nrow(eventsMatched)
+
+if (ne>0) {
+# peak timing error
+#time_err <- mean(abs(as.integer(difftime(eventsMatched$peak_mod,eventsMatched$peak_obs,units="hour"))))
+#print(paste0("timing error (hours): ", round(time_err,2)))
+
+# raw or interpolated streamflow 
+#datafm1 <- data1; datafm2 <- data1 
+datafm1 <- listObs[[3]]; colnames(datafm1)[1]<-"Date"; colnames(datafm1)[2]<-"obs"
+datafm2 <- listMod[[3]]; colnames(datafm2)[1]<-"Date"; colnames(datafm2)[2]<-"mod"
+
+# peak bias (%)
+obs_peak <- datafm1$obs[match(eventsMatched$peak_obs, datafm1$Date)]
+mod_peak <- datafm2$mod[match(eventsMatched$peak_mod, datafm2$Date)]
+#peak_bias <- mean((mod_peak-obs_peak)/obs_peak*100) 
+peak_bias <- mean(abs(mod_peak-obs_peak)/abs(obs_peak)*100) #revised 20200929
+print(paste0("peak bias (%): ", round(peak_bias,2)))
+
+# volume bias (%)
+volume_bias <- 0
+for (i1 in 1:ne) {  
+  k1 <- match(eventsMatched$start_obs[i1], datafm1$Date)
+  k2 <- match(eventsMatched$end_obs[i1], datafm1$Date)
+  if (!is.na(k1) & !is.na(k2)) obs1 <- data1$obs[k1:k2] else obs1 <- NA
+  k1 <- match(eventsMatched$start_mod[i1], datafm2$Date)
+  k2 <- match(eventsMatched$end_mod[i1], datafm2$Date)
+  if (!is.na(k1) & !is.na(k2)) mod1 <- data1$mod[k1:k2] else mod1 <- NA
+  if (!is.na(sum(mod1)) & !is.na(sum(obs1))) volume_bias <- volume_bias + abs(sum(mod1)-sum(obs1))/abs(sum(obs1))*100 #revised 20200929
+  #if (!is.na(sum(mod1)) & !is.na(sum(obs1))) volume_bias <- volume_bias + (sum(mod1)-sum(obs1))/sum(obs1)*100
+}
+
+volume_bias <- volume_bias/ne
+print(paste0("volume bias (%): ", round(volume_bias,2)))
+
+# event-based objective function (Xia added w1 and w2 as input variables) 
+obj <- weight1*peak_bias + weight2*volume_bias #revised 20200929
+#obj <- w1*abs(peak_bias) + w2*abs(volume_bias)
+print(paste0("event-based objective function (%): ", round(obj,2)))
+}else{
+obj=NA
+}
+return(obj)
+}
 
 ###----------------- PLOTTING -------------------###
 

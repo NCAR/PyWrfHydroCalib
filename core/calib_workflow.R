@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
-args <- commandArgs(trailingOnly=TRUE)
-namelistFile <- args[1]
+args <- commandArgs(trailingOnly=TRUE) 
+namelistFile <- args[1] 
 #mCurrent <- args[2]
 
 #.libPaths("/glade/u/home/adugger/system/R/Libraries/R3.2.2")
@@ -15,13 +15,11 @@ library(hydroGOF)
 #########################################################
 
 source("calib_utils.R")
-source(namelistFile)
-objFunc <- get(objFn)
+source(namelistFile) 
 
 # Metrics
 #metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj", "POD", "FAR", "CSI", "corr1", "lbem", "lbemprime")
-#metrics_DB <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof", "hyperResMultiObj")
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
 
 #########################################################
 # MAIN CODE
@@ -151,7 +149,7 @@ if (cyclecount > 0) {
       whFiles <- which(filesListDate >= startDate)
       filesList <- filesList[whFiles]
       if (length(filesList) == 0) stop("No matching files in specified directory.")
-      chrt <- as.data.table(plyr::ldply(filesList, ReadChFile_Multi, .parallel = parallelFlag))
+      chrt <- as.data.table(plyr::ldply(filesList, ReadChFile_Multi, .parallel = parallelFlag))  
       setnames(chrt, "streamflow", "q_cms")
       setnames(chrt, "feature_id", "FID")
 
@@ -166,7 +164,7 @@ if (cyclecount > 0) {
    } else if (hydro_SPLIT_OUTPUT_COUNT == 0) {
 
       write(paste0("Reading model out file : CHANOBS_DOMAIN1.nc"), stdout())
-      chanobsFile <- list.files(outPath, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE)
+      chanobsFile <- list.files(outPath, pattern = glob2rx("CHANOBS_DOMAIN1.nc"), full.names = TRUE) 
       q_cms = ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "streamflow")
       featureIdTmp <- ncdf4::ncvar_get(ncdf4::nc_open(chanobsFile), varid = "feature_id", collapse_degen = FALSE)
 
@@ -276,16 +274,18 @@ if (cyclecount > 0) {
       rmse = Rmse(q_cms, obs, na.rm=TRUE),
       bias = PBias(q_cms, obs, na.rm=TRUE),
       nse = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
-      nselog = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
-      nsewt = NseWt(q_cms, obs) ,
-      kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2012", out.type="single"),
+      nselog = NseLogM(q_cms, obs), #consider adding constant value to station with the occurrence of zero flows 
+      nsewt = NseWtM(q_cms, obs), #consider adding constant value to station with the occurrence of zero flows
+      nnsesq = NNseSq(q_cms, obs), 
+      kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), # Gupta et al (2009) is the basis of lbeprime 
       hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
-      msof = Msof(q_cms, obs, scales)
+      msof = Msof(q_cms, obs, scales),
+      eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId)  
     ))
     my_exprs2 = quote(list(
       corr1 = r1(q_cms, obs), # Calculate Stedingers r1
-      lbem = LBEms_function(q_cms, obs, period)[1],
-      lbemprime =  LBEms_function(q_cms, obs, period)[2]
+      lbem = LBEms_function(q_cms, obs, period, calcDailyStats)[1],
+      lbemprime =  LBEms_function(q_cms, obs, period, calcDailyStats)[2]
     ))
     w = which(names(my_exprs) %in% metrics)
     w2 = which(names(my_exprs2) %in% metrics)
@@ -304,8 +304,8 @@ if (cyclecount > 0) {
       }
 
       # Calc objective function
-      if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
-      if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- stat[, objFn, with = FALSE]
+      if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]  
+      if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- stat[, objFn, with = FALSE] 
 
       # Archive results
       x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, stat[, c(metrics), with = FALSE])
@@ -327,8 +327,8 @@ if (cyclecount > 0) {
       }
       names(statW) <- metrics
 
-      if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - statW[objFn]
-      if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- statW[objFn]
+      if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - statW[objFn] 
+      if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- statW[objFn] 
 
       # Archive results
       x_archive[cyclecount,] <- c(cyclecount, x_new, F_new, statW)
@@ -607,6 +607,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    save.image(paste0(runDir, "/proj_data.Rdata"))
 
    # Write param files
+   cat("cyclecount== ", cyclecount, "\n")
    write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
    if (cyclecount <= m) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
 
@@ -625,6 +626,5 @@ if (any(x_archive$obj > objFunThreshold)) {
  }
 
 }
-
 
 

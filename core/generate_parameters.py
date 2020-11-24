@@ -74,7 +74,7 @@ def main(argv):
     if not os.path.islink(link):
         os.symlink(soilDefault,link)
     link = ctrlDir + "/GWBUCKPARM.nc"
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4 :
         if not os.path.islink(link):
             os.symlink(gwDefault,link)
     link = ctrlDir + "/CHANPARM.TBL"
@@ -92,7 +92,7 @@ def main(argv):
     try:
         shutil.copy(fullDomOrig,fullDomBest)
         shutil.copy(soilOrig,soilBest)
-        if args.gwFlag[0] == 1:
+        if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             shutil.copy(gwOrig,gwBest)
         if args.chRtFlag[0] == 3:
             shutil.copy(chanParmOrig,chanParmBest)
@@ -171,7 +171,7 @@ def main(argv):
             if param == "lksatfac":
                 idFullDom.variables['LKSATFAC'][:,:] = float(paramValues[np.where(paramNames == 'lksatfac')[0][0]])
         
-            if args.gwFlag[0] == 1:
+            if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
                 if param == "zmax":
                     idGw.variables['Zmax'][:] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
          
@@ -234,7 +234,7 @@ def main(argv):
             if param == "lksatfac":
                 idFullDom.variables['LKSATFAC'][:,:] = np.where(maskFine[0]==1,idFullDom.variables['LKSATFAC'][:,:],idFullDom.variables['LKSATFAC'][:,:]*0+float(paramValues[np.where(paramNames == 'lksatfac')[0][0]]))
 
-            if args.gwFlag[0] == 1:
+            if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
                 if param == "zmax":
                     idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(paramValues[np.where(paramNames == 'zmax')[0][0]])
 
@@ -289,7 +289,7 @@ def main(argv):
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         idGw.close()
     idHydroTbl.close()
 

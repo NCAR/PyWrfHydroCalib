@@ -92,7 +92,7 @@ def main(argv):
         shutil.copy(fullDomOrig,fullDomOut)
         shutil.copy(hydroOrig,hydroOut)
         shutil.copy(soilOrig,soilOut)
-        if args.gwFlag[0] == 1:
+        if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             shutil.copy(gwOrig,gwOut)
         if args.chRtFlag[0] == 3:
             # Gridded routing
@@ -142,7 +142,7 @@ def main(argv):
     # Open NetCDF parameter files for adjustment.
     idFullDom = Dataset(fullDomOut,'a')
     idSoil2D = Dataset(soilOut,'a')
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         idGw = Dataset(gwOut,'a')
     idHydroTbl = Dataset(hydroOut,'a')
     
@@ -205,7 +205,7 @@ def main(argv):
             if param == "rsurfexp":
                 idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[0])
 
-            if args.gwFlag[0] == 1:
+            if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
                 if param == "zmax":
                     idGw.variables['Zmax'][:] = float(newParams.zmax[0])
 
@@ -268,7 +268,7 @@ def main(argv):
             if param == "rsurfexp":
                 idSoil2D.variables['rsurfexp'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['rsurfexp'][:,:,:],idSoil2D.variables['rsurfexp'][:,:,:]*0+float(newParams.rsurfexp[0]))
 		
-            if args.gwFlag[0] == 1:   
+            if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:   
                 if param == "zmax":
                     idGw.variables['Zmax'][np.isin(idGw.variables['ComID'][:], maskGW, invert = True)] = float(newParams.zmax[0])
 
@@ -284,7 +284,7 @@ def main(argv):
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         idGw.close()
     idHydroTbl.close()
     

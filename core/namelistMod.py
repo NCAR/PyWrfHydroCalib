@@ -597,7 +597,7 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Groundwater bucket parameter file (e.g.: "GWBUCKPARM.nc")\n')
-        if jobData.gwBaseFlag == 1:
+        if jobData.gwBaseFlag == 1  or jobData.gwBaseFlag == 4:
             if genFlag == 0:
                 inStr = ' GWBUCKPARM_file = "' + str(gageData.gwFile) + '"\n'
             if genFlag == 1:
