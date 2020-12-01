@@ -442,7 +442,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
    gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(value, obj), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_x")
-   gg <- gg + ggplot2::ggtitle(paste0("Scatter Plot of Obj. function versus parameters: ", siteId))
+   gg <- gg + ggplot2::ggtitle(paste0("Objective function vs. parameters: ", siteId, "\n", siteName))
    gg <- gg + ggplot2::xlab("Parameter Values")+theme_bw()+ggplot2::ylab("Objective Function")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run_outlier.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -456,7 +456,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_y")
    gg <- gg + ggplot2::geom_point(data = DT.m1.best,  ggplot2::aes(iter, value), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_y")
-   gg <- gg + ggplot2::ggtitle(paste0("Parameter change with iteration: ", siteId))
+   gg <- gg + ggplot2::ggtitle(paste0("Parameter change with iteration: ", siteId, "\n", siteName))
    gg <- gg + ggplot2::xlab("Calibration Iteration")+theme_bw()
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_parameters_calib_run_outlier.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -475,7 +475,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::geom_point(data = DT.m1.best, ggplot2::aes(iter, value), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free")
-   gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId))
+   gg <- gg + ggplot2::ggtitle(paste0("Metric sensitivity: ", siteId, "\n", siteName))
    gg <- gg + ggplot2::xlab("Calibration Iteration No.")+theme_bw()+ylab("Value")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run_outlier.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -489,7 +489,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot(data=x_archive_plot, aes(x=iter, y=obj)) +
               geom_point() + theme_bw() +
               labs(x="run", y="objective function") +
-              ggtitle(paste0("ObjFun: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
+              ggtitle(paste0("ObjFun: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4), "\n", siteName))
    gg <- gg + geom_point(data = x_archive[iter_best,], aes(x=iter, y=obj,size = "Best Iteration"), color = "red", shape = 8)
    gg <- gg + scale_size_manual(name = "", values = 2)
    gg <- gg + scale_x_continuous(name = "Iteration") + scale_y_continuous(name="Objective Function")
@@ -506,7 +506,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
    gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(value, obj), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_x")
-   gg <- gg + ggplot2::ggtitle(paste0("ObjFun vs. Params: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
+   gg <- gg + ggplot2::ggtitle(paste0("ObjFun vs. Params: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4), "\n", siteName))
    gg <- gg + ggplot2::xlab("Parameter Values")+theme_bw()+ggplot2::ylab("Objective Function")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -521,7 +521,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_y")
    gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(iter, value), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_y")
-   gg <- gg + ggplot2::ggtitle(paste0("Parameter vs. iteration: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
+   gg <- gg + ggplot2::ggtitle(paste0("Parameter vs. iteration: ", siteId,  ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4), "\n", siteName))
    gg <- gg + ggplot2::xlab("Calibration Iteration")+theme_bw()
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_parameters_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -539,7 +539,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free")
    gg <- gg + ggplot2::geom_point(data = DT.m1.best, ggplot2::aes(iter, value), size = 1, color = "red", shape = 8)+facet_wrap(~variable, scales="free")
-   gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId, ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4)))
+   gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId, ", No. outliers = ", x_archive_plot_count, ", Threshold = ",  formatC(x_archive_plot_threshold, digits  = 4), "\n", siteName))
    gg <- gg + ggplot2::xlab("Calibration Iteration No.")+theme_bw()+ylab("Value")
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run.png"),
          plot=gg, units="in", width=8, height=6, dpi=300)
@@ -570,7 +570,7 @@ if (any(x_archive$obj > objFunThreshold)) {
 
    gg <- ggplot2::ggplot(chrt.obj_plot, ggplot2::aes(POSIXct, q_cms, color = run)) + facet_wrap(~site_no, , scales="free_y", ncol = 1)
    gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
-  # gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", site_no))
+   gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", siteId, "\n", siteName))
    #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
    gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 15) + ylab ("Streamflow (cms)")
    gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "dark green"),
@@ -589,7 +589,7 @@ if (any(x_archive$obj > objFunThreshold)) {
    gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
                                  limits=c('Control Run', "Best Run", "Last Run"),
                                  label=c('Control Run', "Best Run", "Last Run"))
-#   gg <- gg + ggtitle(paste0("Simulated vs observed flow : ", siteId )) + theme_bw( base_size = 15)
+   gg <- gg + ggtitle(paste0("Simulated vs. observed flow : ", siteId, "\n", siteName)) + theme_bw( base_size = 15)
    gg <- gg + geom_abline(intercept = 0, slope = 1) + coord_equal()+ xlim(0,maxval) + ylim(0,maxval)
    gg <- gg + xlab("Observed flow (cms)") + ylab ("Simulated flow (cms)")
 
