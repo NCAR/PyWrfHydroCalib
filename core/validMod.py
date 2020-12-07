@@ -1459,6 +1459,8 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
+        inStr = "siteName <- '" + str(gageMeta.siteName) + "'\n"
+        fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
         fileObj.write('# Start and dates for evaluation period (e.g., after spinup period)\n')
@@ -1565,6 +1567,8 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
+        fileObj.write(inStr)
+        inStr = "siteName <- '" + str(gageMeta.siteName) + "'\n"
         fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
