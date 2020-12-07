@@ -304,7 +304,7 @@ for (i in 1:length(runList[[1]])) {
         nse = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
         nselog = NseLogM(q_cms, obs), # to consider adding constant value to station with the occurrence of zero flows 
         nsewt = NseWtM(q_cms, obs), 
-        nnse = 1 / (2 - nse),
+        nnse = NNse(q_cms, obs),
         nnsesq = NNseSq(q_cms, obs), 
         kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), 
         hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
