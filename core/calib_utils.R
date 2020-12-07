@@ -709,6 +709,12 @@ calc_contingency_stats = function (abcd1DF, groupVars = c("feature_id", "threshN
 
 ### Xia added NNseSq, NseLogM and NseWtM on 20200616.
 
+# NNSE
+NNse <- function (m, o) {
+    nse <- hydroGOF::NSE(m, o, na.rm=TRUE, FUN=NULL, epsilon=0)
+    nnse <- 1/(2-nse)
+}
+
 # NNSE on squared streamflow 
 NNseSq <- function (m, o) {
     nse <- hydroGOF::NSE(m^2, o^2, na.rm=TRUE, FUN=NULL, epsilon=0)

@@ -19,7 +19,7 @@ source(namelistFile)
 
 # Metrics
 #metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
 
 #########################################################
 # MAIN CODE
@@ -276,6 +276,7 @@ if (cyclecount > 0) {
       nse = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
       nselog = NseLogM(q_cms, obs), #consider adding constant value to station with the occurrence of zero flows 
       nsewt = NseWtM(q_cms, obs), #consider adding constant value to station with the occurrence of zero flows
+      nnse = NNse(q_cms, obs),
       nnsesq = NNseSq(q_cms, obs), 
       kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), # Gupta et al (2009) is the basis of lbeprime 
       hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
@@ -304,7 +305,7 @@ if (cyclecount > 0) {
       }
 
       # Calc objective function
-      if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]  
+      if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]  
       if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- stat[, objFn, with = FALSE] 
 
       # Archive results
@@ -327,7 +328,7 @@ if (cyclecount > 0) {
       }
       names(statW) <- metrics
 
-      if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - statW[objFn] 
+      if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - statW[objFn] 
       if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- statW[objFn] 
 
       # Archive results
