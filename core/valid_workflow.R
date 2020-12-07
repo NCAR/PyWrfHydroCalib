@@ -304,6 +304,7 @@ for (i in 1:length(runList[[1]])) {
         nse = hydroGOF::NSE(q_cms, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
         nselog = NseLogM(q_cms, obs), # to consider adding constant value to station with the occurrence of zero flows 
         nsewt = NseWtM(q_cms, obs), 
+        nnse = 1 / (2 - nse),
         nnsesq = NNseSq(q_cms, obs), 
         kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), 
         hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
@@ -332,7 +333,7 @@ for (i in 1:length(runList[[1]])) {
         }
 
         # Calc objective function
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
         if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- stat[, objFn, with = FALSE] 
 
         # Archive results
@@ -357,7 +358,7 @@ for (i in 1:length(runList[[1]])) {
         }
         names(statW) <- metrics
 
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE] 
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE] 
         if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- statW[objFn] 
 
       # Archive results
