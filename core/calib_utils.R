@@ -1378,3 +1378,129 @@ NamedList <- function(theNames) {
   names(theList)<- theNames
   theList
 }
+
+
+
+#-------------------------------------------------------------------------------------------
+#--------  This part has all the functions for the mean areal values  ---------------------
+#-------------------------------------------------------------------------------------------
+
+create_lsm_mask <- function(linkFile, linkId, spwtFile, geoFile, fulldomFile) {
+
+    rl <- GetNcdfFile(linkFile, variables = c("time"), exclude = TRUE,
+        quiet = TRUE)
+    rl$site_no <- stringr::str_trim(rl$gages)
+
+    # function to Trace upstream in route link
+    traceUp <- function(linkid, rl) {
+        uplinks <- c(linkid)
+        donelinks <- c()
+        while (length(uplinks) > 0) {
+          i <- uplinks[1]
+          donelinks <- c(donelinks, i)
+          newlinks <- subset(rl$link, rl$to==i)
+          uplinks <- c(uplinks, newlinks)
+          uplinks <- unique(subset(uplinks, !(uplinks %in% donelinks)))
+        }
+        donelinks
+     }
+
+    # Calling Trace up function
+    uplinks <- traceUp(linkId, rl)
+
+    ReadWtFile <- function (wtFile) {
+      ncid <- ncdf4::nc_open(wtFile)
+      i_index <- ncdf4::ncvar_get(ncid, "i_index")
+      j_index <- ncdf4::ncvar_get(ncid, "j_index")
+      IDmask <- ncdf4::ncvar_get(ncid, "IDmask")
+      weight <- ncdf4::ncvar_get(ncid, "weight")
+      regridweight <- ncdf4::ncvar_get(ncid, "regridweight")
+      data <- data.frame(i_index = i_index, j_index = j_index,
+          IDmask = IDmask, weight = weight, regridweight = regridweight)
+      polyid <- ncdf4::ncvar_get(ncid, "polyid")
+      overlaps <- ncdf4::ncvar_get(ncid, "overlaps")
+      polys <- data.frame(polyid = polyid, overlaps = overlaps)
+      list(data, polys)
+    }
+
+    spwtList <- ReadWtFile(spwtFile)
+
+    # subset the spatial weight file
+    spwt.data <- spwtList[[1]]
+    spwt.data <- subset(spwt.data, spwt.data$IDmask %in% uplinks)
+
+    # Calculate what percentage of each cell contributes to the desired location
+    spwt.data.sumcell <- plyr::ddply(spwt.data, .(i_index, j_index), summarize, sumwt=sum(regridweight))
+
+    # Define a 2D field at the hydro resolution
+
+    # Get the hydro dimensions from thr Fulldom file
+    ncid <- ncdf4::nc_open(fulldomFile)
+    xlen.hyd <- ncid$dim$x$len
+    ylen.hyd <- ncid$dim$y$len
+    ncdf4::nc_close(ncid)
+
+    # create an empty 2D mask using the dimension of the hydro grid
+    mskvar.hyd <- matrix(0, nrow=xlen.hyd, ncol=ylen.hyd)
+
+     # for each pixel assign what percentage of it falls in the contributing area of the gage/outlet
+    for (n in 1:nrow(spwt.data.sumcell)) {
+        mskvar.hyd[spwt.data.sumcell$i_index[n], spwt.data.sumcell$j_index[n]] <- spwt.data.sumcell$sumwt[n]
+    }
+
+    # Create 2D field at the LSM resolution
+    library(raster)
+
+    # Get the LSM dimension from the geogrid file
+    ncid <- ncdf4::nc_open(geoFile)
+    xlen.geo <- ncid$dim$x$len
+    ylen.geo <- ncid$dim$y$len
+    ncdf4::nc_close(ncid)
+
+    # create an empty 2D mask using the dimension of the LSM grid
+    mskvar.lsm <- matrix(1, xlen.geo, ylen.geo)
+
+    # resample the hydro mask to LSM mask
+    mskvar.lsm <- as.matrix(resample(raster(mskvar.hyd), raster(mskvar.lsm), 'bilinear'))
+    return(mskvar.lsm)
+}
+
+# Defien a function to calculate basin mean
+basin_avg <- function(myvar, mymsk, minValid=-9998) {
+    myvar[which(myvar<minValid)]<-NA
+    mymsk[which(is.na(myvar))]<-NA
+    sum(mymsk*myvar, na.rm=TRUE)/sum(mymsk, na.rm=TRUE)
+}
+
+
+FlipUD <- function(matrix) {
+       apply(matrix, 2, rev)
+}
+
+ReadSwe_Multi <- function(file, mskvar.lsm) {
+  lsmVar <- GetNcdfFile(file, variables = c("SNEQV"), quiet = TRUE)
+  meanAreal <- basin_avg(lsmVar$SNEQV, mskvar.lsm)
+  map <- data.frame(mod = meanAreal, POSIXct = as.POSIXct(strsplit(basename(file),"[.]")[[1]][1], format = "%Y%m%d%H%M", tz = "UTC"))
+  return(map)
+}
+
+
+noZeroFunction_snow = function(mod, obs, period){
+  zmin = min(mod, obs)
+  if (zmin ==0) {
+    #Following Push2012, though I don't get identical results, they are very close
+    epsilon = mean(obs, na.rm=T)/100
+    obs = obs + epsilon
+    mod = mod + epsilon
+  } # end if (zmin =0)
+  df = data.table(mod = mod, obs = obs, period = period)
+  return(df)
+} # end function
+
+ReadSm_Multi <- function(file, mskvar.lsm) {
+  lsmVar <- GetNcdfFile(file, variables = c("SNEQV"), quiet = TRUE)
+  meanAreal <- basin_avg(lsmVar$SNEQV, mskvar.lsm)
+  map <- data.frame(mod = meanAreal, POSIXct = as.POSIXct(strsplit(basename(file),"[.]")[[1]][1], format = "%Y%m%d%H%M", tz = "UTC"))
+  return(map)
+}
+

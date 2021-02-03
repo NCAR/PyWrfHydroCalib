@@ -1473,7 +1473,23 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
     try:
         fileObj = open(outPath,'w')
         fileObj.write('#### Model Parameters ####\n')
-        inStr = "objFn <- \"" + str(jobData.objFunc) + "\"\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write('# Specify number of calibration iterations.\n')
         inStr = "m <- " + str(jobData.nIter) + '\n'

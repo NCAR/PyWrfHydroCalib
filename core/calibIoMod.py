@@ -31,7 +31,7 @@ class gageMeta:
         self.soilFile = []
         self.hydroSpatial = []
         self.forceDir = []
-        self.obsFile = []
+        self.obsDir = []
         self.siteName = []
         self.dxHydro = []
         self.aggFact = []
@@ -44,7 +44,7 @@ class gageMeta:
         tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
-                   'obsFile':'','siteName':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
+                   'obsDir':'','siteName':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
                    'aggFactor':'','domainID':domainID,'optLandRstFile':'',\
                    'optHydroRstFile':'','chanParmFile':''}
         try:
@@ -66,7 +66,7 @@ class gageMeta:
         self.soilFile = tmpMeta['soilFile']
         self.hydroSpatial = tmpMeta['hydroSpatial']
         self.forceDir = tmpMeta['forceDir']
-        self.obsFile = tmpMeta['obsFile']
+        self.obsDir = tmpMeta['obsDir']
         self.siteName = tmpMeta['siteName']
         self.comID = tmpMeta['comID']
         self.dxHydro = tmpMeta['dxHydro']
@@ -221,12 +221,12 @@ def setupModels(jobData,db,args,libPathTop):
             
         # Create observations directory to hold obs for calibration/eval, etc
         obsDir = gageDir + "/OBS"
-        try:
-            os.mkdir(obsDir)
-        except:
-            errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
-            raise
+#        try:
+#            os.mkdir(obsDir)
+#        except:
+#            errMod.wipeJobDir(jobData,db)
+#            jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
+#            raise
         
         # Create sub-directories for spinup/calibration runs.
         spinupDir = gageDir + "/RUN.SPINUP"
@@ -618,12 +618,12 @@ def setupModels(jobData,db,args,libPathTop):
             raise
             
         # Create symbolic link to the observations file.
-        obsLink = gageDir + "/OBS/obsStrData.Rdata"
+        obsLink = gageDir + "/OBS"
         try:
-            os.symlink(str(gageData.obsFile),obsLink)
+            os.symlink(str(gageData.obsDir),obsLink)
         except:
             errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
+            jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.Dir)
             raise
             
         if jobData.calibFlag == 1:

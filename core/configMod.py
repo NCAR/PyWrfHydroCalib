@@ -44,7 +44,15 @@ class jobMeta:
         self.cpuPinCmd = []
         self.nIter = []
         self.calibMethod = []
-        self.objFunc = []
+        self.enableStreamflowCalib = []
+        self.enableSnowCalib = []
+        self.enableSoilMoistureCalib = []
+        self.streamflowObjFunc = []
+        self.snowObjFunc = []
+        self.soilMoistureObjFunc = []
+        self.streamflowWeight=[]
+        self.snowWeight = []
+        self.soilMoistureWeight = []
         self.ddsR = []
         self.outDir = []
         self.email = None
@@ -238,7 +246,15 @@ class jobMeta:
         self.coldStart = int(parser.get('logistics','coldStart'))
         self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
-        self.objFunc = str(parser.get('logistics','objectiveFunction'))
+        self.enableStreamflowCalib = int(parser.get('logistics','enableStreamflowCalib'))
+        self.enableSnowCalib = int(parser.get('logistics','enableSnowCalib'))
+        self.enableSoilMoistureCalib = int(parser.get('logistics','enableSoilMoistureCalib'))
+        self.streamflowObjFunc = str(parser.get('logistics','streamflowObjectiveFunction'))
+        self.snowObjFunc = str(parser.get('logistics','snowObjectiveFunction'))
+        self.soilMoistureObjFunc = str(parser.get('logistics','soilMoistureObjectiveFunction'))
+        self.streamflowWeight = float(parser.get('logistics','streamflowWeight'))
+        self.snowWeight = float(parser.get('logistics','snowWeight'))
+        self.soilMoistureWeight = float(parser.get('logistics','soilMoistureWeight'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
@@ -403,7 +419,7 @@ def createJob(argsUser):
     # Initialize job object
     jobObj = jobMeta()
     
-    # Read in values
+    # Read in value
     try:
         jobMeta.readConfig(jobObj,parser)
     except:
@@ -612,7 +628,7 @@ def checkConfig(parser):
             print("ERROR: Invalid stripCalibHours passed to program.")
             raise Exception()
         
-    check = str(parser.get('logistics','objectiveFunction'))
+    check = str(parser.get('logistics','streamflowObjectiveFunction'))
     if len(check) == 0:
         print("ERROR: Zero length calibration objective function provided.")
         raise Exception()
@@ -1059,4 +1075,8 @@ def checkConfig(parser):
         print(check1)
         print('ERROR: Invalid enableMultiSites specified in the configuration file.')
         raise Exception()
+
+
+
+
 
