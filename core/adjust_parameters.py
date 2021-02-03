@@ -205,6 +205,75 @@ def main(argv):
             if param == "rsurfexp":
                 idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[0])
 
+            if param == "z0sno":
+                idSoil2D.variables['z0sno'][:,:,:] = float(newParams.z0sno[0])
+
+            if param == "ssi":
+                idSoil2D.variables['ssi'][:,:,:] = float(newParams.ssi[0])
+
+            if param == "snowretfac":
+                idSoil2D.variables['snowretfac'][:,:,:] = float(newParams.snowretfac[0])
+
+            if param == "swemx":
+                idSoil2D.variables['swemx'][:,:,:] = float(newParams.swemx[0])
+
+            if param == "tau0":
+                idSoil2D.variables['tau0'][:,:,:] = float(newParams.tau0[0])
+
+            if param == "graingrowth":
+                idSoil2D.variables['graingrowth'][:,:,:] = float(newParams.graingrowth[0])
+
+            if param == "extragrowth":
+                idSoil2D.variables['extragrowth'][:,:,:] = float(newParams.extragrowth[0])
+
+            if param == "dirtsoot":
+                idSoil2D.variables['dirtsoot'][:,:,:] = float(newParams.dirtsoot[0])
+
+            if param == "bats_cosz":
+                idSoil2D.variables['bats_cosz'][:,:,:] = float(newParams.bats_cosz[0])
+
+            if param == "bats_visnew":
+                idSoil2D.variables['bats_visnew'][:,:,:] = float(newParams.bats_visnew[0])
+
+            if param == "bats_nirnew":
+                idSoil2D.variables['bats_nirnew'][:,:,:] = float(newParams.bats_nirnew[0])
+
+            if param == "bats_visage":
+                idSoil2D.variables['bats_visage'][:,:,:] = float(newParams.bats_visage[0])
+
+            if param == "bats_nirage":
+                idSoil2D.variables['bats_nirage'][:,:,:] = float(newParams.bats_nirage[0])
+
+            if param == "bats_visdir":
+                idSoil2D.variables['bats_visdir'][:,:,:] = float(newParams.bats_visdir[0])
+
+            if param == "bats_nirdir":
+                idSoil2D.variables['bats_nirdir'][:,:,:] = float(newParams.bats_nirdir[0])
+
+            if param == "rsurfsnow":
+                idSoil2D.variables['rsurfsnow'][:,:,:] = float(newParams.rsurfsnow[0])
+
+            if param == "refsnowdens":
+                idSoil2D.variables['refsnowdens'][:,:,:] = float(newParams.refsnowdens[0])
+
+            if param == "frac_direct":
+                idSoil2D.variables['frac_direct'][:,:,:] = float(newParams.frac_direct[0])
+
+            if param == "frac_visible":
+                idSoil2D.variables['frac_visible'][:,:,:] = float(newParams.frac_visible[0])
+
+            if param == "scamax":
+                idSoil2D.variables['scamax'][:,:,:] = float(newParams.scamax[0])
+
+            if param == "unload_temp":
+                idSoil2D.variables['unload_temp'][:,:,:] = float(newParams.unload_temp[0])
+
+            if param == "unload_wind":
+                idSoil2D.variables['unload_wind'][:,:,:] = float(newParams.unload_wind[0])
+
+            if param == "maxsno_sp":
+                idSoil2D.variables['maxsno_sp'][:,:,:] = float(newParams.maxsno_sp[0])
+
             if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
                 if param == "zmax":
                     idGw.variables['Zmax'][:] = float(newParams.zmax[0])
@@ -267,6 +336,75 @@ def main(argv):
 
             if param == "rsurfexp":
                 idSoil2D.variables['rsurfexp'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['rsurfexp'][:,:,:],idSoil2D.variables['rsurfexp'][:,:,:]*0+float(newParams.rsurfexp[0]))
+
+            if param == "z0sno":
+                idSoil2D.variables['z0sno'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['z0sno'][:,:,:],idSoil2D.variables['z0sno'][:,:,:]*0+float(newParams.z0sno[0]))
+
+            if param == "ssi":
+                idSoil2D.variables['ssi'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['ssi'][:,:,:],idSoil2D.variables['ssi'][:,:,:]*0+float(newParams.ssi[0]))
+
+            if param == "snowretfac":
+                idSoil2D.variables['snowretfac'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['snowretfac'][:,:,:],idSoil2D.variables['snowretfac'][:,:,:]*0+float(newParams.snowretfac[0]))
+
+            if param == "swemx":
+                idSoil2D.variables['swemx'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['swemx'][:,:,:],idSoil2D.variables['swemx'][:,:,:]*0+float(newParams.swemx[0]))
+
+            if param == "tau0":
+                idSoil2D.variables['tau0'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['tau0'][:,:,:],idSoil2D.variables['tau0'][:,:,:]*0+float(newParams.tau0[0]))
+
+            if param == "graingrowth":
+                idSoil2D.variables['graingrowth'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['graingrowth'][:,:,:],idSoil2D.variables['graingrowth'][:,:,:]*0+float(newParams.graingrowth[0]))
+
+            if param == "extragrowth":
+                idSoil2D.variables['extragrowth'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['extragrowth'][:,:,:],idSoil2D.variables['extragrowth'][:,:,:]*0+float(newParams.extragrowth[0]))
+
+            if param == "dirtsoot":
+                idSoil2D.variables['dirtsoot'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['dirtsoot'][:,:,:],idSoil2D.variables['dirtsoot'][:,:,:]*0+float(newParams.dirtsoot[0]))
+
+            if param == "bats_cosz":
+                idSoil2D.variables['bats_cosz'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['bats_cosz'][:,:,:],idSoil2D.variables['bats_cosz'][:,:,:]*0+float(newParams.bats_cosz[0]))
+
+            if param == "bats_visnew":
+                idSoil2D.variables['bats_visnew'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['bats_visnew'][:,:,:],idSoil2D.variables['bats_visnew'][:,:,:]*0+float(newParams.bats_visnew[0]))
+
+            if param == "bats_nirnew":
+                idSoil2D.variables['bats_nirnew'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['bats_nirnew'][:,:,:],idSoil2D.variables['bats_nirnew'][:,:,:]*0+float(newParams.bats_nirnew[0]))
+
+            if param == "bats_visage":
+                idSoil2D.variables['bats_visage'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['bats_visage'][:,:,:],idSoil2D.variables['bats_visage'][:,:,:]*0+float(newParams.bats_visage[0]))
+
+            if param == "bats_nirage":
+                idSoil2D.variables['bats_nirage'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['bats_nirage'][:,:,:],idSoil2D.variables['bats_nirage'][:,:,:]*0+float(newParams.bats_nirage[0]))
+
+            if param == "bats_visdir":
+                idSoil2D.variables['bats_visdir'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['bats_visdir'][:,:,:],idSoil2D.variables['bats_visdir'][:,:,:]*0+float(newParams.bats_visdir[0]))
+
+            if param == "bats_nirdir":
+                idSoil2D.variables['bats_nirdir'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['bats_nirdir'][:,:,:],idSoil2D.variables['bats_nirdir'][:,:,:]*0+float(newParams.bats_nirdir[0]))
+
+            if param == "rsurfsnow":
+                idSoil2D.variables['rsurfsnow'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['rsurfsnow'][:,:,:],idSoil2D.variables['rsurfsnow'][:,:,:]*0+float(newParams.rsurfsnow[0]))
+
+            if param == "refsnowdens":
+                idSoil2D.variables['refsnowdens'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['refsnowdens'][:,:,:],idSoil2D.variables['refsnowdens'][:,:,:]*0+float(newParams.refsnowdens[0]))
+
+            if param == "frac_direct":
+                idSoil2D.variables['frac_direct'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['frac_direct'][:,:,:],idSoil2D.variables['frac_direct'][:,:,:]*0+float(newParams.frac_direct[0]))
+
+            if param == "frac_visible":
+                idSoil2D.variables['frac_visible'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['frac_visible'][:,:,:],idSoil2D.variables['frac_visible'][:,:,:]*0+float(newParams.frac_visible[0]))
+
+            if param == "scamax":
+                idSoil2D.variables['scamax'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['scamax'][:,:,:],idSoil2D.variables['scamax'][:,:,:]*0+float(newParams.scamax[0]))
+
+            if param == "unload_temp":
+                idSoil2D.variables['unload_temp'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['unload_temp'][:,:,:],idSoil2D.variables['unload_temp'][:,:,:]*0+float(newParams.unload_temp[0]))
+
+            if param == "unload_wind":
+                idSoil2D.variables['unload_wind'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['unload_wind'][:,:,:],idSoil2D.variables['unload_wind'][:,:,:]*0+float(newParams.unload_wind[0]))
+
+            if param == "maxsno_sp":
+                idSoil2D.variables['maxsno_sp'][:,:,:] =  np.where(np.flipud(mask[0])==1,idSoil2D.variables['maxsno_sp'][:,:,:],idSoil2D.variables['maxsno_sp'][:,:,:]*0+float(newParams.maxsno_sp[0]))
 		
             if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:   
                 if param == "zmax":
