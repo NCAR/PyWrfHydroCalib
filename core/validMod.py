@@ -1454,7 +1454,23 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
@@ -1563,7 +1579,23 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
@@ -1655,7 +1687,23 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
@@ -1747,7 +1795,23 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
