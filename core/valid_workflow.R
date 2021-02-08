@@ -20,10 +20,15 @@ source(namelistFile)
 
 attach(paste0(runDir, "/proj_data.Rdata"), name="calibdb")
 #gageIndx <- gageIndx
-metrics <- metrics
-obsStrData <- obsStrData
+metrics <- metrics # right now the metrics in this script is the metrics for the streamflow ... 
+metrics_streamflow <- metrics
+metrics_snow <- metrics_snow
+metrics_soilmoisture <- metrics_soilmoisture
+if (enableStreamflowCalib == 1) obsStrData_streamflow <- obsStrData_streamflow
+if (enableSnowCalib == 1) obsStrData_snow <- obsStrData_snow 
+if (enableSoilMoistureCalib == 1) obsStrData_soilmoisture <- obsStrData_soilmoisture
+mskvar.lsm <- mskvar.lsm
 detach(calibdb)
-
 
 #########################################################
 # MAIN CODE
@@ -56,6 +61,7 @@ maxDate <- max(endCalibDate, endValidDate)
 #maxDate <- endValidDate # this was used for the hyper res calibration
 
 # Read files
+if (enableStreamflowCalib == 1) {
 if (hydro_SPLIT_OUTPUT_COUNT == 1) {
    write(paste0("Reading control run model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
     filesList <- list.files(path = outPathControl,
@@ -198,8 +204,6 @@ if (hydro_SPLIT_OUTPUT_COUNT == 1) {
 
    chrt.valid <- copy(chrt)
 }
-# Stop cluster
-if (parallelFlag) stopCluster(cl)
 
 # Check for empty output
 if (nrow(chrt.cont) < 1) {
@@ -224,11 +228,11 @@ if (calcDailyStats) {
   chrt.valid.d <- Convert2Daily(chrt.valid)
   chrt.cont.obj <- copy(chrt.cont.d)
   chrt.valid.obj <- copy(chrt.valid.d)
-  obs.obj <- Convert2Daily(obsStrData)
+  obs.obj <- Convert2Daily(obsStrData_streamflow)
 } else {
   chrt.cont.obj <- copy(chrt.cont)
   chrt.valid.obj <- copy(chrt.valid)
-  obs.obj <- copy(obsStrData)
+  obs.obj <- copy(obsStrData_streamflow)
 }
 
 # Merge
@@ -320,7 +324,7 @@ for (i in 1:length(runList[[1]])) {
       w2 = which(names(my_exprs2) %in% metrics)
 
       # let s just take care of objective function being capital
-      objFn <- tolower(objFn)
+      objFn <- tolower(streamflowObjFunc)
 
       if (enableMultiSites == 0) {
         stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
@@ -333,11 +337,11 @@ for (i in 1:length(runList[[1]])) {
         }
 
         # Calc objective function
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
-        if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- stat[, objFn, with = FALSE] 
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]
+        if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- stat[, objFn, with = FALSE] 
 
         # Archive results
-        validStats_new <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics), with = FALSE])
+        validStats_new <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new_streamflow), stat[, c(metrics), with = FALSE])
         validStats[loopcnt,] <- validStats_new
         loopcnt <- loopcnt + 1
 
@@ -358,33 +362,34 @@ for (i in 1:length(runList[[1]])) {
         }
         names(statW) <- metrics
 
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE] 
-        if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new <- statW[objFn] 
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE] 
+        if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- statW[objFn] 
 
       # Archive results
-      validStats[loopcnt,] <- c(runList[["run"]][i], dtList[["period"]][j],  F_new, statW)
+      validStats[loopcnt,] <- c(runList[["run"]][i], dtList[["period"]][j],  F_new_streamflow, statW)
 
       index1 = (loopcnt - 1) *nrow(stat)
       for(k in 1:nrow(stat)) {
-        validStats_2[index1+k,] <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics), with = FALSE], stat$site_no[k])
+        validStats_2[index1+k,] <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new_streamflow), stat[, c(metrics), with = FALSE], stat$site_no[k])
       }
       loopcnt = loopcnt  + 1
    }
  }
 }
-
+}
 rm(chrt.obj, validStats_new)
 
 
-#########################################################
+########################################################
 # PLOTS
 #########################################################
 
 writePlotDir <- paste0(validDir, "/plots")
 dir.create(writePlotDir)
 
+if (enableStreamflowCalib == 1) {
 # Hydrographs
-gg <- ggplot() + 
+gg <- ggplot() +
               geom_line(data=chrt.cont.obj, aes(x=POSIXct, y=q_cms, color='default'), lwd=0.6) +
               geom_line(data=chrt.valid.obj, aes(x=POSIXct, y=q_cms, color='calibrated'), lwd=0.6) +
               geom_line(data=chrt.cont.obj, aes(x=POSIXct, y=obs, color='observed'), lwd=0.4) +
@@ -415,7 +420,7 @@ gg1 <- ggplot() +
               labs(x="", y="modeled streamflow (m3/s)") +
               theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
               xlim(0,maxval) + ylim(0,maxval) + facet_wrap(~site_no, ncol = 1)
-gg2 <- ggplot() + 
+gg2 <- ggplot() +
               geom_point(data=chrt.cont.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
               geom_point(data=chrt.valid.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
@@ -429,7 +434,7 @@ gg2 <- ggplot() +
               xlim(0,maxval) + ylim(0,maxval)  + facet_wrap(~site_no, ncol = 1)
 
 
-gg3 <- ggplot() + 
+gg3 <- ggplot() +
               geom_point(data=chrt.cont.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='default'), shape=1, size=3) +
               geom_point(data=chrt.valid.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=q_cms, color='calibrated'), shape=1, size=3) +
               scale_shape_discrete(solid=FALSE) +
@@ -453,7 +458,7 @@ ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_scatter.png"),
 # Stats Barplots
 results.plot <- melt(validStats[,c("run", "period", "obj", metrics)], id=c("period", "run"))
 results.plot$period <- factor(results.plot$period, levels=c("calib", "valid", "full"))
-#results.plot$period <- factor(results.plot$period, levels=c("valid")) # The above line was commented out for the hyper res calibration and this one was used 
+#results.plot$period <- factor(results.plot$period, levels=c("valid")) # The above line was commented out for the hyper res calibration and this one was used
 results.plot$run <- factor(results.plot$run, levels=c("default", "calibrated"))
 results.plot <- results.plot[order(results.plot$variable, results.plot$period, results.plot$run),]
 results.plot$value <- as.numeric(results.plot$value)
@@ -469,6 +474,219 @@ gg <- ggplot(data=results.plot, aes(x=factor(period), y=value, fill=run)) +
 ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics.png"),
         plot=gg, units="in", width=16, height=8, dpi=300)
 
+}
+
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#  
+#                SNOW
+#
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if (enableSnowCalib == 1) {
+   if (lsm_SPLIT_OUTPUT_COUNT == 1) {
+     filesList <- list.files(path = outPathControl,
+                             pattern = glob2rx("*.LDASOUT_DOMAIN*"),
+                             full.names = TRUE)
+      filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
+      whFiles <- which(filesListDate >= minDate)
+      filesList <- filesList[whFiles]
+      if (length(filesList) == 0) stop("No matching files in specified directory.")
+      mod.cont <- as.data.table(plyr::ldply(filesList, ReadSwe_Multi, .parallel = parallelFlag, mskvar.lsm = mskvar.lsm))
+      mod.cont$site_no <- siteId
+   
+      write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
+      filesList <- list.files(path = outPathValid,
+                             pattern = glob2rx("*.LDASOUT_DOMAIN*"),
+                             full.names = TRUE)
+      filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
+      whFiles <- which(filesListDate >= minDate)
+      filesList <- filesList[whFiles]
+      if (length(filesList) == 0) stop("No matching files in specified directory.")
+      mod.valid <- as.data.table(plyr::ldply(filesList, ReadSwe_Multi, .parallel = parallelFlag, mskvar.lsm = mskvar.lsm))
+      mod.valid$site_no <- siteId
+   }
+
+# Convert to daily if needed
+if (calcDailyStats) {
+  mod.cont.d <- Convert2Daily(mod.cont)
+  mod.valid.d <- Convert2Daily(mod.valid)
+  mod.cont.obj <- copy(mod.cont.d)
+  mod.valid.obj <- copy(mod.valid.d)
+  obs.obj <- Convert2Daily(obsStrData_snow)
+} else {
+  mod.cont.obj <- copy(mod.cont)
+  mod.valid.obj <- copy(mod.valid)
+  obs.obj <- copy(obsStrData_snow)
+}
+
+# Merge
+setkey(mod.cont.obj, "site_no", "POSIXct")
+if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
+setkey(obs.obj, "site_no", "POSIXct")
+mod.cont.obj <- merge(mod.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+
+setkey(mod.valid.obj, "site_no", "POSIXct")
+mod.valid.obj <- merge(mod.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+
+# setup for stats loop
+runList <- list(df=c("mod.cont.obj", "mod.valid.obj"), run=c("default", "calibrated"))
+dtList <- list(start=c(startCalibDate, startValidDate, minDate),
+               end=c(endCalibDate, endValidDate, maxDate),
+               period=c("calib", "valid", "full"))
+# Initialize stats table
+validStats_snow <- as.data.frame(matrix(, nrow=1, ncol=length(metrics_snow)+3))
+names(validStats_snow) <- c("run", "period", "obj", metrics_snow)
+
+# Calculate stats
+loopcnt <- 1
+loopcnt2 <- 1
+for (i in 1:length(runList[[1]])) {
+   for (j in 1:length(dtList[[1]])) {
+      # Subset data
+      mod.obj <- get(runList[["df"]][i])
+      mod.obj <- mod.obj[POSIXct >= dtList[["start"]][j] & POSIXct < dtList[["end"]][j],]
+      mod.obj.nona <- mod.obj[!is.na(mod) & !is.na(obs),]
+
+      if (any(c("POD", "FAR", "CSI") %in% metrics_snow)) mod.obj.nona.abcd1 <- calc_abcd1(data.frame(mod.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "mod", headerCols=c('site_no'))
+      if (any(c("corr1", "lbem", "lbemprime") %in% metrics_snow)) mod.obj.nona.nozeros = noZeroFunction_snow(mod.obj.nona$mod, mod.obj.nona$obs, lubridate::month(mod.obj.nona$POSIXct))
+
+      if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+      my_exprs = quote(list(
+        cor = cor(mod, obs),
+        rmse = Rmse(mod, obs, na.rm=TRUE),
+        bias = PBias(mod, obs, na.rm=TRUE),
+        nse = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
+        nselog = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
+        nsewt = NseWt(mod, obs) ,
+        nnse = NNse(mod, obs),
+        nnsesq = NNseSq(mod, obs),
+        kge = hydroGOF::KGE(mod, obs, na.rm=TRUE, method="2012", out.type="single"),
+        hyperResMultiObj = hyperResMultiObj(mod, obs, na.rm=TRUE),
+        msof = Msof(mod, obs, scales),
+        eventmultiobj = EventMultiObj(mod, obs, weight1=1, weight2=0, POSIXct, siteId)
+      ))
+      my_exprs2 = quote(list(
+        corr1 = r1(mod, obs), # Calculate Stedingers r1
+        lbem = LBEms_function(mod, obs, period, calcDailyStats)[1],
+        lbemprime =  LBEms_function(mod, obs, period, calcDailyStats)[2]
+      ))
+      w = which(names(my_exprs) %in% metrics_snow)
+      w2 = which(names(my_exprs2) %in% metrics_snow)
+
+      # let s just take care of objective function being capital
+      objFn <- tolower(snowObjFunc)
+
+        stat <- mod.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
+        if (length(w2) > 0) stat <- cbind(stat, mod.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
+
+        if (any(c("POD", "FAR", "CSI") %in% metrics_snow)) {
+           stat$POD = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
+           stat$FAR = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$FAR
+           stat$CSI = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
+        }
+
+        # Calc objective function
+        if (objFn %in% c("nsewt","nse","nselog","kge","cor","corr1", "lbem","lbemprime")) F_new <- 1 - stat[, objFn, with = FALSE]
+        if (objFn %in% c("rmse","msof","hyperResMultiObj")) F_new <- stat[, objFn, with = FALSE]
+
+        # Archive results
+        validStats_new <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics_snow), with = FALSE])
+        validStats_snow[loopcnt,] <- validStats_new
+        loopcnt <- loopcnt + 1
+ }
+}
+}
+
+# ------------------------------------------------------
+#  SNOW  PLOTS
+#-------------------------------------------------------
+if (enableSnowCalib) {
+
+# Time series
+gg <- ggplot() +
+              geom_line(data=mod.cont.obj, aes(x=POSIXct, y=mod, color='default'), lwd=0.6) +
+              geom_line(data=mod.valid.obj, aes(x=POSIXct, y=mod, color='calibrated'), lwd=0.6) +
+              geom_line(data=mod.cont.obj, aes(x=POSIXct, y=obs, color='observed'), lwd=0.4) +
+              geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+              ggtitle(paste0("Model Validation SWE Timeseries: ", siteId, "\n", siteName)) +
+              scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
+                                limits=c('default','calibrated','observed'),
+                                label=c('default', 'calibrated', 'observed')) +
+              labs(x="", y="SWE (kg m-2)") +
+              theme_bw() + theme_bw(base_size = 20) + facet_wrap(~site_no, ncol = 1)
+
+ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_timeseries_snow.png"),
+              plot=gg, units="in", width=16, height=8, dpi=300)
+
+# Scatterplots
+maxval <- max(max(mod.cont.obj$mod, na.rm=TRUE), max(mod.valid.obj$mod, na.rm=TRUE), max(mod.cont.obj$obs, na.rm=TRUE))
+gg1 <- ggplot() +
+              geom_point(data=mod.cont.obj, aes(x=obs, y=mod, color='default'), shape=1, size=3) +
+              geom_point(data=mod.valid.obj, aes(x=obs, y=mod, color='calibrated'), shape=1, size=3) +
+              scale_shape_discrete(solid=FALSE) +
+              geom_abline(intercept=0, slope=1, col='black', lty=1) +
+              ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId, " ", siteName)) +
+              scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                                limits=c('default','calibrated'),
+                                label=c('default', 'calibrated')) +
+              labs(x="", y="modeled SWE (kg m-2)") +
+              theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
+              xlim(0,maxval) + ylim(0,maxval) + facet_wrap(~site_no, ncol = 1)
+gg2 <- ggplot() +
+              geom_point(data=mod.cont.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=mod, color='default'), shape=1, size=3) +
+              geom_point(data=mod.valid.obj[POSIXct >= startCalibDate & POSIXct < endCalibDate,], aes(x=obs, y=mod, color='calibrated'), shape=1, size=3) +
+              scale_shape_discrete(solid=FALSE) +
+              geom_abline(intercept=0, slope=1, col='black', lty=1) +
+              ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId, " ", siteName)) +
+              scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                                limits=c('default','calibrated'),
+                                label=c('default', 'calibrated')) +
+              labs(x="observed SWE (kg m-2)", y="") +
+              theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
+              xlim(0,maxval) + ylim(0,maxval)  + facet_wrap(~site_no, ncol = 1)
+
+
+gg3 <- ggplot() +
+              geom_point(data=mod.cont.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=mod, color='default'), shape=1, size=3) +
+              geom_point(data=mod.valid.obj[POSIXct >= startValidDate & POSIXct < endValidDate,], aes(x=obs, y=mod, color='calibrated'), shape=1, size=3) +
+              scale_shape_discrete(solid=FALSE) +
+              geom_abline(intercept=0, slope=1, col='black', lty=1) +
+              ggtitle(paste0("Validation Period (", startValidDate, " to ", endValidDate, "): \n", siteId, " ", siteName)) +
+              scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                                limits=c('default','calibrated'),
+                                label=c('default', 'calibrated')) +
+              labs(x="", y="") +
+              theme_bw() + theme(axis.text=element_text(size=20)) +
+              theme(legend.position = c(0.2, 0.9),  legend.background = element_rect(colour = NA, fill = NA), legend.key.size = unit(1.25, "cm"),  legend.key = element_rect(colour = NA, fill = NA), legend.text = element_text(size=18)) +
+              xlim(0,maxval) + ylim(0,maxval) + facet_wrap(~site_no, ncol = 1)
+
+gg.all <- grid.arrange(gg1, gg2, gg3, ncol=3)
+# gg.all <- grid.arrange(gg3,ncol=1) For the hyper res calirbation the gg1 and gg2 were commented out
+
+ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_scatter_snow.png"),
+              plot=gg.all, units="in", width=16, height=8, dpi=300)
+
+# Stats Barplots
+results.plot <- melt(validStats_snow[,c("run", "period", "obj", metrics_snow)], id=c("period", "run"))
+results.plot$period <- factor(results.plot$period, levels=c("calib", "valid", "full"))
+#results.plot$period <- factor(results.plot$period, levels=c("valid")) # The above line was commented out for the hyper res calibration and this one was used
+results.plot$run <- factor(results.plot$run, levels=c("default", "calibrated"))
+results.plot <- results.plot[order(results.plot$variable, results.plot$period, results.plot$run),]
+results.plot$value <- as.numeric(results.plot$value)
+gg <- ggplot(data=results.plot, aes(x=factor(period), y=value, fill=run)) +
+         geom_bar(stat="identity", position="dodge") +
+         facet_wrap(~variable, scales="free_y") +
+         scale_fill_manual(name="", values=c('dodgerblue', 'orange'),
+             limits=c('default','calibrated'),
+             label=c('default', 'calibrated')) +
+         ggtitle(paste0("Model Validation Performance Metrics: ", siteId, " ", siteName)) +
+         labs(x="run period", y="value") +
+         theme_bw() + theme_bw(base_size = 20)
+ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics_snow.png"),
+        plot=gg, units="in", width=16, height=8, dpi=300)
+
+}
 #########################################################
 # SAVE & EXIT
 #########################################################
@@ -478,7 +696,11 @@ ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics.png"),
 save.image(paste0(validDir, "/proj_data_VALID.Rdata"))
 
 # Write param files
-write.table(validStats, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+if (enableStreamflowCalib) {
+    write.table(validStats, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+   } else if (enableSnowCalib) {
+    write.table(validStats_snow, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+}
 
 fileConn <- file(paste0(validDir, "/R_VALID_COMPLETE"))
 writeLines('', fileConn)

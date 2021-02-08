@@ -940,7 +940,7 @@ if (cyclecount > 0) {
       if (cyclecount <= m) write.table(data.frame(t(x_new_out)), file=paste0(runDir, "/params_new.txt"), row.names=FALSE, sep=" ")
       
       # remove the CAHNOBS_DOMAIN file since we do not need it anymore , and the files gets appended if left there
-      if (hydro_SPLIT_OUTPUT_COUNT == 0) file.remove(chanobsFile)
+      if (enableStreamflowCalib ==  1 & hydro_SPLIT_OUTPUT_COUNT == 0) file.remove(chanobsFile)
       
       #system(paste0("touch ", runDir, "/R_COMPLETE"))
       fileConn <- file(paste0(runDir, "/R_COMPLETE"))
