@@ -793,7 +793,7 @@ class Database(object):
         if jobData.calibFlag == 1:
             # Open parameter table and read values in.
             tblData = pd.read_csv(jobData.calibTbl)
-            if len(tblData) != 45:
+            if len(tblData) != 44:
                 jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
                 raise Exception()
             
