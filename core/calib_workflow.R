@@ -22,6 +22,7 @@ source(namelistFile)
 metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
 metrics_streamflow <- metrics
 metrics_snow <- metrics # if streamflow is on, we do not have to have all the metrics since all the above are required for the database
+metrics_snow <-  c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge")
 metrics_soilmoisture <- metrics # if streamflow is on, we do not have to have all the metrics since all the above are required for the database
 
 #########################################################
@@ -372,7 +373,7 @@ if (cyclecount > 0) {
          # list the LDASOUT files, read SNEQ variables and find the Mean Areal SWE
          write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
          filesList <- list.files(path = outPath,
-                                 pattern = glob2rx("*.LDASOUT_DOMAIN*"),
+                                 pattern = glob2rx("*0600.LDASOUT_DOMAIN*"), # read only hour 6 since the SNODAS is at hour 6
                                  full.names = TRUE)
          filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
          whFiles <- which(filesListDate >= startDate)
