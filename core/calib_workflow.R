@@ -388,20 +388,20 @@ if (cyclecount > 0) {
          mod.d <- Convert2Daily(mod)
          assign(paste0("mod.obj.", cyclecount), mod.d)
          mod.obj <- copy(mod.d)
-         obs.obj <- Convert2Daily(obsSnowData)
+         obs.obj.snow <- Convert2Daily(obsSnowData)
       } else {
          assign(paste0("mod.obj.", cyclecount), mod)
          mod.obj <- copy(mod)
-         obs.obj <- copy(obsSnowData)
+         obs.obj.snow <- copy(obsSnowData)
       }
       
       # Merge
       setkey(mod.obj, "site_no", "POSIXct")
-      if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
+      if ("Date" %in% names(obs.obj.snow)) obs.obj.snow[, Date := NULL]
       # Convert the observation dataset to a data.table if it hasn't already.
-      obs.obj <- as.data.table(obs.obj)
-      setkey(obs.obj, "site_no", "POSIXct")
-      mod.obj <- merge(mod.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+      obs.obj.snow <- as.data.table(obs.obj.snow)
+      setkey(obs.obj.snow, "site_no", "POSIXct")
+      mod.obj <- merge(mod.obj, obs.obj.snow, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
       # Check for empty output
       if (nrow(mod.obj) < 1) {
          write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())
@@ -883,7 +883,7 @@ if (cyclecount > 0) {
 # Plot the scatter plot of the best, last and control run.
    write("Scatterplot...", stdout())
    maxval <- max(mod.obj_plot$mod, na.rm = TRUE)
-   gg <- ggplot()+ geom_point(data = merge(mod.obj_plot [run %in% c("Control Run", "Last Run", "Best Run")], obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
+   gg <- ggplot()+ geom_point(data = merge(mod.obj_plot [run %in% c("Control Run", "Last Run", "Best Run")], obs.obj.snow, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
                               aes (obs, mod, color = run), alpha = 0.5) + facet_wrap(~site_no)
    gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
                                  limits=c('Control Run', "Best Run", "Last Run"),
