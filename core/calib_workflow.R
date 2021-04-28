@@ -364,7 +364,9 @@ if (cyclecount > 0) {
             
          }
       }
-      
+     
+#---------------------- Calculation of Snow Metrics -------------------------------------------------------------
+ 
       if (enableSnowCalib == 1) {
          if (lsm_SPLIT_OUTPUT_COUNT == 1) {
             
@@ -443,6 +445,8 @@ if (cyclecount > 0) {
       # Archive results
       x_archive_snow[cyclecount,] <- c(cyclecount, x_new, F_new_snow, stat_snow[, c(metrics_snow), with = FALSE])
    }
+
+#-------------------- Calculation of Soil Moisture Metrics ---------------------------------
    
       if (enableSoilMoistureCalib == 1) {
          if (lsm_SPLIT_OUTPUT_COUNT == 1) {
@@ -465,20 +469,20 @@ if (cyclecount > 0) {
             mod.d <- Convert2Daily(mod)
             assign(paste0("mod.obj.", cyclecount), mod.d)
             mod.obj <- copy(mod.d)
-            obs.obj <- Convert2Daily(obsSoilData)
+            obs.obj.soil <- Convert2Daily(obsSoilData)
          } else {
             assign(paste0("mod.obj.", cyclecount), mod)
             mod.obj <- copy(mod)
-            obs.obj <- copy(obsSoilData)
+            obs.obj.soil <- copy(obsSoilData)
          }
          
          # Merge
          setkey(mod.obj, "site_no", "POSIXct")
-         if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
+         if ("Date" %in% names(obs.obj.soil)) obs.obj.soil[, Date := NULL]
          # Convert the observation dataset to a data.table if it hasn't already.
-         obs.obj <- as.data.table(obs.obj)
-         setkey(obs.obj, "site_no", "POSIXct")
-         mod.obj <- merge(mod.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+         obs.obj.soil <- as.data.table(obs.obj.soil)
+         setkey(obs.obj.soil, "site_no", "POSIXct")
+         mod.obj <- merge(mod.obj, obs.obj.soil, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
          # Check for empty output
          if (nrow(mod.obj) < 1) {
             write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())
