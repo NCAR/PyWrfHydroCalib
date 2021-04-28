@@ -1498,8 +1498,8 @@ noZeroFunction_snow = function(mod, obs, period){
 } # end function
 
 ReadSm_Multi <- function(file, mskvar.lsm) {
-  lsmVar <- GetNcdfFile(file, variables = c("SNEQV"), quiet = TRUE)
-  meanAreal <- basin_avg(lsmVar$SNEQV, mskvar.lsm)
+  lsmVar <- GetNcdfFile(file, variables = c("SOIL_M"), quiet = TRUE)
+  meanAreal <- basin_avg(lsmVar$SOIL_M[,1,], mskvar.lsm)
   map <- data.frame(mod = meanAreal, POSIXct = as.POSIXct(strsplit(basename(file),"[.]")[[1]][1], format = "%Y%m%d%H%M", tz = "UTC"))
   return(map)
 }
