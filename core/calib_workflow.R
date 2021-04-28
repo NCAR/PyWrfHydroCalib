@@ -60,8 +60,8 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    
    # Load obs so we have them for next iteration
    if (enableStreamflowCalib == 1) {
-      obsStrData_streamflow <- as.data.table(get(load(paste0(runDir, "/OBS/obsStrData.Rdata"))))
-      if ("q_cms" %in% names(obsStrData_streamflow)) obsStrData_streamflow$q_cms <- NULL
+      obsStrData <- as.data.table(get(load(paste0(runDir, "/OBS/obsStrData.Rdata"))))
+      if ("q_cms" %in% names(obsStrData)) obsStrData$q_cms <- NULL
    }
    
    if (enableSnowCalib == 1){
@@ -252,11 +252,11 @@ if (cyclecount > 0) {
             chrt.d <- Convert2Daily(chrt)
             assign(paste0("chrt.obj.", cyclecount), chrt.d)
             chrt.obj <- copy(chrt.d)
-            obs.obj <- Convert2Daily(obsStrData_streamflow)
+            obs.obj <- Convert2Daily(obsStrData)
          } else {
             assign(paste0("chrt.obj.", cyclecount), chrt)
             chrt.obj <- copy(chrt)
-            obs.obj <- copy(obsStrData_streamflow)
+            obs.obj <- copy(obsStrData)
          }
          
          # Merge
