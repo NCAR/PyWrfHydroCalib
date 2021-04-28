@@ -903,7 +903,111 @@ if (cyclecount > 0) {
    ggsave(filename=paste0(writePlotDir, "/", siteId, "_scatter_snow.png"),
            plot=gg, units="in", width=8, height=8, dpi=300)
 
-      }
+ }
+
+  # ------------------------------------------------------
+  #  soilmoisture
+  #-------------------------------------------------------
+  if (enableSoilMoistureCalib) {
+    
+    # Update the Objective function versus the parameter variable
+    write("Obj function vs. params...", stdout())
+    DT.m1 = melt(x_archive_soilmoisture[, setdiff(names(x_archive_soilmoisture), metrics_soilmoisture)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive_soilmoisture), c(metrics_soilmoisture, "iter", "obj")))
+    DT.m1.best <- melt(x_archive_soilmoisture[iter_best, setdiff(names(x_archive_soilmoisture), metrics_soilmoisture)], id.vars = c("obj"), measure.vars = setdiff( names(x_archive_soilmoisture), c(metrics_soilmoisture, "iter", "obj")))
+    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(value, obj))
+    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_x")
+    gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(value, obj), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_x")
+    gg <- gg + ggplot2::ggtitle(paste0("ObjFun vs. Params: ", siteId, "\n", siteName))
+    gg <- gg + ggplot2::xlab("Parameter Values")+theme_bw()+ggplot2::ylab("Objective Function")
+    ggsave(filename=paste0(writePlotDir, "/", siteId, "_obj_vs_parameters_calib_run_soilmoisture.png"),
+           plot=gg, units="in", width=8, height=6, dpi=300)
+    
+    # Plot the variables as a function of calibration runs
+    write("Params over runs...", stdout())
+    DT.m1 = melt(x_archive_soilmoisture[, setdiff(names(x_archive_soilmoisture), metrics_soilmoisture)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive_soilmoisture), c("iter", metrics_soilmoisture)))
+    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+    DT.m1.best = melt(x_archive_soilmoisture[iter_best, setdiff(names(x_archive_soilmoisture), metrics_soilmoisture)], id.vars = c("iter"), measure.vars = setdiff(names(x_archive_soilmoisture), c("iter", metrics_soilmoisture)))
+    
+    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
+    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free_y")
+    gg <- gg + ggplot2::geom_point(data = DT.m1.best, aes(iter, value), size = 2, color = "red", shape = 8)+facet_wrap(~variable, scales="free_y")
+    gg <- gg + ggplot2::ggtitle(paste0("Parameter vs. iteration: ", siteId, "\n", siteName))
+    gg <- gg + ggplot2::xlab("Calibration Iteration")+theme_bw()
+    ggsave(filename=paste0(writePlotDir, "/", siteId, "_parameters_calib_run_soilmoisture.png"),
+           plot=gg, units="in", width=8, height=6, dpi=300)
+    
+    # Plot all the stats
+    write("Metrics plot...", stdout())
+    DT.m1 = melt(x_archive_soilmoisture[,which(names(x_archive_soilmoisture) %in% c("iter", "obj", metrics_soilmoisture))],
+                 iter.vars = c("iter"), measure.vars = c("obj", metrics_soilmoisture))
+    DT.m1 <- subset(DT.m1, !is.na(DT.m1$value))
+    DT.m1.best = melt(x_archive_soilmoisture[iter_best,which(names(x_archive_soilmoisture) %in% c("iter", "obj", metrics_soilmoisture))],
+                      iter.vars = c("iter"), measure.vars = c("obj", metrics_soilmoisture))
+    
+    gg <- ggplot2::ggplot(DT.m1, ggplot2::aes(iter, value))
+    gg <- gg + ggplot2::geom_point(size = 1, color = "black", alpha = 0.3)+facet_wrap(~variable, scales="free")
+    gg <- gg + ggplot2::geom_point(data = DT.m1.best, ggplot2::aes(iter, value), size = 1, color = "red", shape = 8)+facet_wrap(~variable, scales="free")
+    gg <- gg + ggplot2::ggtitle(paste0("Metric Sensitivity: ", siteId, "\n", siteName))
+    gg <- gg + ggplot2::xlab("Calibration Iteration No.")+theme_bw()+ylab("Value")
+    ggsave(filename=paste0(writePlotDir, "/", siteId, "_metric_calib_run_soilmoisture.png"),
+           plot=gg, units="in", width=8, height=6, dpi=300)
+    
+    # Plot the time series of the observed, control, best calibration result and last calibration iteration
+    write("Hydrograph...", stdout())
+    # The first iteration is the control run  called mod_soil.obj.1
+    controlRun <- copy(mod_soil.obj.1)
+    controlRun [, run := "Control Run"]
+    # We have already advanced the cyclescount, so subtract 1 to get last complete
+    lastRun <- copy(get(paste0("mod_soil.obj.", ifelse(lastcycle, cyclecount, cyclecount-1))))
+    lastRun [ , run := "Last Run"]
+    # the best iteration should be find
+    bestRun <- copy(get(paste0("mod_soil.obj.", iter_best)))
+    bestRun [ , run := "Best Run"]
+    
+    obsStrDataPlot <- copy(mod_soil.obj)
+    obsStrDataPlot[, mod := NULL]
+    setnames(obsStrDataPlot, "obs", "mod")
+    obsStrDataPlot <- obsStrDataPlot[, c("mod", "POSIXct", "site_no"), with=FALSE]
+    obsStrDataPlot <- obsStrDataPlot[as.integer(POSIXct) >= min(as.integer(controlRun$POSIXct)) & as.integer(POSIXct) <= max(as.integer(controlRun$POSIXct)),]
+    obsStrDataPlot[ , run := "Observation"]
+    
+    mod.obj_plot <- rbindlist(list(controlRun, lastRun, bestRun, obsStrDataPlot), use.names = TRUE, fill=TRUE)
+    # let s remove the tims that there is no obs for it from the model simulations also ....
+    mod.obj_plot <- subset(mod.obj_plot, POSIXct %in% obsStrDataPlot$POSIXct)
+    
+    # Cleanup
+    rm(controlRun, lastRun, bestRun, obsStrDataPlot)
+    
+    
+    gg <- ggplot2::ggplot(mod.obj_plot, ggplot2::aes(POSIXct, mod, color = run)) + facet_wrap(~site_no, , scales="free_y", ncol = 1)
+    gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
+    gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 14) + ylab ("Soil Moisture")
+    gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "dark green"),
+                                  limits=c('Observation','Control Run', "Best Run", "Last Run"),
+                                  label=c('Observation','Control Run', "Best Run", "Last Run"))
+    gg <- gg + ggtitle(paste0("Soil Moisture time series : ", siteId, "\n", siteName))
+    
+    ggsave(filename=paste0(writePlotDir, "/", siteId, "_soilmoisture_timeseries.png"),
+           plot=gg, units="in", width=8, height=4, dpi=300)
+    
+    
+    # Plot the scatter plot of the best, last and control run.
+    write("Scatterplot...", stdout())
+    maxval <- max(mod.obj_plot$mod, na.rm = TRUE)
+    gg <- ggplot()+ geom_point(data = merge(mod.obj_plot [run %in% c("Control Run", "Last Run", "Best Run")], obs.obj.soil, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE),
+                               aes (obs, mod, color = run), alpha = 0.5) + facet_wrap(~site_no)
+    gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
+                                  limits=c('Control Run', "Best Run", "Last Run"),
+                                  label=c('Control Run', "Best Run", "Last Run"))
+    gg <- gg + geom_abline(intercept = 0, slope = 1) + coord_equal()+ xlim(0,maxval) + ylim(0,maxval)
+    gg <- gg + xlab("Observed Soil Moisture") + ylab ("Simulated Soil Moisture")
+    gg <- gg + ggtitle(paste0("Simulated vs. observed Soil Moisture : ", siteId, "\n", siteName)) + theme_bw( base_size = 15)
+    
+    ggsave(filename=paste0(writePlotDir, "/", siteId, "_scatter_soilmoisture.png"),
+           plot=gg, units="in", width=8, height=8, dpi=300)
+    
+  }
 
       #########################################################
       # SAVE & EXIT
