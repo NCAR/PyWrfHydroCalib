@@ -69,7 +69,7 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    }
    
    if (enableSoilMoistureCalib == 1){
-      obsStrData_soilmoisture <- as.data.table(get(load(paste0(runDir, "/OBS/obsStrData_soilmoisture.Rdata"))))
+      obsSoilData <- as.data.table(get(load(paste0(runDir, "/OBS/obsSoilData.Rdata"))))
    }
 
 
@@ -465,11 +465,11 @@ if (cyclecount > 0) {
             mod.d <- Convert2Daily(mod)
             assign(paste0("mod.obj.", cyclecount), mod.d)
             mod.obj <- copy(mod.d)
-            obs.obj <- Convert2Daily(obsStrData_snow)
+            obs.obj <- Convert2Daily(obsSoilData)
          } else {
             assign(paste0("mod.obj.", cyclecount), mod)
             mod.obj <- copy(mod)
-            obs.obj <- copy(obsStrData_snow)
+            obs.obj <- copy(obsSoilData)
          }
          
          # Merge
