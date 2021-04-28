@@ -382,6 +382,8 @@ if (cyclecount > 0) {
       }
 
       # Convert to daily if needed and tag object
+      # Note that we are not using the daily values here, note this needs to be modified if 
+      # both snow and streamflow are not daily ... 
       if (calcDailyStats) {
          mod.d <- Convert2Daily(mod)
          assign(paste0("mod.obj.", cyclecount), mod.d)
@@ -411,8 +413,6 @@ if (cyclecount > 0) {
       
       # Calc stats
       mod.obj.nona <- mod.obj[!is.na(mod) & !is.na(obs),]
-      if (any(c("POD", "FAR", "CSI") %in% metrics_snow)) mod.obj.nona.abcd1 <- calc_abcd1(data.frame(mod.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "mod", headerCols=c('site_no'))
-      if (any(c("corr1", "lbem", "lbemprime") %in% metrics_snow)) mod.obj.nona.nozeros = noZeroFunction_snow(mod.obj.nona$mod, mod.obj.nona$obs, lubridate::month(mod.obj.nona$POSIXct))
       
       if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
       my_exprs = quote(list(
@@ -429,25 +429,12 @@ if (cyclecount > 0) {
          msof = Msof(mod, obs, scales),
          eventmultiobj = EventMultiObj(mod, obs, weight1=1, weight2=0, POSIXct, siteId)
       ))
-      my_exprs2 = quote(list(
-         corr1 = r1(mod, obs), # Calculate Stedingers r1
-         lbem = LBEms_function(mod, obs, period, calcDailyStats)[1],
-         lbemprime =  LBEms_function(mod, obs, period, calcDailyStats)[2]
-      ))
       w = which(names(my_exprs) %in% metrics_snow)
-      w2 = which(names(my_exprs2) %in% metrics_snow)
       
       # let s just take care of objective function being capital
       objFn <- tolower(snowObjFunc)
       
       stat_snow <- mod.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
-      if (length(w2) > 0) stat_snow <- cbind(stat_snow, mod.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
-      
-      if (any(c("POD", "FAR", "CSI") %in% metrics_snow)) {
-         stat_snow$POD = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
-         stat_snow$FAR = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$FAR
-         stat_snow$CSI = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
-      }
       
       # Calc objective function
       if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new_snow <- 1 - stat_snow[, objFn, with = FALSE]
@@ -503,8 +490,6 @@ if (cyclecount > 0) {
          
          # Calc stats
          mod.obj.nona <- mod.obj[!is.na(mod) & !is.na(obs),]
-         if (any(c("POD", "FAR", "CSI") %in% metrics_soilmoisture)) mod.obj.nona.abcd1 <- calc_abcd1(data.frame(mod.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "mod", headerCols=c('site_no'))
-         if (any(c("corr1", "lbem", "lbemprime") %in% metrics_soilmoisture)) mod.obj.nona.nozeros = noZeroFunction_snow(mod.obj.nona$mod, mod.obj.nona$obs, lubridate::month(mod.obj.nona$POSIXct))
          
          if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
          my_exprs = quote(list(
@@ -521,25 +506,12 @@ if (cyclecount > 0) {
             msof = Msof(mod, obs, scales),
             eventmultiobj = EventMultiObj(mod, obs, weight1=1, weight2=0, POSIXct, siteId)
          ))
-         my_exprs2 = quote(list(
-            corr1 = r1(mod, obs), # Calculate Stedingers r1
-            lbem = LBEms_function(mod, obs, period, calcDailyStats)[1],
-            lbemprime =  LBEms_function(mod, obs, period, calcDailyStats)[2]
-         ))
          w = which(names(my_exprs) %in% metrics_snow)
-         w2 = which(names(my_exprs2) %in% metrics_snow)
          
          # let s just take care of objective function being capital
          objFn <- tolower(soilMoistureObjFunc)
          
          stat_soilmoisture <- mod.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
-         if (length(w2) > 0) stat_soilmoisture <- cbind(stat_soilmoisture, mod.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
-         
-         if (any(c("POD", "FAR", "CSI") %in% metrics_snow)) {
-            stat_soilmoisture$POD = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
-            stat_soilmoisture$FAR = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$FAR
-            stat_soilmoisture$CSI = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
-         }
          
          # Calc objective function
          if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new_soilmoisture <- 1 - stat_soilmoisture[, objFn, with = FALSE]
