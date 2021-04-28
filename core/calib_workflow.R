@@ -460,31 +460,31 @@ if (cyclecount > 0) {
             whFiles <- which(filesListDate >= startDate)
             filesList <- filesList[whFiles]
             if (length(filesList) == 0) stop("No matching files in specified directory.")
-            mod <- as.data.table(plyr::ldply(filesList, ReadSm_Multi, .parallel = parallelFlag, mskvar.lsm = mskvar.lsm))
-            mod$site_no <- siteId
+            mod_soil <- as.data.table(plyr::ldply(filesList, ReadSm_Multi, .parallel = parallelFlag, mskvar.lsm = mskvar.lsm))
+            mod_soil$site_no <- siteId
          }
          
          # Convert to daily if needed and tag object
          if (calcDailyStats) {
-            mod.d <- Convert2Daily(mod)
-            assign(paste0("mod.obj.", cyclecount), mod.d)
-            mod.obj <- copy(mod.d)
+            mod_soil.d <- Convert2Daily(mod_soil)
+            assign(paste0("mod_soil.obj.", cyclecount), mod_soil.d)
+            mod_soil.obj <- copy(mod_soil.d)
             obs.obj.soil <- Convert2Daily(obsSoilData)
          } else {
-            assign(paste0("mod.obj.", cyclecount), mod)
-            mod.obj <- copy(mod)
+            assign(paste0("mod_soil.obj.", cyclecount), mod_soil)
+            mod_soil.obj <- copy(mod_soil)
             obs.obj.soil <- copy(obsSoilData)
          }
          
          # Merge
-         setkey(mod.obj, "site_no", "POSIXct")
+         setkey(mod_soil.obj, "site_no", "POSIXct")
          if ("Date" %in% names(obs.obj.soil)) obs.obj.soil[, Date := NULL]
          # Convert the observation dataset to a data.table if it hasn't already.
          obs.obj.soil <- as.data.table(obs.obj.soil)
          setkey(obs.obj.soil, "site_no", "POSIXct")
-         mod.obj <- merge(mod.obj, obs.obj.soil, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+         mod_soil.obj <- merge(mod_soil.obj, obs.obj.soil, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
          # Check for empty output
-         if (nrow(mod.obj) < 1) {
+         if (nrow(mod_soil.obj) < 1) {
             write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())
             fileConn <- file(paste0(runDir, "/CALC_STATS_MISSING"))
             writeLines('', fileConn)
@@ -493,7 +493,7 @@ if (cyclecount > 0) {
          }
          
          # Calc stats
-         mod.obj.nona <- mod.obj[!is.na(mod) & !is.na(obs),]
+         mod_soil.obj.nona <- mod_soil.obj[!is.na(mod) & !is.na(obs),]
          
          if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
          my_exprs = quote(list(
@@ -515,7 +515,7 @@ if (cyclecount > 0) {
          # let s just take care of objective function being capital
          objFn <- tolower(soilMoistureObjFunc)
          
-         stat_soilmoisture <- mod.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
+         stat_soilmoisture <- mod_soil.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
          
          # Calc objective function
          if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new_soilmoisture <- 1 - stat_soilmoisture[, objFn, with = FALSE]
@@ -528,6 +528,8 @@ if (cyclecount > 0) {
       # Stop cluster
       if (parallelFlag) stopCluster(cl)
       
+#----------------------------------- Calculation of the overall objective function -------------------------------------------------------
+
       # Now let s combine the objective functions from different model components with their corresponsing weights. 
       F_new <- 0
       if (enableStreamflowCalib == 1) F_new <- F_new + streamflowWeight * F_new_streamflow
@@ -551,9 +553,11 @@ if (cyclecount > 0) {
       
       # Add best flag and output
       if (enableStreamflowCalib == 1) {
-           paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_streamflow)], data.frame(best=bestFlag))
-      } else {
-           paramStats <- cbind(x_archive_snow[cyclecount,c("iter", "obj", metrics_snow)], data.frame(best=bestFlag)) # if streamflow is not calibrated we would use snow ... if snow is also off for the soil moisture, then you need to add another for soil moisture. 
+        paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_streamflow)], data.frame(best=bestFlag))
+      } else if (enableSnowCalib == 1) {
+        paramStats <- cbind(x_archive_snow[cyclecount,c("iter", "obj", metrics_snow)], data.frame(best=bestFlag)) # if streamflow is not calibrated we would use snow ...
+      } else if (enableSoilMoistureCalib == 1) {
+        paramStats <- cbind(x_archive_soilmoisture[cyclecount,c("iter", "obj", metrics_soilmoisture)], data.frame(best=bestFlag)) # if snow is also off for the soil moisture, then use soil moisture.
       }
 
       if (cyclecount < m) {
