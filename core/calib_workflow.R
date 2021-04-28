@@ -18,12 +18,10 @@ source("calib_utils.R")
 source(namelistFile) 
 
 # Metrics
-#metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "kge", "msof")
 metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
 metrics_streamflow <- metrics
-metrics_snow <- metrics # if streamflow is on, we do not have to have all the metrics since all the above are required for the database
 metrics_snow <-  c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge")
-metrics_soilmoisture <- metrics # if streamflow is on, we do not have to have all the metrics since all the above are required for the database
+metrics_soilmoisture <- metrics_snow
 
 #########################################################
 # MAIN CODE
