@@ -1504,3 +1504,33 @@ ReadSm_Multi <- function(file, mskvar.lsm) {
   return(map)
 }
 
+
+# a function for calculating the soil moisture anomalies 
+CalcSmAnomaly <- function(obs.obj.soil, window_days) {
+
+          # calculate mean of obs/mod over a 7 or 15 days averging window
+          setkey(mod_soil.obj, "site_no", "Date")
+          mod_soil.obj[, `:=` (mod_window_averaged = rollapply(mod.d, window_days,  align='center', function(x) mean(x, na.rm=TRUE), by.column=TRUE, partial=T),
+                               obs_window_averaged = rollapply(obs, window_days,  align='center', function(x) mean(x, na.rm=TRUE), by.column=TRUE, partial=T))]
+
+          # Now let s calculate the anomaly of soil moisture using the 31 day window
+          #1. calculate the mean of the 31 days around the date
+          mod_soil.obj[, `:=` (mod_clim_mean_dummy = rollapply(mod_window_averaged, 31,  align='center', function(x) mean(x, na.rm=TRUE), by.column=TRUE, partial=T),
+                               obs_clim_mean_dummy = rollapply(obs_window_averaged, 31,  align='center', function(x) mean(x, na.rm=TRUE), by.column=TRUE, partial=T))]
+
+          #2. add the day of the year
+          mod_soil.obj[, yday := lubridate::yday(Date)]
+
+          #3. calculate the mean of the 31 averaged data over the years
+          clim_mean <- mod_soil.obj[, .(mod_clim_mean = mean(mod_clim_mean_dummy, na.rm=TRUE), obs_clim_mean = mean(obs_clim_mean_dummy,na.rm=TRUE)), by = c("site_no", "yday")]
+          mod_soil.obj <- merge(mod_soil.obj, clim_mean, by = c("site_no", "yday"))
+          mod_soil.obj[, `:=` (mod_anomaly = mod_window_averaged - mod_clim_mean, obs_anomaly = obs_window_averaged - obs_clim_mean)]
+
+          # lets clean the unnecessay columns
+          mod_soil.obj[, `:=`(mod_window_averaged = NULL, obs_window_averaged = NULL, mod_clim_mean_dummy = NULL, obs_clim_mean_dummy = NULL, mod_clim_mean = NULL, obs_clim_mean = NULL)]
+
+          # let s do the set key
+          setkey(mod_soil.obj, "site_no", "Date")
+          return(mod_soil.obj)
+}
+
