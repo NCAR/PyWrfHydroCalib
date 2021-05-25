@@ -812,7 +812,7 @@ if (enableSoilMoistureCalib) {
     geom_line(data=mod.valid.obj.soil, aes(x=Date, y=mod_anomaly, color='calibrated'), lwd=0.6) +
     geom_line(data=mod.cont.obj.soil, aes(x=Date, y=obs_anomaly, color='observed'), lwd=0.4) +
     geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
-    ggtitle(paste0("Model Validation Soil Moisture Timeseries: ", siteId, "\n", siteName)) +
+    ggtitle(paste0("Model Validation Soil Moisture Anomaly Timeseries: ", siteId, "\n", siteName)) +
     scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
                        limits=c('default','calibrated','observed'),
                        label=c('default', 'calibrated', 'observed')) +
@@ -833,7 +833,7 @@ if (enableSoilMoistureCalib) {
     scale_color_manual(name="", values=c('dodgerblue', 'orange'),
                        limits=c('default','calibrated'),
                        label=c('default', 'calibrated')) +
-    labs(x="", y="modeled Soil Moisture") +
+    labs(x="", y="Modeled Soil Moisture Anomaly") +
     theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
     xlim(0,maxval) + ylim(0,maxval) + facet_wrap(~site_no, ncol = 1)
   gg2 <- ggplot() +
@@ -845,7 +845,7 @@ if (enableSoilMoistureCalib) {
     scale_color_manual(name="", values=c('dodgerblue', 'orange'),
                        limits=c('default','calibrated'),
                        label=c('default', 'calibrated')) +
-    labs(x="observed Soil Moisture", y="") +
+    labs(x="Observed Soil Moisture Anomaly", y="") +
     theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
     xlim(0,maxval) + ylim(0,maxval)  + facet_wrap(~site_no, ncol = 1)
   
