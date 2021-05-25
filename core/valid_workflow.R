@@ -825,8 +825,8 @@ if (enableSoilMoistureCalib) {
   # Scatterplots
   maxval <- max(max(mod.cont.obj.soil$mod_anomaly, na.rm=TRUE), max(mod.valid.obj.soil$mod_anomaly, na.rm=TRUE), max(mod.cont.obj.soil$obs_anomaly, na.rm=TRUE))
   gg1 <- ggplot() +
-    geom_point(data=mod.cont.obj.soil, aes(x=obs, y=mod_anomaly, color='default'), shape=1, size=3) +
-    geom_point(data=mod.valid.obj.soil, aes(x=obs, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
+    geom_point(data=mod.cont.obj.soil, aes(x=obs_anomaly, y=mod_anomaly, color='default'), shape=1, size=3) +
+    geom_point(data=mod.valid.obj.soil, aes(x=obs_anomaly, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
     scale_shape_discrete(solid=FALSE) +
     geom_abline(intercept=0, slope=1, col='black', lty=1) +
     ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId, " ", siteName)) +
