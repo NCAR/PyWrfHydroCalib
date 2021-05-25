@@ -9,7 +9,7 @@ library(data.table)
 library(ggplot2)
 library(plyr)
 library(gridExtra)
-
+library(zoo)
 #########################################################
 # SETUP
 #########################################################
@@ -24,10 +24,11 @@ metrics <- metrics # right now the metrics in this script is the metrics for the
 metrics_streamflow <- metrics
 metrics_snow <- metrics_snow
 metrics_soilmoisture <- metrics_soilmoisture
-if (enableStreamflowCalib == 1) obsStrData_streamflow <- obsStrData_streamflow
-if (enableSnowCalib == 1) obsStrData_snow <- obsStrData_snow 
-if (enableSoilMoistureCalib == 1) obsStrData_soilmoisture <- obsStrData_soilmoisture
+if (enableStreamflowCalib == 1) obsStreamData <- obsStreamData
+if (enableSnowCalib == 1) obsSnowData <- obsSnowData 
+if (enableSoilMoistureCalib == 1) obsSoilData <- obsSoilData
 mskvar.lsm <- mskvar.lsm
+window_days <- window_days
 detach(calibdb)
 
 #########################################################
@@ -228,11 +229,11 @@ if (calcDailyStats) {
   chrt.valid.d <- Convert2Daily(chrt.valid)
   chrt.cont.obj <- copy(chrt.cont.d)
   chrt.valid.obj <- copy(chrt.valid.d)
-  obs.obj <- Convert2Daily(obsStrData_streamflow)
+  obs.obj <- Convert2Daily(obsStreamData)
 } else {
   chrt.cont.obj <- copy(chrt.cont)
   chrt.valid.obj <- copy(chrt.valid)
-  obs.obj <- copy(obsStrData_streamflow)
+  obs.obj <- copy(obsStreamData)
 }
 
 # Merge
@@ -486,7 +487,7 @@ ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics.png"),
 if (enableSnowCalib == 1) {
    if (lsm_SPLIT_OUTPUT_COUNT == 1) {
      filesList <- list.files(path = outPathControl,
-                             pattern = glob2rx("*.LDASOUT_DOMAIN*"),
+                             pattern = glob2rx("*0600.LDASOUT_DOMAIN*"),
                              full.names = TRUE)
       filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
       whFiles <- which(filesListDate >= minDate)
@@ -497,7 +498,7 @@ if (enableSnowCalib == 1) {
    
       write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
       filesList <- list.files(path = outPathValid,
-                             pattern = glob2rx("*.LDASOUT_DOMAIN*"),
+                             pattern = glob2rx("*0600.LDASOUT_DOMAIN*"),
                              full.names = TRUE)
       filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
       whFiles <- which(filesListDate >= minDate)
@@ -513,21 +514,23 @@ if (calcDailyStats) {
   mod.valid.d <- Convert2Daily(mod.valid)
   mod.cont.obj <- copy(mod.cont.d)
   mod.valid.obj <- copy(mod.valid.d)
-  obs.obj <- Convert2Daily(obsStrData_snow)
+  obs.obj.snow <- Convert2Daily(obsSnowData)
 } else {
   mod.cont.obj <- copy(mod.cont)
   mod.valid.obj <- copy(mod.valid)
-  obs.obj <- copy(obsStrData_snow)
+  obs.obj.snow <- copy(obsSnowData)
 }
 
 # Merge
 setkey(mod.cont.obj, "site_no", "POSIXct")
-if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
-setkey(obs.obj, "site_no", "POSIXct")
-mod.cont.obj <- merge(mod.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+if ("Date" %in% names(obs.obj.snow)) obs.obj.snow[, Date := NULL]
+setkey(obs.obj.snow, "site_no", "POSIXct")
+mod.cont.obj <- merge(mod.cont.obj, obs.obj.snow, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+mod.cont.obj.snow <- copy(mod.cont.obj)
 
 setkey(mod.valid.obj, "site_no", "POSIXct")
-mod.valid.obj <- merge(mod.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+mod.valid.obj <- merge(mod.valid.obj, obs.obj.snow, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+mod.valid.obj.snow <- copy(mod.valid.obj)
 
 # setup for stats loop
 runList <- list(df=c("mod.cont.obj", "mod.valid.obj"), run=c("default", "calibrated"))
@@ -685,8 +688,208 @@ gg <- ggplot(data=results.plot, aes(x=factor(period), y=value, fill=run)) +
          theme_bw() + theme_bw(base_size = 20)
 ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics_snow.png"),
         plot=gg, units="in", width=16, height=8, dpi=300)
-
 }
+
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#
+#                Soil Moisture
+#
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if (enableSoilMoistureCalib == 1) {
+  if (lsm_SPLIT_OUTPUT_COUNT == 1) {
+    filesList <- list.files(path = outPathControl,
+                           pattern = glob2rx("*.LDASOUT_DOMAIN*"),
+                            full.names = TRUE)
+    filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
+    whFiles <- which(filesListDate >= minDate)
+    filesList <- filesList[whFiles]
+    if (length(filesList) == 0) stop("No matching files in specified directory.")
+    mod.cont <- as.data.table(plyr::ldply(filesList, ReadSm_Multi, .parallel = parallelFlag, mskvar.lsm = mskvar.lsm))
+    mod.cont$site_no <- siteId
+ 
+    # let s calculate the moving average window of 7 or 15 days
+    # since I am not sure how often we are going to output SM, let s first calculate the daily average of data before proceeding
+    mod.cont$Date <- CalcDateTrunc(mod.cont$POSIXct)
+    mod.cont <- mod.cont[, list(mod.d=mean(mod, na.rm=TRUE)), by = c("Date", "site_no")]
+
+    # Merge
+    setkey(mod.cont, "site_no", "Date")
+    setkey(obsSoilData, "site_no", "Date")
+    mod_soil.obj <- merge(mod.cont, obsSoilData, by=c("site_no", "Date"), all.x=FALSE, all.y=FALSE)
+
+   
+    # let s call the anomaly function
+    mod.cont.obj.soil <- CalcSmAnomaly(mod_soil.obj, window_days)
+
+    write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
+   filesList <- list.files(path = outPathValid,
+                           pattern = glob2rx("*.LDASOUT_DOMAIN*"),
+                           full.names = TRUE)
+    filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
+    whFiles <- which(filesListDate >= minDate)
+    filesList <- filesList[whFiles]
+    if (length(filesList) == 0) stop("No matching files in specified directory.")
+    mod.valid <- as.data.table(plyr::ldply(filesList, ReadSm_Multi, .parallel = parallelFlag, mskvar.lsm = mskvar.lsm))
+    mod.valid$site_no <- siteId
+
+    # let s calculate the moving average window of 7 or 15 days
+    # since I am not sure how often we are going to output SM, let s first calculate the daily average of data before proceeding
+    mod.valid$Date <- CalcDateTrunc(mod.valid$POSIXct)
+    mod.valid <- mod.valid[, list(mod.d=mean(mod, na.rm=TRUE)), by = c("Date", "site_no")]
+
+    # Merge
+    setkey(mod.valid, "site_no", "Date")
+    setkey(obsSoilData, "site_no", "Date")
+    mod_soil.obj <- merge(mod.valid, obsSoilData, by=c("site_no", "Date"), all.x=FALSE, all.y=FALSE)
+   
+    # let s call the anomaly function
+    mod.valid.obj.soil <- CalcSmAnomaly(mod_soil.obj, window_days)
+  }
+  
+  # setup for stats loop
+  runList <- list(df=c("mod.cont.obj.soil", "mod.valid.obj.soil"), run=c("default", "calibrated"))
+  dtList <- list(start=c(startCalibDate, startValidDate, minDate),
+                 end=c(endCalibDate, endValidDate, maxDate),
+                 period=c("calib", "valid", "full"))
+  # Initialize stats table
+  validStats_soilmoisture <- as.data.frame(matrix(, nrow=1, ncol=length(metrics_soilmoisture)+3))
+  names(validStats_soilmoisture) <- c("run", "period", "obj", metrics_soilmoisture)
+  
+  # Calculate stats
+  loopcnt <- 1
+  loopcnt2 <- 1
+  for (i in 1:length(runList[[1]])) {
+    for (j in 1:length(dtList[[1]])) {
+      # Subset data
+      mod.obj <- get(runList[["df"]][i])
+      mod.obj <- mod.obj[Date >= dtList[["start"]][j] & Date < dtList[["end"]][j],]
+
+         # Calc stats
+         mod.obj.nona <- mod.obj[!is.na(mod_anomaly) & !is.na(obs_anomaly),]
+
+         if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+         my_exprs = quote(list(
+            cor = cor(mod_anomaly, obs_anomaly),
+            rmse = Rmse(mod_anomaly, obs_anomaly, na.rm=TRUE),
+            bias = PBias(mod_anomaly, obs_anomaly, na.rm=TRUE),
+            nse = hydroGOF::NSE(mod_anomaly, obs_anomaly, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
+            nselog = hydroGOF::NSE(mod_anomaly, obs_anomaly, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
+            nsewt = NseWt(mod_anomaly, obs_anomaly) ,
+            nnse = NNse(mod_anomaly, obs_anomaly),
+            nnsesq = NNseSq(mod_anomaly, obs_anomaly),
+            kge = hydroGOF::KGE(mod_anomaly, obs_anomaly, na.rm=TRUE, method="2009", out.type="single"),
+            kge_alpha = hydroGOF::KGE(mod_anomaly, obs_anomaly, na.rm=TRUE, method="2009", out.type="full")$KGE.elements['Alpha'],
+         ))
+
+      w = which(names(my_exprs) %in% metrics_soilmoisture)
+
+      # let s just take care of objective function being capital
+      objFn <- tolower(soilMoistureObjFunc)
+      stat <- mod.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
+
+      # Calc objective function
+      if (objFn %in% c("nsewt","nse","nselog","kge","cor")) F_new <- 1 - stat[, objFn, with = FALSE]
+      if (objFn %in% c("rmse")) F_new <- stat[, objFn, with = FALSE]
+      
+      # Archive results
+      validStats_new <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics_soilmoisture), with = FALSE])
+      validStats_soilmoisture[loopcnt,] <- validStats_new
+      loopcnt <- loopcnt + 1
+    }
+  }
+}
+
+# ------------------------------------------------------
+#  Soil Moisture PLOTS
+#-------------------------------------------------------
+if (enableSoilMoistureCalib) {
+  
+  # Time series
+  gg <- ggplot() +
+    geom_line(data=mod.cont.obj.soil, aes(x=Date, y=mod_anomaly, color='default'), lwd=0.6) +
+    geom_line(data=mod.valid.obj.soil, aes(x=Date, y=mod_anomaly, color='calibrated'), lwd=0.6) +
+    geom_line(data=mod.cont.obj.soil, aes(x=Date, y=obs_anomaly, color='observed'), lwd=0.4) +
+    geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+    ggtitle(paste0("Model Validation Soil Moisture Timeseries: ", siteId, "\n", siteName)) +
+    scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
+                       limits=c('default','calibrated','observed'),
+                       label=c('default', 'calibrated', 'observed')) +
+    labs(x="", y="Soil Moisture") +
+    theme_bw() + theme_bw(base_size = 20) + facet_wrap(~site_no, ncol = 1)
+  
+  ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_timeseries_soilmoisture.png"),
+         plot=gg, units="in", width=16, height=8, dpi=300)
+  
+  # Scatterplots
+  maxval <- max(max(mod.cont.obj.soil$mod_anomaly, na.rm=TRUE), max(mod.valid.obj.soil$mod_anomaly, na.rm=TRUE), max(mod.cont.obj.soil$obs_anomaly, na.rm=TRUE))
+  gg1 <- ggplot() +
+    geom_point(data=mod.cont.obj.soil, aes(x=obs, y=mod_anomaly, color='default'), shape=1, size=3) +
+    geom_point(data=mod.valid.obj.soil, aes(x=obs, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
+    scale_shape_discrete(solid=FALSE) +
+    geom_abline(intercept=0, slope=1, col='black', lty=1) +
+    ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId, " ", siteName)) +
+    scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                       limits=c('default','calibrated'),
+                       label=c('default', 'calibrated')) +
+    labs(x="", y="modeled Soil Moisture") +
+    theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
+    xlim(0,maxval) + ylim(0,maxval) + facet_wrap(~site_no, ncol = 1)
+  gg2 <- ggplot() +
+    geom_point(data=mod.cont.obj.soil[Date>= startCalibDate & Date < endCalibDate,], aes(x=obs_anomaly, y=mod_anomaly, color='default'), shape=1, size=3) +
+    geom_point(data=mod.valid.obj.soil[Date >= startCalibDate & Date < endCalibDate,], aes(x=obs_anomaly, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
+    scale_shape_discrete(solid=FALSE) +
+    geom_abline(intercept=0, slope=1, col='black', lty=1) +
+    ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId, " ", siteName)) +
+    scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                       limits=c('default','calibrated'),
+                       label=c('default', 'calibrated')) +
+    labs(x="observed Soil Moisture", y="") +
+    theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
+    xlim(0,maxval) + ylim(0,maxval)  + facet_wrap(~site_no, ncol = 1)
+  
+  gg3 <- ggplot() +
+    geom_point(data=mod.cont.obj.soil[Date>= startValidDate & Date < endValidDate,], aes(x=obs_anomaly,y= mod_anomaly,color='default'), shape=1, size=3) +
+    geom_point(data=mod.valid.obj.soil[Date >= startValidDate & Date < endValidDate,], aes(x=obs_anomaly, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
+    scale_shape_discrete(solid=FALSE) +
+    geom_abline(intercept=0, slope=1, col='black', lty=1) +
+    ggtitle(paste0("Validation Period (", startValidDate, " to ", endValidDate, "): \n", siteId, " ", siteName)) +
+    scale_color_manual(name="", values=c('dodgerblue', 'orange'),
+                       limits=c('default','calibrated'),
+                       label=c('default', 'calibrated')) +
+    labs(x="", y="") +
+    theme_bw() + theme(axis.text=element_text(size=20)) +
+    theme(legend.position = c(0.2, 0.9),  legend.background = element_rect(colour = NA, fill = NA), legend.key.size = unit(1.25, "cm"),  legend.key = element_rect(colour = NA, fill = NA), legend.text = element_text(size=18)) +
+    xlim(0,maxval) + ylim(0,maxval) + facet_wrap(~site_no, ncol = 1)
+  
+  gg.all <- grid.arrange(gg1, gg2, gg3, ncol=3)
+  # gg.all <- grid.arrange(gg3,ncol=1) For the hyper res calirbation the gg1 and gg2 were commented out
+  
+  ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_scatter_soilmoisture.png"),
+         plot=gg.all, units="in", width=16, height=8, dpi=300)
+  
+  # Stats Barplots
+  results.plot <- melt(validStats_soilmoisture[,c("run", "period", "obj", metrics_soilmoisture)], id=c("period", "run"))
+  results.plot$period <- factor(results.plot$period, levels=c("calib", "valid", "full"))
+  results.plot$run <- factor(results.plot$run, levels=c("default", "calibrated"))
+  results.plot <- results.plot[order(results.plot$variable, results.plot$period, results.plot$run),]
+  results.plot$value <- as.numeric(results.plot$value)
+  gg <- ggplot(data=results.plot, aes(x=factor(period), y=value, fill=run)) +
+    geom_bar(stat="identity", position="dodge") +
+    facet_wrap(~variable, scales="free_y") +
+    scale_fill_manual(name="", values=c('dodgerblue', 'orange'),
+                      limits=c('default','calibrated'),
+                      label=c('default', 'calibrated')) +
+    ggtitle(paste0("Model Validation Performance Metrics: ", siteId, " ", siteName)) +
+    labs(x="run period", y="value") +
+    theme_bw() + theme_bw(base_size = 20)
+  ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics_soilmoisture.png"),
+         plot=gg, units="in", width=16, height=8, dpi=300)
+  
+}
+
+
 #########################################################
 # SAVE & EXIT
 #########################################################
@@ -700,6 +903,8 @@ if (enableStreamflowCalib) {
     write.table(validStats, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
    } else if (enableSnowCalib) {
     write.table(validStats_snow, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+   } else if (enableSoilMoistureCalib) {
+     write.table(validStats_soilmoisture, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
 }
 
 fileConn <- file(paste0(validDir, "/R_VALID_COMPLETE"))
