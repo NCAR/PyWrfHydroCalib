@@ -477,7 +477,7 @@ if (cyclecount > 0) {
           # Merge
           setkey(mod_soil.obj, "site_no", "Date")
           setkey(obs.obj.soil, "site_no", "Date")
-          mod_soil.obj <- merge(mod_soil.obj, obs.obj.soil, by=c("site_no", "Date"), all.x=FALSE, all.y=FALSE)
+          mod_soil.obj <- merge(mod_soil.obj, obs.obj.soil, by=c("site_no", "Date"), all.x=TRUE, all.y=FALSE)
 
           # let s call the anomaly function
           mod_soil.obj <- CalcSmAnomaly(mod_soil.obj, window_days)

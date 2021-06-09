@@ -717,7 +717,7 @@ if (enableSoilMoistureCalib == 1) {
     # Merge
     setkey(mod.cont, "site_no", "Date")
     setkey(obsSoilData, "site_no", "Date")
-    mod_soil.obj <- merge(mod.cont, obsSoilData, by=c("site_no", "Date"), all.x=FALSE, all.y=FALSE)
+    mod_soil.obj <- merge(mod.cont, obsSoilData, by=c("site_no", "Date"), all.x=TRUE, all.y=FALSE)
 
    
     # let s call the anomaly function
@@ -742,7 +742,7 @@ if (enableSoilMoistureCalib == 1) {
     # Merge
     setkey(mod.valid, "site_no", "Date")
     setkey(obsSoilData, "site_no", "Date")
-    mod_soil.obj <- merge(mod.valid, obsSoilData, by=c("site_no", "Date"), all.x=FALSE, all.y=FALSE)
+    mod_soil.obj <- merge(mod.valid, obsSoilData, by=c("site_no", "Date"), all.x=TRUE, all.y=FALSE)
    
     # let s call the anomaly function
     mod.valid.obj.soil <- CalcSmAnomaly(mod_soil.obj, window_days)
