@@ -201,8 +201,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     #        raise
 
     # Calculate datetime objects
-    begDate = statusData.bValidDate
-    endDate = statusData.eValidDate
+    begDate = min(statusData.bValidDate, statusData.bCalibDate)
+    endDate = max(statusData.eValidDate, statusData.eCalibDate)
         
     ## Initialize status
     keyStatus = keySlot[basinNum,0]
@@ -788,8 +788,8 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     #        raise
         
     # Calculate datetime objects
-    begDate = statusData.bValidDate
-    endDate = statusData.eValidDate
+    begDate = min(statusData.bValidDate, statusData.bCalibDate)
+    endDate = max(statusData.eValidDate, statusData.eCalibDate)
         
     ## Initialize status
     keyStatus = keySlot[basinNum,1]

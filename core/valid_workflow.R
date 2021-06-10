@@ -395,6 +395,9 @@ gg <- ggplot() +
               geom_line(data=chrt.valid.obj, aes(x=POSIXct, y=q_cms, color='calibrated'), lwd=0.6) +
               geom_line(data=chrt.cont.obj, aes(x=POSIXct, y=obs, color='observed'), lwd=0.4) +
               geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+              geom_vline(xintercept=as.numeric(endValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+              geom_vline(xintercept=as.numeric(startCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+              geom_vline(xintercept=as.numeric(endCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
               ggtitle(paste0("Model Validation Hydrograph: ", siteId, "\n", siteName)) +
               scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
                                 limits=c('default','calibrated','observed'),
@@ -612,6 +615,9 @@ gg <- ggplot() +
               geom_line(data=mod.valid.obj, aes(x=POSIXct, y=mod, color='calibrated'), lwd=0.6) +
               geom_line(data=mod.cont.obj, aes(x=POSIXct, y=obs, color='observed'), lwd=0.4) +
               geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+              geom_vline(xintercept=as.numeric(endValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+              geom_vline(xintercept=as.numeric(startCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+              geom_vline(xintercept=as.numeric(endCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
               ggtitle(paste0("Model Validation SWE Timeseries: ", siteId, "\n", siteName)) +
               scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
                                 limits=c('default','calibrated','observed'),
@@ -812,6 +818,10 @@ if (enableSoilMoistureCalib) {
     geom_line(data=mod.valid.obj.soil, aes(x=Date, y=mod_anomaly, color='calibrated'), lwd=0.6) +
     geom_line(data=mod.cont.obj.soil, aes(x=Date, y=obs_anomaly, color='observed'), lwd=0.4) +
     geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+    geom_vline(xintercept=as.numeric(endValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+    geom_vline(xintercept=as.numeric(startCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+    geom_vline(xintercept=as.numeric(endCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
+
     ggtitle(paste0("Model Validation Soil Moisture Anomaly Timeseries: ", siteId, "\n", siteName)) +
     scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
                        limits=c('default','calibrated','observed'),
