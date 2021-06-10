@@ -790,7 +790,7 @@ def checkConfig(parser):
         raise Exception()
         
     check = int(parser.get('lsmPhysics','runoffOption'))
-    if check < 0 or check > 4:
+    if check < 0 or check > 7:
         print("ERROR: Invalid LSM runoff option chosen.")
         raise Exception()
         
