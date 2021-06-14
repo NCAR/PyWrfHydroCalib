@@ -44,7 +44,8 @@ def main(argv):
                         help='Job ID specific to calibration experiment.')
     parser.add_argument('--optDbPath', type=str, nargs='?',
                         help='Optional alternative path to SQLite DB file.')
-
+    parser.add_argument('valid_type', type=str, nargs='+', help='BEST or CTRL valid type to run.')
+ 
     args = parser.parse_args()
 
     # If the SQLite file does not exist, throw an error.
@@ -67,7 +68,7 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
     jobData.dbPath = dbPath
-
+    valid_type = args.valid_type[0]
     # Establish database connection.
     db = dbMod.Database(jobData)
     db.lockPath = dbPath + ".LOCK"
@@ -121,10 +122,15 @@ def main(argv):
     # user to enter a new contact that will be unpdated in the database.
     # Also require that both the spinup and calibrations have been entered into
     # the database as complete.
-    if int(jobData.validComplete) == 1:
-        jobData.errMsg = "ERROR: Validation for job ID: " + str(jobData.jobID) + \
+    if(int(jobData.validCompleteBEST) == 1): #and int(jobData.validCompleteBEST) == 1:
+        jobData.errMsg = str(int(jobData.validCompleteBEST)) + "ERROR Orchestrator: Validation for job ID: " + str(jobData.jobID) + \
                          " has already completed."
         errMod.errOut(jobData)
+
+#    if int(jobData.validCompleteBEST) == 1:
+#        jobData.errMsg = "ERROR: Validation for BEST run job ID: " + str(jobData.jobID) + \
+#                         " has already completed."
+#        errMod.errOut(jobData)
     if int(jobData.spinComplete) != 1:
         # Check to see if optional spinup options were enabled. If so, update the spinup status.
         if staticData.coldStart == 1 or staticData.optSpinFlag != 0:
@@ -238,7 +244,7 @@ def main(argv):
             print("WORKING ON GROUP: " + str(basinGroup))
             # Compose a complete flag for this specific group of basins. If this complete flag is present,
             # that means these basins are complete.
-            basinCompleteFlag = str(jobData.jobDir) + "/VALID_GROUP_" + str(basinGroup) + ".COMPLETE"
+            basinCompleteFlag = str(jobData.jobDir) + "/VALID_GROUP_" + str(basinGroup) + "_" + valid_type + ".COMPLETE"
 
             if os.path.isfile(basinCompleteFlag):
                 jobData.groupComplete[basinGroup] = 1
@@ -249,12 +255,12 @@ def main(argv):
             if jobData.jobRunType == 4:
                 # This is for MPI scripts as we don't have a scheduler.
                 runScript = jobData.jobDir + "/WVG_" + str(jobData.jobID) + "_" + \
-                            str(basinGroup)
+                            str(basinGroup) + "_" + valid_type
             else:
-                runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + ".sh"
+                runScript = jobData.jobDir + "/run_group_" + str(basinGroup) + "_" + valid_type + ".sh"
             if not os.path.isfile(runScript):
                 try:
-                    calibIoMod.generateValidGroupScript(jobData, basinGroup, runScript, topDir)
+                    calibIoMod.generateValidGroupScript(jobData, basinGroup, runScript, valid_type, topDir)
                 except:
                     errMod.errOut(jobData)
             else:
@@ -266,7 +272,7 @@ def main(argv):
                     jobData.errMsg = "Unable to remove old run script file: " + runScript
                     errMod.errOut(jobData)
                 try:
-                    calibIoMod.generateValidGroupScript(jobData, basinGroup, runScript, topDir)
+                    calibIoMod.generateValidGroupScript(jobData, basinGroup, runScript, valid_type, topDir)
                 except:
                     errMod.errOut(jobData)
 
@@ -292,13 +298,17 @@ def main(argv):
             time.sleep(5)
 
         # Check to see if the program requirements have been met.
+
         if sum(jobData.groupComplete) == jobData.nGroups:
-            jobData.validComplete = 1
+            if(valid_type == 'BEST'):
+                jobData.validCompleteBEST = 1
+            elif(valid_type == 'CTRL'):
+                jobData.validCompleteCTRL = 1
             try:
-                db.updateValidationStatus(jobData)
+                db.updateValidationStatus(jobData,valid_type)
             except:
                 errMod.errout(jobData)
-            jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+            jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " " + valid_type + " is COMPLETE."
             errMod.sendMsg(jobData)
 
             completeStatus = True

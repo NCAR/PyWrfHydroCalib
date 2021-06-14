@@ -43,6 +43,8 @@ def main(argv):
                         help='Job ID specific to calibration validation.')
     parser.add_argument('groupNum', metavar='groupNum', type=str, nargs='+',
                         help='Group number associated with basins to calibrate.')
+    parser.add_argument('valid_type', type=str, nargs='+', help='BEST or CTRL valid type to run.')
+
     parser.add_argument('--optDbPath',type=str,nargs='?',
                         help='Optional alternative path to SQLite DB file.')
     
@@ -71,7 +73,8 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
     jobData.dbPath = dbPath
-    
+    valid_type = args.valid_type[0] 
+   
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
@@ -179,8 +182,12 @@ def main(argv):
     # user to enter a new contact that will be unpdated in the database. 
     # Also require that both the spinup and calibrations have been entered into
     # the database as complete. 
-    if int(jobData.validComplete) == 1:
-        jobData.errMsg = "ERROR: Validation for job ID: " + str(jobData.jobID) + \
+#    if int(jobData.validCompleteBEST) == 1:
+#        jobData.errMsg = "ERROR: Validation for BEST run job ID: " + str(jobData.jobID) + \
+#                         " has already completed."
+#        errMod.errOut(jobData)
+    if(int(jobData.validCompleteBEST) == 1):
+        jobData.errMsg = "ERROR_VALIDATION: Validation for job ID: " + str(jobData.jobID) + \
                          " has already completed."
         errMod.errOut(jobData)
     if int(jobData.spinComplete) != 1:
@@ -285,7 +292,7 @@ def main(argv):
     # the database occurs, and the program will complete.
     keySlot = np.empty([len(jobData.gages),2])
     keySlot[:,:] = 0.0
-    entryValue = float(len(jobData.gages))*2.0
+    entryValue = float(len(jobData.gages))*1.0
    
     # Create an array to hold systme job ID values. This will only be used for
     # PBS as qstat has demonstrated slow behavior when doing a full qstat command. 
@@ -321,49 +328,60 @@ def main(argv):
             print("PROCESSING BASIN: " + str(basin))
             # Only process basins that are part of this group, per the argument passed into the
             # program.
-            if jobData.gageGroup[basin] != int(args.groupNum[0]):
-                keySlot[basin, :] = 1.0
-                continue
+            #if jobData.gageGroup[basin] != int(args.groupNum[0]):
+            #    keySlot[basin, :] = 1.0
+            #    continue
             # First simulation will be the control simulation with default
             # parameters specified by the user at the beginning of the calibration
             # process.
-            print("Running CONTROL")
-            try:
-                validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop,pbsJobIdCtrl)
-            except:
-                errMod.errOut(jobData)
+            if(valid_type == 'CTRL'):
+                print("Running CONTROL")
+                if jobData.gageGroup[basin] != int(args.groupNum[0]):
+                    keySlot[basin, 0] = 1.0
+                    continue
+                try:
+                    validMod.runModelCtrl(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,libPathTop,pbsJobIdCtrl)
+                except:
+                    errMod.errOut(jobData)
             
-            print("Running BEST")
-            try:
-                validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobIdBest)
-            except:
-                errMod.errOut(jobData)
+            elif(valid_type == 'BEST'):
+                print("Running BEST")
+                if jobData.gageGroup[basin] != int(args.groupNum[0]):
+                    keySlot[basin, 1] = 1.0
+                    continue
+                try:
+                    validMod.runModelBest(jobData,staticData,db,jobData.gageIDs[basin],jobData.gages[basin],keySlot,basin,pbsJobIdBest)
+                except:
+                    errMod.errOut(jobData)
 
             time.sleep(5)
             
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
             if len(args.groupNum[0]) == 0:
-                jobData.validComplete = 1
+                if(valid_type == 'CTRL'):
+                    jobData.validCompleteCTRL = 1
+                elif(valid_type == 'BEST'):
+                    jobData.validCompleteBEST = 1
                 try:
-                    db.updateValidationStatus(jobData)
+                    db.updateValidationStatus(jobData,valid_type)
                 except:
                     errMod.errout(jobData)
-                jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " COMPLETE."
+                jobData.genMsg = "VALIDATION FOR JOB ID: " + str(jobData.jobID) + " " + valid_type + " COMPLETE."
                 errMod.sendMsg(jobData)
                 completeStatus = True
             else:
                 # We are running with the orchestrator program. Touch the complete flag to let the
                 # calling program know this group of basins is complete.
-                basinCompleteFlag = str(jobData.jobDir) + "/VALID_GROUP_" + str(args.groupNum[0]) + ".COMPLETE"
+                basinCompleteFlag = str(jobData.jobDir) + "/VALID_GROUP_" + str(args.groupNum[0]) + "_" + valid_type + ".COMPLETE"
                 try:
                     open(basinCompleteFlag, 'a').close()
                 except:
                     jobData.errMsg = "Unable to create complete flag: " + basinCompleteFlag
                     errMod.errOut(jobData)
 
-            completeStatus = True
-            
+                completeStatus = True
+
         # Open the Python LOCK file. Write a blank line to the file and close it.
         # This action will simply modify the file modification time while only adding
         # a blank line.
