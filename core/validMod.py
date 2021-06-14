@@ -201,8 +201,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     #        raise
 
     # Calculate datetime objects
-    begDate = statusData.bValidDate
-    endDate = statusData.eValidDate
+    begDate = min(statusData.bValidDate, statusData.bCalibDate)
+    endDate = max(statusData.eValidDate, statusData.eCalibDate)
         
     ## Initialize status
     keyStatus = keySlot[basinNum,0]
@@ -605,7 +605,6 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     """
     # Establish the "control" and "best" status values. These are important for 
     # the workflow.
-    #keySlot[basinNum,0] = 1.0
     ctrlStatus = 1.0
     bestStatus = keySlot[basinNum,1]
     
@@ -789,8 +788,8 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     #        raise
         
     # Calculate datetime objects
-    begDate = statusData.bValidDate
-    endDate = statusData.eValidDate
+    begDate = min(statusData.bValidDate, statusData.bCalibDate)
+    endDate = max(statusData.eValidDate, statusData.eCalibDate)
         
     ## Initialize status
     keyStatus = keySlot[basinNum,1]
@@ -1396,7 +1395,7 @@ def generateParmScript(jobData,bestDir,gage,parmInDir,staticData):
         fileObj.write('#!/bin/bash\n')
         fileObj.write('python ' + pyProgram + ' ' + bestDir + ' ' + parmInDir + ' ' + \
                       ctrlRunDir + ' ' + defaultDir + ' ' + str(staticData.gwBaseFlag) + \
-                      ' ' + str(staticData.chnRtOpt) + ' \n')
+                      ' ' + str(staticData.chnRtOpt) + ' ' + str(staticData.enableMask) + ' \n')
         fileObj.write('exit\n')
     except:
         jobData.errMsg = "ERROR: Failure to create: " + outFile
@@ -1455,10 +1454,28 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
+        fileObj.write(inStr)
+        inStr = "siteName <- '" + str(gageMeta.siteName) + "'\n"
         fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
@@ -1483,6 +1500,16 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Option to use multiple sites for calibration\n')
+        inStr = "enableMultiSites <- " + str(int(jobData.enableMultiSites)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript
@@ -1552,10 +1579,28 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
+        fileObj.write(inStr)
+        inStr = "siteName <- '" + str(gageMeta.siteName) + "'\n"
         fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
@@ -1580,6 +1625,13 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript
@@ -1635,10 +1687,28 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
+        fileObj.write(inStr)
+        inStr = "siteName <- '" + str(gageMeta.siteName) + "'\n"
         fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
@@ -1663,6 +1733,13 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript
@@ -1718,10 +1795,28 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
+        fileObj.write(inStr)
+        inStr = "siteName <- '" + str(gageMeta.siteName) + "'\n"
         fileObj.write(inStr)
         inStr = "linkId <- " + str(gageMeta.comID) + "\n"
         fileObj.write(inStr)
@@ -1746,6 +1841,13 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
             fileObj.write("calcDailyStats <- TRUE\n")
         else:
             fileObj.write("calcDailyStats <- FALSE\n")
+        fileObj.write('# Hydro Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "hydro_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.SplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# LSM Option on the SPLIT_OUTPUT_COUNT\n')
+        inStr = "lsm_SPLIT_OUTPUT_COUNT <- " + str(int(jobData.lsmSplitOutputCount)) + "\n"
+        fileObj.write(inStr)
+
         fileObj.close
     except:
         jobData.errMsg = "ERROR: Failure to create: " + rScript

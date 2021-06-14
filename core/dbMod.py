@@ -436,7 +436,8 @@ class Database(object):
         tmpMeta['gwMask'] = results[21]
         tmpMeta['lkFile'] = results[22]
         tmpMeta['forceDir'] = results[23]
-        tmpMeta['obsFile'] = results[24]
+        tmpMeta['obsDir'] = results[24]
+        tmpMeta['siteName'] = results[25]
         tmpMeta['dxHydro'] = results[39]
         tmpMeta['aggFactor'] = results[40]
         tmpMeta['hydroSpatial'] = results[41]
@@ -760,7 +761,8 @@ class Database(object):
         
         if(valid_type == "BEST"):
             sqlCmd = "update \"Job_Meta\" set valid_complete='" + str(jobData.validCompleteBEST) + \
-                     "' where \"jobID\"='" + str(jobData.jobID) + "';"
+                 "' where \"jobID\"='" + str(jobData.jobID) + "';"
+
             attempts = 0
             success = False
             while attempts < 10 and not success:
@@ -793,7 +795,7 @@ class Database(object):
         if jobData.calibFlag == 1:
             # Open parameter table and read values in.
             tblData = pd.read_csv(jobData.calibTbl)
-            if len(tblData) != 21:
+            if len(tblData) != 44:
                 jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
                 raise Exception()
             
@@ -826,7 +828,7 @@ class Database(object):
         if jobData.sensFlag == 1:
             # Open parameter table and read values in.
             tblData = pd.read_csv(jobData.sensTbl)
-            if len(tblData) != 21:
+            if len(tblData) != 40:
                 jobData.errMsg = "ERROR: Unexpected sensitivity parameter table format."
                 raise Exception()
             
@@ -1033,11 +1035,13 @@ class Database(object):
                         attempts = attempts + 1
             
             if not results:
-                # Create "empty" entry into table.
+                # Create "empty" entry into table.  
                 sqlCmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\"," + \
+                         "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
+                         "best,complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999, 0,0);"
 
                 attempts = 0
                 success = False
@@ -1098,11 +1102,14 @@ class Database(object):
             
             if not results:
                 # Create "empty" entry into table.
-                # First for hourly stats
+                # First for hourly stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\","  + \
+                         "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
+                         "\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
 
                 attempts = 0
                 success = False
@@ -1121,11 +1128,14 @@ class Database(object):
                         else:
                             attempts = attempts + 1
                     
-                # Next for daily stats
+                # Next for daily stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\"," + \
+                         "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
+                         "\timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
 
                 attempts = 0
                 success = False
@@ -1382,6 +1392,14 @@ class Database(object):
         fdc = str(-9999)
         msof = str(tblData.msof[0])
         hyperResMultiObj = str(tblData.hyperResMultiObj[0])
+        nnsesq = str(tblData.nnsesq[0])  
+        eventmultiobj = str(tblData.eventmultiobj[0])
+        corr1 = str(tblData.corr1[0])
+        lbem = str(tblData.lbem[0])
+        lbemprime = str(tblData.lbemprime[0])
+        pod = str(tblData.POD[0])
+        far = str(tblData.FAR[0])
+        csi = str(tblData.CSI[0])
         
         if int(tblData.best[0]) == 1:
             # This means we need to copy the parameter files that were created over
@@ -1429,7 +1447,7 @@ class Database(object):
                         jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                         raise
                 
-            if staticData.gwBaseFlag == 1:
+            if staticData.gwBaseFlag == 1 or  staticData.gwBaseFlag == 4 :
                 inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
                 outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
                 # Remove existing "best" file.
@@ -1535,7 +1553,7 @@ class Database(object):
                     else:
                         attempts = attempts + 1
                 
-        # Update Calib_Stats table.
+        # Update Calib_Stats table. 
         sqlCmd = "update \"Calib_Stats\" set \"objfnVal\"='" + objF + "', " + \
                  "bias='" + bias + "', rmse='" + \
                  rmse + "', cor='" + cor + "', nse='" + \
@@ -1543,6 +1561,14 @@ class Database(object):
                  kge + "', fdcerr='" + fdc + \
                  "', msof='" + msof + \
                  "', hyperResMultiObj='" + hyperResMultiObj + \
+                 "', nnsesq='" + nnsesq + \
+                 "', eventmultiobj='" + eventmultiobj + \
+                 "', corr1='" + corr1 + \
+                 "', lbem='" + lbem + \
+                 "', lbemprime='" + lbemprime + \
+                 "', pod='" + pod + \
+                 "', far='" + far + \
+                 "', csi='" + csi + \
                  "', complete='1' where \"jobID\"='" + str(jobID) + "' and " + \
                  "\"domainID\"='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
@@ -1726,17 +1752,22 @@ class Database(object):
         for tmpName in list(tblData.columns.values):
             tblData[tmpName][pd.isnull(tblData[tmpName])] = -9999.0
         
-        # Loop through table and enter information into DB.
+        # Loop through table and enter information into DB. 
         for stat in range(0,numStats):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
-                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\") values (" + str(jobID) + \
+                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\"," + \
+                     "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi) values (" + str(jobID) + \
                      "," + str(gageID) + ",'" + tblData.run[stat] + "','" + \
                      tblData.period[stat] + "'," + str(tblData.obj[stat]) + "," + \
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
                      str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
-                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ',' + \
-                     str(tblData.hyperResMultiObj[stat]) + ");"
+                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + "," + \
+                     str(tblData.hyperResMultiObj[stat]) + "," + \
+                     str(tblData.nnsesq[stat]) + "," + str(tblData.eventmultiobj[stat]) + "," + \
+                     str(tblData.lbem[stat]) + "," + str(tblData.lbemprime[stat]) + "," + \
+                     str(tblData.corr1[stat]) + "," + str(tblData.POD[stat]) + "," + \
+                     str(tblData.FAR[stat]) + "," + str(tblData.CSI[stat]) + ");"
 
             attempts = 0
             success = False

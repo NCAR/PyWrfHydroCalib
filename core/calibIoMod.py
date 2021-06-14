@@ -31,7 +31,8 @@ class gageMeta:
         self.soilFile = []
         self.hydroSpatial = []
         self.forceDir = []
-        self.obsFile = []
+        self.obsDir = []
+        self.siteName = []
         self.dxHydro = []
         self.aggFact = []
         self.optLandRstFile = []
@@ -43,7 +44,7 @@ class gageMeta:
         tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
-                   'obsFile':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
+                   'obsDir':'','siteName':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
                    'aggFactor':'','domainID':domainID,'optLandRstFile':'',\
                    'optHydroRstFile':'','chanParmFile':''}
         try:
@@ -65,7 +66,8 @@ class gageMeta:
         self.soilFile = tmpMeta['soilFile']
         self.hydroSpatial = tmpMeta['hydroSpatial']
         self.forceDir = tmpMeta['forceDir']
-        self.obsFile = tmpMeta['obsFile']
+        self.obsDir = tmpMeta['obsDir']
+        self.siteName = tmpMeta['siteName']
         self.comID = tmpMeta['comID']
         self.dxHydro = tmpMeta['dxHydro']
         self.aggFact = tmpMeta['aggFactor']
@@ -121,7 +123,7 @@ def copyDefaultParms(jobData,runDir,gage,staticData):
         jobData.errMsg = "ERROR: Failure to copy: " + inPath + " to: " + outPath
         raise
     
-    if staticData.gwBaseFlag == 1:
+    if staticData.gwBaseFlag == 1 or staticData.gwBaseFlag ==  4:
         inPath = runDir + "/GWBUCKPARM.nc"
         outPath = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/DEFAULT_PARAMETERS/GWBUCKPARM.nc"
         if not os.path.isfile(inPath):
@@ -219,12 +221,12 @@ def setupModels(jobData,db,args,libPathTop):
             
         # Create observations directory to hold obs for calibration/eval, etc
         obsDir = gageDir + "/OBS"
-        try:
-            os.mkdir(obsDir)
-        except:
-            errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
-            raise
+#        try:
+#            os.mkdir(obsDir)
+#        except:
+#            errMod.wipeJobDir(jobData,db)
+#            jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
+#            raise
         
         # Create sub-directories for spinup/calibration runs.
         spinupDir = gageDir + "/RUN.SPINUP"
@@ -596,7 +598,7 @@ def setupModels(jobData,db,args,libPathTop):
                     jobData.errMsg = "ERROR: Failure to copy: " + origPath + " to: " + newPath
                     raise
             
-            if jobData.gwBaseFlag == 1:
+            if jobData.gwBaseFlag == 1 or jobData.gwBaseFlag == 4:
                 origPath = str(gageData.gwFile)
                 newPath = baseParmDir + "/GWBUCKPARM.nc"
                 try:
@@ -616,12 +618,12 @@ def setupModels(jobData,db,args,libPathTop):
             raise
             
         # Create symbolic link to the observations file.
-        obsLink = gageDir + "/OBS/obsStrData.Rdata"
+        obsLink = gageDir + "/OBS"
         try:
-            os.symlink(str(gageData.obsFile),obsLink)
+            os.symlink(str(gageData.obsDir),obsLink)
         except:
             errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
+            jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.Dir)
             raise
             
         if jobData.calibFlag == 1:
@@ -728,6 +730,48 @@ def setupModels(jobData,db,args,libPathTop):
             except:
                 jobData.errMsg = "ERROR: Failure to link: " + sensPostRProgram
                 raise
+
+        # Create symlink for the mask file if runnig calibration and enableMask is 1
+        
+        if jobData.calibFlag == 1 and jobData.enableMask == 1 :
+           try:
+               maskFile = gageData.forceDir[0:-7] + "mask.coarse.tif"
+               link = gageDir + "/RUN.CALIB/mask.coarse.tif"
+               os.symlink(maskFile,link)
+               link = gageDir + "/RUN.VALID/OUTPUT/BEST/mask.coarse.tif"
+               os.symlink(maskFile,link)
+
+               maskFile = gageData.forceDir[0:-7] + "mask.fine.tif"
+               link = gageDir + "/RUN.CALIB/mask.fine.tif"
+               os.symlink(maskFile,link)
+               link = gageDir + "/RUN.VALID/OUTPUT/BEST/mask.fine.tif"
+               os.symlink(maskFile,link)
+
+               maskFile = gageData.forceDir[0:-7] + "mask.GWBUCKET.csv"
+               link = gageDir + "/RUN.CALIB/mask.GWBUCKET.csv"
+               os.symlink(maskFile,link)
+               link = gageDir + "/RUN.VALID/OUTPUT/BEST/mask.GWBUCKET.csv"
+               os.symlink(maskFile,link)
+
+           except:
+               jobData.errMsg = "ERROR: Failure creating the symlink to the mask"
+               raise
+
+        # Create symlink for the calib_sites.csv file if runnig calibration and enableMultiSites = 1
+
+        if jobData.calibFlag == 1 and jobData.enableMultiSites == 1 :
+           try:
+               maskFile = gageData.forceDir[0:-7] + "calib_sites.csv"
+               link = gageDir + "/RUN.CALIB/calib_sites.csv"
+               os.symlink(maskFile,link)
+               link = gageDir + "/RUN.VALID/calib_sites.csv"
+               os.symlink(maskFile,link)
+
+           except:
+               jobData.errMsg = "ERROR: Failure creating the symlink to the calib_sites.csv which is required in the case of enableMultiSites = 1"
+               raise
+
+
 
 def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
     """
@@ -1020,7 +1064,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
             fileObj.write('#\n')
             fileObj.write('cd ' + topDir + '\n')
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(
-                groupNum) +  " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
+                groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
         except:
