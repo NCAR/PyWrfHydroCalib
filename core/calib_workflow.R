@@ -485,8 +485,6 @@ if (cyclecount > 0) {
           # let s save each iteration mod_soil
           assign(paste0("mod_soil.obj.", cyclecount), mod_soil.obj)
 
-         }
-
          # Check for empty output
          if (nrow(mod_soil.obj) < 1) {
             write(paste0("No data found in obs for gage ", siteId, " after start date ", startDate), stdout())

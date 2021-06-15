@@ -977,7 +977,7 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise
 
-def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
+def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
     """
     Function to generate the run script for a particular group of basins.
     :param jobData:
@@ -1012,7 +1012,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
-            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
         except:
@@ -1048,7 +1048,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
-            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
         except:
@@ -1064,7 +1064,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('#\n')
             fileObj.write('cd ' + topDir + '\n')
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(
-                groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+                groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
         except:

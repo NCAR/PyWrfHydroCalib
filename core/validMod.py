@@ -605,14 +605,14 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     """
     # Establish the "control" and "best" status values. These are important for 
     # the workflow.
-    ctrlStatus = keySlot[basinNum,0]
+    ctrlStatus = 1.0
     bestStatus = keySlot[basinNum,1]
     
     # If the control status is not at least 0.25, this means the code to generate
     # parameters is still running, hasn't begun yet, or there's an issue with
     # the model. Simply return to the main workflow calling program.
-    if ctrlStatus < 0.25:
-        return
+    #if ctrlStatus < 0.25:
+    #    return
         
     # If the best status is 1.0, this means the model is complete and we can 
     # return to the main workflow calling program.

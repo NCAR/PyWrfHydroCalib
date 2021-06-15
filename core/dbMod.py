@@ -503,7 +503,8 @@ class Database(object):
         jobData.bValidDate = datetime.datetime.strptime(str(results[21]),'%Y-%m-%d %H:%M:%S')
         jobData.eValidDate = datetime.datetime.strptime(str(results[22]),'%Y-%m-%d %H:%M:%S')
         jobData.eValidEvalDate = datetime.datetime.strptime(str(results[23]),'%Y-%m-%d %H:%M:%S')
-        jobData.validComplete = int(results[24])
+        jobData.validCompleteBEST = int(results[24])
+        jobData.validCompleteCTRL = int(results[24])
         jobData.acctKey = results[25]
         jobData.queName = results[26]
         jobData.nCoresMod = int(results[27])
@@ -745,7 +746,7 @@ class Database(object):
                 else:
                     attempts = attempts + 1
             
-    def updateValidationStatus(self,jobData):
+    def updateValidationStatus(self,jobData,valid_type):
         """
         Generic function to update the status of the validation for a particular job.
         """
@@ -758,23 +759,24 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
         
-        sqlCmd = "update \"Job_Meta\" set valid_complete='" + str(jobData.validComplete) + \
+        if(valid_type == "BEST"):
+            sqlCmd = "update \"Job_Meta\" set valid_complete='" + str(jobData.validCompleteBEST) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
 
-        attempts = 0
-        success = False
-        while attempts < 10 and not success:
-            try:
-                self.dbCursor.execute(sqlCmd)
-                self.conn.commit()
-                success = True
-            except:
-                time.sleep(5)
-                if attempts == 9:
-                    jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
-                    raise
-                else:
-                    attempts = attempts + 1
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    self.dbCursor.execute(sqlCmd)
+                    self.conn.commit()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
+                        raise
+                    else:
+                        attempts = attempts + 1
     
     def enterJobParms(self,jobData):
         """
