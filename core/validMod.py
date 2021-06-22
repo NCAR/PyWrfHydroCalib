@@ -1472,6 +1472,13 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         fileObj.write(inStr)
         inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
+        fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
@@ -1597,6 +1604,13 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         fileObj.write(inStr)
         inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
+        fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
@@ -1705,6 +1719,13 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         fileObj.write(inStr)
         inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
         fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
+        fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
         fileObj.write(inStr)
@@ -1812,6 +1833,13 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
         fileObj.write(inStr)
         inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
