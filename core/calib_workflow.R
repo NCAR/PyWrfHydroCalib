@@ -19,9 +19,13 @@ source("calib_utils.R")
 source(namelistFile) 
 
 # Metrics
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
+#metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
+#metrics_snow <-  c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge")
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "msof", "hyperResMultiObj", "eventmultiobj","peak_bias","peak_tm_err_hr","event_volume_bias",
+             "POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") # Xia 20210610
 metrics_streamflow <- metrics
-metrics_snow <-  c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge")
+event_metrics_daily<-data.table(eventmultiobj=-9999, peak_bias=-9999, peak_tm_err_hr=-9999, event_volume_bias=-9999) # Xia 20210610
+metrics_snow <-  c("cor", "rmse", "bias", "nse", "kge") # Xia 20200610
 metrics_soilmoisture <- c("cor", "rmse", "bias", "nse",  "nnsesq","nnse", "kge", "kge_alpha")
 window_days <- 15
 #########################################################
@@ -72,7 +76,6 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
    if (enableSoilMoistureCalib == 1){
       obsSoilData <- as.data.table(get(load(paste0(runDir, "/OBS/obsSoilData.Rdata"))))
    }
-
 
    # create a mask to be used for the MAP calculation
    spatialWeightFile <- paste0(dirname(rtlinkFile), "/spatialweights.nc")
@@ -254,6 +257,7 @@ if (cyclecount > 0) {
             assign(paste0("chrt.obj.", cyclecount), chrt.d)
             chrt.obj <- copy(chrt.d)
             obs.obj <- Convert2Daily(obsStreamData)
+            obs.obj$threshold <- obsStreamData$threshold[1]
          } else {
             assign(paste0("chrt.obj.", cyclecount), chrt)
             chrt.obj <- copy(chrt)
@@ -305,15 +309,22 @@ if (cyclecount > 0) {
             kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), # Gupta et al (2009) is the basis of lbeprime 
             hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
             msof = Msof(q_cms, obs, scales),
-            eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId)  
+            #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
          ))
          my_exprs2 = quote(list(
             corr1 = r1(q_cms, obs), # Calculate Stedingers r1
             lbem = LBEms_function(q_cms, obs, period, calcDailyStats)[1],
             lbemprime =  LBEms_function(q_cms, obs, period, calcDailyStats)[2]
          ))
+         if (!calcDailyStats) my_exprs3 = quote(list( # Xia 20210610 to use all data with NA included
+            eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
+            peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
+            peak_tm_err_hr = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[3]],
+            event_volume_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[4]]
+         ))
          w = which(names(my_exprs) %in% metrics_streamflow)
          w2 = which(names(my_exprs2) %in% metrics_streamflow)
+         if (!calcDailyStats) w3 = which(names(my_exprs3) %in% metrics) # Xia added 20210610
          
          # let s just take care of objective function being capital
          objFn <- tolower(streamflowObjFunc)
@@ -321,6 +332,8 @@ if (cyclecount > 0) {
          if (enableMultiSites == 0) {
             stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
             if (length(w2) > 0) stat <- cbind(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
+            if (!calcDailyStats) {if (length(w3) >0) stat <- cbind(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = NULL])} # Xia 20210610
+            if (calcDailyStats) stat <- cbind(stat, event_metrics_daily) # Xia 20210610
             
             if (any(c("POD", "FAR", "CSI") %in% metrics_streamflow)) {
                stat$POD = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
@@ -341,6 +354,13 @@ if (cyclecount > 0) {
             if (length(w2) > 0){
                stat <- merge(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
             }
+            if (!calcDailyStat){ # Xia 20210610
+               if (length(w3) > 0) {
+                  stat <- merge(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
+               }
+            }
+            if (calcDailyStats) stat <- cbind(stat, event_metrics_daily) # Xia 20210610
+
             if (any(c("POD", "FAR", "CSI") %in% metrics_streamflow)) {
                stat <- merge(stat, calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "weight", "threshName")),
                              by = c("site_no", "weight"))
@@ -423,14 +443,14 @@ if (cyclecount > 0) {
          rmse = Rmse(mod, obs, na.rm=TRUE),
          bias = PBias(mod, obs, na.rm=TRUE),
          nse = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
-         nselog = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
-         nsewt = NseWt(mod, obs) ,
-         nnse = NNse(mod, obs),
-         nnsesq = NNseSq(mod, obs),
+         #nselog = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
+         #nsewt = NseWt(mod, obs) ,
+         #nnse = NNse(mod, obs),
+         #nnsesq = NNseSq(mod, obs),
          kge = hydroGOF::KGE(mod, obs, na.rm=TRUE, method="2012", out.type="single"),
-         hyperResMultiObj = hyperResMultiObj(mod, obs, na.rm=TRUE),
-         msof = Msof(mod, obs, scales),
-         eventmultiobj = EventMultiObj(mod, obs, weight1=1, weight2=0, POSIXct, siteId)
+         #hyperResMultiObj = hyperResMultiObj(mod, obs, na.rm=TRUE), #Xia 20210610
+         #msof = Msof(mod, obs, scales),
+         #eventmultiobj = EventMultiObj(mod, obs, weight1=1, weight2=0, POSIXct, siteId) 
       ))
       w = which(names(my_exprs) %in% metrics_snow)
       
@@ -552,12 +572,22 @@ if (cyclecount > 0) {
       }
       
       # Add best flag and output
-      if (enableStreamflowCalib == 1) {
-        paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_streamflow)], data.frame(best=bestFlag))
-      } else if (enableSnowCalib == 1) {
-        paramStats <- cbind(x_archive_snow[cyclecount,c("iter", "obj", metrics_snow)], data.frame(best=bestFlag)) # if streamflow is not calibrated we would use snow ...
-      } else if (enableSoilMoistureCalib == 1) {
-        paramStats <- cbind(x_archive_soilmoisture[cyclecount,c("iter", "obj", metrics_soilmoisture)], data.frame(best=bestFlag)) # if snow is also off for the soil moisture, then use soil moisture.
+      #if (enableStreamflowCalib == 1) { # Xia commented out
+      #  paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_streamflow)], data.frame(best=bestFlag))
+      #} else if (enableSnowCalib == 1) {
+      #  paramStats <- cbind(x_archive_snow[cyclecount,c("iter", "obj", metrics_snow)], data.frame(best=bestFlag)) # if streamflow is not calibrated we would use snow ...
+      #} else if (enableSoilMoistureCalib == 1) {
+      #  paramStats <- cbind(x_archive_soilmoisture[cyclecount,c("iter", "obj", metrics_soilmoisture)], data.frame(best=bestFlag)) # if snow is also off for the soil moisture, then use soil moisture.
+      #}
+      if (enableStreamflowCalib == 1) { # Xia 20210610
+         if (enableSnowCalib == 1) paramStats_snow <- x_archive_snow[cyclecount, metrics_snow]
+         if (enableSnowCalib == 0) paramStats_snow <- data.frame(matrix(-9999, ncol = length(metrics_snow)))
+         colnames(paramStats_snow) <- paste0(metrics_snow, "_snow")
+         paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_streamflow)], paramStats_snow, data.frame(best=bestFlag))
+      }
+      if (enableStreamflowCalib == 0 & enableSnowCalib == 1) { 
+         paramStats_streamflow <- data.frame(matrix(-9999, ncol = length(metrics_streamflow)))
+         paramStats <- cbind(x_archive_snow[cyclecount,c("iter", "obj")], paramStats_streamflow, x_archive_snow[cyclecount,metrics_snow], data.frame(best=bestFlag))
       }
 
       if (cyclecount < m) {
