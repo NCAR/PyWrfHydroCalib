@@ -528,17 +528,9 @@ if (enableSnowCalib == 1) {
    }
 
 # Convert to daily if needed
-if (calcDailyStats) {
-  mod.cont.d <- Convert2Daily(mod.cont)
-  mod.valid.d <- Convert2Daily(mod.valid)
-  mod.cont.obj <- copy(mod.cont.d)
-  mod.valid.obj <- copy(mod.valid.d)
-  obs.obj.snow <- Convert2Daily(obsSnowData)
-} else {
   mod.cont.obj <- copy(mod.cont)
   mod.valid.obj <- copy(mod.valid)
   obs.obj.snow <- copy(obsSnowData)
-}
 
 # Merge
 setkey(mod.cont.obj, "site_no", "POSIXct")
@@ -573,7 +565,7 @@ for (i in 1:length(runList[[1]])) {
       if (any(c("POD", "FAR", "CSI") %in% metrics_snow)) mod.obj.nona.abcd1 <- calc_abcd1(data.frame(mod.obj.nona), threshColName = "threshold",obsColName = "obs",modColName = "mod", headerCols=c('site_no'))
       if (any(c("corr1", "lbem", "lbemprime") %in% metrics_snow)) mod.obj.nona.nozeros = noZeroFunction_snow(mod.obj.nona$mod, mod.obj.nona$obs, lubridate::month(mod.obj.nona$POSIXct))
 
-      if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+      scales=c(1,24) # we are not doing daily
       my_exprs = quote(list(
         cor = cor(mod, obs),
         rmse = Rmse(mod, obs, na.rm=TRUE),
@@ -791,7 +783,7 @@ if (enableSoilMoistureCalib == 1) {
          # Calc stats
          mod.obj.nona <- mod.obj[!is.na(mod_anomaly) & !is.na(obs_anomaly),]
 
-         if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+         scales=c(1,24) # we are not doing daily stats 
          my_exprs = quote(list(
             cor = cor(mod_anomaly, obs_anomaly),
             rmse = Rmse(mod_anomaly, obs_anomaly, na.rm=TRUE),

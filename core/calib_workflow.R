@@ -404,19 +404,9 @@ if (cyclecount > 0) {
          mod$site_no <- siteId
       }
 
-      # Convert to daily if needed and tag object
-      # Note that we are not using the daily values here, note this needs to be modified if 
-      # both snow and streamflow are not daily ... 
-      if (calcDailyStats) {
-         mod.d <- Convert2Daily(mod)
-         assign(paste0("mod.obj.", cyclecount), mod.d)
-         mod.obj <- copy(mod.d)
-         obs.obj.snow <- Convert2Daily(obsSnowData)
-      } else {
          assign(paste0("mod.obj.", cyclecount), mod)
          mod.obj <- copy(mod)
          obs.obj.snow <- copy(obsSnowData)
-      }
       
       # Merge
       setkey(mod.obj, "site_no", "POSIXct")
@@ -437,7 +427,7 @@ if (cyclecount > 0) {
       # Calc stats
       mod.obj.nona <- mod.obj[!is.na(mod) & !is.na(obs),]
       
-      if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+      scales=c(1,24) # we are not doing daily 
       my_exprs = quote(list(
          cor = cor(mod, obs),
          rmse = Rmse(mod, obs, na.rm=TRUE),
@@ -517,7 +507,7 @@ if (cyclecount > 0) {
          # Calc stats
          mod_soil.obj.nona <- mod_soil.obj[!is.na(mod_anomaly) & !is.na(obs_anomaly),]
          
-         if (calcDailyStats) scales=c(1,10,30) else scales=c(1,24)
+         scales=c(1,24) # we are not doing daily 
          my_exprs = quote(list(
             cor = cor(mod_anomaly, obs_anomaly),
             rmse = Rmse(mod_anomaly, obs_anomaly, na.rm=TRUE),
@@ -665,6 +655,7 @@ if (cyclecount > 0) {
       gg <- gg + geom_point(data = x_archive[iter_best,], aes(x=iter, y=obj,size = "Best Iteration"), color = "red", shape = 8)
       gg <- gg + scale_size_manual(name = "", values = 2) 
       gg <- gg + scale_x_continuous(name = "Iteration") + scale_y_continuous(name="Objective Function")
+      gg <- gg + ggtitle(paste0("Objective function: ", siteId, "\n", siteName))
       ggsave(filename=paste0(writePlotDir, "/", siteId, "_calib_run_obj_outlier.png"),
              plot=gg, units="in", width=6, height=4, dpi=300)
       
