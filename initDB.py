@@ -68,9 +68,12 @@ def main(argv):
                        objfnVal real, bias real, rmse real, cor real,
                        nse real, nselog real, kge real, fdcerr real,
                        msof real, hyperResMultiObj real, 
-                       nnsesq real, lbem real, lbemprime real, eventmultiobj real, 
+                       nnsesq real, eventmultiobj real, lbem real, lbemprime real, 
                        corr1 real, pod real, far real, csi real,
+                       nnse real, peak_bias real, peak_tm_err_hr real, event_volume_bias real,
+                       cor_snow real, rmse_snow real, bias_snow real, nse_snow real, kge_snow real,
                        best integer, complete real)''')
+    # Xia added new metrics for Calib_Stats and Valid_Stats 20210610
     except:
         errOut(dbConn,"Unable to create table: Calib_Stats.",dbPath)
         
@@ -137,8 +140,10 @@ def main(argv):
                         evalPeriod text, objfnVal real, bias real, rmse real,
                         cor real, nse real, nselog real, nseWt real, kge real,
                         msof real, hyperResMultiObj real,
-                        nnsesq real, lbem real, lbemprime real, eventmultiobj real, 
-                        corr1 real, pod real, far real, csi real)''')
+                        nnsesq real, eventmultiobj real, lbem real, lbemprime real, 
+                        corr1 real, pod real, far real, csi real,
+                        nnse real, peak_bias real, peak_tm_err_hr real, event_volume_bias real,
+                        obj_snow real, cor_snow real, rmse_snow real, bias_snow real, nse_snow real, kge_snow real)''')
     except:
         errOut(dbConn,"Unable to create table: Valid_Stats.",dbPath)
     
