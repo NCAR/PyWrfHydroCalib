@@ -29,6 +29,7 @@ if (enableSnowCalib == 1) obsSnowData <- obsSnowData
 if (enableSoilMoistureCalib == 1) obsSoilData <- obsSoilData
 mskvar.lsm <- mskvar.lsm
 window_days <- window_days
+event_metrics_daily <- event_metrics_daily # Xia 20210610
 detach(calibdb)
 
 #########################################################
@@ -240,10 +241,12 @@ if (calcDailyStats) {
 setkey(chrt.cont.obj, "site_no", "POSIXct")
 if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
 setkey(obs.obj, "site_no", "POSIXct")
-chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+#chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE) # Xia 20210610, use all data to remove fake lines in hydrograph
 
 setkey(chrt.valid.obj, "site_no", "POSIXct")
-chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+#chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE) # Xia 20210610
 
 # Check for empty output
 if (nrow(chrt.cont.obj) < 1) {
@@ -314,15 +317,22 @@ for (i in 1:length(runList[[1]])) {
         kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), 
         hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
         msof = Msof(q_cms, obs, scales),
-        eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
+        #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
       ))
       my_exprs2 = quote(list(
         corr1 = r1(q_cms, obs), # Calculate Stedingers r1
         lbem = LBEms_function(q_cms, obs, period, calcDailyStats)[1],
         lbemprime =  LBEms_function(q_cms, obs, period, calcDailyStats)[2]
       ))
+      my_exprs3 = quote(list( # Xia 20210610 to use all data with NA included
+        eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
+        peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
+        peak_tm_err_hr = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[3]],
+        event_volume_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[4]]
+      ))
       w = which(names(my_exprs) %in% metrics)
       w2 = which(names(my_exprs2) %in% metrics)
+      if (!calcDailyStats) w3 = which(names(my_exprs3) %in% metrics) # Xia 20210610
 
       # let s just take care of objective function being capital
       objFn <- tolower(streamflowObjFunc)
@@ -330,6 +340,8 @@ for (i in 1:length(runList[[1]])) {
       if (enableMultiSites == 0) {
         stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
         if (length(w2) > 0) stat <- cbind(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
+        if (length(w3) > 0 & !calcDailyStats) stat <- cbind(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = NULL]) # Xia 20210610
+        if (calcDailyStats) stat <- cbind(stat, event_metrics_daily) # Xia 20210610
 
         if (any(c("POD", "FAR", "CSI") %in% metrics)) {
            stat$POD = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
@@ -352,6 +364,10 @@ for (i in 1:length(runList[[1]])) {
         if (length(w2) > 0){
             stat <- merge(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
         }
+        if (length(w3) > 0 & !calcDailyStats){ # Xia 20210610
+            stat <- merge(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
+        }
+        if (calcDailyStats) stat <- cbind(stat, event_metrics_daily) # Xia 20210610
         if (any(c("POD", "FAR", "CSI") %in% metrics)) {
              stat <- merge(stat, calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "weight", "threshName")),
                            by = c("site_no", "weight"))
@@ -563,28 +579,28 @@ for (i in 1:length(runList[[1]])) {
         rmse = Rmse(mod, obs, na.rm=TRUE),
         bias = PBias(mod, obs, na.rm=TRUE),
         nse = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
-        nselog = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
-        nsewt = NseWt(mod, obs) ,
-        nnse = NNse(mod, obs),
-        nnsesq = NNseSq(mod, obs),
+        #nselog = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),  # Xia commented below lines 20210610
+        #nsewt = NseWt(mod, obs) ,
+        #nnse = NNse(mod, obs),
+        #nnsesq = NNseSq(mod, obs),
         kge = hydroGOF::KGE(mod, obs, na.rm=TRUE, method="2012", out.type="single"),
-        hyperResMultiObj = hyperResMultiObj(mod, obs, na.rm=TRUE),
-        msof = Msof(mod, obs, scales),
-        eventmultiobj = EventMultiObj(mod, obs, weight1=1, weight2=0, POSIXct, siteId)
+        #hyperResMultiObj = hyperResMultiObj(mod, obs, na.rm=TRUE),
+        #msof = Msof(mod, obs, scales),
+        #eventmultiobj = EventMultiObj(mod, obs, weight1=1, weight2=0, POSIXct, siteId)
       ))
-      my_exprs2 = quote(list(
-        corr1 = r1(mod, obs), # Calculate Stedingers r1
-        lbem = LBEms_function(mod, obs, period, calcDailyStats)[1],
-        lbemprime =  LBEms_function(mod, obs, period, calcDailyStats)[2]
-      ))
+      #my_exprs2 = quote(list(
+      #  corr1 = r1(mod, obs), # Calculate Stedingers r1
+      #  lbem = LBEms_function(mod, obs, period, calcDailyStats)[1],
+      #  lbemprime =  LBEms_function(mod, obs, period, calcDailyStats)[2]
+      #))
       w = which(names(my_exprs) %in% metrics_snow)
-      w2 = which(names(my_exprs2) %in% metrics_snow)
+      #w2 = which(names(my_exprs2) %in% metrics_snow)
 
       # let s just take care of objective function being capital
       objFn <- tolower(snowObjFunc)
 
         stat <- mod.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
-        if (length(w2) > 0) stat <- cbind(stat, mod.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
+        #if (length(w2) > 0) stat <- cbind(stat, mod.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
 
         if (any(c("POD", "FAR", "CSI") %in% metrics_snow)) {
            stat$POD = calc_contingency_stats(mod.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$POD
@@ -909,13 +925,28 @@ if (enableSoilMoistureCalib) {
 save.image(paste0(validDir, "/proj_data_VALID.Rdata"))
 
 # Write param files
-if (enableStreamflowCalib) {
-    write.table(validStats, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
-   } else if (enableSnowCalib) {
-    write.table(validStats_snow, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
-   } else if (enableSoilMoistureCalib) {
-     write.table(validStats_soilmoisture, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+#if (enableStreamflowCalib) { # Xia commented out
+#    write.table(validStats, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+#   } else if (enableSnowCalib) {
+#    write.table(validStats_snow, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+#   } else if (enableSoilMoistureCalib) {
+#     write.table(validStats_soilmoisture, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+#}
+if (enableStreamflowCalib == 1) { # Xia 20210610
+  if (enableSnowCalib == 0) validMetrics_snow <- data.frame(matrix(-9999, nrow = nrow(validStats), ncol = length(metrics_snow)+1))
+  if (enableSnowCalib == 1) validMetrics_snow <- validStats_snow[,c("obj", metrics_snow)] 
+    colnames(validMetrics_snow) <- paste0(c("obj", metrics_snow), "_snow")
+    validMetrics <- cbind(validStats, validMetrics_snow)
 }
+if (enableStreamflowCalib == 0 & enableSnowCalib == 1) {
+  validMetrics_streamflow <- data.frame(matrix(-9999, nrow = nrow(validStats_snow), ncol = length(metrics_streamflow)+1))
+  colnames(validMetrics_streamflow) <- paste0(c("obj", metrics_streamflow))
+  colnames(validStats_snow)[3:ncol(validStats_snow)] <- paste0(c("obj", metrics_snow), "_snow")
+  validMetrics <- cbind(validStats_snow[,c("run","period")], validMetrics_streamflow, validStats_snow[,paste0(c("obj", metrics_snow), "_snow")])
+}
+validMetrics[is.na(validMetrics)]<--9999
+write.table(validMetrics, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
+#write.table(validStats, file=paste0(validDir, "/valid_stats.txt"), row.names=FALSE, sep=" ")
 
 fileConn <- file(paste0(validDir, "/R_VALID_COMPLETE"))
 writeLines('', fileConn)
@@ -924,7 +955,4 @@ close(fileConn)
 write(summary(proc.time()), stdout())
 
 quit("no")
-
-
-
 
