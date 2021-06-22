@@ -1496,6 +1496,13 @@ def generateRScript(jobData,gageMeta,gageNum,iteration):
         fileObj.write(inStr)
         inStr = "mCurrent <- " + str(iteration) + "\n"
         fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
+        fileObj.write(inStr)
         fileObj.write('# Specify DDS parameter (if used).\n')
         inStr = "r <- " + str(jobData.ddsR) + "\n"
         fileObj.write(inStr)
