@@ -53,6 +53,9 @@ class jobMeta:
         self.streamflowWeight=[]
         self.snowWeight = []
         self.soilMoistureWeight = []
+        self.basinType = []  # Xia 20210610
+        self.weight1event = []
+        self.weight2event = []
         self.ddsR = []
         self.outDir = []
         self.email = None
@@ -255,6 +258,9 @@ class jobMeta:
         self.streamflowWeight = float(parser.get('logistics','streamflowWeight'))
         self.snowWeight = float(parser.get('logistics','snowWeight'))
         self.soilMoistureWeight = float(parser.get('logistics','soilMoistureWeight'))
+        self.basinType = str(parser.get('logistics','basinType')) #Xia 20210610
+        self.weight1Event = str(parser.get('logistics','weight1Event'))
+        self.weight2Event = str(parser.get('logistics','weight2Event'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
