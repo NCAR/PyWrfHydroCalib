@@ -1211,6 +1211,8 @@ if (length(ix0)>0) {
   match_obs[ix0] <- 1
 }}
 
+if (nrow(events_obs1)>0) {
+
 # sort events in order
 events_obs1 <- events_obs1[order(peak),]
 events_mod1 <- events_mod1[order(peak),]
@@ -1248,7 +1250,7 @@ events_mod1[,nrece:=as.integer(difftime(end,peak,units="hour"))]
 
 events_obs1 <- events_obs1[-ix1[1],]
 events_mod1 <- events_mod1[-ix1[1],]
-}
+}}
 
 # for model events where observation is missing, mark with NA 
 for (i1 in 1:nm1) {
@@ -1267,7 +1269,7 @@ EventMultiObj <- function(m, o, weight1, weight2, period, siteId, basinType) { #
 # Input arguments:
 # m: model streamflow; o: observation streamflow
 # period: date; siteId: gage ID
-# basinType has flags: 0: snowy; 1: slow; 2: flashy
+# basinType has flags: 0: snowy; 1: slow; 2: flashy, 3: regular 
 # weight1Event and weight2Event are weights for peak bias and volume bias to get combined metric   
 
 # parameters
@@ -1574,4 +1576,35 @@ CalcSmAnomaly <- function(obs.obj.soil, window_days) {
           setkey(mod_soil.obj, "site_no", "Date")
           return(mod_soil.obj)
 }
+
+
+CalcSmCDF <- function(obs.obj.soil, window_days) {
+  
+  # calculate mean of obs/mod over a 7 or 15 days averging window
+  setkey(mod_soil.obj, "site_no", "Date")
+  mod_soil.obj[, `:=` (mod_window_averaged = rollapply(mod.d, window_days,  align='center', function(x) mean(x, na.rm=TRUE), by.column=TRUE, partial=T),
+                       obs_window_averaged = rollapply(obs, window_days,  align='center', function(x) mean(x, na.rm=TRUE), by.column=TRUE, partial=T))]
+  
+  # Now lets do the CDF matching, we want to match the SMAP to the model 
+  # first remove all the NA, NaNs from the dataset both model and obs
+  mod_soil.obj.nona <- mod_soil.obj[!is.na(mod_window_averaged) & !is.na(obs_window_averaged),]
+  mod_soil.obj.nona <- mod_soil.obj[!is.nan(mod_window_averaged) & !is.nan(obs_window_averaged),]
+  
+  library(qmap)
+  model_fitobj <- fitQmapQUANT(obs = mod_soil.obj.nona$mod_window_averaged, mod = mod_soil.obj.nona$obs_window_averaged, wet.day = FALSE)
+  mod_soil.obj.nona$obs_cdf_matched <- doQmapQUANT(x = mod_soil.obj.nona$obs_window_averaged , fobj = model_fitobj)
+
+ 
+  # let s remove the non necessary columns and do the renaming 
+  mod_soil.obj.nona[, mod.d := NULL]
+  mod_soil.obj.nona[, obs := NULL]
+  mod_soil.obj.nona[, obs_window_averaged := NULL]
+
+  setnames(mod_soil.obj.nona, c("mod_window_averaged", "obs_cdf_matched"), c("mod", "obs"))
+  
+  # let s do the set key
+  setkey(mod_soil.obj.nona, "site_no", "Date")
+  return(mod_soil.obj.nona)
+}
+
 
