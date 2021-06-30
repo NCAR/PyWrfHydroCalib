@@ -11,6 +11,8 @@ library(ncdf4)
 library(plyr)
 library(hydroGOF)
 library(zoo)
+library(qmap)
+
 #########################################################
 # SETUP
 #########################################################
@@ -26,7 +28,7 @@ metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kg
 metrics_streamflow <- metrics
 event_metrics_daily<-data.table(eventmultiobj=-9999, peak_bias=-9999, peak_tm_err_hr=-9999, event_volume_bias=-9999) # Xia 20210610
 metrics_snow <-  c("cor", "rmse", "bias", "nse", "kge") # Xia 20200610
-metrics_soilmoisture <- c("cor", "rmse", "bias", "nse",  "nnsesq","nnse", "kge", "kge_alpha")
+metrics_soilmoisture <- c("cor", "rmse", "bias", "nse", "kge", "kge_alpha")
 window_days <- 15
 #########################################################
 # MAIN CODE
@@ -490,7 +492,7 @@ if (cyclecount > 0) {
           mod_soil.obj <- merge(mod_soil.obj, obs.obj.soil, by=c("site_no", "Date"), all.x=TRUE, all.y=FALSE)
 
           # let s call the anomaly function
-          mod_soil.obj <- CalcSmAnomaly(mod_soil.obj, window_days)
+          mod_soil.obj <- CalcSmCDF(mod_soil.obj, window_days)
 
           # let s save each iteration mod_soil
           assign(paste0("mod_soil.obj.", cyclecount), mod_soil.obj)
@@ -505,31 +507,24 @@ if (cyclecount > 0) {
          }
          
          # Calc stats
-         mod_soil.obj.nona <- mod_soil.obj[!is.na(mod_anomaly) & !is.na(obs_anomaly),]
-         
          scales=c(1,24) # we are not doing daily 
          my_exprs = quote(list(
-            cor = cor(mod_anomaly, obs_anomaly),
-            rmse = Rmse(mod_anomaly, obs_anomaly, na.rm=TRUE),
-            bias = PBias(mod_anomaly, obs_anomaly, na.rm=TRUE),
-            nse = hydroGOF::NSE(mod_anomaly, obs_anomaly, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
-            nselog = hydroGOF::NSE(mod_anomaly, obs_anomaly, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
-            nsewt = NseWt(mod_anomaly, obs_anomaly) ,
-            nnse = NNse(mod_anomaly, obs_anomaly),
-            nnsesq = NNseSq(mod_anomaly, obs_anomaly),
-            kge = hydroGOF::KGE(mod_anomaly, obs_anomaly, na.rm=TRUE, method="2009", out.type="single"),
-            kge_alpha = hydroGOF::KGE(mod_anomaly, obs_anomaly, na.rm=TRUE, method="2009", out.type="full")$KGE.elements['Alpha'],
+            cor = cor(mod, obs),
+            rmse = Rmse(mod, obs, na.rm=TRUE),
+            bias = PBias(mod, obs, na.rm=TRUE),
+            nse = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
+            kge = hydroGOF::KGE(mod, obs, na.rm=TRUE, method="2009", out.type="single"),
+            kge_alpha = hydroGOF::KGE(mod, obs, na.rm=TRUE, method="2009", out.type="full")$KGE.elements['Alpha'],
          ))
          w = which(names(my_exprs) %in% metrics_soilmoisture)
          
          # let s just take care of objective function being capital
          objFn <- tolower(soilMoistureObjFunc)
          
-         stat_soilmoisture <- mod_soil.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
+         stat_soilmoisture <- mod_soil.obj[, eval(my_exprs[c(1,w)]), by = NULL]
          
          # Calc objective function
-         if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor")) F_new_soilmoisture <- 1 - stat_soilmoisture[, objFn, with = FALSE]
-         if (objFn %in% c("rmse")) F_new_soilmoisture <- stat_soilmoisture[, objFn, with = FALSE]
+         if (objFn %in% c("nse","kge","cor")) F_new_soilmoisture <- 1 - stat_soilmoisture[, objFn, with = FALSE]
 
          # Archive results
          x_archive_soilmoisture[cyclecount,] <- c(cyclecount, x_new, F_new_soilmoisture, stat_soilmoisture[, c(metrics_soilmoisture), with = FALSE])
@@ -987,9 +982,9 @@ if (cyclecount > 0) {
     bestRun [ , run := "Best Run"]
     
     obsStrDataPlot <- copy(mod_soil.obj)
-    obsStrDataPlot[, mod_anomaly := NULL]
-    setnames(obsStrDataPlot, "obs_anomaly", "mod_anomaly")
-    obsStrDataPlot <- obsStrDataPlot[, c("mod_anomaly", "Date", "site_no"), with=FALSE]
+    obsStrDataPlot[, mod := NULL]
+    setnames(obsStrDataPlot, "obs", "mod")
+    obsStrDataPlot <- obsStrDataPlot[, c("mod", "Date", "site_no"), with=FALSE]
     obsStrDataPlot <- obsStrDataPlot[as.integer(Date) >= min(as.integer(controlRun$Date)) & as.integer(Date) <= max(as.integer(controlRun$Date)),]
     obsStrDataPlot[ , run := "Observation"]
     
@@ -1000,14 +995,13 @@ if (cyclecount > 0) {
     # Cleanup
     rm(controlRun, lastRun, bestRun, obsStrDataPlot)
     
-    
-    gg <- ggplot2::ggplot(mod.obj_plot, ggplot2::aes(Date, mod_anomaly, color = run)) + facet_wrap(~site_no, , scales="free_y", ncol = 1)
+    gg <- ggplot2::ggplot(mod.obj_plot, ggplot2::aes(Date, mod, color = run)) + facet_wrap(~site_no, , scales="free_y", ncol = 1)
     gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
     gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 14) + ylab ("Soil Moisture")
     gg <- gg + scale_color_manual(name="", values=c('black', 'dodgerblue', 'orange' , "dark green"),
                                   limits=c('Observation','Control Run', "Best Run", "Last Run"),
                                   label=c('Observation','Control Run', "Best Run", "Last Run"))
-    gg <- gg + ggtitle(paste0("Soil Moisture Anomaly time series : ", siteId, "\n", siteName))
+    gg <- gg + ggtitle(paste0("Soil Moisture time series : ", siteId, "\n", siteName))
     
     ggsave(filename=paste0(writePlotDir, "/", siteId, "_soilmoisture_timeseries.png"),
            plot=gg, units="in", width=8, height=4, dpi=300)
@@ -1015,16 +1009,16 @@ if (cyclecount > 0) {
     
     # Plot the scatter plot of the best, last and control run.
     write("Scatterplot...", stdout())
-    maxval <- max(mod.obj_plot$mod_anomaly, na.rm = TRUE)
+    maxval <- max(mod.obj_plot$mod, na.rm = TRUE)
     gg <- ggplot()+ geom_point(data = merge(mod.obj_plot [run %in% c("Control Run", "Last Run", "Best Run")], 
                                       subset(mod.obj_plot, run == "Observation"), by=c("site_no", "Date"), all.x=FALSE, all.y=FALSE),
-                               aes (mod_anomaly.y, mod_anomaly.x, color = run.x), alpha = 0.5) + facet_wrap(~site_no)
+                               aes (mod.y, mod.x, color = run.x), alpha = 0.5) + facet_wrap(~site_no)
     gg <- gg + scale_color_manual(name="", values=c('dodgerblue', 'orange' , "dark green"),
                                   limits=c('Control Run', "Best Run", "Last Run"),
                                   label=c('Control Run', "Best Run", "Last Run"))
     gg <- gg + geom_abline(intercept = 0, slope = 1) + coord_equal()+ xlim(0,maxval) + ylim(0,maxval)
-    gg <- gg + xlab("Observed Soil Moisture Anomaly") + ylab ("Simulated Soil Moisture Anomaly")
-    gg <- gg + ggtitle(paste0("Simulated vs. observed Soil Moisture Anomaly : ", siteId, "\n", siteName)) + theme_bw( base_size = 15)
+    gg <- gg + xlab("CDF Matched Observed Soil Moisture") + ylab ("Simulated Soil Moisture")
+    gg <- gg + ggtitle(paste0("Simulated vs. CDF Matched Observed Soil Moisture : ", siteId, "\n", siteName)) + theme_bw( base_size = 15)
     
     ggsave(filename=paste0(writePlotDir, "/", siteId, "_scatter_soilmoisture.png"),
            plot=gg, units="in", width=8, height=8, dpi=300)
