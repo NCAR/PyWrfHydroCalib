@@ -10,6 +10,7 @@ library(ggplot2)
 library(plyr)
 library(gridExtra)
 library(zoo)
+library(qmap)
 #########################################################
 # SETUP
 #########################################################
@@ -231,6 +232,7 @@ if (calcDailyStats) {
   chrt.cont.obj <- copy(chrt.cont.d)
   chrt.valid.obj <- copy(chrt.valid.d)
   obs.obj <- Convert2Daily(obsStreamData)
+  obs.obj$threshold <- obsStreamData$threshold[1] ## this is not going to be correct if we are doing the multi gage calibration. 
 } else {
   chrt.cont.obj <- copy(chrt.cont)
   chrt.valid.obj <- copy(chrt.valid)
@@ -340,7 +342,7 @@ for (i in 1:length(runList[[1]])) {
       if (enableMultiSites == 0) {
         stat <- chrt.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
         if (length(w2) > 0) stat <- cbind(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = NULL])
-        if (length(w3) > 0 & !calcDailyStats) stat <- cbind(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = NULL]) # Xia 20210610
+        if (!calcDailyStats) {if (length(w3) >0) stat <- cbind(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = NULL])} # Xia 20210610
         if (calcDailyStats) stat <- cbind(stat, event_metrics_daily) # Xia 20210610
 
         if (any(c("POD", "FAR", "CSI") %in% metrics)) {
@@ -364,8 +366,10 @@ for (i in 1:length(runList[[1]])) {
         if (length(w2) > 0){
             stat <- merge(stat, chrt.obj.nona.nozeros[, eval(my_exprs2[c(1,w2)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
         }
-        if (length(w3) > 0 & !calcDailyStats){ # Xia 20210610
-            stat <- merge(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
+        if (!calcDailyStats){ # Xia 20210610
+            if (length(w3) > 0){
+              stat <- merge(stat, chrt.obj[, eval(my_exprs3[c(1,w3)]), by = c("site_no", "weight")],by = c("site_no", "weight"))
+            }
         }
         if (calcDailyStats) stat <- cbind(stat, event_metrics_daily) # Xia 20210610
         if (any(c("POD", "FAR", "CSI") %in% metrics)) {
@@ -712,6 +716,14 @@ ggsave(filename=paste0(writePlotDir, "/", siteId, "_valid_metrics_snow.png"),
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 if (enableSoilMoistureCalib == 1) {
+
+  minDate        <- as.Date(minDate)
+  maxDate        <- as.Date(maxDate)
+  startCalibDate <- as.Date(startCalibDate)
+  endCalibDate   <- as.Date(endCalibDate)
+  startValidDate <- as.Date(startValidDate)
+  endValidDate   <- as.Date(endValidDate)
+
   if (lsm_SPLIT_OUTPUT_COUNT == 1) {
     filesList <- list.files(path = outPathControl,
                            pattern = glob2rx("*.LDASOUT_DOMAIN*"),
@@ -734,8 +746,8 @@ if (enableSoilMoistureCalib == 1) {
     mod_soil.obj <- merge(mod.cont, obsSoilData, by=c("site_no", "Date"), all.x=TRUE, all.y=FALSE)
 
    
-    # let s call the anomaly function
-    mod.cont.obj.soil <- CalcSmAnomaly(mod_soil.obj, window_days)
+    # let s call the CDF matching function 
+    mod.cont.obj.soil <- CalcSmCDF(mod_soil.obj, window_days)
 
     write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
    filesList <- list.files(path = outPathValid,
@@ -758,8 +770,8 @@ if (enableSoilMoistureCalib == 1) {
     setkey(obsSoilData, "site_no", "Date")
     mod_soil.obj <- merge(mod.valid, obsSoilData, by=c("site_no", "Date"), all.x=TRUE, all.y=FALSE)
    
-    # let s call the anomaly function
-    mod.valid.obj.soil <- CalcSmAnomaly(mod_soil.obj, window_days)
+    # let s call the CDF matching function 
+    mod.valid.obj.soil <- CalcSmCDF(mod_soil.obj, window_days)
   }
   
   # setup for stats loop
@@ -781,31 +793,24 @@ if (enableSoilMoistureCalib == 1) {
       mod.obj <- mod.obj[Date >= dtList[["start"]][j] & Date < dtList[["end"]][j],]
 
          # Calc stats
-         mod.obj.nona <- mod.obj[!is.na(mod_anomaly) & !is.na(obs_anomaly),]
-
          scales=c(1,24) # we are not doing daily stats 
          my_exprs = quote(list(
-            cor = cor(mod_anomaly, obs_anomaly),
-            rmse = Rmse(mod_anomaly, obs_anomaly, na.rm=TRUE),
-            bias = PBias(mod_anomaly, obs_anomaly, na.rm=TRUE),
-            nse = hydroGOF::NSE(mod_anomaly, obs_anomaly, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
-            nselog = hydroGOF::NSE(mod_anomaly, obs_anomaly, na.rm=TRUE, FUN=log, epsilon="Pushpalatha2012"),
-            nsewt = NseWt(mod_anomaly, obs_anomaly) ,
-            nnse = NNse(mod_anomaly, obs_anomaly),
-            nnsesq = NNseSq(mod_anomaly, obs_anomaly),
-            kge = hydroGOF::KGE(mod_anomaly, obs_anomaly, na.rm=TRUE, method="2009", out.type="single"),
-            kge_alpha = hydroGOF::KGE(mod_anomaly, obs_anomaly, na.rm=TRUE, method="2009", out.type="full")$KGE.elements['Alpha'],
+            cor = cor(mod, obs),
+            rmse = Rmse(mod, obs, na.rm=TRUE),
+            bias = PBias(mod, obs, na.rm=TRUE),
+            nse = hydroGOF::NSE(mod, obs, na.rm=TRUE, FUN=NULL, epsilon="Pushpalatha2012"),
+            kge = hydroGOF::KGE(mod, obs, na.rm=TRUE, method="2009", out.type="single"),
+            kge_alpha = hydroGOF::KGE(mod, obs, na.rm=TRUE, method="2009", out.type="full")$KGE.elements['Alpha'],
          ))
 
       w = which(names(my_exprs) %in% metrics_soilmoisture)
 
       # let s just take care of objective function being capital
       objFn <- tolower(soilMoistureObjFunc)
-      stat <- mod.obj.nona[, eval(my_exprs[c(1,w)]), by = NULL]
+      stat <- mod.obj[, eval(my_exprs[c(1,w)]), by = NULL]
 
       # Calc objective function
-      if (objFn %in% c("nsewt","nse","nselog","kge","cor")) F_new <- 1 - stat[, objFn, with = FALSE]
-      if (objFn %in% c("rmse")) F_new <- stat[, objFn, with = FALSE]
+      if (objFn %in% c("nse","kge","cor")) F_new <- 1 - stat[, objFn, with = FALSE]
       
       # Archive results
       validStats_new <- cbind(data.table(run = runList[["run"]][i], period = dtList[["period"]][j], obj= F_new), stat[, c(metrics_soilmoisture), with = FALSE])
@@ -822,15 +827,15 @@ if (enableSoilMoistureCalib) {
   
   # Time series
   gg <- ggplot() +
-    geom_line(data=mod.cont.obj.soil, aes(x=Date, y=mod_anomaly, color='default'), lwd=0.6) +
-    geom_line(data=mod.valid.obj.soil, aes(x=Date, y=mod_anomaly, color='calibrated'), lwd=0.6) +
-    geom_line(data=mod.cont.obj.soil, aes(x=Date, y=obs_anomaly, color='observed'), lwd=0.4) +
+    geom_line(data=mod.cont.obj.soil, aes(x=Date, y=mod, color='default'), lwd=0.6) +
+    geom_line(data=mod.valid.obj.soil, aes(x=Date, y=mod, color='calibrated'), lwd=0.6) +
+    geom_line(data=mod.cont.obj.soil, aes(x=Date, y=obs, color='observed'), lwd=0.4) +
     geom_vline(xintercept=as.numeric(startValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
     geom_vline(xintercept=as.numeric(endValidDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
     geom_vline(xintercept=as.numeric(startCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
     geom_vline(xintercept=as.numeric(endCalibDate), lwd=1.8, col=alpha('grey70', 0.7), lty=2) +
 
-    ggtitle(paste0("Model Validation Soil Moisture Anomaly Timeseries: ", siteId, "\n", siteName)) +
+    ggtitle(paste0("Model Validation Soil Moisture Timeseries: ", siteId, "\n", siteName)) +
     scale_color_manual(name="", values=c('dodgerblue', 'orange', 'black'),
                        limits=c('default','calibrated','observed'),
                        label=c('default', 'calibrated', 'observed')) +
@@ -841,22 +846,22 @@ if (enableSoilMoistureCalib) {
          plot=gg, units="in", width=16, height=8, dpi=300)
   
   # Scatterplots
-  maxval <- max(max(mod.cont.obj.soil$mod_anomaly, na.rm=TRUE), max(mod.valid.obj.soil$mod_anomaly, na.rm=TRUE), max(mod.cont.obj.soil$obs_anomaly, na.rm=TRUE))
+  maxval <- max(max(mod.cont.obj.soil$mod, na.rm=TRUE), max(mod.valid.obj.soil$mod, na.rm=TRUE), max(mod.cont.obj.soil$obs, na.rm=TRUE))
   gg1 <- ggplot() +
-    geom_point(data=mod.cont.obj.soil, aes(x=obs_anomaly, y=mod_anomaly, color='default'), shape=1, size=3) +
-    geom_point(data=mod.valid.obj.soil, aes(x=obs_anomaly, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
+    geom_point(data=mod.cont.obj.soil, aes(x=obs, y=mod, color='default'), shape=1, size=3) +
+    geom_point(data=mod.valid.obj.soil, aes(x=obs, y=mod, color='calibrated'), shape=1, size=3) +
     scale_shape_discrete(solid=FALSE) +
     geom_abline(intercept=0, slope=1, col='black', lty=1) +
     ggtitle(paste0("Full Period (", minDate, " to ", maxDate, "): \n", siteId, " ", siteName)) +
     scale_color_manual(name="", values=c('dodgerblue', 'orange'),
                        limits=c('default','calibrated'),
                        label=c('default', 'calibrated')) +
-    labs(x="", y="Modeled Soil Moisture Anomaly") +
+    labs(x="", y="Modeled Soil Moisture") +
     theme_bw() + theme(legend.position="none") + theme(axis.text=element_text(size=20), axis.title=element_text(size=20)) +
     xlim(0,maxval) + ylim(0,maxval) + facet_wrap(~site_no, ncol = 1)
   gg2 <- ggplot() +
-    geom_point(data=mod.cont.obj.soil[Date>= startCalibDate & Date < endCalibDate,], aes(x=obs_anomaly, y=mod_anomaly, color='default'), shape=1, size=3) +
-    geom_point(data=mod.valid.obj.soil[Date >= startCalibDate & Date < endCalibDate,], aes(x=obs_anomaly, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
+    geom_point(data=mod.cont.obj.soil[Date>= startCalibDate & Date < endCalibDate,], aes(x=obs, y=mod, color='default'), shape=1, size=3) +
+    geom_point(data=mod.valid.obj.soil[Date >= startCalibDate & Date < endCalibDate,], aes(x=obs, y=mod, color='calibrated'), shape=1, size=3) +
     scale_shape_discrete(solid=FALSE) +
     geom_abline(intercept=0, slope=1, col='black', lty=1) +
     ggtitle(paste0("Calibration Period (", startCalibDate, " to ", endCalibDate, "): \n", siteId, " ", siteName)) +
@@ -868,8 +873,8 @@ if (enableSoilMoistureCalib) {
     xlim(0,maxval) + ylim(0,maxval)  + facet_wrap(~site_no, ncol = 1)
   
   gg3 <- ggplot() +
-    geom_point(data=mod.cont.obj.soil[Date>= startValidDate & Date < endValidDate,], aes(x=obs_anomaly,y= mod_anomaly,color='default'), shape=1, size=3) +
-    geom_point(data=mod.valid.obj.soil[Date >= startValidDate & Date < endValidDate,], aes(x=obs_anomaly, y=mod_anomaly, color='calibrated'), shape=1, size=3) +
+    geom_point(data=mod.cont.obj.soil[Date>= startValidDate & Date < endValidDate,], aes(x=obs,y= mod,color='default'), shape=1, size=3) +
+    geom_point(data=mod.valid.obj.soil[Date >= startValidDate & Date < endValidDate,], aes(x=obs, y=mod, color='calibrated'), shape=1, size=3) +
     scale_shape_discrete(solid=FALSE) +
     geom_abline(intercept=0, slope=1, col='black', lty=1) +
     ggtitle(paste0("Validation Period (", startValidDate, " to ", endValidDate, "): \n", siteId, " ", siteName)) +
