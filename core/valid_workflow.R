@@ -725,9 +725,12 @@ if (enableSoilMoistureCalib == 1) {
   endValidDate   <- as.Date(endValidDate)
 
   if (lsm_SPLIT_OUTPUT_COUNT == 1) {
-    filesList <- list.files(path = outPathControl,
-                           pattern = glob2rx("*.LDASOUT_DOMAIN*"),
-                            full.names = TRUE)
+    filesList <- c(list.files(path = outPathControl,
+                           pattern = glob2rx("*0000.LDASOUT_DOMAIN*"),
+                            full.names = TRUE),
+                   list.files(path = outPathControl,
+                           pattern = glob2rx("*1200.LDASOUT_DOMAIN*"),
+                            full.names = TRUE))
     filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
     whFiles <- which(filesListDate >= minDate)
     filesList <- filesList[whFiles]
@@ -750,9 +753,12 @@ if (enableSoilMoistureCalib == 1) {
     mod.cont.obj.soil <- CalcSmCDF(mod_soil.obj, window_days)
 
     write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
-   filesList <- list.files(path = outPathValid,
-                           pattern = glob2rx("*.LDASOUT_DOMAIN*"),
-                           full.names = TRUE)
+   filesList <- c(list.files(path = outPathValid,
+                           pattern = glob2rx("*0000.LDASOUT_DOMAIN*"),
+                           full.names = TRUE),
+                  list.files(path = outPathValid,
+                           pattern = glob2rx("*1200.LDASOUT_DOMAIN*"),
+                           full.names = TRUE))
     filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
     whFiles <- which(filesListDate >= minDate)
     filesList <- filesList[whFiles]
@@ -933,7 +939,12 @@ if (enableStreamflowCalib == 1) { # Xia 20210610
   if (enableSnowCalib == 0) validMetrics_snow <- data.frame(matrix(-9999, nrow = nrow(validStats), ncol = length(metrics_snow)+1))
   if (enableSnowCalib == 1) validMetrics_snow <- validStats_snow[,c("obj", metrics_snow)] 
     colnames(validMetrics_snow) <- paste0(c("obj", metrics_snow), "_snow")
-    validMetrics <- cbind(validStats, validMetrics_snow)
+
+  if (enableSoilMoistureCalib == 0) validMetrics_soil <- data.frame(matrix(-9999, nrow = nrow(validStats), ncol = length(metrics_soilmoisture)+1))
+  if (enableSoilMoistureCalib == 1) validMetrics_soil <- validStats_soilmoisture[,c("obj", metrics_soilmoisture)]
+  colnames(validMetrics_soil) <- paste0(c("obj", metrics_soilmoisture), "_soil")
+  
+  validMetrics <- cbind(validStats, validMetrics_snow, validMetrics_soil)
 }
 if (enableStreamflowCalib == 0 & enableSnowCalib == 1) {
   validMetrics_streamflow <- data.frame(matrix(-9999, nrow = nrow(validStats_snow), ncol = length(metrics_streamflow)+1))

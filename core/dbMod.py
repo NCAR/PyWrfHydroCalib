@@ -1041,10 +1041,14 @@ class Database(object):
                          "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
                          "nnse, peak_bias, peak_tm_err_hr, event_volume_bias," + \
                          "cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow," + \
+                         "cor_soil, rmse_soil, bias_soil, nse_soil, kge_soil, kge_alpha_soil,"+\
                          "best, complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
 
                 attempts = 0
                 success = False
@@ -1412,6 +1416,13 @@ class Database(object):
         bias_snow = str(tblData.bias_snow[0])
         nse_snow = str(tblData.nse_snow[0])
         kge_snow = str(tblData.kge_snow[0])
+        cor_soil = str(tblData.cor_soil[0])
+        rmse_soil = str(tblData.rmse_soil[0])
+        bias_soil = str(tblData.bias_soil[0])
+        nse_soil = str(tblData.nse_soil[0])
+        kge_soil = str(tblData.kge_soil[0])
+        kge_alpha_soil = str(tblData.kge_alpha_soil[0])
+
         
         if int(tblData.best[0]) == 1:
             # This means we need to copy the parameter files that were created over
@@ -1590,6 +1601,12 @@ class Database(object):
                  "', bias_snow='" + bias_snow + \
                  "', nse_snow='" + nse_snow + \
                  "', kge_snow='" + kge_snow + \
+                 "', cor_soil='" + cor_soil + \
+                 "', rmse_soil='" + rmse_soil + \
+                 "', bias_soil='" + bias_soil + \
+                 "', nse_soil='" + nse_soil + \
+                 "', kge_soil='" + kge_soil + \
+                 "', kge_alpha_soil='" + kge_alpha_soil + \
                  "', complete='1' where \"jobID\"='" + str(jobID) + "' and " + \
                  "\"domainID\"='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
@@ -1778,7 +1795,8 @@ class Database(object):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
                      "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\"," + \
                      "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi, nnse, peak_bias, peak_tm_err_hr," + \
-                     "event_volume_bias, obj_snow, cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow) values (" + str(jobID) + \
+                     "event_volume_bias, obj_snow, cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow," + \
+                     "obj_soil, cor_soil, rmse_soil, bias_soil, nse_soil, kge_soil, kge_alpha_soil) values (" + str(jobID) + \
                      "," + str(gageID) + ",'" + tblData.run[stat] + "','" + \
                      tblData.period[stat] + "'," + str(tblData.obj[stat]) + "," + \
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
@@ -1793,7 +1811,10 @@ class Database(object):
                      str(tblData.nnse[stat]) + "," + str(tblData.peak_bias[stat]) + "," + \
                      str(tblData.peak_tm_err_hr[stat]) + "," + str(tblData.event_volume_bias[stat]) + "," + \
                      str(tblData.obj_snow[stat]) + "," + str(tblData.cor_snow[stat]) + "," + str(tblData.rmse_snow[stat]) + "," + \
-                     str(tblData.bias_snow[stat]) + "," + str(tblData.nse_snow[stat]) + "," + str(tblData.kge_snow[stat]) + ")"
+                     str(tblData.bias_snow[stat]) + "," + str(tblData.nse_snow[stat]) + "," + str(tblData.kge_snow[stat]) + "," + \
+                     str(tblData.obj_soil[stat]) + "," + str(tblData.cor_soil[stat]) + "," + str(tblData.rmse_soil[stat]) + "," + \
+                     str(tblData.bias_soil[stat]) + "," + str(tblData.nse_soil[stat]) + "," + str(tblData.kge_soil[stat]) + "," + \
+                     str(tblData.kge_alpha_soil[stat]) + ")"
 
             attempts = 0
             success = False

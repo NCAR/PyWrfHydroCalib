@@ -466,9 +466,12 @@ if (cyclecount > 0) {
             
             # list the LDASOUT files, read SNEQ variables and find the Mean Areal SWE
             write(paste0("Reading model out files. Parallel ", parallelFlag, " ncores=", ncores), stdout())
-            filesList <- list.files(path = outPath,
-                                    pattern = glob2rx("*.LDASOUT_DOMAIN*"),
-                                    full.names = TRUE)
+            filesList <- c(list.files(path = outPath,
+                                    pattern = glob2rx("*0000.LDASOUT_DOMAIN*"),
+                                    full.names = TRUE),
+                           list.files(path = outPath,
+                                    pattern = glob2rx("*1200.LDASOUT_DOMAIN*"),
+                                    full.names = TRUE))
             filesListDate <- as.POSIXct(unlist(plyr::llply(strsplit(basename(filesList),"[.]"), '[',1)), format = "%Y%m%d%H%M", tz = "UTC")
             whFiles <- which(filesListDate >= startDate)
             filesList <- filesList[whFiles]
@@ -568,7 +571,12 @@ if (cyclecount > 0) {
          if (enableSnowCalib == 1) paramStats_snow <- x_archive_snow[cyclecount, metrics_snow]
          if (enableSnowCalib == 0) paramStats_snow <- data.frame(matrix(-9999, ncol = length(metrics_snow)))
          colnames(paramStats_snow) <- paste0(metrics_snow, "_snow")
-         paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_streamflow)], paramStats_snow, data.frame(best=bestFlag))
+ 
+         if (enableSoilMoistureCalib == 1) paramStats_soil <- x_archive_soilmoisture[cyclecount, metrics_soilmoisture]
+         if (enableSoilMoistureCalib == 0) paramStats_soil <- data.frame(matrix(-9999, ncol = length(metrics_soilmoisture)))
+         colnames(paramStats_soil) <- paste0(metrics_soilmoisture, "_soil")
+  
+         paramStats <- cbind(x_archive[cyclecount,c("iter", "obj", metrics_streamflow)], paramStats_snow, paramStats_soil, data.frame(best=bestFlag))
       }
       if (enableStreamflowCalib == 0 & enableSnowCalib == 1) { 
          paramStats_streamflow <- data.frame(matrix(-9999, ncol = length(metrics_streamflow)))

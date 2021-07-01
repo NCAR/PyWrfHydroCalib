@@ -72,6 +72,7 @@ def main(argv):
                        corr1 real, pod real, far real, csi real,
                        nnse real, peak_bias real, peak_tm_err_hr real, event_volume_bias real,
                        cor_snow real, rmse_snow real, bias_snow real, nse_snow real, kge_snow real,
+                       cor_soil real, rmse_soil real, bias_soil real, nse_soil real, kge_soil real, kge_alpha_soil real,
                        best integer, complete real)''')
     # Xia added new metrics for Calib_Stats and Valid_Stats 20210610
     except:
@@ -143,7 +144,8 @@ def main(argv):
                         nnsesq real, eventmultiobj real, lbem real, lbemprime real, 
                         corr1 real, pod real, far real, csi real,
                         nnse real, peak_bias real, peak_tm_err_hr real, event_volume_bias real,
-                        obj_snow real, cor_snow real, rmse_snow real, bias_snow real, nse_snow real, kge_snow real)''')
+                        obj_snow real, cor_snow real, rmse_snow real, bias_snow real, nse_snow real, kge_snow real,
+                        obj_soil real, cor_soil real, rmse_soil real, bias_soil real, nse_soil real, kge_soil real, kge_alpha_soil real)''')
     except:
         errOut(dbConn,"Unable to create table: Valid_Stats.",dbPath)
     
