@@ -679,21 +679,21 @@ def checkConfig(parser):
         print("ERROR: File: " + check + " not found.")
         raise Exception()
         
-    check = str(parser.get('logistics','urbParmTbl'))
-    if len(check) == 0:
-        print("ERROR: Zero length urban parameter table provided.")
-        raise Exception()
-    if not os.path.isfile(check):
-        print("ERROR: File: " + check + " not found.")
-        raise Exception()
+#    check = str(parser.get('logistics','urbParmTbl'))
+#    if len(check) == 0:
+#        print("ERROR: Zero length urban parameter table provided.")
+#        raise Exception()
+#    if not os.path.isfile(check):
+#        print("ERROR: File: " + check + " not found.")
+#        raise Exception()
         
-    check = str(parser.get('logistics','vegParmTbl'))
-    if len(check) == 0:
-        print("ERROR: Zero length vegetation parameter table provided.")
-        raise Exception()
-    if not os.path.isfile(check):
-        print("ERROR: File: " + check + " not found.")
-        raise Exception()
+#    check = str(parser.get('logistics','vegParmTbl'))
+#    if len(check) == 0:
+#        print("ERROR: Zero length vegetation parameter table provided.")
+#        raise Exception()
+#    if not os.path.isfile(check):
+#        print("ERROR: File: " + check + " not found.")
+#        raise Exception()
         
     check = str(parser.get('logistics','soilParmTbl'))
     if len(check) == 0:

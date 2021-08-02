@@ -495,49 +495,51 @@ def setupModels(jobData,db,args,libPathTop):
         link2 = gageDir + "/RUN.CALIB/OUTPUT/URBPARM.TBL"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/URBPARM.TBL"
         link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/URBPARM.TBL"
-        try:
-            os.symlink(str(jobData.urbParmTbl),link1)
-            if jobData.calibFlag == 1:
-                os.symlink(str(jobData.urbParmTbl),link2)
-                os.symlink(str(jobData.urbParmTbl),link3)
-                os.symlink(str(jobData.urbParmTbl),link4)
-        except:
-            errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Unable to create symbolic link to urban parameter table."
-            raise
+        if (len(str(jobData.urbParmTbl)) > 0):
+           try:
+              os.symlink(str(jobData.urbParmTbl),link1)
+              if jobData.calibFlag == 1:
+                  os.symlink(str(jobData.urbParmTbl),link2)
+                  os.symlink(str(jobData.urbParmTbl),link3)
+                  os.symlink(str(jobData.urbParmTbl),link4)
+           except:
+              errMod.wipeJobDir(jobData,db)
+              jobData.errMsg = "ERROR: Unable to create symbolic link to urban parameter table."
+              raise
             
-        if jobData.sensFlag == 1:
-            for i in range(0,jobData.nSensIter):
-                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/URBPARM.TBL"
-                try:
-                    os.symlink(str(jobData.urbParmTbl),link1)
-                except:
-                    jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
-                    raise
+           if jobData.sensFlag == 1:
+              for i in range(0,jobData.nSensIter):
+                  link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/URBPARM.TBL"
+                  try:
+                      os.symlink(str(jobData.urbParmTbl),link1)
+                  except:
+                      jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
+                      raise
                     
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/VEGPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/VEGPARM.TBL"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/VEGPARM.TBL"
         link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/VEGPARM.TBL"
-        try:
-            os.symlink(str(jobData.vegParmTbl),link1)
-            if jobData.calibFlag == 1:
-                os.symlink(str(jobData.vegParmTbl),link2)
-                os.symlink(str(jobData.vegParmTbl),link3)
-                os.symlink(str(jobData.vegParmTbl),link4)
-        except:
-            errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Unable to create symbolic link to vegetation parameter table."
-            raise
+        if (len(str(jobData.vegParmTbl)) > 0):
+          try:
+              os.symlink(str(jobData.vegParmTbl),link1)
+              if jobData.calibFlag == 1:
+                  os.symlink(str(jobData.vegParmTbl),link2)
+                  os.symlink(str(jobData.vegParmTbl),link3)
+                  os.symlink(str(jobData.vegParmTbl),link4)
+          except:
+              errMod.wipeJobDir(jobData,db)
+              jobData.errMsg = "ERROR: Unable to create symbolic link to vegetation parameter table."
+              raise
             
-        if jobData.sensFlag == 1:
-            for i in range(0,jobData.nSensIter):
-                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/VEGPARM.TBL"
-                try:
-                    os.symlink(str(jobData.vegParmTbl),link1)
-                except:
-                    jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
-                    raise
+          if jobData.sensFlag == 1:
+              for i in range(0,jobData.nSensIter):
+                  link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/VEGPARM.TBL"
+                  try:
+                      os.symlink(str(jobData.vegParmTbl),link1)
+                  except:
+                      jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
+                      raise
         
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
