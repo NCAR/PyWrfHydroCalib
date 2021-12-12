@@ -103,6 +103,7 @@ class jobMeta:
         self.timeSchmOpt = []
         self.sfcResOpt = []
         self.glacier = []
+        self.IMPERV_OPTION = []
         self.soilThick = []
         self.zLvl = []
         self.fType = []
@@ -132,6 +133,7 @@ class jobMeta:
         self.chnRtFlag = []
         self.chnRtOpt = []
         self.rtOpt = []
+        self.imperv_adj = []
         self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
@@ -342,6 +344,7 @@ class jobMeta:
         self.timeSchmOpt = int(parser.get('lsmPhysics','tempTimeSchOption'))
         self.sfcResOpt = int(parser.get('lsmPhysics','sfcResOption'))
         self.glacier = int(parser.get('lsmPhysics','glacierOption'))
+        self.IMPERV_OPTION = int(parser.get('lsmPhysics','IMPERV_OPTION'))
         self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
         self.zLvl = float(parser.get('lsmPhysics','zLvl'))
         self.fType = int(parser.get('forcing','forceType'))
@@ -370,6 +373,7 @@ class jobMeta:
         self.subRtFlag = int(parser.get('hydroPhysics','subRouting'))
         self.ovrRtFlag = int(parser.get('hydroPhysics','ovrRouting'))
         self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
+        self.imperv_adj=int(parser.get('hydroPhysics','imperv_adj'))
         self.chnRtFlag = int(parser.get('hydroPhysics','channelRouting'))
         self.chnRtOpt = int(parser.get('hydroPhysics','chanRtOpt'))
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
