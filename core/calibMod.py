@@ -4,17 +4,144 @@
 # National Center for Atmospheric Research
 # Research Applications Laboratory
 
-import os
+import os,sys
 from core import calibIoMod
 from core import namelistMod
 from core import statusMod
 from core import errMod
 import subprocess
 import time
-
+import pandas as pd
+import pickle5 as pickle
+from yaml import SafeDumper
+import yaml
 import warnings
 warnings.filterwarnings("ignore")
 
+def runTroute(statusData,staticData,db,gageID,gage,gageMeta):
+
+    if statusData.trouteFlag == 0:
+        return
+
+    runDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/OUTPUT/"
+    workDir = statusData.jobDir + "/" + gage + "/RUN.CALIB/"
+    if not os.path.isdir(workDir):
+        statusData.errMsg = "ERROR: " + workDir + " not found."
+        raise Exception()
+    if not os.path.isdir(runDir):
+        statusData.errMsg = "ERROR: " + runDir + " not found."
+        raise Exception()
+
+    lockPath = workDir + "/TROUTE.LOCK"
+
+    trouteCompleteFlag = runDir + '/trouteFlag.COMPLETE'
+    if os.path.exists(trouteCompleteFlag):
+        print('Troute processing already complete.\n')
+        return
+    
+    yamlPath = runDir + '/troute_config.yaml'
+    try:
+        generateTrouteScript(statusData,runDir,yamlPath)
+    except:
+        raise
+    
+    yamlFile = open(statusData.trouteConfig)
+    yamlDict = yaml.load(yamlFile, Loader=yaml.FullLoader)
+
+    begDate = staticData.bCalibDate
+    endDate = staticData.eCalibDate
+
+    runStatus = statusMod.walkModTroute(begDate,endDate,runDir,yamlDict)
+    begDate = runStatus[0]
+    endDate = runStatus[1]
+    runFlag = runStatus[2]
+    
+    if runFlag == False:
+        
+        if not os.path.exists(trouteCompleteFlag):
+            try:
+                open(trouteCompleteFlag, 'a').close()
+            except:
+                statusData.errMsg = "Unable to create complete flag: " + trouteCompleteFlag
+                errMod.errOut(statusData)
+        
+    else:
+        if os.path.isfile(lockPath):
+            sys.exit()
+        #Ready to run TROUTE. Getting ready to do a warm start with the last spinup restart file.
+        warm_restart_file = '%s/channel_restart_%s' %(runDir,staticData.bCalibDate.strftime('%Y%m%d%H%M'))
+        if not os.path.exists(warm_restart_file):
+            cp_cmd = 'cp %s/channel_restart_%s %s/channel_restart_%s' %(runDir.replace('CALIB','SPINUP'),staticData.eSpinDate.strftime('%Y%m%d%H%M'),runDir,staticData.bCalibDate.strftime('%Y%m%d%H%M'))
+            try:
+                ret = os.system(cp_cmd)
+            except Exception as e:
+                statusData.errMsg = "ERROR: Unable to copy SPINUP lite restart file for gage: " + str(gage) + str(e)
+                raise
+        if str(gageMeta.lkFile) != '-9999':
+            warm_waterbody_restart_file = '%s/waterbody_restart_%s' %(runDir,staticData.bCalibDate.strftime('%Y%m%d%H%M'))
+            if not os.path.exists(warm_waterbody_restart_file):
+                cp_cmd = 'cp %s/waterbody_restart_%s %s/waterbody_restart_%s' %(runDir.replace('CALIB','SPINUP'),staticData.eSpinDate.strftime('%Y%m%d%H%M'),runDir,staticData.bCalibDate.strftime('%Y%m%d%H%M'))
+                try:
+                    ret = os.system(cp_cmd)
+                except Exception as e:
+                    statusData.errMsg = "ERROR: Unable to copy SPINUP lite waterbody restart file for gage: " + str(gage) + str(e)
+                    raise
+            yamlDict['compute_parameters']['restart_parameters']['lite_waterbody_restart_file'] = runDir + '/waterbody_restart_' + begDate.strftime('%Y%m%d%H%M')
+
+        yamlDict['compute_parameters']['restart_parameters']['start_datetime'] = begDate.strftime('%Y-%m-%d_%H:%M')
+        yamlDict['compute_parameters']['restart_parameters']['lite_channel_restart_file'] = runDir + '/channel_restart_' + begDate.strftime('%Y%m%d%H%M')
+        yamlDict['compute_parameters']['forcing_parameters']['qlat_input_folder'] = runDir
+        yamlDict['compute_parameters']['forcing_parameters']['nts'] = (endDate - begDate).days * 24 * 12
+        yamlDict['output_parameters']['lite_restart']['lite_restart_output_directory'] = runDir
+        yamlDict['output_parameters']['chanobs_output']['chanobs_output_directory'] = runDir
+        yamlDict['network_topology_parameters']['supernetwork_parameters']['geo_file_path'] = str(gageMeta.rtLnk)
+        if str(gageMeta.lkFile) != '-9999':
+            yamlDict['network_topology_parameters']['waterbody_parameters']['level_pool']['level_pool_waterbody_parameter_file_path'] = str(gageMeta.lkFile)
+            yamlDict['compute_parameters']['restart_parameters']['wrf_hydro_waterbody_ID_crosswalk_file'] = str(gageMeta.lkFile)
+        yamlDict['compute_parameters']['restart_parameters']['wrf_hydro_channel_ID_crosswalk_file'] = str(gageMeta.rtLnk)
+        yamlDict['compute_parameters']['restart_parameters']['wrf_hydro_waterbody_crosswalk_filter_file'] = str(gageMeta.rtLnk)
+        SafeDumper.add_representer(type(None), lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
+
+        with open(yamlPath, 'w') as output:
+            yaml.safe_dump(yamlDict, output, default_flow_style=False)
+
+        cmd = runDir + "/run_troute.sh 1>" + runDir + "/troute_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/troute_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p = os.system(cmd)
+            #p = subprocess.Popen([cmd], shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gage)
+            raise
+    
+    begDate = staticData.bCalibDate
+    endDate = staticData.eCalibDate
+
+    runStatus = statusMod.walkModTroute(begDate,endDate,runDir,yamlDict)
+    begDate = runStatus[0]
+    endDate = runStatus[1]
+    runFlag = runStatus[2]
+
+    if runFlag == False:
+        if not os.path.exists(trouteCompleteFlag):
+            try:
+                open(trouteCompleteFlag, 'a').close()
+            except:
+                statusData.errMsg = "Unable to create complete flag: " + trouteCompleteFlag
+                errMod.errOut(statusData)
+    else:
+        #LOCK FILE HERE
+        if os.path.isfile(lockPath):
+            sys.exit()
+        else:
+            open(lockPath,'a').close()
+            statusData.errMsg = "Unable to create complete flag because Troute didn't run successfully: Remove TROUTE.LOCK file: " + lockPath + begDate.strftime('%Y%m%d%H%M') + endDate.strftime('%Y%m%d%H%M')
+            errMod.errOut(statusData)
+            sys.exit()
+    
+    return
+    
 def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbsJobId):
     """
     Generic function for running the model. Some basic information about
@@ -145,6 +272,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 except:
                     raise
                 print("MODEL HAS COMPLETED AND IS READY FOR PARAMETER GENERATION")
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -371,6 +499,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 #errMod.sendMsg(statusData)
                 #statusData.genMsg = "Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
                 #errMod.sendMsg(statusData)
+                #runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                 print("CALIB CODE HAS CRASHED ONCE.")
                 keySlot[basinNum, iteration] = -0.705
                 keyStatus = -0.705
@@ -448,7 +577,9 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 #    raise
                 #statusData.genMsg = "1st Calibration Scripts failed ONCE for gage: " + statusData.gages[basinNum]
                 #errMod.sendMsg(statusData)
+                
                 print("CALIB CODE HAS CRASHED ONCE.")
+                #runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                 keySlot[basinNum, iteration] = -0.0505
                 keyStatus = -0.0505
                 runFlag = False
@@ -617,6 +748,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                     except:
                                         raise
                                     print("READY TO RUN FIRST CALIB CODE")
+                                    #runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                                     keySlot[basinNum,iteration] = 0.0
                                     keyStatus = 0.0
                                     runFlag = False
@@ -650,6 +782,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                                 except:
                                     raise
                                 print("MODEL COMPLETE, READY TO RUN CALIB CODE")
+                                runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                                 keySlot[basinNum,iteration] = 0.75
                                 keyStatus = 0.75
                                 runFlag = False
@@ -663,6 +796,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                         except:
                             raise
                         print("MODEL COMPLETE, READY TO RUN CALIB CODE")
+                        runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                         keySlot[basinNum,iteration] = 0.75
                         keyStatus = 0.75
                         runFlag = False
@@ -699,6 +833,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 except:
                     raise
                 print("MODEL COMPLETE, READY TO RUN CALIB CODE")
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -729,6 +864,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 raise
             print("READY TO RUN CALIB CODE")
             # LOCK file was removed, upgrade status.
+            runTroute(statusData,staticData,db,gageID,gage,gageMeta)
             keySlot[basinNum,iteration] = 0.75
             keyStatus = 0.75
             runFlag = False
@@ -755,6 +891,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                 raise
             print("READY TO RUN FIRST CALIB CODE")
             # LOCK file was removed, upgrade status.
+            #runTroute(statusData,staticData,db,gageID,gage,gageMeta)
             keySlot[basinNum,iteration] = 0.0
             runFlag = False
             runCalib = True
@@ -793,6 +930,7 @@ def runModel(statusData,staticData,db,gageID,gage,keySlot,basinNum,iteration,pbs
                     errMod.scrubParams(statusMod,runDir,staticData)
                 except:
                     raise
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta)
                 print("MODEL COMPLETE, READY TO RUN CALIB CODE")
                 keySlot[basinNum,iteration] = 0.75
                 keyStatus = 0.75
@@ -1858,16 +1996,19 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     """
     link1 = runDir + "/RESTART." + statusData.bCalibDate.strftime('%Y%m%d') + "00_DOMAIN1"
     link2 = runDir + "/HYDRO_RST." + statusData.bCalibDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+
     if staticData.optSpinFlag == 0: 
         # Check to make sure symbolic link to spinup state exists.
         check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
         check2 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/HYDRO_RST." + statusData.eSpinDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+        
         if not os.path.isfile(check1):
             statusData.errMsg = "ERROR: Spinup state: " + check1 + " not found."
             raise Exception()
         if not os.path.isfile(check2):
             statusData.errMsg = "ERROR: Spinup state: " + check2 + " not found."
             raise Exception()
+        
         # Create links if they don't exist
         if not os.path.islink(link1):
             os.symlink(check1,link1)
@@ -1894,3 +2035,37 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
             os.symlink(gageMeta.optLandRstFile,link1)
         if not os.path.islink(link2):
             os.symlink(gageMeta.optHydroRstFile,link2)
+
+def generateTrouteScript(statusData,runDir,yamlPath):
+    """
+    Generic function to create a run script that will be used to execute the troute model.
+    """
+    outFile = runDir + "/run_troute.sh"
+    """
+    if os.path.isfile(outFile):
+        statusData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+    """
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        for m in statusData.moduleLoadTrouteStr:
+            fileObj.write(m)
+            fileObj.write("\n")
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        #inStr = 'for FILE in channel_restart*; do if [ ! -L $FILE ] ; then rm -rf $FILE; fi; done\n'
+        #fileObj.write(inStr)
+        inStr = "python3 -u -m nwm_routing -V3 -f %s" %yamlPath
+        fileObj.write(inStr)
+    except:
+        statusData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+
+    # Make the file an executable.
+    cmd = "chmod +x " + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        statusData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
+        raise

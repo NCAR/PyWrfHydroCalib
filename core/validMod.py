@@ -11,9 +11,137 @@ from core import statusMod
 from core import errMod
 import subprocess
 import time
-
+import pandas as pd
+import pickle5 as pickle
+from yaml import SafeDumper
+import yaml
 import warnings
 warnings.filterwarnings("ignore")
+
+def runTroute(statusData,staticData,db,gageID,gage,gageMeta,modType):
+
+    if statusData.trouteFlag == 0:
+        return
+
+    runDir = statusData.jobDir + "/" + gage + "/RUN.VALID/OUTPUT/" + modType + '/'
+    workDir = statusData.jobDir + "/" + gage + "/RUN.VALID/"
+    spinRunDir = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/"
+    if not os.path.isdir(workDir):
+        statusData.errMsg = "ERROR: " + workDir + " not found."
+        raise Exception()
+    if not os.path.isdir(runDir):
+        statusData.errMsg = "ERROR: " + runDir + " not found."
+        raise Exception()
+
+    lockPath = workDir + "/TROUTE.LOCK"
+
+    trouteCompleteFlag = runDir + '/trouteFlag.COMPLETE'
+    if os.path.exists(trouteCompleteFlag):
+        print('Troute processing already complete.\n')
+        return
+
+    yamlPath = runDir + '/troute_config.yaml'
+    try:
+        generateTrouteScript(statusData,runDir,yamlPath)
+    except:
+        raise
+
+    yamlFile = open(statusData.trouteConfig)
+    yamlDict = yaml.load(yamlFile, Loader=yaml.FullLoader)
+
+    begDate = min(staticData.bValidDate, staticData.bCalibDate)
+    endDate = max(staticData.eValidDate, staticData.eCalibDate)
+
+    runStatus = statusMod.walkModTroute(begDate,endDate,runDir,yamlDict)
+    begDate = runStatus[0]
+    endDate = runStatus[1]
+    runFlag = runStatus[2]
+    
+    if runFlag == False:
+
+        if not os.path.exists(trouteCompleteFlag):
+            try:
+                open(trouteCompleteFlag, 'a').close()
+            except:
+                statusData.errMsg = "Unable to create complete flag: " + trouteCompleteFlag
+                errMod.errOut(statusData)
+
+    else:
+        if os.path.isfile(lockPath):
+            sys.exit()
+        #Ready to run TROUTE. Getting ready to do a warm start with the last spinup restart file.
+        warm_restart_file = '%s/channel_restart_%s' %(runDir,min(staticData.bValidDate, staticData.bCalibDate).strftime('%Y%m%d%H%M'))
+        if not os.path.exists(warm_restart_file):
+            cp_cmd = 'cp %s/channel_restart_%s %s' %(spinRunDir,staticData.eSpinDate.strftime('%Y%m%d%H%M'),warm_restart_file)
+            try:
+                ret = os.system(cp_cmd)
+            except Exception as e:
+                statusData.errMsg = "ERROR: Unable to copy SPINUP lite restart file for gage: " + str(gage) + str(e)
+                raise
+        if str(gageMeta.lkFile) != '-9999':
+            warm_waterbody_restart_file = '%s/waterbody_restart_%s' %(runDir,min(staticData.bValidDate, staticData.bCalibDate).strftime('%Y%m%d%H%M'))
+            if not os.path.exists(warm_waterbody_restart_file):
+                cp_cmd = 'cp %s/waterbody_restart_%s %s' %(spinRunDir,staticData.eSpinDate.strftime('%Y%m%d%H%M'),warm_waterbody_restart_file)
+                try:
+                    ret = os.system(cp_cmd)
+                except Exception as e:
+                    statusData.errMsg = "ERROR: Unable to copy SPINUP lite restart file for gage: " + str(gage) + str(e)
+                    raise
+            yamlDict['compute_parameters']['restart_parameters']['lite_waterbody_restart_file'] = runDir + '/waterbody_restart_' + begDate.strftime('%Y%m%d%H%M')
+        #Ready to run TROUTE. Getting ready to do a warm start with the last spinup restart file.
+        yamlDict['compute_parameters']['restart_parameters']['start_datetime'] = begDate.strftime('%Y-%m-%d_%H:%M')
+        yamlDict['compute_parameters']['restart_parameters']['lite_channel_restart_file'] = runDir + '/channel_restart_' + begDate.strftime('%Y%m%d%H%M')
+        yamlDict['compute_parameters']['forcing_parameters']['qlat_input_folder'] = runDir
+        yamlDict['compute_parameters']['forcing_parameters']['nts'] = (endDate - begDate).days * 24 * 12
+        yamlDict['output_parameters']['lite_restart']['lite_restart_output_directory'] = runDir
+        yamlDict['output_parameters']['chanobs_output']['chanobs_output_directory'] = runDir
+        yamlDict['network_topology_parameters']['supernetwork_parameters']['geo_file_path'] = str(gageMeta.rtLnk)
+        if str(gageMeta.lkFile) != '-9999':
+            yamlDict['network_topology_parameters']['waterbody_parameters']['level_pool']['level_pool_waterbody_parameter_file_path'] = str(gageMeta.lkFile)
+            yamlDict['compute_parameters']['restart_parameters']['wrf_hydro_waterbody_ID_crosswalk_file'] = str(gageMeta.lkFile)
+        yamlDict['compute_parameters']['restart_parameters']['wrf_hydro_channel_ID_crosswalk_file'] = str(gageMeta.rtLnk)
+        yamlDict['compute_parameters']['restart_parameters']['wrf_hydro_waterbody_crosswalk_filter_file'] = str(gageMeta.rtLnk)
+        SafeDumper.add_representer(type(None), lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
+
+        with open(yamlPath, 'w') as output:
+            yaml.safe_dump(yamlDict, output, default_flow_style=False)
+
+        cmd = runDir + "/run_troute.sh 1>" + runDir + "/troute_" + \
+              str(statusData.jobID) + "_" + str(gageID) + ".out" + \
+              ' 2>' + runDir + "/troute_" + str(statusData.jobID) + "_" + str(gageID) + ".err"
+        try:
+            p = os.system(cmd)
+            #p = subprocess.Popen([cmd], shell=True)
+        except:
+            statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gage)
+            raise
+
+    begDate = min(staticData.bValidDate, staticData.bCalibDate)
+    endDate = max(staticData.eValidDate, staticData.eCalibDate)
+
+    runStatus = statusMod.walkModTroute(begDate,endDate,runDir,yamlDict)
+    begDate = runStatus[0]
+    endDate = runStatus[1]
+    runFlag = runStatus[2]
+
+    if runFlag == False:
+        if not os.path.exists(trouteCompleteFlag):
+            try:
+                open(trouteCompleteFlag, 'a').close()
+            except:
+                statusData.errMsg = "Unable to create complete flag: " + trouteCompleteFlag
+                errMod.errOut(statusData)
+    else:
+        #LOCK FILE HERE
+        if os.path.isfile(lockPath):
+            sys.exit()
+        else:
+            open(lockPath,'a').close()
+            statusData.errMsg = "Unable to create complete flag because Troute didn't run successfully: Remove TROUTE.LOCK file: " + lockPath 
+            errMod.errOut(statusData)
+            sys.exit()
+
+    return
 
 def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTop,pbsJobId):
     """
@@ -226,6 +354,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     
     if keyStatus == 1.0:
         # Model has already completed
+        runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
         runFlag = False
         return
         
@@ -274,6 +403,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 runFlag = True
             else:
                 # Model has completed!
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -304,7 +434,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if not runFlag and os.path.isfile(genParmComplete):
-                # Model simulation completed before workflow was restarted.
+                # Model simulation completed before workflow was restarted.           
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -350,6 +481,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 keyStatus = 0.25
             else:
                 # Model sucessfully completed.
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
                 runFlag = False
@@ -380,6 +512,7 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt.
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
                 keySlot[basinNum,0] = 1.0
                 keyStatus = 1.0
                 
@@ -869,6 +1002,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 runFlag = True
             else:
                 # Model has completed. Ready to run R evaluation code (pending control complete)
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -909,6 +1043,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 runFlag = False
             if not runFlag and not os.path.isfile(evalComplete):
                 # Model has completed, but the eval code hasn't ben ran yet.
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -928,6 +1063,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
             runFlag = False
         else:
             # LOCK file was removed, upgrade status.
+            runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
             keySlot[basinNum,1] = 0.75
             runFlag = False
                 
@@ -948,6 +1084,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 keyStatus = 0.0
             else:
                 # Model sucessfully completed. Ready to run evaluation code.
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
                 runFlag = False
@@ -976,7 +1113,8 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 keyStatus = -1.0
                 runFlag = False
             else:
-                # Model sucessfully completed from first failed attempt. Ready to run evaluation code. 
+                # Model sucessfully completed from first failed attempt. Ready to run evaluation code.
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST') 
                 keySlot[basinNum,1] = 0.75
                 keyStatus = 0.75
                 
@@ -2038,8 +2176,9 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
     """
     Generic function to link to necessary restart files from the spinup.
     """
-    link1 = runDir + "/RESTART." + statusData.bValidDate.strftime('%Y%m%d') + "00_DOMAIN1"
-    link2 = runDir + "/HYDRO_RST." + statusData.bValidDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
+    begDate = min(statusData.bValidDate, statusData.bCalibDate)
+    link1 = runDir + "/RESTART." + begDate.strftime('%Y%m%d') + "00_DOMAIN1"
+    link2 = runDir + "/HYDRO_RST." + begDate.strftime('%Y-%m-%d') + "_00:00_DOMAIN1"
     if staticData.optSpinFlag == 0: 
         # Check to make sure symbolic link to spinup state exists.
         check1 = statusData.jobDir + "/" + gage + "/RUN.SPINUP/OUTPUT/RESTART." + statusData.eSpinDate.strftime('%Y%m%d') + "00_DOMAIN1"
@@ -2076,3 +2215,35 @@ def linkToRst(statusData,gage,runDir,gageMeta,staticData):
             os.symlink(gageMeta.optLandRstFile,link1)
         if not os.path.islink(link2):
             os.symlink(gageMeta.optHydroRstFile,link2)
+
+def generateTrouteScript(statusData,runDir,yamlPath):
+    """
+    Generic function to create a run script that will be used to execute the troute model.
+    """
+    outFile = runDir + "/run_troute.sh"
+    """
+    if os.path.isfile(outFile):
+        statusData.errMsg = "ERROR: Run script: " + outFile + " already exists."
+        raise Exception()
+    """
+    try:
+        fileObj = open(outFile,'w')
+        fileObj.write('#!/bin/bash\n')
+        for m in statusData.moduleLoadTrouteStr:
+            fileObj.write(m)
+            fileObj.write("\n")
+        inStr = 'cd ' + runDir + '\n'
+        fileObj.write(inStr)
+        inStr = "python3 -u -m nwm_routing -V3 -f %s" %yamlPath
+        fileObj.write(inStr)
+    except:
+        statusData.errMsg = "ERROR: Failure to create: " + outFile
+        raise
+
+    # Make the file an executable.
+    cmd = "chmod +x " + outFile
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        statusData.errMsg = "ERROR: Failure to convert: " + outFile + " to an executable."
+        raise

@@ -55,6 +55,10 @@ class statusMeta:
         self.sensFlag = []
         self.sensTbl = []
         self.calibFlag = []
+        self.trouteFlag = []
+        self.trouteConfig = []
+        self.moduleLoadStr = []
+        self.moduleLoadTrouteStr = []
         self.calibTbl = []
         self.dailyAnalysis = []
         self.coldStart = []
@@ -466,6 +470,48 @@ def checkBasJob(jobData,gageNum,pbsJobId):
             status = True
             
     return status
+   
+
+def walkModTroute(bDate,eDate,runDir,yamlDict): 
+    """
+    Generic function to walk a simulation directory, and determine where the model
+    last left off. This is for when the TROUTE model needs to be restarted, or if it crashed
+    and the parent program needs to determine where it can try to restart.
+    """
+    dt = eDate - bDate
+    nLoops = int((dt.days*24)/yamlDict['compute_parameters']['forcing_parameters']['max_loop_size'])
+    rem = (dt.days*24)%yamlDict['compute_parameters']['forcing_parameters']['max_loop_size']
+    if(nLoops < 0):
+        nLoops = 0
+    
+    bDateOrig = bDate
+
+    # Initialize flag returned to user as True. Assume model needs to ran.
+    runFlag = True
+
+    output = []
+    for loopModel in range(0,nLoops+1):
+        dCurrent = bDateOrig + datetime.timedelta(hours=loopModel*yamlDict['compute_parameters']['forcing_parameters']['max_loop_size'])
+        trouteRestartPath = runDir + "/channel_restart_" + dCurrent.strftime('%Y%m%d%H%M')
+
+        if os.path.isfile(trouteRestartPath):
+            bDate = dCurrent
+
+    # If the bDate has reached the eDate, this means the model completed as expected.
+    if rem > 0:
+        if(bDate + datetime.timedelta(hours=rem) == eDate):
+            dCurrent = bDate + datetime.timedelta(hours=rem)
+            trouteRestartPath = runDir + "/channel_restart_" + dCurrent.strftime('%Y%m%d%H%M')
+            if os.path.isfile(trouteRestartPath):
+                bDate = dCurrent
+
+    if bDate == eDate:
+        runFlag = False
+
+    output.append(bDate)
+    output.append(eDate)
+    output.append(runFlag)
+    return output
     
 def walkMod(bDate,eDate,runDir):
     """

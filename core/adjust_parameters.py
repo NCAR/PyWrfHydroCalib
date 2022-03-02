@@ -474,6 +474,11 @@ def main(argv):
         subprocess.call(cmd,shell=True)
     except:
         sys.exit(5)
+    cmd = 'rm -rf ' + runDir + '/channel_restart*'
+    try:
+        subprocess.call(cmd,shell=True)
+    except:
+        sys.exit(5)
 
     # Touch empty COMPLETE flag file. This will be seen by workflow, demonstrating
     # calibration iteration is complete.

@@ -156,7 +156,11 @@ def main(argv):
         
     # Assign the SQL command from the config file into the jobData structure
     jobData.gSQL = staticData.gSQL
-        
+    jobData.trouteFlag = staticData.trouteFlag
+    jobData.trouteConfig = staticData.trouteConfig
+    jobData.moduleLoadStr = staticData.moduleLoadStr
+    jobData.moduleLoadTrouteStr = staticData.moduleLoadTrouteStr
+ 
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages2(db)

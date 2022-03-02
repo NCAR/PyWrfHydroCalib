@@ -33,6 +33,10 @@ class jobMeta:
         self.sensFlag = []
         self.sensTbl = []
         self.calibFlag = []
+        self.trouteFlag = []
+        self.trouteConfig = []
+        self.moduleLoadStr = []
+        self.moduleLoadTrouteStr = []
         self.calibTbl = []
         self.dailyAnalysis = []
         self.coldStart = []
@@ -245,6 +249,10 @@ class jobMeta:
         self.sensFlag = int(parser.get('logistics','runSens'))
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
         self.calibFlag = int(parser.get('logistics','runCalib'))
+        self.trouteFlag = int(parser.get('logistics','runTroute'))
+        self.trouteConfig = str(parser.get('logistics','trouteConfig'))
+        self.moduleLoadStr = ast.literal_eval(parser.get('logistics','moduleLoadStr'))
+        self.moduleLoadTrouteStr = ast.literal_eval(parser.get('logistics','moduleLoadTrouteStr'))
         self.calibTbl = str(parser.get('logistics','calibParmTbl'))
         self.dailyAnalysis = int(parser.get('logistics','dailyStats'))
         self.dbBackup = int(parser.get('logistics','dbBackup'))

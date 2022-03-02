@@ -11,7 +11,7 @@ library(ncdf4)
 library(plyr)
 library(hydroGOF)
 library(zoo)
-library(qmap)
+#library(qmap)
 
 #########################################################
 # SETUP

@@ -103,7 +103,7 @@ if (hydro_SPLIT_OUTPUT_COUNT == 1) {
       # submit removing the RESTART files
       system(paste0("rm -rf ",outPath,"/RESTART*"))
       system(paste0("rm -rf ",outPath,"/HYDRO_RST*"))
-
+      system(paste0("rm -rf ",outPath,"/channel_restart*"))
       })
 }
 
