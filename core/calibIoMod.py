@@ -31,7 +31,7 @@ class gageMeta:
         self.soilFile = []
         self.hydroSpatial = []
         self.forceDir = []
-        self.obsFile = []
+        self.obsDir = []
         self.siteName = []
         self.dxHydro = []
         self.aggFact = []
@@ -44,7 +44,7 @@ class gageMeta:
         tmpMeta = {'gageName':gageName,'geoFile':'','landSpatialMeta':'','fullDomFile':'',\
                    'rtLnk':'','lkFile':'','gwFile':'','udMap':'',\
                    'wrfInput':'','soilFile':'','hydroSpatial':'','forceDir':'',\
-                   'obsFile':'','siteName':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
+                   'obsDir':'','siteName':'','gageID':'','comID':'','nCoresMod':'','dxHydro':'',\
                    'aggFactor':'','domainID':domainID,'optLandRstFile':'',\
                    'optHydroRstFile':'','chanParmFile':''}
         try:
@@ -66,7 +66,7 @@ class gageMeta:
         self.soilFile = tmpMeta['soilFile']
         self.hydroSpatial = tmpMeta['hydroSpatial']
         self.forceDir = tmpMeta['forceDir']
-        self.obsFile = tmpMeta['obsFile']
+        self.obsDir = tmpMeta['obsDir']
         self.siteName = tmpMeta['siteName']
         self.comID = tmpMeta['comID']
         self.dxHydro = tmpMeta['dxHydro']
@@ -221,12 +221,12 @@ def setupModels(jobData,db,args,libPathTop):
             
         # Create observations directory to hold obs for calibration/eval, etc
         obsDir = gageDir + "/OBS"
-        try:
-            os.mkdir(obsDir)
-        except:
-            errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
-            raise
+#        try:
+#            os.mkdir(obsDir)
+#        except:
+#            errMod.wipeJobDir(jobData,db)
+#            jobData.errMsg = "ERROR: Failure to create directory: " + obsDir
+#            raise
         
         # Create sub-directories for spinup/calibration runs.
         spinupDir = gageDir + "/RUN.SPINUP"
@@ -495,49 +495,51 @@ def setupModels(jobData,db,args,libPathTop):
         link2 = gageDir + "/RUN.CALIB/OUTPUT/URBPARM.TBL"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/URBPARM.TBL"
         link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/URBPARM.TBL"
-        try:
-            os.symlink(str(jobData.urbParmTbl),link1)
-            if jobData.calibFlag == 1:
-                os.symlink(str(jobData.urbParmTbl),link2)
-                os.symlink(str(jobData.urbParmTbl),link3)
-                os.symlink(str(jobData.urbParmTbl),link4)
-        except:
-            errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Unable to create symbolic link to urban parameter table."
-            raise
+        if (len(str(jobData.urbParmTbl)) > 0):
+           try:
+              os.symlink(str(jobData.urbParmTbl),link1)
+              if jobData.calibFlag == 1:
+                  os.symlink(str(jobData.urbParmTbl),link2)
+                  os.symlink(str(jobData.urbParmTbl),link3)
+                  os.symlink(str(jobData.urbParmTbl),link4)
+           except:
+              errMod.wipeJobDir(jobData,db)
+              jobData.errMsg = "ERROR: Unable to create symbolic link to urban parameter table."
+              raise
             
-        if jobData.sensFlag == 1:
-            for i in range(0,jobData.nSensIter):
-                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/URBPARM.TBL"
-                try:
-                    os.symlink(str(jobData.urbParmTbl),link1)
-                except:
-                    jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
-                    raise
+           if jobData.sensFlag == 1:
+              for i in range(0,jobData.nSensIter):
+                  link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/URBPARM.TBL"
+                  try:
+                      os.symlink(str(jobData.urbParmTbl),link1)
+                  except:
+                      jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
+                      raise
                     
         link1 = gageDir + "/RUN.SPINUP/OUTPUT/VEGPARM.TBL"
         link2 = gageDir + "/RUN.CALIB/OUTPUT/VEGPARM.TBL"
         link3 = gageDir + "/RUN.VALID/OUTPUT/CTRL/VEGPARM.TBL"
         link4 = gageDir + "/RUN.VALID/OUTPUT/BEST/VEGPARM.TBL"
-        try:
-            os.symlink(str(jobData.vegParmTbl),link1)
-            if jobData.calibFlag == 1:
-                os.symlink(str(jobData.vegParmTbl),link2)
-                os.symlink(str(jobData.vegParmTbl),link3)
-                os.symlink(str(jobData.vegParmTbl),link4)
-        except:
-            errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Unable to create symbolic link to vegetation parameter table."
-            raise
+        if (len(str(jobData.vegParmTbl)) > 0):
+          try:
+              os.symlink(str(jobData.vegParmTbl),link1)
+              if jobData.calibFlag == 1:
+                  os.symlink(str(jobData.vegParmTbl),link2)
+                  os.symlink(str(jobData.vegParmTbl),link3)
+                  os.symlink(str(jobData.vegParmTbl),link4)
+          except:
+              errMod.wipeJobDir(jobData,db)
+              jobData.errMsg = "ERROR: Unable to create symbolic link to vegetation parameter table."
+              raise
             
-        if jobData.sensFlag == 1:
-            for i in range(0,jobData.nSensIter):
-                link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/VEGPARM.TBL"
-                try:
-                    os.symlink(str(jobData.vegParmTbl),link1)
-                except:
-                    jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
-                    raise
+          if jobData.sensFlag == 1:
+              for i in range(0,jobData.nSensIter):
+                  link1 = gageDir + "/RUN.SENSITIVITY/OUTPUT_" + str(i) + "/VEGPARM.TBL"
+                  try:
+                      os.symlink(str(jobData.vegParmTbl),link1)
+                  except:
+                      jobData.errMsg = "ERROR: Unable to create symbolic link to: " + link1
+                      raise
         
         # Extract gage-specific information (geogrid file, fulldom file, etc)
         # from metadata DB.
@@ -618,12 +620,12 @@ def setupModels(jobData,db,args,libPathTop):
             raise
             
         # Create symbolic link to the observations file.
-        obsLink = gageDir + "/OBS/obsStrData.Rdata"
+        obsLink = gageDir + "/OBS"
         try:
-            os.symlink(str(gageData.obsFile),obsLink)
+            os.symlink(str(gageData.obsDir),obsLink)
         except:
             errMod.wipeJobDir(jobData,db)
-            jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.obsFile)
+            jobData.errMsg = "ERROR: Failure to create Observations link to: " + str(gageData.Dir)
             raise
             
         if jobData.calibFlag == 1:
@@ -977,7 +979,7 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             jobData.errMsg = "ERROR: Failure to convert: " + scriptPath + " to an executable."
             raise
 
-def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
+def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
     """
     Function to generate the run script for a particular group of basins.
     :param jobData:
@@ -1012,7 +1014,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
-            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
         except:
@@ -1048,7 +1050,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
-            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+            inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
         except:
@@ -1064,7 +1066,7 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('#\n')
             fileObj.write('cd ' + topDir + '\n')
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(
-                groupNum) + " --optDbPath " + jobData.dbPath + "\n"
+                groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
         except:

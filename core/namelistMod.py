@@ -160,6 +160,8 @@ def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFl
         fileObj.write(inStr)
         inStr = ' SURFACE_RESISTANCE_OPTION = ' + str(jobData.sfcResOpt) + '\n'
         fileObj.write(inStr)
+        inStr = ' IMPERV_OPTION = ' + str(jobData.IMPERV_OPTION) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Timestep in units of seconds\n')
         inStr = ' FORCING_TIMESTEP = ' + str(jobData.fDT) + '\n'
@@ -549,6 +551,10 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write('!Specify overland flow routing option: 1=Steepest Descent(D8) 2=CASC2D\n')
         fileObj.write(' ! NOTE: Currently subsurface flow is only steepest descent\n')
         inStr = ' rt_option = ' + str(jobData.rtOpt) + '\n'
+        fileObj.write(inStr)
+        fileObj.write('\n')
+        fileObj.write(' ! Specify whether to adjust overland flow parameters based on imperviousness\n')
+        inStr = ' imperv_adj = ' + str(jobData.imperv_adj) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Switch to activate channel routing:\n')

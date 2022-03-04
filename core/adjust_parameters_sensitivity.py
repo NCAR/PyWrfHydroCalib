@@ -234,9 +234,20 @@ def main(argv):
             
             if param == "smcmax":
                 idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[i])      
-                
+            if param == "nexp":
+                idHydroTbl.variables['NEXP'][:,:] = float(newParams.nexp[i])
+
             if param == "rsurfexp":
                 idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[i])
+
+            if param == "AXAJ":
+                idSoil2D.variables['AXAJ'][:,:,:] = idSoil2D.variables['AXAJ'][:,:,:]*float(newParams.AXAJ[i])
+
+            if param == "BXAJ":
+                idSoil2D.variables['BXAJ'][:,:,:] = idSoil2D.variables['BXAJ'][:,:,:]*float(newParams.BXAJ[i])
+
+            if param == "XXAJ":
+                idSoil2D.variables['XXAJ'][:,:,:] = idSoil2D.variables['XXAJ'][:,:,:]*float(newParams.XXAJ[i])
 
             if param == "z0sno":
                 idSoil2D.variables['z0sno'][:,:,:] = float(newParams.z0sno[i])

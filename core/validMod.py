@@ -201,8 +201,8 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     #        raise
 
     # Calculate datetime objects
-    begDate = statusData.bValidDate
-    endDate = statusData.eValidDate
+    begDate = min(statusData.bValidDate, statusData.bCalibDate)
+    endDate = max(statusData.eValidDate, statusData.eCalibDate)
         
     ## Initialize status
     keyStatus = keySlot[basinNum,0]
@@ -605,14 +605,14 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     """
     # Establish the "control" and "best" status values. These are important for 
     # the workflow.
-    ctrlStatus = keySlot[basinNum,0]
+    ctrlStatus = 1.0
     bestStatus = keySlot[basinNum,1]
     
     # If the control status is not at least 0.25, this means the code to generate
     # parameters is still running, hasn't begun yet, or there's an issue with
     # the model. Simply return to the main workflow calling program.
-    if ctrlStatus < 0.25:
-        return
+    #if ctrlStatus < 0.25:
+    #    return
         
     # If the best status is 1.0, this means the model is complete and we can 
     # return to the main workflow calling program.
@@ -788,8 +788,8 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     #        raise
         
     # Calculate datetime objects
-    begDate = statusData.bValidDate
-    endDate = statusData.eValidDate
+    begDate = min(statusData.bValidDate, statusData.bCalibDate)
+    endDate = max(statusData.eValidDate, statusData.eCalibDate)
         
     ## Initialize status
     keyStatus = keySlot[basinNum,1]
@@ -1454,7 +1454,30 @@ def generateMpiEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
@@ -1563,7 +1586,30 @@ def generateBsubEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
@@ -1655,7 +1701,30 @@ def generatePbsEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir,v
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"
@@ -1747,7 +1816,30 @@ def generateSlurmEvalRunScript(jobData,jobID,gageID,runDir,gageMeta,calibWorkDir
         inStr = "validDir <- '" + validWorkDir + "'\n"
         fileObj.write(inStr)
         fileObj.write("# Objective function#\n")
-        inStr = "objFn <- '" + str(jobData.objFunc) + "'\n"
+        inStr = "enableStreamflowCalib <- " + str(jobData.enableStreamflowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSnowCalib <- " + str(jobData.enableSnowCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "enableSoilMoistureCalib <- " + str(jobData.enableSoilMoistureCalib) + "\n"
+        fileObj.write(inStr)
+        inStr = "streamflowObjFunc <- \"" + str(jobData.streamflowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "snowObjFunc <- \"" + str(jobData.snowObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureObjFunc <- \"" + str(jobData.soilMoistureObjFunc) + "\"\n"
+        fileObj.write(inStr)
+        inStr = "streamflowWeight <- " + str(jobData.streamflowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "snowWeight <- " + str(jobData.snowWeight) + "\n"
+        fileObj.write(inStr)
+        inStr = "soilMoistureWeight <- " + str(jobData.soilMoistureWeight) + "\n"
+        fileObj.write(inStr)
+        fileObj.write('# Specify parameter for event metrics.\n') # Xia 20210610
+        inStr = "basinType <- " + str(jobData.basinType) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight1 <- " + str(jobData.weight1Event) + "\n"
+        fileObj.write(inStr)
+        inStr = "weight2 <- " + str(jobData.weight2Event) + "\n"
         fileObj.write(inStr)
         fileObj.write("# Basin-specific metadata\n")
         inStr = "siteId <- '" + str(gageMeta.gage) + "'\n"

@@ -44,7 +44,18 @@ class jobMeta:
         self.cpuPinCmd = []
         self.nIter = []
         self.calibMethod = []
-        self.objFunc = []
+        self.enableStreamflowCalib = []
+        self.enableSnowCalib = []
+        self.enableSoilMoistureCalib = []
+        self.streamflowObjFunc = []
+        self.snowObjFunc = []
+        self.soilMoistureObjFunc = []
+        self.streamflowWeight=[]
+        self.snowWeight = []
+        self.soilMoistureWeight = []
+        self.basinType = []  # Xia 20210610
+        self.weight1event = []
+        self.weight2event = []
         self.ddsR = []
         self.outDir = []
         self.email = None
@@ -92,6 +103,7 @@ class jobMeta:
         self.timeSchmOpt = []
         self.sfcResOpt = []
         self.glacier = []
+        self.IMPERV_OPTION = []
         self.soilThick = []
         self.zLvl = []
         self.fType = []
@@ -121,6 +133,7 @@ class jobMeta:
         self.chnRtFlag = []
         self.chnRtOpt = []
         self.rtOpt = []
+        self.imperv_adj = []
         self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
@@ -238,7 +251,18 @@ class jobMeta:
         self.coldStart = int(parser.get('logistics','coldStart'))
         self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
-        self.objFunc = str(parser.get('logistics','objectiveFunction'))
+        self.enableStreamflowCalib = int(parser.get('logistics','enableStreamflowCalib'))
+        self.enableSnowCalib = int(parser.get('logistics','enableSnowCalib'))
+        self.enableSoilMoistureCalib = int(parser.get('logistics','enableSoilMoistureCalib'))
+        self.streamflowObjFunc = str(parser.get('logistics','streamflowObjectiveFunction'))
+        self.snowObjFunc = str(parser.get('logistics','snowObjectiveFunction'))
+        self.soilMoistureObjFunc = str(parser.get('logistics','soilMoistureObjectiveFunction'))
+        self.streamflowWeight = float(parser.get('logistics','streamflowWeight'))
+        self.snowWeight = float(parser.get('logistics','snowWeight'))
+        self.soilMoistureWeight = float(parser.get('logistics','soilMoistureWeight'))
+        self.basinType = str(parser.get('logistics','basinType')) #Xia 20210610
+        self.weight1Event = str(parser.get('logistics','weight1Event'))
+        self.weight2Event = str(parser.get('logistics','weight2Event'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
@@ -320,6 +344,7 @@ class jobMeta:
         self.timeSchmOpt = int(parser.get('lsmPhysics','tempTimeSchOption'))
         self.sfcResOpt = int(parser.get('lsmPhysics','sfcResOption'))
         self.glacier = int(parser.get('lsmPhysics','glacierOption'))
+        self.IMPERV_OPTION = int(parser.get('lsmPhysics','IMPERV_OPTION'))
         self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
         self.zLvl = float(parser.get('lsmPhysics','zLvl'))
         self.fType = int(parser.get('forcing','forceType'))
@@ -348,6 +373,7 @@ class jobMeta:
         self.subRtFlag = int(parser.get('hydroPhysics','subRouting'))
         self.ovrRtFlag = int(parser.get('hydroPhysics','ovrRouting'))
         self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
+        self.imperv_adj=int(parser.get('hydroPhysics','imperv_adj'))
         self.chnRtFlag = int(parser.get('hydroPhysics','channelRouting'))
         self.chnRtOpt = int(parser.get('hydroPhysics','chanRtOpt'))
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
@@ -403,7 +429,7 @@ def createJob(argsUser):
     # Initialize job object
     jobObj = jobMeta()
     
-    # Read in values
+    # Read in value
     try:
         jobMeta.readConfig(jobObj,parser)
     except:
@@ -612,7 +638,7 @@ def checkConfig(parser):
             print("ERROR: Invalid stripCalibHours passed to program.")
             raise Exception()
         
-    check = str(parser.get('logistics','objectiveFunction'))
+    check = str(parser.get('logistics','streamflowObjectiveFunction'))
     if len(check) == 0:
         print("ERROR: Zero length calibration objective function provided.")
         raise Exception()
@@ -657,21 +683,21 @@ def checkConfig(parser):
         print("ERROR: File: " + check + " not found.")
         raise Exception()
         
-    check = str(parser.get('logistics','urbParmTbl'))
-    if len(check) == 0:
-        print("ERROR: Zero length urban parameter table provided.")
-        raise Exception()
-    if not os.path.isfile(check):
-        print("ERROR: File: " + check + " not found.")
-        raise Exception()
+#    check = str(parser.get('logistics','urbParmTbl'))
+#    if len(check) == 0:
+#        print("ERROR: Zero length urban parameter table provided.")
+#        raise Exception()
+#    if not os.path.isfile(check):
+#        print("ERROR: File: " + check + " not found.")
+#        raise Exception()
         
-    check = str(parser.get('logistics','vegParmTbl'))
-    if len(check) == 0:
-        print("ERROR: Zero length vegetation parameter table provided.")
-        raise Exception()
-    if not os.path.isfile(check):
-        print("ERROR: File: " + check + " not found.")
-        raise Exception()
+#    check = str(parser.get('logistics','vegParmTbl'))
+#    if len(check) == 0:
+#        print("ERROR: Zero length vegetation parameter table provided.")
+#        raise Exception()
+#    if not os.path.isfile(check):
+#        print("ERROR: File: " + check + " not found.")
+#        raise Exception()
         
     check = str(parser.get('logistics','soilParmTbl'))
     if len(check) == 0:
@@ -774,7 +800,7 @@ def checkConfig(parser):
         raise Exception()
         
     check = int(parser.get('lsmPhysics','runoffOption'))
-    if check < 0 or check > 4:
+    if check < 0 or check > 7:
         print("ERROR: Invalid LSM runoff option chosen.")
         raise Exception()
         
@@ -1059,4 +1085,8 @@ def checkConfig(parser):
         print(check1)
         print('ERROR: Invalid enableMultiSites specified in the configuration file.')
         raise Exception()
+
+
+
+
 

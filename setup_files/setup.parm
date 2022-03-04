@@ -214,6 +214,8 @@ tempTimeSchOption = 3
 sfcResOption = 4
 # Specify the GLACIER_OPTION
 glacierOption = 2
+# Specify the IMPERV_OPTION
+IMPERV_OPTION = 2
 
 # Specify thickness of NoahMP soil layers. MUST be four layers.
 soilThick = [0.10,0.30,0.60,1.00]
@@ -342,6 +344,9 @@ channelRouting = 1
 # 1: Steepest Descent (D8)
 # 2: CASC2D
 rtOpt = 1
+
+# Specify whether to adjust overland flow parameters based on imperviousness
+imperv_adj = 1
 
 # Channel Routing    
 # 1: Muskingam-reach
