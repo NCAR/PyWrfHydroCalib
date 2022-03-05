@@ -1,0 +1,17 @@
+Step 1: Create database 
+python /glade/work/ishitas/troute_calib/PyWrfHydroCalib/initDB.py --optDbPath /glade/work/ishitas/troute_calib/database.db
+
+Step 2: Input domain meta 
+python /glade/work/ishitas/troute_calib/PyWrfHydroCalib/inputDomainMeta.py /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/domainMeta.csv --optDbPath /glade/work/ishitas/troute_calib/database.db
+
+Step 3: Initialize batch job 
+nohup python /glade/work/ishitas/troute_calib/PyWrfHydroCalib/jobInit.py /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/setup.parm --optExpID 1 --optDbPath /glade/work/ishitas/troute_calib/database.db > nohup_jobInit.out 2>&1&
+
+Step 4: Run spinup 
+nohup python /glade/work/ishitas/troute_calib/PyWrfHydroCalib/spinOrchestrator.py 1 --optDbPath /glade/work/ishitas/troute_calib/database.db  > nohup_spin.out 2>&1&
+
+Step 5: Run calibration 
+nohup python /glade/work/ishitas/troute_calib/PyWrfHydroCalib/calibOrchestrator.py 1 --optDbPath /glade/work/ishitas/troute_calib/database.db > nohup_calib.out 2>&1&
+
+Step 6: Run validation 
+nohup python /glade/work/ishitas/troute_calib/PyWrfHydroCalib/runValidOrchestrator.py /glade/work/ishitas/troute_calib/PyWrfHydroCalib 1 --optDbPath /glade/work/ishitas/troute_calib/database.db > nohup_valid.out 2>&1&

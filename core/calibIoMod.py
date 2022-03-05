@@ -810,6 +810,9 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
@@ -846,6 +849,9 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python calib.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
@@ -861,6 +867,9 @@ def generateCalibGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('#Script to Run WRF-Hydro Group Calibrations\n')
             fileObj.write('#\n')
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python calib.py " + str(jobData.jobID) + " " + str(
                 groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
@@ -912,6 +921,9 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
@@ -948,6 +960,9 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python spinup.py " + str(jobData.jobID) + " " + str(groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
@@ -963,6 +978,9 @@ def generateSpinupGroupScript(jobData,groupNum,scriptPath,topDir):
             fileObj.write('#Script to Run WRF-Hydro Group Spinups\n')
             fileObj.write('#\n')
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python spinup.py " + str(jobData.jobID) + " " + str(
                 groupNum) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
@@ -1014,6 +1032,9 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
@@ -1050,6 +1071,9 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
             fileObj.write(inStr)
             fileObj.write("\n")
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)
             fileObj.close()
@@ -1065,6 +1089,9 @@ def generateValidGroupScript(jobData,groupNum,scriptPath,valid_type,topDir):
             fileObj.write('#Script to Run WRF-Hydro Group Validations\n')
             fileObj.write('#\n')
             fileObj.write('cd ' + topDir + '\n')
+            for m in jobData.moduleLoadStr:
+                fileObj.write(m)
+                fileObj.write("\n")
             inStr = "python validation.py " + str(jobData.jobID) + " " + str(
                 groupNum) + " " + str(valid_type) + " --optDbPath " + jobData.dbPath + "\n"
             fileObj.write(inStr)

@@ -454,7 +454,10 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write('! 0=None (default), 1=channel influxes (qSfcLatRunoff,qBucket)\n')
         fileObj.write('! 2=channel+bucket fluxes (qSfcLatRunoff,qBucket,qBtmVertRunoff_toBucket)\n')
         fileObj.write('! 3=channel accumulations (accSfcLatRunoff, accBucket) *** NOT TESTED ***\n')
-        fileObj.write(' output_channelBucket_influx = 0\n')
+        if statusData.trouteFlag == 1:
+            fileObj.write(' output_channelBucket_influx = 2\n')
+        else:
+            fileObj.write(' output_channelBucket_influx = 0\n')
         fileObj.write('\n')
         fileObj.write('!Output netcdf file control\n')
         if minOutFlag == 1:
