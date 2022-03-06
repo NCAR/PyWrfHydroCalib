@@ -1590,7 +1590,7 @@ CalcSmCDF <- function(obs.obj.soil, window_days) {
   mod_soil.obj.nona <- mod_soil.obj[!is.na(mod_window_averaged) & !is.na(obs_window_averaged),]
   mod_soil.obj.nona <- mod_soil.obj[!is.nan(mod_window_averaged) & !is.nan(obs_window_averaged),]
   
-  #library(qmap)
+  library(qmap)
   #model_fitobj <- fitQmapQUANT(obs = mod_soil.obj.nona$mod_window_averaged, mod = mod_soil.obj.nona$obs_window_averaged, wet.day = FALSE)
   #mod_soil.obj.nona$obs_cdf_matched <- doQmapQUANT(x = mod_soil.obj.nona$obs_window_averaged , fobj = model_fitobj)
   
