@@ -79,11 +79,13 @@ if (file.exists(paste0(runDir, "/proj_data.Rdata"))) {
       obsSoilData <- as.data.table(get(load(paste0(runDir, "/OBS/obsSoilData.Rdata"))))
    }
 
+   if (enableSnowCalib == 1 | enableSoilMoistureCalib == 1) {
    # create a mask to be used for the MAP calculation
    spatialWeightFile <- paste0(dirname(rtlinkFile), "/spatialweights.nc")
    geoFile <- paste0(dirname(rtlinkFile), "/GEOGRID_LDASOUT_Spatial_Metadata.nc")
    fulldomFile <- paste0(dirname(rtlinkFile), "/Fulldom.nc")
    mskvar.lsm <- create_lsm_mask(rtlinkFile, linkId, spatialWeightFile, geoFile, fulldomFile)
+   }
 
    # Setup value lists from paramBnds
    xnames <- paramBnds$parameter
