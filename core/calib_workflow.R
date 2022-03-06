@@ -11,7 +11,7 @@ library(ncdf4)
 library(plyr)
 library(hydroGOF)
 library(zoo)
-library(qmap)
+#library(qmap)
 
 #########################################################
 # SETUP
@@ -263,7 +263,7 @@ if (cyclecount > 0) {
          } else {
             assign(paste0("chrt.obj.", cyclecount), chrt)
             chrt.obj <- copy(chrt)
-            obs.obj <- copy(obsStreamData)
+            obs.obj <- copy(obsStreamData[, c("site_no", "POSIXct", "obs", "threshold")])  # this extra step is to remove the basinType from the osbervation file if specified. Otherwise it will be used instead of variable BasinType when calling MultiEvent function
          }
          
          # Merge
@@ -318,6 +318,10 @@ if (cyclecount > 0) {
             lbem = LBEms_function(q_cms, obs, period, calcDailyStats)[1],
             lbemprime =  LBEms_function(q_cms, obs, period, calcDailyStats)[2]
          ))
+          
+         if (is.na(basinType)) basinType = unique(obsStreamData$basinType)
+         if (length(basinType) > 1) print("Basin Type should be unique for a given basin")
+
          if (!calcDailyStats) my_exprs3 = quote(list( # Xia 20210610 to use all data with NA included
             eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
             peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
@@ -1061,3 +1065,5 @@ if (cyclecount > 0) {
    }
  
 }
+
+
