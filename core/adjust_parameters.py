@@ -106,7 +106,7 @@ def main(argv):
     
     if args.chRtFlag[0] == 3:
         # Open the original CHANPARM.TBL
-        chanParmTblDataOrig = open(chanParmOrig,'w')
+        chanParmTblDataOrig = open(chanParmOrig,'r')
         
         # Open the new CHANPARM.TBL for writing
         chanParmOutObj = open(chanParmOut,'w')
