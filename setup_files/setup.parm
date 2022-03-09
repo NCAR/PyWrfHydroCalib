@@ -243,13 +243,17 @@ glacierOption = 2
 # Specify the IMPERV_OPTION
 IMPERV_OPTION = 2
 # Switch for Crocus (0:Off,1:On)
-crocusOpt = 1
 
 # Specify thickness of NoahMP soil layers. MUST be four layers.
 soilThick = [0.10,0.30,0.60,1.00]
 
 # Specify level (meters) representative of U/V wind.
 zLvl = 10.0
+
+[crocus]
+enableCrocusNamelist = 1
+crocusOpt = 1
+actLev = 40
 
 [forcing]
 # These options will dictate which forcings to use for the workflow.

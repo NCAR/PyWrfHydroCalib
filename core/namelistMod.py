@@ -217,14 +217,14 @@ def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFl
         inStr = ' FORC_TYP = ' + str(jobData.fType) + '\n'
         fileObj.write(inStr)
         fileObj.write('/\n')
-        if(jobData.crocusOpt == 1):
+        if(jobData.crocusFlag == 1):
             inStr = '&CROCUS_nlist'
             fileObj.write(inStr)
             fileObj.write('\n')
-            inStr = ' crocus_opt = 1   ! 0 model is off, 1 model is on'
+            inStr = ' crocus_opt = %s  ! 0 model is off, 1 model is on' %(str(jobData.crocusOpt))
             fileObj.write(inStr)
             fileObj.write('\n')
-            inStr = ' act_lev = 40     ! 1-50, 20-40 normal options'
+            inStr = ' act_lev = %s     ! 1-50, 20-40 normal options' %(str(jobData.actLev))
             fileObj.write(inStr)
             fileObj.write('\n')
         fileObj.close

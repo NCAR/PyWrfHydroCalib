@@ -135,7 +135,9 @@ class jobMeta:
         self.subRtFlag = []
         self.ovrRtFlag = []
         self.chnRtFlag = []
+        self.crocusFlag = []
         self.crocusOpt = []
+        self.actLev = []
         self.chnRtOpt = []
         self.rtOpt = []
         self.imperv_adj = []
@@ -354,9 +356,11 @@ class jobMeta:
         self.sfcResOpt = int(parser.get('lsmPhysics','sfcResOption'))
         self.glacier = int(parser.get('lsmPhysics','glacierOption'))
         self.IMPERV_OPTION = int(parser.get('lsmPhysics','IMPERV_OPTION'))
-        self.crocusOpt = int(parser.get('lsmPhysics','crocusOpt'))
         self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
         self.zLvl = float(parser.get('lsmPhysics','zLvl'))
+        self.crocusOpt = int(parser.get('crocus','crocusOpt'))
+        self.crocusFlag = int(parser.get('crocus','enableCrocusNamelist'))
+        self.actLev = int(parser.get('crocus','actLev'))
         self.fType = int(parser.get('forcing','forceType'))
         self.fDT = int(parser.get('modelTime','forceDt'))
         self.lsmDt = int(parser.get('modelTime','lsmDt'))
@@ -864,10 +868,6 @@ def checkConfig(parser):
         print("ERROR: Invalid glacier option chosen.")
         raise Exception()
 
-    check = int(parser.get('lsmPhysics','crocusOpt'))
-    if check < 0 or check > 1:
-        print("ERROR: Invalid crocus opt switch passed to program.")
-        raise Exception() 
     # Check soil moisture thickness values
     check = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
     if len(check) != 4:
@@ -882,7 +882,26 @@ def checkConfig(parser):
     if len(check) == 0:
         print("ERROR: Zero length zLvl passed to program.")
         raise Exception()
-        
+       
+    # Check crocus options
+    check = int(parser.get('crocus','enableCrocusNamelist'))
+    if check < 0 or check > 1:
+        print("ERROR: Invalid crocus switch passed to program.")
+        raise Exception()  
+
+    check = int(parser.get('crocus','crocusOpt'))
+    if check < 0 or check > 1:
+        print("ERROR: Invalid crocus opt value passed to program.")
+        raise Exception()
+
+    check = int(parser.get('crocus','actLev'))
+    if not check:
+        print("ERROR: actLev not specified.")
+        raise Exception()
+    if check <= 0:
+        print("ERROR: Invalid number of actLev specified.")
+        raise Exception()
+
     # Check forcing options
     check = parser.get('forcing','forceType')
     if len(check) == 0:
