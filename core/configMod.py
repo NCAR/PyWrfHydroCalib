@@ -898,7 +898,7 @@ def checkConfig(parser):
     if not check:
         print("ERROR: actLev not specified.")
         raise Exception()
-    if check <= 0:
+    if check <= 0 or check > 50:
         print("ERROR: Invalid number of actLev specified.")
         raise Exception()
 
@@ -1051,7 +1051,7 @@ def checkConfig(parser):
         raise Exception()
     
     check = int(parser.get('hydroPhysics','chanRtOpt'))
-    if check < 0 or check > 3:
+    if check < -1 or check > 3 or check == 0:
         print("ERROR: Invalid channel routing option passed to program.")
         raise Exception()
         
