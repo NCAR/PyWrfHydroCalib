@@ -436,8 +436,9 @@ def createJob(argsUser):
     # Check entries into the config file to make sure they make sense.
     try:
         checkConfig(parser)
-    except:
+    except Exception as e:
         print("ERROR: Improper Entries Into Config File.")
+        print(str(e))
         raise
     
     # Initialize job object
