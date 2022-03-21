@@ -2122,10 +2122,10 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
             else:
                 numLinesTmp = len(jobsTmp.split('\n'))
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
-                if numLinesTmp < 7:
+                if numLinesTmp < 5:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
                     raise Exception()
-                for lineNum in range(5, numLinesTmp):
+                for lineNum in range(3, numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat
                     # on Cheyenne.
                     lineTmp = jobsTmp.split('\n')[lineNum]
