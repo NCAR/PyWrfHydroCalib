@@ -163,6 +163,7 @@ class jobMeta:
         self.enableMask = []
         #self.maskFile = []
         self.enableMultiSites = []
+        self.output_channelBucket_influx = []
 
 
     def checkGages2(self,db):
@@ -369,6 +370,7 @@ class jobMeta:
         self.hydroRstFreq = int(parser.get('modelTime','hydroRstFreq'))
         self.hydroOutDt = int(parser.get('modelTime','hydroOutDt'))
         self.rstType = int(parser.get('hydroIO','rstType'))
+        self.output_channelBucket_influx = int(parser.get('hydroIO','output_channelBucket_influx'))
         self.SplitOutputCount = int(parser.get('hydroIO','SplitOutputCount'))
         self.ioConfigOutputs = int(parser.get('hydroIO','ioConfigOutputs'))
         self.ioFormOutputs = int(parser.get('hydroIO','ioFormOutputs'))
@@ -953,6 +955,14 @@ def checkConfig(parser):
     if int(check) < 0 or int(check) > 1:
         print("ERROR: Invalid rstType passed to program.")
         raise Exception()
+
+    check = parser.get('hydroIO', 'output_channelBucket_influx')
+    if len(check) == 0:
+        print("ERROR: Zero length output_channelBucket_influx passed to program.")
+        raise Exception()
+    if int(check) < 0 or int(check) > 3:
+        print("ERROR: Invalid output_channelBucket_influx passed to program.")
+        raise Exception()
         
     check = parser.get('hydroIO','ioConfigOutputs')
     if len(check) == 0:
@@ -1052,7 +1062,7 @@ def checkConfig(parser):
         raise Exception()
     
     check = int(parser.get('hydroPhysics','chanRtOpt'))
-    if check < -1 or check > 3 or check == 0:
+    if check < -1 or check > 5 or check == 0:
         print("ERROR: Invalid channel routing option passed to program.")
         raise Exception()
         
