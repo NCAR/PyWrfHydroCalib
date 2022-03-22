@@ -2138,6 +2138,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[groupNum] = int((lineTmp.split()[0]).split('.')[0])
+                            print(pbsJobId[groupNum])
                             status = True
         else:
             # We are checking for a job ID that has already been submitted by
@@ -2145,10 +2146,13 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
             # Try running qstat for the job ID. If it's unsucessfull, then we
             # can make a good assumption that the job is no longer running.
             try:
-                jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
-                jobsTmp = str(jobsTmp, 'utf-8')
+                jobsTmpStatus = subprocess.call(['qstat', str(pbsJobId[groupNum])])
+                if(jobsTmpStatus == 0):
+                    jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
+                    jobsTmp = str(jobsTmp, 'utf-8')
                 status = True
-            except:
+            except Exception as e:
+                print(e)
                 # This means the job is no longer running.
                 status = False
                 return status
