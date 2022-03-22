@@ -245,12 +245,12 @@ if (calcDailyStats) {
 setkey(chrt.cont.obj, "site_no", "POSIXct")
 if ("Date" %in% names(obs.obj)) obs.obj[, Date := NULL]
 setkey(obs.obj, "site_no", "POSIXct")
-#chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
-chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE) # Xia 20210610, use all data to remove fake lines in hydrograph
+chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+#chrt.cont.obj <- merge(chrt.cont.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE) # Xia 20210610, use all data to remove fake lines in hydrograph
 
 setkey(chrt.valid.obj, "site_no", "POSIXct")
-#chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
-chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE) # Xia 20210610
+chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=FALSE, all.y=FALSE)
+#chrt.valid.obj <- merge(chrt.valid.obj, obs.obj, by=c("site_no", "POSIXct"), all.x=TRUE, all.y=FALSE) # Xia 20210610
 
 # Check for empty output
 if (nrow(chrt.cont.obj) < 1) {
