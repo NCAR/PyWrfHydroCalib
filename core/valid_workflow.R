@@ -28,8 +28,10 @@ metrics_soilmoisture <- metrics_soilmoisture
 if (enableStreamflowCalib == 1) obsStreamData <- obsStreamData
 if (enableSnowCalib == 1) obsSnowData <- obsSnowData 
 if (enableSoilMoistureCalib == 1) obsSoilData <- obsSoilData
-mskvar.lsm <- mskvar.lsm
-window_days <- window_days
+if (enableSnowCalib == 1 | enableSoilMoistureCalib == 1) {
+    mskvar.lsm <- mskvar.lsm
+    window_days <- window_days
+}
 event_metrics_daily <- event_metrics_daily # Xia 20210610
 detach(calibdb)
 
@@ -236,7 +238,7 @@ if (calcDailyStats) {
 } else {
   chrt.cont.obj <- copy(chrt.cont)
   chrt.valid.obj <- copy(chrt.valid)
-  obs.obj <- copy(obsStreamData)
+  obs.obj <- copy(obsStreamData[, c("site_no", "POSIXct", "obs", "threshold")])
 }
 
 # Merge
@@ -326,6 +328,10 @@ for (i in 1:length(runList[[1]])) {
         lbem = LBEms_function(q_cms, obs, period, calcDailyStats)[1],
         lbemprime =  LBEms_function(q_cms, obs, period, calcDailyStats)[2]
       ))
+
+      if (is.na(basinType)) basinType = unique(obsStreamData$basinType)
+      if (length(basinType) > 1) print("Basin Type should be unique for a given basin")
+
       my_exprs3 = quote(list( # Xia 20210610 to use all data with NA included
         eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
         peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
