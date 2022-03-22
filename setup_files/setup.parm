@@ -312,6 +312,13 @@ hydroOutDt = 3600
 # Flag for overwriting soil variables from routing restart file (0:Off,1:On)
 rstType = 1
 
+# Options to output channel & bucket influxes. Only active for UDMP_OPT=1.
+# Nonzero choice requires that out_dt above matches NOAH_TIMESTEP in namelist.hrldas.
+# 0=None (default), 1=channel influxes (qSfcLatRunoff,qBucket)
+# 2=channel+bucket fluxes (qSfcLatRunoff,qBucket,qBtmVertRunoff_toBucket)
+# 3=channel accumulations (accSfcLatRunoff, accBucket) *** NOT TESTED ***
+output_channelBucket_influx = 0
+
 # Output-Specific option
 # 1 means that it will output 1 file for CHANOB per output time step
 # 0 means that it will append all the timesteps to one file called CHANOBS_DOMAIN1.nc
