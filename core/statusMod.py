@@ -2147,10 +2147,21 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
             # can make a good assumption that the job is no longer running.
             try:
                 jobsTmpStatus = subprocess.call(['qstat', str(pbsJobId[groupNum])])
+                 
                 if(jobsTmpStatus == 0):
                     jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
                     jobsTmp = str(jobsTmp, 'utf-8')
-                status = True
+                    status = True
+                elif(jobsTmpStatus == 1):
+                    time.sleep(60)
+                    jobsTmpStatus = subprocess.call(['qstat', str(pbsJobId[groupNum])])
+                    if(jobsTmpStatus == 0):
+                        jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
+                        jobsTmp = str(jobsTmp, 'utf-8')
+                        status = True
+                    else:
+                        status = False
+                        
             except Exception as e:
                 print(e)
                 # This means the job is no longer running.
