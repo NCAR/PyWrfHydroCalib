@@ -803,7 +803,7 @@ if (cyclecount > 0) {
       
       
       gg <- ggplot2::ggplot(chrt.obj_plot, ggplot2::aes(POSIXct, q_cms, color = run)) + facet_wrap(~site_no, scales="free_y", ncol = 1)
-      gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.7)
+      gg <- gg + ggplot2::geom_line(size = 0.3, alpha = 0.5)
       gg <- gg + ggplot2::ggtitle(paste0("Streamflow time series for ", siteId, "\n", siteName))
       #gg <- gg + scale_x_datetime(limits = c(as.POSIXct("2008-10-01"), as.POSIXct("2013-10-01")))
       gg <- gg + ggplot2::xlab("Date")+theme_bw( base_size = 15) + ylab ("Streamflow (cms)")
@@ -814,7 +814,9 @@ if (cyclecount > 0) {
       ggsave(filename=paste0(writePlotDir, "/", siteId, "_hydrograph.png"),
              plot=gg, units="in", width=8, height=4, dpi=300)
       
-      
+     ggsave(filename=paste0(writePlotDir, "/", siteId, "_hydrogr_log.png"),
+              plot=gg+scale_y_log10(), units="in", width=8, height=4, dpi=300)
+ 
       # Plot the scatter plot of the best, last and control run.
       write("Scatterplot...", stdout())
       maxval <- max(chrt.obj_plot$q_cms, na.rm = TRUE)
