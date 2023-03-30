@@ -1,4 +1,5 @@
 #-------------------------------------------------------#
+# Setup.parm file configured <23-JUL-2021> for RFC training
 # National Water Model Calibration Configuration
 # 
 # This configuration file is to be filled out by the
@@ -8,30 +9,48 @@
 # database containing necessary information on the 
 # calibration job. 
 #
-# Logan Karsten
+# Arezoo Rafieei Nasab
 # National Center for Atmospheric Research
 # Research Applications Laboratory
-# karsten@ucar.edu
-# 303-497-2693
+# arezoo@ucar.edu
+# 303-497-2888
 #-------------------------------------------------------#
 
 [logistics]
 # Top level directory where output from model runs, etc
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
-outDir = /home/cuahsi/calibOut
-expName = TEST_CALIB
-acctKey =
-optQueName =
-nCoresModel = 4
+outDir = /glade/scratch/ishitas/
+expName = troute_run
+acctKey = NRAL0017
+optQueName = regular
+nCoresModel = 9
 nNodesModel = 1
 nCoresPerNode = 36
+
 # Flag to turn sensitivity analysis on: 0 - Off, 1 - On.
-runSens = 1 
-sensParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/sens_params.tbl
+runSens = 0 
+sensParmTbl = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/sens_params.tbl
+
 # Flag to turn calibration on: 0 - Off, 1 - On.
 runCalib = 1
-calibParmTbl = /home/cuahsi/PyWrfHydroCalibTest/setup_files/calib_params.tbl
+
+# Path to the calibration parameters, and their range. Paranmeters flagged 1 will be calibrated. 
+calibParmTbl = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/calib_params.tbl
+
+# Flag to turn troute on instead of running MC 
+runTroute = 1
+
+# Path to the troute_config, the config file will be used as is 
+# only the path to the domain files will be changed. 
+trouteConfig = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/troute_config.yaml
+
+# list of all srings to add to the submisssion jobs. This will guarantee to load the proper libraries (python, R, ...)
+moduleLoadStr = ['module load eccodes/2.19.1', 'module load ncarenv/1.3', 'module load ncarcompilers/0.5.0', 'module load nco/4.9.5', 'module load intel/18.0.5', 'module load impi/2018.4.274', 'module load netcdf', 'source /glade/work/ishitas/python_envs/368_demo/bin/activate']
+
+# list of all srings to add to the submisssion jobs for Troute. 
+moduleLoadTrouteStr = ['module load eccodes/2.19.1','source /glade/work/rcabell/inland/inland-py39/bin/activate']
+
 # By default, R code will run hourly analysis on model output. This flag will
 # direct the R code to run daily statistics instead. This means hourly output
 # will be aggregated to daily statistics. 
@@ -68,7 +87,7 @@ optSpinFlag = 0
 stripCalibOutputs = 0 
 # Specify the initial time period (hours) for each simulation
 # to contain minimal output. 
-stripCalibHours = 180
+stripCalibHours = 120
 
 # We need to identify the type of system we are working on.
 # The model, and R jobs can be launched and monitored a variety
@@ -79,12 +98,12 @@ stripCalibHours = 180
 # 3 - We will launch with slurm with srun and monitor via squeue command.
 # 4 - No job scheduler. Run via MPI.
 # jobRunType is how you plan on executing the WRF-Hydro simulations
-jobRunType = 4
+jobRunType = 2
 # Specify the MPI command to use.
-mpiCmd = "mpirun -n"
+mpiCmd = mpiexec -np
 # Specify the CPU pinning command to supplement the MPI command to pin the model
 # to specific CPUs.
-cpuPinCmd = "dplace -c"
+cpuPinCmd = 
 
 # Specify number of model iterations to calibrate over
 numIter = 3
@@ -92,7 +111,15 @@ numIter = 3
 # Specify calibration method (DDS, SCE, etc)
 calibMethod = DDS
 
-# Specify objective function for calibration
+
+# One Need to activate which model component would be calibrated among streamflow, snow and soil moisture
+# 1 means calibrating and 0 mean we are not calibrating that variable. 
+# if anyof these are enabled then the obsStrData for that variable should be provided. 
+enableStreamflowCalib = 1
+enableSnowCalib = 0 
+enableSoilMoistureCalib = 0
+
+# Specify objective function for each component fo the calibration (streamflow, snow and soil moisture )
 # Current acceptable values are:
 # 1.) Rmse
 # 2.) Nse
@@ -101,42 +128,77 @@ calibMethod = DDS
 # 5.) Kge
 # 6.) Msof
 # 7.) hyperResMultiObj
-objectiveFunction = Nse
+#objectiveFunction = Kge
+
+streamflowObjectiveFunction = Kge
+snowObjectiveFunction = Kge
+soilMoistureObjectiveFunction = Kge
+
+# specify weights for each component (streamflow, soil moisture and snow)
+streamflowWeight = 1
+snowWeight = 0
+soilMoistureWeight = 0
+
+# specify parameter input for event metrics
+# basinType has flags: 0: snowy; 1: slow; 2: flashy
+# weight1Event and weight2Event are weights for peak bias and volume bias to get combined metric
+basinType = 0
+weight1Event = 0.6
+weight2Event = 0.4
 
 # DDS specific parameters. Leave blank if not using DDS.
 ddsR = 0.2
 
+# Specify whether to use the mask to mask out some part of the basins from calibrating or not
+# if enableMask set to 0, no need to provide a mask
+# if enableMask set to 1, then a mask should be provided on the coarse grid, in tif format
+# the mask should be set to 1 where we want to keep the parameters as is and set to 0 where
+# we would like to calibrate the parameters 
+enableMask = 0
+#maskFile = mask.coare.tif
+
+
+# Specify whether to calibrate to more than one streamflow gages or not
+# if enableMultiSite set to 1, a file containing the list of the gages of interest and
+# the corresponding weights in the calculation of the objective function is required.
+# Name of the file is hardcoded to "calib_sites.csv" that is placed under the domain dir
+# and contains the following fields:
+# 1- FID : Feature id of the gage as it appears in the CHANOBS
+# 2- site_no : site identifier as it appears in the obsStrDate.Rdata file
+# 3- weight : weight to be given to site when caculating the objective functio
+enableMultiSites = 0
+
+
 # Specify email to send updates/error messages to.
-email = john.doe@youremail.com
+email = ishitas@ucar.edu 
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /home/cuahsi/wrfHydroCalibration/wrf_hydro_model/trunk/NDHMS/Run/wrf_hydro.exe
-
+wrfExe = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/wrf_hydro.exe
 # Specify parameter tables to use for Noah-MP
-genParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/GENPARM.TBL
-mpParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/MPTABLE.TBL
-urbParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/URBPARM.TBL
-vegParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/VEGPARM.TBL
-soilParmTbl = /home/cuahsi/wrfHydroCalibration/04233300/SOILPARM.TBL
+genParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/GENPARM.TBL
+mpParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/MPTABLE.TBL
+urbParmTbl = /glade/work/arezoo/calibration_v30/Task_7/sample_calib/TBLs/URBPARM.TBL
+vegParmTbl = /glade/work/arezoo/calibration_v30/Task_7/sample_calib/TBLs/VEGPARM.TBL
+soilParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
-bSpinDate = 2013-06-01
-eSpinDate = 2013-07-01
+bSpinDate = 2009-10-01
+eSpinDate = 2010-01-01
 
 # Specify date range for calibration period
-bCalibDate = 2013-07-01
-eCalibDate = 2013-08-01
-bCalibEvalDate = 2013-07-05
+bCalibDate = 2010-02-01
+eCalibDate = 2010-03-01
+bCalibEvalDate = 2010-02-05
 
 # Specify date range for validation period
-bValidDate = 2013-07-01
-eValidDate = 2013-08-01
-bValidEvalDate = 2013-07-05
+bValidDate = 2010-03-01
+eValidDate = 2010-04-01
+bValidEvalDate = 2010-03-05
 
 [Sensitivity]
 # Specify parameter sample size
-sensParmSample = 1
+sensParmSample = 3
 
 # Sending out all model simulations at the same time 
 # may not be ideal for a given system. This option
@@ -145,18 +207,24 @@ sensParmSample = 1
 sensBatchNum = 1
 
 # Specify the date range for the sensitivity period.
-bSensDate = 2013-07-01
-eSensDate = 2013-08-01
-bSensEvalDate = 2013-07-05
+bSensDate = 2010-02-01
+eSensDate = 2010-03-01
+bSensEvalDate = 2010-02-05
 
 [gageInfo]
 # Specify USGS GAGES II basins to calibrate on.
 # If SQL command desired, leave gageListFile blank.
 # If file listing gages desired, leave gageListSQL blank.
-gageListSQL = select * from "Domain_Meta";
+gageListSQL = select * from "Domain_Meta" ;
+
+
 gageListFile =
 
 [lsmPhysics]
+# Output-Specific option
+# 1 means that it will output 1 file per output time step
+# 0 means that it will append all the timesteps to one file called LDASOUT_DOMAIN1.nc, right now it is not working
+SplitOutputCount = 0
 # namelist.hrldas specific options/flags for NoahMP
 # Specify the DYNAMIC_VEG_OPTION
 dynVegOption = 4
@@ -165,7 +233,7 @@ canStomResOption = 1
 # Specify the BTR_OPTION
 btrOption = 1
 # Specify the RUNOFF_OPTION
-runoffOption = 3
+runoffOption = 7
 # Specify the SURFACE_DRAG_OPTION
 sfcDragOption = 1
 # Specify the FROZEN_SOIL_OPTION
@@ -175,7 +243,7 @@ supCoolOption = 1
 # Specify the RADIATIVE_TRANSFER_OPTION
 radTransferOption = 3
 # Specify the SNOW_ALBEDO_OPTION
-snAlbOption = 2
+snAlbOption = 1
 # Specify the PCP_PARTITION_OPTION
 pcpPartOption = 1
 # Specify the TBOT_OPTION
@@ -186,12 +254,27 @@ tempTimeSchOption = 3
 sfcResOption = 4
 # Specify the GLACIER_OPTION
 glacierOption = 2
+# Specify the IMPERV_OPTION
+IMPERV_OPTION = 2
 
 # Specify thickness of NoahMP soil layers. MUST be four layers.
 soilThick = [0.10,0.30,0.60,1.00]
 
 # Specify level (meters) representative of U/V wind.
 zLvl = 10.0
+
+[crocus]
+# Switch to turn on or off the namelist option CROCUS_nlist
+# enableCrocusNamelist = 0 will not add the crocus namelist to the namelist.hrldas
+# enableCrocusNamelist = 1 will add the crocus namelist to the namellist.hrldas
+enableCrocusNamelist = 1
+# Crocus option 
+# crocusOpt = 0 will skipp the CROCUS 
+# crocusOpt = 1 will run CROCUS on the glacier pixels 
+# glacier pixels are specified in the wrfinput.nc file 
+crocusOpt = 1
+# An option in crocus 
+actLev = 40
 
 [forcing]
 # These options will dictate which forcings to use for the workflow.
@@ -212,22 +295,34 @@ forceDt = 3600
 # NoahMP model timestep
 lsmDt = 3600
 # Output frequency of NoahMP LDASOUT files in seconds
-lsmOutDt = 8640000
+lsmOutDt = 2160000
 # Output frequency of NoahMP restart files in seconds.
 # For monthly restart files, please put -9999 here. 
-lsmRstFreq = 86400
+lsmRstFreq = -9999
 
 # Hydro specific time options
 # Specify timestep in seconds
 # Hydro restart output frequency
 # Place -99999 here for monthly restarts. 
-hydroRstFreq = 86400
+hydroRstFreq = -99999
 # Hydro output frequency
 hydroOutDt = 3600
 
 [hydroIO]
 # Flag for overwriting soil variables from routing restart file (0:Off,1:On)
 rstType = 1
+
+# Options to output channel & bucket influxes. Only active for UDMP_OPT=1.
+# Nonzero choice requires that out_dt above matches NOAH_TIMESTEP in namelist.hrldas.
+# 0=None (default), 1=channel influxes (qSfcLatRunoff,qBucket)
+# 2=channel+bucket fluxes (qSfcLatRunoff,qBucket,qBtmVertRunoff_toBucket)
+# 3=channel accumulations (accSfcLatRunoff, accBucket) *** NOT TESTED ***
+output_channelBucket_influx = 0
+
+# Output-Specific option
+# 1 means that it will output 1 file for CHANOB per output time step
+# 0 means that it will append all the timesteps to one file called CHANOBS_DOMAIN1.nc
+SplitOutputCount = 0
 
 # Output-Specific output flags for outputs
 # Specify wrfHydro output config.    
@@ -237,7 +332,7 @@ rstType = 1
 # 3: Medium Range                               
 # 4: Long Range
 # 5: Retrospective
-ioConfigOutputs = 1
+ioConfigOutputs = 3
 
 # Flag to configure form of output files. 
 # 1: With scale_factor/add_offset + internal compression
@@ -250,12 +345,12 @@ ioFormOutputs = 4
 # Streamflow output  
 # 0: No output
 # 1: Output 
-chrtoutDomain = 0
+chrtoutDomain = 1
 
 # Streamflow NetCDF at forecast points / gage points
 # 0: No output
 # 1: Output
-chanObsDomain = 1
+chanObsDomain = 0
 
 # Gridded channel flow    
 # 0: No output
@@ -304,11 +399,13 @@ subRouting = 1
 ovrRouting = 1
 # Switch for channel routing (0:Off,1:On)
 channelRouting = 1
-
 # Overland Routing   
 # 1: Steepest Descent (D8)
 # 2: CASC2D
 rtOpt = 1
+
+# Specify whether to adjust overland flow parameters based on imperviousness
+imperv_adj = 1
 
 # Channel Routing    
 # 1: Muskingam-reach
@@ -326,7 +423,8 @@ udmpOpt = 1
 # 0: No groundwater bucket activation.
 # 1: Switch to activate exp. groundwater bucket option
 # 2: Switch to activate pass-through groundwater bucket option
-gwBaseSw = 1
+# 4: Switch to activate exp. bucket with area normalized parameters
+gwBaseSw = 4
 
 # Specify to how to initialize groundwater bucket model (0:cold start from table,1:restart file)
 gwRestart = 0
@@ -334,8 +432,8 @@ gwRestart = 0
 # Specify whether to use compound channel. This is for NWM ONLY. Cannot use with gridded routing.
 # (0: Turn off, 1: Turn on). The enableCompoundChannel needs to be turned on if this is NWM code.
 # If community, set to 0 as it will not be placed into the hydro.namelist.
-enableCompoundChannel = 0
-compoundChannel = 0
+enableCompoundChannel = 1
+compoundChannel = 1
 
 # Specify whether to enable the groundwater bucket loss function in the hydro.namelist file.
 # (0: No option specified in namelist, 1: Place option into namelist).

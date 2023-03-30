@@ -254,10 +254,10 @@ class Database(object):
                 self.dbCursor.execute(sqlCmd)
                 self.conn.commit()
                 success = True
-            except:
+            except Exception as e:
                 time.sleep(5)
                 if attempts == 9:
-                    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
+                    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName + str(e)
                     raise
                 else:
                     attempts = attempts + 1
@@ -436,7 +436,8 @@ class Database(object):
         tmpMeta['gwMask'] = results[21]
         tmpMeta['lkFile'] = results[22]
         tmpMeta['forceDir'] = results[23]
-        tmpMeta['obsFile'] = results[24]
+        tmpMeta['obsDir'] = results[24]
+        tmpMeta['siteName'] = results[25]
         tmpMeta['dxHydro'] = results[39]
         tmpMeta['aggFactor'] = results[40]
         tmpMeta['hydroSpatial'] = results[41]
@@ -502,7 +503,8 @@ class Database(object):
         jobData.bValidDate = datetime.datetime.strptime(str(results[21]),'%Y-%m-%d %H:%M:%S')
         jobData.eValidDate = datetime.datetime.strptime(str(results[22]),'%Y-%m-%d %H:%M:%S')
         jobData.eValidEvalDate = datetime.datetime.strptime(str(results[23]),'%Y-%m-%d %H:%M:%S')
-        jobData.validComplete = int(results[24])
+        jobData.validCompleteBEST = int(results[24])
+        jobData.validCompleteCTRL = int(results[24])
         jobData.acctKey = results[25]
         jobData.queName = results[26]
         jobData.nCoresMod = int(results[27])
@@ -518,7 +520,6 @@ class Database(object):
         jobData.slUser = results[37]
         jobData.mpiCmd = results[38]
         jobData.cpuPinCmd = results[39]
-
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
         #    try:
@@ -744,7 +745,7 @@ class Database(object):
                 else:
                     attempts = attempts + 1
             
-    def updateValidationStatus(self,jobData):
+    def updateValidationStatus(self,jobData,valid_type):
         """
         Generic function to update the status of the validation for a particular job.
         """
@@ -757,23 +758,24 @@ class Database(object):
             jobData.errMsg = "ERROR: No Connection to Database: " + self.dbName
             raise Exception()
         
-        sqlCmd = "update \"Job_Meta\" set valid_complete='" + str(jobData.validComplete) + \
+        if(valid_type == "BEST"):
+            sqlCmd = "update \"Job_Meta\" set valid_complete='" + str(jobData.validCompleteBEST) + \
                  "' where \"jobID\"='" + str(jobData.jobID) + "';"
 
-        attempts = 0
-        success = False
-        while attempts < 10 and not success:
-            try:
-                self.dbCursor.execute(sqlCmd)
-                self.conn.commit()
-                success = True
-            except:
-                time.sleep(5)
-                if attempts == 9:
-                    jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
-                    raise
-                else:
-                    attempts = attempts + 1
+            attempts = 0
+            success = False
+            while attempts < 10 and not success:
+                try:
+                    self.dbCursor.execute(sqlCmd)
+                    self.conn.commit()
+                    success = True
+                except:
+                    time.sleep(5)
+                    if attempts == 9:
+                        jobData.errMsg = "ERROR: Failure to update validation status for job ID: " + str(jobData.jobID)
+                        raise
+                    else:
+                        attempts = attempts + 1
     
     def enterJobParms(self,jobData):
         """
@@ -792,7 +794,7 @@ class Database(object):
         if jobData.calibFlag == 1:
             # Open parameter table and read values in.
             tblData = pd.read_csv(jobData.calibTbl)
-            if len(tblData) != 21:
+            if len(tblData) != 48: 
                 jobData.errMsg = "ERROR: Unexpected calibration parameter table format."
                 raise Exception()
             
@@ -825,7 +827,7 @@ class Database(object):
         if jobData.sensFlag == 1:
             # Open parameter table and read values in.
             tblData = pd.read_csv(jobData.sensTbl)
-            if len(tblData) != 21:
+            if len(tblData) != 44:
                 jobData.errMsg = "ERROR: Unexpected sensitivity parameter table format."
                 raise Exception()
             
@@ -1032,11 +1034,20 @@ class Database(object):
                         attempts = attempts + 1
             
             if not results:
-                # Create "empty" entry into table.
+                # Create "empty" entry into table.  
                 sqlCmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",best,complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\"," + \
+                         "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
+                         "nnse, peak_bias, peak_tm_err_hr, event_volume_bias," + \
+                         "cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow," + \
+                         "cor_soil, rmse_soil, bias_soil, nse_soil, kge_soil, kge_alpha_soil,"+\
+                         "best, complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,0,0);"
 
                 attempts = 0
                 success = False
@@ -1097,11 +1108,14 @@ class Database(object):
             
             if not results:
                 # Create "empty" entry into table.
-                # First for hourly stats
+                # First for hourly stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\","  + \
+                         "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
+                         "\"timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'hourly',0);"
 
                 attempts = 0
                 success = False
@@ -1120,11 +1134,14 @@ class Database(object):
                         else:
                             attempts = attempts + 1
                     
-                # Next for daily stats
+                # Next for daily stats 
                 sqlCmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias,rmse," + \
-                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",\"timeStep\",complete) values (" + str(jobID) + \
+                         "cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\"," + \
+                         "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi," + \
+                         "\timeStep\",complete) values (" + str(jobID) + \
                          "," + str(domainID) + "," + str(iteration) + ",-9999,-9999,-9999," + \
-                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999," + \
+                         "-9999,-9999,-9999,-9999,-9999,-9999,-9999,-9999,'daily',0);"
 
                 attempts = 0
                 success = False
@@ -1381,6 +1398,30 @@ class Database(object):
         fdc = str(-9999)
         msof = str(tblData.msof[0])
         hyperResMultiObj = str(tblData.hyperResMultiObj[0])
+        nnsesq = str(tblData.nnsesq[0])  
+        eventmultiobj = str(tblData.eventmultiobj[0])
+        lbem = str(tblData.lbem[0])
+        lbemprime = str(tblData.lbemprime[0])
+        corr1 = str(tblData.corr1[0])
+        pod = str(tblData.POD[0])
+        far = str(tblData.FAR[0])
+        csi = str(tblData.CSI[0])
+        nnse = str(tblData.nnse[0])  # Xia added below 20210610
+        peak_bias = str(tblData.peak_bias[0])
+        peak_tm_err_hr = str(tblData.peak_tm_err_hr[0])
+        event_volume_bias = str(tblData.event_volume_bias[0])
+        cor_snow = str(tblData.cor_snow[0])
+        rmse_snow = str(tblData.rmse_snow[0])
+        bias_snow = str(tblData.bias_snow[0])
+        nse_snow = str(tblData.nse_snow[0])
+        kge_snow = str(tblData.kge_snow[0])
+        cor_soil = str(tblData.cor_soil[0])
+        rmse_soil = str(tblData.rmse_soil[0])
+        bias_soil = str(tblData.bias_soil[0])
+        nse_soil = str(tblData.nse_soil[0])
+        kge_soil = str(tblData.kge_soil[0])
+        kge_alpha_soil = str(tblData.kge_alpha_soil[0])
+
         
         if int(tblData.best[0]) == 1:
             # This means we need to copy the parameter files that were created over
@@ -1428,7 +1469,7 @@ class Database(object):
                         jobData.errMsg = "ERROR: Failed to copy: " + inFile + " to: " + outFile
                         raise
                 
-            if staticData.gwBaseFlag == 1:
+            if staticData.gwBaseFlag == 1 or  staticData.gwBaseFlag == 4 :
                 inFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/OUTPUT/GWBUCKPARM.nc"
                 outFile = str(jobData.jobDir) + "/" + gage + "/RUN.CALIB/FINAL_PARAMETERS/GWBUCKPARM.nc"
                 # Remove existing "best" file.
@@ -1534,7 +1575,7 @@ class Database(object):
                     else:
                         attempts = attempts + 1
                 
-        # Update Calib_Stats table.
+        # Update Calib_Stats table. 
         sqlCmd = "update \"Calib_Stats\" set \"objfnVal\"='" + objF + "', " + \
                  "bias='" + bias + "', rmse='" + \
                  rmse + "', cor='" + cor + "', nse='" + \
@@ -1542,6 +1583,29 @@ class Database(object):
                  kge + "', fdcerr='" + fdc + \
                  "', msof='" + msof + \
                  "', hyperResMultiObj='" + hyperResMultiObj + \
+                 "', nnsesq='" + nnsesq + \
+                 "', eventmultiobj='" + eventmultiobj + \
+                 "', lbem='" + lbem + \
+                 "', lbemprime='" + lbemprime + \
+                 "', corr1='" + corr1 + \
+                 "', pod='" + pod + \
+                 "', far='" + far + \
+                 "', csi='" + csi + \
+                 "', nnse='" + nnse + \
+                 "', peak_bias='" + peak_bias + \
+                 "', peak_tm_err_hr='" + peak_tm_err_hr + \
+                 "', event_volume_bias='" + event_volume_bias + \
+                 "', cor_snow='" + cor_snow + \
+                 "', rmse_snow='" + rmse_snow + \
+                 "', bias_snow='" + bias_snow + \
+                 "', nse_snow='" + nse_snow + \
+                 "', kge_snow='" + kge_snow + \
+                 "', cor_soil='" + cor_soil + \
+                 "', rmse_soil='" + rmse_soil + \
+                 "', bias_soil='" + bias_soil + \
+                 "', nse_soil='" + nse_soil + \
+                 "', kge_soil='" + kge_soil + \
+                 "', kge_alpha_soil='" + kge_alpha_soil + \
                  "', complete='1' where \"jobID\"='" + str(jobID) + "' and " + \
                  "\"domainID\"='" + str(domainID) + "' and iteration='" + str(iteration) + \
                  "';"
@@ -1725,17 +1789,31 @@ class Database(object):
         for tmpName in list(tblData.columns.values):
             tblData[tmpName][pd.isnull(tblData[tmpName])] = -9999.0
         
-        # Loop through table and enter information into DB.
+        # Loop through table and enter information into DB. 
         for stat in range(0,numStats):
             sqlCmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\"," + \
-                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\") values (" + str(jobID) + \
+                     "\"objfnVal\",bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\"," + \
+                     "nnsesq, eventmultiobj, lbem, lbemprime, corr1, pod, far, csi, nnse, peak_bias, peak_tm_err_hr," + \
+                     "event_volume_bias, obj_snow, cor_snow, rmse_snow, bias_snow, nse_snow, kge_snow," + \
+                     "obj_soil, cor_soil, rmse_soil, bias_soil, nse_soil, kge_soil, kge_alpha_soil) values (" + str(jobID) + \
                      "," + str(gageID) + ",'" + tblData.run[stat] + "','" + \
                      tblData.period[stat] + "'," + str(tblData.obj[stat]) + "," + \
                      str(tblData.bias[stat]) + "," + str(tblData.rmse[stat]) + "," + \
                      str(tblData.cor[stat]) + "," + str(tblData.nse[stat]) + "," + \
                      str(tblData.nselog[stat]) + "," + str(tblData.nsewt[stat]) + "," + \
-                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + ',' + \
-                     str(tblData.hyperResMultiObj[stat]) + ");"
+                     str(tblData.kge[stat]) + "," + str(tblData.msof[stat]) + "," + \
+                     str(tblData.hyperResMultiObj[stat]) + "," + \
+                     str(tblData.nnsesq[stat]) + "," + str(tblData.eventmultiobj[stat]) + "," + \
+                     str(tblData.lbem[stat]) + "," + str(tblData.lbemprime[stat]) + "," + \
+                     str(tblData.corr1[stat]) + "," + str(tblData.POD[stat]) + "," + \
+                     str(tblData.FAR[stat]) + "," + str(tblData.CSI[stat]) + "," + \
+                     str(tblData.nnse[stat]) + "," + str(tblData.peak_bias[stat]) + "," + \
+                     str(tblData.peak_tm_err_hr[stat]) + "," + str(tblData.event_volume_bias[stat]) + "," + \
+                     str(tblData.obj_snow[stat]) + "," + str(tblData.cor_snow[stat]) + "," + str(tblData.rmse_snow[stat]) + "," + \
+                     str(tblData.bias_snow[stat]) + "," + str(tblData.nse_snow[stat]) + "," + str(tblData.kge_snow[stat]) + "," + \
+                     str(tblData.obj_soil[stat]) + "," + str(tblData.cor_soil[stat]) + "," + str(tblData.rmse_soil[stat]) + "," + \
+                     str(tblData.bias_soil[stat]) + "," + str(tblData.nse_soil[stat]) + "," + str(tblData.kge_soil[stat]) + "," + \
+                     str(tblData.kge_alpha_soil[stat]) + ")"
 
             attempts = 0
             success = False

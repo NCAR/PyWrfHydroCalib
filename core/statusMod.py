@@ -5,7 +5,7 @@
 # National Center for Atmospheric Research
 
 from glob import glob
-import os
+import os,sys
 import pwd
 import subprocess
 import pandas as pd
@@ -14,8 +14,10 @@ import psutil
 import math
 import time
 import shutil
-
+import pickle
+import json
 import warnings
+import ast
 warnings.filterwarnings("ignore")
 
 class statusMeta:
@@ -37,7 +39,8 @@ class statusMeta:
         self.bValidDate = []
         self.eValidDate = []
         self.bValidEvalDate = []
-        self.validComplete = []
+        self.validCompleteCTRL = []
+        self.validCompleteBEST = []
         self.nSensSample = []
         self.nSensIter = []
         self.nSensBatch = []
@@ -54,6 +57,10 @@ class statusMeta:
         self.sensFlag = []
         self.sensTbl = []
         self.calibFlag = []
+        self.trouteFlag = []
+        self.trouteConfig = []
+        self.moduleLoadStr = []
+        self.moduleLoadTrouteStr = []
         self.calibTbl = []
         self.dailyAnalysis = []
         self.coldStart = []
@@ -71,6 +78,8 @@ class statusMeta:
         self.slackObj = None
         self.gSQL = []
         self.dbPath = []
+        self.trouteLock = []
+        self.trouteCompleteBasin = []
     def checkGages(self,db):
         # Function to check number of gages in output directory. Function
         # also calls the database module to extract unique ID values for each
@@ -465,6 +474,47 @@ def checkBasJob(jobData,gageNum,pbsJobId):
             status = True
             
     return status
+   
+def walkModTroute(bDate,eDate,runDir,yamlDict): 
+    """
+    Generic function to walk a simulation directory, and determine where the model
+    last left off. This is for when the TROUTE model needs to be restarted, or if it crashed
+    and the parent program needs to determine where it can try to restart.
+    """
+    dt = eDate - bDate
+    nLoops = int((dt.days*24)/yamlDict['compute_parameters']['forcing_parameters']['max_loop_size'])
+    rem = (dt.days*24)%yamlDict['compute_parameters']['forcing_parameters']['max_loop_size']
+    if(nLoops < 0):
+        nLoops = 0
+    
+    bDateOrig = bDate
+
+    # Initialize flag returned to user as True. Assume model needs to ran.
+    runFlag = True
+
+    output = []
+    for loopModel in range(0,nLoops+1):
+        dCurrent = bDateOrig + datetime.timedelta(hours=loopModel*yamlDict['compute_parameters']['forcing_parameters']['max_loop_size'])
+        trouteRestartPath = runDir + "/channel_restart_" + dCurrent.strftime('%Y%m%d%H%M')
+
+        if os.path.isfile(trouteRestartPath):
+            bDate = dCurrent
+
+    # If the bDate has reached the eDate, this means the model completed as expected.
+    if rem > 0:
+        if(bDate + datetime.timedelta(hours=rem) == eDate):
+            dCurrent = bDate + datetime.timedelta(hours=rem)
+            trouteRestartPath = runDir + "/channel_restart_" + dCurrent.strftime('%Y%m%d%H%M')
+            if os.path.isfile(trouteRestartPath):
+                bDate = dCurrent
+
+    if bDate == eDate:
+        runFlag = False
+
+    output.append(bDate)
+    output.append(eDate)
+    output.append(runFlag)
+    return output
     
 def walkMod(bDate,eDate,runDir):
     """
@@ -2061,22 +2111,24 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
         if pbsJobId[groupNum] == -9999:
             # Run qstat for the user.
             try:
-                jobsTmp = subprocess.check_output(['qstat', '-u', jobData.owner])
-                jobsTmp = str(jobsTmp, 'utf-8')
+                jobsTmpStatus = subprocess.call(['qstat', '-u', jobData.owner])
+                if(jobsTmpStatus == 0):
+                    jobsTmp = subprocess.check_output(['qstat', '-u', jobData.owner])
+                    jobsTmp = str(jobsTmp, 'utf-8')
             except:
                 jobData.errMsg = "ERROR: Unable to run qstat for user: " + jobData.owner
                 raise
-            if len(jobsTmp) == 0:
+            if jobsTmpStatus == 1:
                 # This means no jobs are running for the user. We can safely
                 # assume the status is false.
                 status = False
             else:
                 numLinesTmp = len(jobsTmp.split('\n'))
                 # The exptected return from qstat on Cheyenne gives us at least 7 lines to parse.
-                if numLinesTmp < 7:
+                if numLinesTmp < 5:
                     jobData.errMsg = "ERROR: Expected qstat return should be greater than 6 lines."
                     raise Exception()
-                for lineNum in range(5, numLinesTmp):
+                for lineNum in range(3, numLinesTmp):
                     # This is a CRUDE assumption based on the behavior of qstat
                     # on Cheyenne.
                     lineTmp = jobsTmp.split('\n')[lineNum]
@@ -2089,17 +2141,33 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
                             # previous instance of the workflow is still running.
                             # Get the job id and set it into the jobIds array.
                             pbsJobId[groupNum] = int((lineTmp.split()[0]).split('.')[0])
+                            print(pbsJobId[groupNum])
                             status = True
         else:
             # We are checking for a job ID that has already been submitted by
             # this instance of the workflow.
             # Try running qstat for the job ID. If it's unsucessfull, then we
             # can make a good assumption that the job is no longer running.
+            time.sleep(120)
             try:
-                jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
-                jobsTmp = str(jobsTmp, 'utf-8')
-                status = True
-            except:
+                jobsTmpStatus = subprocess.call(['qstat', str(pbsJobId[groupNum])])
+                 
+                if(jobsTmpStatus == 0):
+                    jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
+                    jobsTmp = str(jobsTmp, 'utf-8')
+                    status = True
+                elif(jobsTmpStatus == 1):
+                    time.sleep(60)
+                    jobsTmpStatus = subprocess.call(['qstat', str(pbsJobId[groupNum])])
+                    if(jobsTmpStatus == 0):
+                        jobsTmp = subprocess.check_output(['qstat', str(pbsJobId[groupNum])])
+                        jobsTmp = str(jobsTmp, 'utf-8')
+                        status = True
+                    else:
+                        status = False
+                        
+            except Exception as e:
+                print(e)
                 # This means the job is no longer running.
                 status = False
                 return status

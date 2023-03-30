@@ -160,6 +160,8 @@ def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFl
         fileObj.write(inStr)
         inStr = ' SURFACE_RESISTANCE_OPTION = ' + str(jobData.sfcResOpt) + '\n'
         fileObj.write(inStr)
+        inStr = ' IMPERV_OPTION = ' + str(jobData.IMPERV_OPTION) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Timestep in units of seconds\n')
         inStr = ' FORCING_TIMESTEP = ' + str(jobData.fDT) + '\n'
@@ -184,7 +186,8 @@ def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFl
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Split output after split_output_count output times\n')
-        fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
+        inStr = ' SPLIT_OUTPUT_COUNT = ' + str(int(jobData.lsmSplitOutputCount)) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write(' ! Soil layer specification\n')
         fileObj.write(' NSOIL = 4\n')
@@ -214,6 +217,20 @@ def createHrldasNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFl
         inStr = ' FORC_TYP = ' + str(jobData.fType) + '\n'
         fileObj.write(inStr)
         fileObj.write('/\n')
+        fileObj.write('\n')
+
+        if(jobData.crocusFlag == 1):
+            inStr = '&CROCUS_nlist'
+            fileObj.write(inStr)
+            fileObj.write('\n')
+            inStr = ' crocus_opt = %s  ! 0 model is off, 1 model is on' %(str(jobData.crocusOpt))
+            fileObj.write(inStr)
+            fileObj.write('\n')
+            inStr = ' act_lev = %s     ! 1-50, 20-40 normal options' %(str(jobData.actLev))
+            fileObj.write(inStr)
+            fileObj.write('\n')
+            fileObj.write('/\n')
+            fileObj.write('\n')
         fileObj.close
     except:
         if len(statusData.errMsg) == 0:
@@ -424,7 +441,9 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write('!Specify the number of output times to be contained within each output history file...(integer)\n')
         fileObj.write('!  SET = 1 WHEN RUNNING CHANNEL ROUTING ONLY/CALIBRATION SIMS!!!!\n')
         fileObj.write('!  SET = 1 WHEN RUNNING COUPLED TO WRF!!!\n')
-        fileObj.write(' SPLIT_OUTPUT_COUNT = 1\n')
+        fileObj.write('!  SET = 0 WHEN All outputs will be written into one file\n')
+        inStr = ' SPLIT_OUTPUT_COUNT = ' + str(int(jobData.SplitOutputCount)) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Specify the minimum stream order to output to netcdf point file...(integer)\n')
         fileObj.write('!Note: lower value of stream order produces more output\n')
@@ -449,7 +468,8 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write('! 0=None (default), 1=channel influxes (qSfcLatRunoff,qBucket)\n')
         fileObj.write('! 2=channel+bucket fluxes (qSfcLatRunoff,qBucket,qBtmVertRunoff_toBucket)\n')
         fileObj.write('! 3=channel accumulations (accSfcLatRunoff, accBucket) *** NOT TESTED ***\n')
-        fileObj.write(' output_channelBucket_influx = 0\n')
+        inStr = ' output_channelBucket_influx = ' + str(jobData.output_channelBucket_influx) + '\n'
+        fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('!Output netcdf file control\n')
         if minOutFlag == 1:
@@ -548,6 +568,10 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         inStr = ' rt_option = ' + str(jobData.rtOpt) + '\n'
         fileObj.write(inStr)
         fileObj.write('\n')
+        fileObj.write(' ! Specify whether to adjust overland flow parameters based on imperviousness\n')
+        inStr = ' imperv_adj = ' + str(jobData.imperv_adj) + '\n'
+        fileObj.write(inStr)
+        fileObj.write('\n')
         fileObj.write('!Switch to activate channel routing:\n')
         inStr = ' CHANRTSWCRT = ' + str(jobData.chnRtFlag) + '\n'
         fileObj.write(inStr)
@@ -594,7 +618,7 @@ def createHydroNL(statusData,gageData,jobData,outDir,typeFlag,bDate,eDate,genFla
         fileObj.write(inStr)
         fileObj.write('\n')
         fileObj.write('! Groundwater bucket parameter file (e.g.: "GWBUCKPARM.nc")\n')
-        if jobData.gwBaseFlag == 1:
+        if jobData.gwBaseFlag == 1  or jobData.gwBaseFlag == 4:
             if genFlag == 0:
                 inStr = ' GWBUCKPARM_file = "' + str(gageData.gwFile) + '"\n'
             if genFlag == 1:

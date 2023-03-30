@@ -152,7 +152,34 @@ def removeOutput(jobData,runDir):
         except:
             jobData.errMsg = "ERROR: Failure to remove: " + runDir + "/hydro.namelist"
             raise
-            
+     
+    filesCheck = glob.glob(runDir + "/channel_restart_*")
+
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/channel_restart_*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove TROUTE restart files from: " + runDir
+
+    filesCheck = glob.glob(runDir + "/CHANOBS_DOMAIN*")
+
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/CHANOBS_DOMAIN*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove TROUTE CHANOBS files from: " + runDir
+
+    filesCheck = glob.glob(runDir + "/troute*")
+
+    if len(filesCheck) > 0:
+        cmd = "rm " + runDir + "/troute*"
+        try:
+            subprocess.call(cmd,shell=True)
+        except:
+            jobData.errMsg = "ERROR: Unable to remove TROUTE flag and status files from: " + runDir
+           
 def cleanCalib(jobData,workDir,runDir):
     """
     Generic function to cleanup calibration-related output, such as text files,
@@ -162,6 +189,15 @@ def cleanCalib(jobData,workDir,runDir):
     calibCompleteFlag = workDir + "/CALIB_ITER.COMPLETE"
     calibTbl = workDir + "/params_new.txt"
     statsTbl = workDir + "/params_stats.txt"
+    trouteFlag = runDir + "/trouteFlag.COMPLETE"
+
+    if jobData.trouteFlag == 1:
+        if os.path.isfile(trouteFlag):
+            try:
+                os.remove(trouteFlag)
+            except:
+                jobData.errMsg = "ERROR: Failure to remove: " + trouteFlag
+                raise
     
     if os.path.isfile(calibCompleteFlag):
         try:

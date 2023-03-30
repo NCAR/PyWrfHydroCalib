@@ -54,9 +54,9 @@ def main(argv):
     fullDomOrig = str(args.fullDomOrig[0])
     hydroOrig = str(args.hydroOrig[0])
     soilOrig = str(args.soilOrig[0])
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         gwOrig = str(args.gwOrig[0])
-    if args.chrtFlag[0] == 3:
+    if args.chRtFlag[0] == 3:
         chanParmOrig = str(args.chanParmOrig[0])
     workDir = str(args.workDir[0])
     nIter = int(args.nIter[0])
@@ -110,7 +110,7 @@ def main(argv):
             shutil.copy(soilOrig,tmpPath)
         except:
             sys.exit(1)
-        if args.gwFlag[0] == 1:
+        if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             try:
                 tmpPath = runDir + "/GWBUCKPARM.nc"
                 print(tmpPath)
@@ -118,7 +118,7 @@ def main(argv):
             except:
                 sys.exit(1)
                 
-        if args.chrtFlag[0] == 3:
+        if args.chRtFlag[0] == 3:
             try:
                 tmpPath = runDir + "/CHANPARM.TBL"
                 print(tmpPath)
@@ -136,7 +136,7 @@ def main(argv):
         # Open NetCDF parameter files for adjustment.
         idFullDom = Dataset(fullDomOut,'a')
         idSoil2D = Dataset(soilOut,'a')
-        if args.gwFlag[0] == 1:
+        if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
             idGw = Dataset(gwOut,'a')
         idHydroTbl = Dataset(hydroOut,'a')
         
@@ -189,7 +189,7 @@ def main(argv):
             if param == "lksatfac":
                 idFullDom.variables['LKSATFAC'][:,:] = float(newParams.lksatfac[i])
         
-            if args.gwFlag[0] == 1:
+            if args.gwFlag[0] == 1 or args.gwFlag[0] == 4 : 
                 if param == "zmax":
                     idGw.variables['Zmax'][:] = float(newParams.zmax[i])
         
@@ -234,15 +234,83 @@ def main(argv):
             
             if param == "smcmax":
                 idHydroTbl.variables['SMCMAX1'][:,:] = idHydroTbl.variables['SMCMAX1'][:,:]*float(newParams.smcmax[i])      
-                
+            if param == "nexp":
+                idHydroTbl.variables['NEXP'][:,:] = float(newParams.nexp[i])
+
             if param == "rsurfexp":
                 idSoil2D.variables['rsurfexp'][:,:,:] = float(newParams.rsurfexp[i])
+
+            if param == "AXAJ":
+                idSoil2D.variables['AXAJ'][:,:,:] = idSoil2D.variables['AXAJ'][:,:,:]*float(newParams.AXAJ[i])
+
+            if param == "BXAJ":
+                idSoil2D.variables['BXAJ'][:,:,:] = idSoil2D.variables['BXAJ'][:,:,:]*float(newParams.BXAJ[i])
+
+            if param == "XXAJ":
+                idSoil2D.variables['XXAJ'][:,:,:] = idSoil2D.variables['XXAJ'][:,:,:]*float(newParams.XXAJ[i])
+
+            if param == "z0sno":
+                idSoil2D.variables['z0sno'][:,:,:] = float(newParams.z0sno[i])
+
+            if param == "ssi":
+                idSoil2D.variables['ssi'][:,:,:] = float(newParams.ssi[i])
+
+            if param == "snowretfac":
+                idSoil2D.variables['snowretfac'][:,:,:] = float(newParams.snowretfac[i])
+
+            if param == "swemx":
+                idSoil2D.variables['swemx'][:,:,:] = float(newParams.swemx[i])
+
+            if param == "tau0":
+                idSoil2D.variables['tau0'][:,:,:] = float(newParams.tau0[i])
+
+            if param == "graingrowth":
+                idSoil2D.variables['graingrowth'][:,:,:] = float(newParams.graingrowth[i])
+
+            if param == "extragrowth":
+                idSoil2D.variables['extragrowth'][:,:,:] = float(newParams.extragrowth[i])
+
+            if param == "dirtsoot":
+                idSoil2D.variables['dirtsoot'][:,:,:] = float(newParams.dirtsoot[i])
+
+            if param == "bats_cosz":
+                idSoil2D.variables['bats_cosz'][:,:,:] = float(newParams.bats_cosz[i])
+
+            if param == "bats_visnew":
+                idSoil2D.variables['bats_visnew'][:,:,:] = float(newParams.bats_visnew[i])
+
+            if param == "bats_nirnew":
+                idSoil2D.variables['bats_nirnew'][:,:,:] = float(newParams.bats_nirnew[i])
+
+            if param == "bats_visage":
+                idSoil2D.variables['bats_visage'][:,:,:] = float(newParams.bats_visage[i])
+
+            if param == "bats_nirage":
+                idSoil2D.variables['bats_nirage'][:,:,:] = float(newParams.bats_nirage[i])
+
+            if param == "bats_visdir":
+                idSoil2D.variables['bats_visdir'][:,:,:] = float(newParams.bats_visdir[i])
+
+            if param == "bats_nirdir":
+                idSoil2D.variables['bats_nirdir'][:,:,:] = float(newParams.bats_nirdir[i])
+
+            if param == "rsurfsnow":
+                idSoil2D.variables['rsurfsnow'][:,:,:] = float(newParams.rsurfsnow[i])
+
+            if param == "refsnowdens":
+                idSoil2D.variables['refsnowdens'][:,:,:] = float(newParams.refsnowdens[i])
+
+            if param == "frac_direct":
+                idSoil2D.variables['frac_direct'][:,:,:] = float(newParams.frac_direct[i])
+
+            if param == "frac_visible":
+                idSoil2D.variables['frac_visible'][:,:,:] = float(newParams.frac_visible[i])
         
             
     # Close NetCDF files
     idFullDom.close()
     idSoil2D.close()
-    if args.gwFlag[0] == 1:
+    if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:
         idGw.close()
     idHydroTbl.close()
             
