@@ -33,6 +33,10 @@ class jobMeta:
         self.sensFlag = []
         self.sensTbl = []
         self.calibFlag = []
+        self.trouteFlag = []
+        self.trouteConfig = []
+        self.moduleLoadStr = []
+        self.moduleLoadTrouteStr = []
         self.calibTbl = []
         self.dailyAnalysis = []
         self.coldStart = []
@@ -44,7 +48,18 @@ class jobMeta:
         self.cpuPinCmd = []
         self.nIter = []
         self.calibMethod = []
-        self.objFunc = []
+        self.enableStreamflowCalib = []
+        self.enableSnowCalib = []
+        self.enableSoilMoistureCalib = []
+        self.streamflowObjFunc = []
+        self.snowObjFunc = []
+        self.soilMoistureObjFunc = []
+        self.streamflowWeight=[]
+        self.snowWeight = []
+        self.soilMoistureWeight = []
+        self.basinType = []  # Xia 20210610
+        self.weight1event = []
+        self.weight2event = []
         self.ddsR = []
         self.outDir = []
         self.email = None
@@ -92,6 +107,7 @@ class jobMeta:
         self.timeSchmOpt = []
         self.sfcResOpt = []
         self.glacier = []
+        self.IMPERV_OPTION = []
         self.soilThick = []
         self.zLvl = []
         self.fType = []
@@ -119,8 +135,12 @@ class jobMeta:
         self.subRtFlag = []
         self.ovrRtFlag = []
         self.chnRtFlag = []
+        self.crocusFlag = []
+        self.crocusOpt = []
+        self.actLev = []
         self.chnRtOpt = []
         self.rtOpt = []
+        self.imperv_adj = []
         self.udmpOpt = []
         self.gwBaseFlag = []
         self.gwRst = []
@@ -138,6 +158,12 @@ class jobMeta:
         self.gageBegModelCpu = []
         self.gageEndModelCpu = []
         self.groupComplete = []
+        self.lsmSplitOutputCount = []
+        self.SplitOutputCount = []
+        self.enableMask = []
+        #self.maskFile = []
+        self.enableMultiSites = []
+        self.output_channelBucket_influx = []
 
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
@@ -226,17 +252,35 @@ class jobMeta:
         self.sensFlag = int(parser.get('logistics','runSens'))
         self.sensTbl = str(parser.get('logistics','sensParmTbl'))
         self.calibFlag = int(parser.get('logistics','runCalib'))
+        self.trouteFlag = int(parser.get('logistics','runTroute'))
+        self.trouteConfig = str(parser.get('logistics','trouteConfig'))
+        self.moduleLoadStr = ast.literal_eval(parser.get('logistics','moduleLoadStr'))
+        self.moduleLoadTrouteStr = ast.literal_eval(parser.get('logistics','moduleLoadTrouteStr'))
         self.calibTbl = str(parser.get('logistics','calibParmTbl'))
         self.dailyAnalysis = int(parser.get('logistics','dailyStats'))
         self.dbBackup = int(parser.get('logistics','dbBackup'))
         self.coldStart = int(parser.get('logistics','coldStart'))
         self.optSpinFlag = int(parser.get('logistics','optSpinFlag'))
         self.jobRunType = int(parser.get('logistics','jobRunType'))
-        self.objFunc = str(parser.get('logistics','objectiveFunction'))
+        self.enableStreamflowCalib = int(parser.get('logistics','enableStreamflowCalib'))
+        self.enableSnowCalib = int(parser.get('logistics','enableSnowCalib'))
+        self.enableSoilMoistureCalib = int(parser.get('logistics','enableSoilMoistureCalib'))
+        self.streamflowObjFunc = str(parser.get('logistics','streamflowObjectiveFunction'))
+        self.snowObjFunc = str(parser.get('logistics','snowObjectiveFunction'))
+        self.soilMoistureObjFunc = str(parser.get('logistics','soilMoistureObjectiveFunction'))
+        self.streamflowWeight = float(parser.get('logistics','streamflowWeight'))
+        self.snowWeight = float(parser.get('logistics','snowWeight'))
+        self.soilMoistureWeight = float(parser.get('logistics','soilMoistureWeight'))
+        self.basinType = str(parser.get('logistics','basinType')) #Xia 20210610
+        self.weight1Event = str(parser.get('logistics','weight1Event'))
+        self.weight2Event = str(parser.get('logistics','weight2Event'))
         self.ddsR = str(parser.get('logistics','ddsR'))
         if len(self.ddsR) != 0:
             self.ddsR = float(self.ddsR)
         self.email = str(parser.get('logistics','email'))
+        self.enableMask = int(parser.get('logistics','enableMask'))
+        #self.maskFile = str(parser.get('logistics','maskFile'))
+        self.enableMultiSites=int(parser.get('logistics','enableMultiSites'))
         #self.slChan = str(parser.get('logistics','slackChannel'))
         #self.slToken = str(parser.get('logistics','slackToken'))
         #self.slUser = str(parser.get('logistics','slackUser'))
@@ -296,6 +340,7 @@ class jobMeta:
         self.bSensEvalDate = datetime.datetime.strptime(self.bSensEvalDate,'%Y-%m-%d')
         self.gSQL = parser.get('gageInfo','gageListSQL')
         self.gList = str(parser.get('gageInfo','gageListFile'))
+        self.lsmSplitOutputCount = int(parser.get('lsmPhysics','SplitOutputCount'))
         self.dynVegOpt = int(parser.get('lsmPhysics','dynVegOption'))
         self.canStomOpt = int(parser.get('lsmPhysics','canStomResOption'))
         self.btrOpt = int(parser.get('lsmPhysics','btrOption'))
@@ -310,8 +355,12 @@ class jobMeta:
         self.timeSchmOpt = int(parser.get('lsmPhysics','tempTimeSchOption'))
         self.sfcResOpt = int(parser.get('lsmPhysics','sfcResOption'))
         self.glacier = int(parser.get('lsmPhysics','glacierOption'))
+        self.IMPERV_OPTION = int(parser.get('lsmPhysics','IMPERV_OPTION'))
         self.soilThick = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
         self.zLvl = float(parser.get('lsmPhysics','zLvl'))
+        self.crocusOpt = int(parser.get('crocus','crocusOpt'))
+        self.crocusFlag = int(parser.get('crocus','enableCrocusNamelist'))
+        self.actLev = int(parser.get('crocus','actLev'))
         self.fType = int(parser.get('forcing','forceType'))
         self.fDT = int(parser.get('modelTime','forceDt'))
         self.lsmDt = int(parser.get('modelTime','lsmDt'))
@@ -320,6 +369,8 @@ class jobMeta:
         self.hydroRstFreq = int(parser.get('modelTime','hydroRstFreq'))
         self.hydroOutDt = int(parser.get('modelTime','hydroOutDt'))
         self.rstType = int(parser.get('hydroIO','rstType'))
+        self.output_channelBucket_influx = int(parser.get('hydroIO','output_channelBucket_influx'))
+        self.SplitOutputCount = int(parser.get('hydroIO','SplitOutputCount'))
         self.ioConfigOutputs = int(parser.get('hydroIO','ioConfigOutputs'))
         self.ioFormOutputs = int(parser.get('hydroIO','ioFormOutputs'))
         self.chrtoutDomain = int(parser.get('hydroIO','chrtoutDomain'))
@@ -337,6 +388,7 @@ class jobMeta:
         self.subRtFlag = int(parser.get('hydroPhysics','subRouting'))
         self.ovrRtFlag = int(parser.get('hydroPhysics','ovrRouting'))
         self.rtOpt = int(parser.get('hydroPhysics','rtOpt'))
+        self.imperv_adj=int(parser.get('hydroPhysics','imperv_adj'))
         self.chnRtFlag = int(parser.get('hydroPhysics','channelRouting'))
         self.chnRtOpt = int(parser.get('hydroPhysics','chanRtOpt'))
         self.udmpOpt = int(parser.get('hydroPhysics','udmpOpt'))
@@ -346,7 +398,7 @@ class jobMeta:
         self.cmpdChan = int(parser.get('hydroPhysics','compoundChannel'))
         self.enableGwLoss = int(parser.get('hydroPhysics','enableGwBucketLoss'))
         self.gwLoss = int(parser.get('hydroPhysics','bucket_loss'))
-        
+
 def readConfig(configFile):
     """
     Generic function to read in data from a configuration file.
@@ -385,14 +437,15 @@ def createJob(argsUser):
     # Check entries into the config file to make sure they make sense.
     try:
         checkConfig(parser)
-    except:
+    except Exception as e:
         print("ERROR: Improper Entries Into Config File.")
+        print(str(e))
         raise
     
     # Initialize job object
     jobObj = jobMeta()
     
-    # Read in values
+    # Read in value
     try:
         jobMeta.readConfig(jobObj,parser)
     except:
@@ -601,13 +654,16 @@ def checkConfig(parser):
             print("ERROR: Invalid stripCalibHours passed to program.")
             raise Exception()
         
-    check = str(parser.get('logistics','objectiveFunction'))
+    check = str(parser.get('logistics','streamflowObjectiveFunction'))
     if len(check) == 0:
         print("ERROR: Zero length calibration objective function provided.")
         raise Exception()
     # For now, restrict the user to a set of pre-defined objective functions.
-    if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj":
-        print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, and hyperResMultiObj")
+    #if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj":
+    #    print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, and hyperResMultiObj") # commented by Xia 20200618
+    if (check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj"  
+      and check != "NNseSq" and check != "LBEmPrime" and check != "EventMultiObj"):
+        print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, hyperResMultiObj, NNseSq, LBEmPrime, EventMultiObj")
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))
@@ -643,21 +699,21 @@ def checkConfig(parser):
         print("ERROR: File: " + check + " not found.")
         raise Exception()
         
-    check = str(parser.get('logistics','urbParmTbl'))
-    if len(check) == 0:
-        print("ERROR: Zero length urban parameter table provided.")
-        raise Exception()
-    if not os.path.isfile(check):
-        print("ERROR: File: " + check + " not found.")
-        raise Exception()
+#    check = str(parser.get('logistics','urbParmTbl'))
+#    if len(check) == 0:
+#        print("ERROR: Zero length urban parameter table provided.")
+#        raise Exception()
+#    if not os.path.isfile(check):
+#        print("ERROR: File: " + check + " not found.")
+#        raise Exception()
         
-    check = str(parser.get('logistics','vegParmTbl'))
-    if len(check) == 0:
-        print("ERROR: Zero length vegetation parameter table provided.")
-        raise Exception()
-    if not os.path.isfile(check):
-        print("ERROR: File: " + check + " not found.")
-        raise Exception()
+#    check = str(parser.get('logistics','vegParmTbl'))
+#    if len(check) == 0:
+#        print("ERROR: Zero length vegetation parameter table provided.")
+#        raise Exception()
+#    if not os.path.isfile(check):
+#        print("ERROR: File: " + check + " not found.")
+#        raise Exception()
         
     check = str(parser.get('logistics','soilParmTbl'))
     if len(check) == 0:
@@ -760,7 +816,7 @@ def checkConfig(parser):
         raise Exception()
         
     check = int(parser.get('lsmPhysics','runoffOption'))
-    if check < 0 or check > 4:
+    if check < 0 or check > 7:
         print("ERROR: Invalid LSM runoff option chosen.")
         raise Exception()
         
@@ -813,7 +869,7 @@ def checkConfig(parser):
     if check < 0 or check > 4:
         print("ERROR: Invalid glacier option chosen.")
         raise Exception()
-    
+
     # Check soil moisture thickness values
     check = ast.literal_eval(parser.get('lsmPhysics','soilThick'))
     if len(check) != 4:
@@ -828,7 +884,26 @@ def checkConfig(parser):
     if len(check) == 0:
         print("ERROR: Zero length zLvl passed to program.")
         raise Exception()
-        
+       
+    # Check crocus options
+    check = int(parser.get('crocus','enableCrocusNamelist'))
+    if check < 0 or check > 1:
+        print("ERROR: Invalid crocus switch passed to program.")
+        raise Exception()  
+
+    check = int(parser.get('crocus','crocusOpt'))
+    if check < 0 or check > 1:
+        print("ERROR: Invalid crocus opt value passed to program.")
+        raise Exception()
+
+    check = int(parser.get('crocus','actLev'))
+    if not check:
+        print("ERROR: actLev not specified.")
+        raise Exception()
+    if check <= 0 or check > 50:
+        print("ERROR: Invalid number of actLev specified.")
+        raise Exception()
+
     # Check forcing options
     check = parser.get('forcing','forceType')
     if len(check) == 0:
@@ -878,6 +953,14 @@ def checkConfig(parser):
         raise Exception()
     if int(check) < 0 or int(check) > 1:
         print("ERROR: Invalid rstType passed to program.")
+        raise Exception()
+
+    check = parser.get('hydroIO', 'output_channelBucket_influx')
+    if len(check) == 0:
+        print("ERROR: Zero length output_channelBucket_influx passed to program.")
+        raise Exception()
+    if int(check) < 0 or int(check) > 3:
+        print("ERROR: Invalid output_channelBucket_influx passed to program.")
         raise Exception()
         
     check = parser.get('hydroIO','ioConfigOutputs')
@@ -978,7 +1061,7 @@ def checkConfig(parser):
         raise Exception()
     
     check = int(parser.get('hydroPhysics','chanRtOpt'))
-    if check < 0 or check > 3:
+    if check < -1 or check > 5 or check == 0:
         print("ERROR: Invalid channel routing option passed to program.")
         raise Exception()
         
@@ -988,7 +1071,7 @@ def checkConfig(parser):
         raise Exception()
         
     check = int(parser.get('hydroPhysics','gwBaseSw'))
-    if check < 0 or check > 3:
+    if check < 0 or check > 4:
         print("ERROR: Invalid groundwater bucket switch passed to program.")
         raise Exception()
     
@@ -1027,3 +1110,26 @@ def checkConfig(parser):
     if check1 == 0 and check2 == 1:
         print('ERROR: Cannot activate bucket_loss in the namelist if enableGwBucketLoss is off.')
         raise  Exception()
+
+    # Read in the mask options.
+    check1 = int(parser.get('logistics','enableMask'))
+    #check2 = str(parser.get('logistics','maskFile'))
+    if check1 < 0 or check1 > 1:
+        print('ERROR: Invalid enableMask option specified in the configuration file.')
+        raise Exception()
+    #    if check1 == 1 and len(check2) <= 0:
+    #        print('ERROR: Name of the mask file should be specified and \
+    #            the mask should be located under the domain directory specified in the domainMeta.csv file.')
+    #        raise  Exception()
+
+    # Read in the multis site calibraton option
+    check1 = int(parser.get('logistics','enableMultiSites'))
+    if check1 < 0 or check1 > 1:
+        print(check1)
+        print('ERROR: Invalid enableMultiSites specified in the configuration file.')
+        raise Exception()
+
+
+
+
+

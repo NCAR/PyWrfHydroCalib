@@ -179,7 +179,7 @@ def main(argv):
         wghtPath = dirBasin + "/spatialweights.nc"
         wrfInPath = dirBasin + "/wrfinput.nc"
         forceDir = dirBasin + "/FORCING"
-        obsFile = dirBasin + "/OBS/obsStrData.Rdata"
+        obsDir = dirBasin + "/OBS/"
         optSpinLandFile = dirBasin + "/LandRestartSubstitute.nc"
         optSpinHydroFile = dirBasin + "/HydroRestartSubstitute.nc"
         
@@ -220,8 +220,8 @@ def main(argv):
         if not os.path.isdir(forceDir):
             print("ERROR: " + forceDir + " not found.")
             sys.exit(1)
-        if not os.path.isfile(obsFile):
-            print("ERROR: " + obsFile + " not found.")
+        if not os.path.isdir(obsDir):
+            print("ERROR: " + obsDir + " not found.")
             sys.exit(1)
         if not os.path.isfile(gwMskPath):
             print("WARNING: " + gwMskPath + " not found. Assuming you are running NWM routing....")
@@ -254,7 +254,7 @@ def main(argv):
               "('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');" % (siteNo,\
               link,dirBasin,agency,geoE,geoW,geoS,geoN,hydE,hydW,\
               hydS,hydN,geoPath,landSpatialMetaPath,wrfInPath,soilPath,fullDomPath,routePath,wghtPath,gwPath,\
-              gwMskPath,lakePath,forceDir,obsFile,sName,lat,lon,sqMi,sqKm,\
+              gwMskPath,lakePath,forceDir,obsDir,sName,lat,lon,sqMi,sqKm,\
               county,state,huc2,huc4,huc6,huc8,eco3,eco4,rfc,dxrt,aggFactor,hydro2d,
               optSpinLandFile,optSpinHydroFile,chanParmPath)
               

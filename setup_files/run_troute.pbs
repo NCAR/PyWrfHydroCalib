@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -N troute-job
+#PBS -A NRAL0017
+#PBS -q regular
+#PBS -j oe
+#PBS -k oed
+#PBS -l select=1:ncpus=36
+#PBS -l walltime=03:00:00
+
+
+source /glade/work/rcabell/inland/inland-py39/bin/activate
+time python3 -u -m nwm_routing -V3 -f ./test_basin_11042400.yaml
+

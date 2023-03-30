@@ -72,7 +72,7 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
     jobData.dbPath = dbPath
-    
+    #jobData.trouteProcs = [] 
     # Establish database connection.
     db = dbMod.Database(jobData)
     try:
@@ -109,7 +109,11 @@ def main(argv):
     
     # Assign the SQL command from the config file into the jobData structure
     jobData.gSQL = staticData.gSQL
-        
+    jobData.trouteFlag = staticData.trouteFlag
+    jobData.trouteConfig = staticData.trouteConfig
+    jobData.moduleLoadStr = staticData.moduleLoadStr
+    jobData.moduleLoadTrouteStr = staticData.moduleLoadTrouteStr
+    jobData.trouteCompleteBasin = 0
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages2(db)
@@ -252,8 +256,8 @@ def main(argv):
     # to keep track of things. 
     pbsJobId = np.empty([len(jobData.gages)],np.int64)
     pbsJobId[:] = -9999
-
     while not completeStatus:
+        basCount = 0
         # Walk through spinup directory for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
         # namelist files appropriately. Then, restart the model. Once all
@@ -280,6 +284,7 @@ def main(argv):
             if jobData.gageGroup[basin] != int(args.groupNum[0]):
                 keySlot[basin] = 1.0
                 continue
+            basCount += 1
             keyStatusCheck1 = keySlot[basin]
             # If the status is already 1.0, then continue the loop as now work needs to be done.
             if keyStatusCheck1 == 1.0:
@@ -292,8 +297,8 @@ def main(argv):
                     errMod.errOut(jobData)
                 # Allow the program to wait before moving onto the next basin
             time.sleep(5)
-            
-        # Check to see if program requirements have been met.
+      
+
         if keySlot.sum() == entryValue:
             if len(args.groupNum[0]) == 0:
                 jobData.spinComplete = 1
@@ -305,17 +310,16 @@ def main(argv):
                 errMod.sendMsg(jobData)
                 completeStatus = True
             else:
-                # We are running with the orchestrator program. Touch the complete flag to let the
-                # calling program know this group of basins is complete.
+            # We are running with the orchestrator program. Touch the complete flag to let the
+            # calling program know this group of basins is complete.
                 basinCompleteFlag = str(jobData.jobDir) + "/SPINUP_GROUP_" + str(args.groupNum[0]) + ".COMPLETE"
                 try:
                     open(basinCompleteFlag, 'a').close()
                 except:
                     jobData.errMsg = "Unable to create complete flag: " + basinCompleteFlag
                     errMod.errOut(jobData)
-
+                
             completeStatus = True
-            
         # Open the Python LOCK file. Write a blank line to the file and close it.
         # This action will simply modify the file modification time while only adding
         # a blank line.
