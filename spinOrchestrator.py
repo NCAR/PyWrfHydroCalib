@@ -67,7 +67,7 @@ def main(argv):
     jobData = statusMod.statusMeta()
     jobData.jobID = int(args.jobID[0])
     jobData.dbPath = dbPath
-
+    #jobData.trouteProcs = []
     # Establish database connection.
     db = dbMod.Database(jobData)
     db.lockPath = dbPath + ".LOCK"
@@ -108,7 +108,8 @@ def main(argv):
     jobData.trouteConfig = staticData.trouteConfig
     jobData.moduleLoadStr = staticData.moduleLoadStr
     jobData.moduleLoadTrouteStr = staticData.moduleLoadTrouteStr
-
+    jobData.trouteCompleteBasin = 0
+    
     # Check gages in directory to match what's in the database
     try:
         jobData.checkGages2(db)
@@ -273,7 +274,7 @@ def main(argv):
 
             # Allow for some time in-between groups.
             time.sleep(15)
-
+        
         # Check to see if the program requirements have been met.
         if sum(jobData.groupComplete) == jobData.nGroups:
             jobData.spinComplete = 1
@@ -285,6 +286,5 @@ def main(argv):
             errMod.sendMsg(jobData)
 
             completeStatus = True
-
 if __name__ == "__main__":
     main(sys.argv[1:])

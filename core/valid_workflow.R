@@ -10,7 +10,7 @@ library(ggplot2)
 library(plyr)
 library(gridExtra)
 library(zoo)
-library(qmap)
+#library(qmap)
 #########################################################
 # SETUP
 #########################################################

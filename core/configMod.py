@@ -165,7 +165,6 @@ class jobMeta:
         self.enableMultiSites = []
         self.output_channelBucket_influx = []
 
-
     def checkGages2(self,db):
         #Function to extract domain ID values based on the SQL command placed into the
         #configuration file.
@@ -399,7 +398,7 @@ class jobMeta:
         self.cmpdChan = int(parser.get('hydroPhysics','compoundChannel'))
         self.enableGwLoss = int(parser.get('hydroPhysics','enableGwBucketLoss'))
         self.gwLoss = int(parser.get('hydroPhysics','bucket_loss'))
-        
+
 def readConfig(configFile):
     """
     Generic function to read in data from a configuration file.

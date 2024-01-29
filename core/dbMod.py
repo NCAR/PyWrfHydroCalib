@@ -254,10 +254,10 @@ class Database(object):
                 self.dbCursor.execute(sqlCmd)
                 self.conn.commit()
                 success = True
-            except:
+            except Exception as e:
                 time.sleep(5)
                 if attempts == 9:
-                    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName
+                    jobData.errMsg = "ERROR: Unable to create JobID for job name: " + jobData.jobName + str(e)
                     raise
                 else:
                     attempts = attempts + 1
@@ -520,7 +520,6 @@ class Database(object):
         jobData.slUser = results[37]
         jobData.mpiCmd = results[38]
         jobData.cpuPinCmd = results[39]
-
         # Initiate Slack if fields are not MISSING
         #if jobData.slChan != "MISSING":
         #    try:

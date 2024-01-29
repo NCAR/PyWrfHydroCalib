@@ -116,31 +116,6 @@ def runTroute(statusData,staticData,db,gageID,gage,gageMeta,modType):
             statusData.errMsg = "ERROR: Unable to launch WRF-Hydro job for gage: " + str(gage)
             raise
 
-    begDate = min(staticData.bValidDate, staticData.bCalibDate)
-    endDate = max(staticData.eValidDate, staticData.eCalibDate)
-
-    runStatus = statusMod.walkModTroute(begDate,endDate,runDir,yamlDict)
-    begDate = runStatus[0]
-    endDate = runStatus[1]
-    runFlag = runStatus[2]
-
-    if runFlag == False:
-        if not os.path.exists(trouteCompleteFlag):
-            try:
-                open(trouteCompleteFlag, 'a').close()
-            except:
-                statusData.errMsg = "Unable to create complete flag: " + trouteCompleteFlag
-                errMod.errOut(statusData)
-    else:
-        #LOCK FILE HERE
-        if os.path.isfile(lockPath):
-            sys.exit()
-        else:
-            open(lockPath,'a').close()
-            statusData.errMsg = "Unable to create complete flag because Troute didn't run successfully: Remove TROUTE.LOCK file: " + lockPath 
-            errMod.errOut(statusData)
-            sys.exit()
-
     return
 
 def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTop,pbsJobId):
@@ -351,13 +326,39 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
     
     # Path that will define when the parameter generation has completed.
     genParmComplete = bestDir + "/PARAM_GEN.COMPLETE"
-    
+    trouteCompleteFlag = runDir + "/trouteCompleteFlag"    
     if keyStatus == 1.0:
         # Model has already completed
-        runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
         runFlag = False
         return
-        
+    
+    if keyStatus == 0.95:
+        if os.path.isfile(trouteCompleteFlag):
+            keySlot[basinNum,0] = 1.0
+            keyStatus = 1.0
+            return
+        yamlFile = open(statusData.trouteConfig)
+        yamlDict = yaml.load(yamlFile, Loader=yaml.FullLoader)
+        runStatus = statusMod.walkModTroute(min(staticData.bValidDate, staticData.bCalibDate),max(staticData.eValidDate, staticData.eCalibDate),runDir,yamlDict)
+        begDate = runStatus[0]
+        endDate = runStatus[1]
+        tRunFlag = runStatus[2]
+        if tRunFlag == False:
+            if not os.path.exists(trouteCompleteFlag):
+                try:
+                    open(trouteCompleteFlag, 'a').close()
+                except Exception as e:
+                    statusData.errMsg = "Unable to create complete flag: " + trouteCompleteFlag + str(e)
+                    errMod.errOut(statusData)
+            else:
+                tLockPath = validWorkDir + "/TROUTE.LOCK"
+                if os.path.isfile(tLockPath):
+                    return
+                else:
+                    open(tLockPath,'a').close()
+                    statusData.errMsg = "Unable to create complete flag because Troute didn't run successfully. Remove TROUTE.LOCK file: " + tLockPath
+                    errMod.errOut(statusData)
+ 
     if keyStatus == 0.1:
         # Parameter generation code is running. 
         if genParmStatus:
@@ -403,10 +404,15 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 runFlag = True
             else:
                 # Model has completed!
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
-                keySlot[basinNum,0] = 1.0
-                keyStatus = 1.0
-                runFlag = False
+                if statusData.trouteFlag == 1:
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
+                    keySlot[basinNum,0] = 0.95
+                    keyStatus = 0.95
+                    runFlag = False
+                else:
+                    keySlot[basinNum,0] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
            
     # For simulations that are fresh
     if keyStatus == 0.0:
@@ -434,11 +440,16 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
             endDate = runStatus[1]
             runFlag = runStatus[2]
             if not runFlag and os.path.isfile(genParmComplete):
-                # Model simulation completed before workflow was restarted.           
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
-                keySlot[basinNum,0] = 1.0
-                keyStatus = 1.0
-                runFlag = False
+                # Model simulation completed before workflow was restarted.
+                if statusData.trouteFlag == 1:           
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
+                    keySlot[basinNum,0] = 0.95
+                    keyStatus = 0.95
+                    runFlag = False
+                else:
+                    keySlot[basinNum,0] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
             if runFlag and not os.path.isfile(genParmComplete):
                 # Model hasn't ran, and parameter generation code hasn't ran yet.
                 keySlot[basinNum,0] = 0.0
@@ -481,10 +492,15 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 keyStatus = 0.25
             else:
                 # Model sucessfully completed.
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
-                keySlot[basinNum,0] = 1.0
-                keyStatus = 1.0
-                runFlag = False
+                if statusData.trouteFlag == 1:
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
+                    keySlot[basinNum,0] = 0.95
+                    keyStatus = 0.95
+                    runFlag = False
+                else:
+                    keySlot[basinNum,0] = 1.0
+                    keyStatus = 1.0
+                    runFlag = False
                 
     # For when the model crashed ONCE
     if keyStatus == -0.5:
@@ -512,9 +528,13 @@ def runModelCtrl(statusData,staticData,db,gageID,gage,keySlot,basinNum,libPathTo
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt.
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
-                keySlot[basinNum,0] = 1.0
-                keyStatus = 1.0
+                if statusData.trouteFlag == 1:
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'CTRL')
+                    keySlot[basinNum,0] = 0.95
+                    keyStatus = 0.95
+                else:
+                    keySlot[basinNum,0] = 1.0
+                    keyStatus = 1.0
                 
     if keyStatus == -0.25 and runFlag:
         # Restarting model from one crash
@@ -940,7 +960,7 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
     # Create path to LOCK file if neeced
     lockPath = runDir + "/RUN.LOCK"
     evalLockPath = validWorkDir + '/EVAL.LOCK'
-    
+    trouteCompleteFlag = runDir + "/trouteCompleteFlag" 
     # Path that will define when the parameter generation has completed.
     evalComplete = validWorkDir + "/R_VALID_COMPLETE"
     
@@ -951,7 +971,34 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
         # Model has already completed
         runFlag = False
         return
-        
+
+    if keyStatus == 0.65:
+        if os.path.isfile(trouteCompleteFlag):
+            keySlot[basinNum,1] = 0.75
+            keyStatus = 0.75
+        else:    
+            yamlFile = open(statusData.trouteConfig)
+            yamlDict = yaml.load(yamlFile, Loader=yaml.FullLoader)
+            runStatus = statusMod.walkModTroute(min(staticData.bValidDate, staticData.bCalibDate),max(staticData.eValidDate, staticData.eCalibDate),runDir,yamlDict)
+            begDate = runStatus[0]
+            endDate = runStatus[1]
+            tRunFlag = runStatus[2]
+            if tRunFlag == False:
+                if not os.path.exists(trouteCompleteFlag):
+                    try:
+                        open(trouteCompleteFlag, 'a').close()
+                    except Exception as e:
+                        statusData.errMsg = "Unable to create complete flag: " + trouteCompleteFlag + str(e)
+                        errMod.errOut(statusData)
+                else:
+                    tLockPath = validWorkDir + "/TROUTE.LOCK"
+                    if os.path.isfile(tLockPath):
+                        return
+                    else:
+                        open(tLockPath,'a').close()
+                        statusData.errMsg = "Unable to create complete flag because Troute didn't run successfully. Remove TROUTE.LOCK file: " + tLockPath
+                        errMod.errOut(statusData) 
+
     if keyStatus == 0.9:
         # Evaluation code is running. 
         if evalStatus:
@@ -1002,11 +1049,15 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 runFlag = True
             else:
                 # Model has completed. Ready to run R evaluation code (pending control complete)
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
-                keySlot[basinNum,1] = 0.75
-                keyStatus = 0.75
-                runFlag = False
-                
+                if statusData.trouteFlag == 1: 
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
+                    keySlot[basinNum,1] = 0.65
+                    keyStatus = 0.65
+                    runFlag = False
+                else:
+                    keySlot[basinNum,1] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
     # For simulations that are fresh
     if keyStatus == 0.0:
         if basinStatus:
@@ -1043,10 +1094,15 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 runFlag = False
             if not runFlag and not os.path.isfile(evalComplete):
                 # Model has completed, but the eval code hasn't ben ran yet.
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
-                keySlot[basinNum,1] = 0.75
-                keyStatus = 0.75
-                runFlag = False
+                if statusData.trouteFlag == 1:
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
+                    keySlot[basinNum,1] = 0.65
+                    keyStatus = 0.65
+                    runFlag = False
+                else:
+                    keySlot[basinNum,1] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
             if runFlag and not os.path.isfile(evalComplete):
                 # model either hasn't ran yet, or needs to be restarted.
                 keySlot[basinNum,1] = 0.0
@@ -1063,10 +1119,15 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
             runFlag = False
         else:
             # LOCK file was removed, upgrade status.
-            runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
-            keySlot[basinNum,1] = 0.75
-            runFlag = False
-                
+            if statusData.trouteFlag == 1:
+                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
+                keySlot[basinNum,1] = 0.65
+                keyStatus = 0.65
+                runFlag = False
+            else:
+                keySlot[basinNum,1] = 0.75
+                keyStatus = 0.75
+                runFlag = False    
     # For when the model failed TWICE and is locked.
     if keyStatus == -1.0:
         # If LOCK file exists, no simulation will take place. File must be removed
@@ -1084,11 +1145,15 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 keyStatus = 0.0
             else:
                 # Model sucessfully completed. Ready to run evaluation code.
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
-                keySlot[basinNum,1] = 0.75
-                keyStatus = 0.75
-                runFlag = False
-                
+                if statusData.trouteFlag == 1:
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST')
+                    keySlot[basinNum,1] = 0.65
+                    keyStatus = 0.65
+                    runFlag = False
+                else:
+                    keySlot[basinNum,1] = 0.75
+                    keyStatus = 0.75
+                    runFlag = False
     # For when the model crashed ONCE
     if keyStatus == -0.5:
         if basinStatus:
@@ -1114,9 +1179,13 @@ def runModelBest(statusData,staticData,db,gageID,gage,keySlot,basinNum,pbsJobId)
                 runFlag = False
             else:
                 # Model sucessfully completed from first failed attempt. Ready to run evaluation code.
-                runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST') 
-                keySlot[basinNum,1] = 0.75
-                keyStatus = 0.75
+                if statusData.trouteFlag == 1:
+                    runTroute(statusData,staticData,db,gageID,gage,gageMeta,'BEST') 
+                    keySlot[basinNum,1] = 0.65
+                    keyStatus = 0.65
+                else:
+                    keySlot[basinNum,1] = 0.75
+                    keyStatus = 0.75
                 
     if keyStatus == -0.25 and runFlag:
         # Restarting model from one crash

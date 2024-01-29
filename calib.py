@@ -328,6 +328,7 @@ def main(argv):
                     
                 
     while not completeStatus:
+        basCount = 0
         # Walk through calibration directories for each basin. Determine the status of
         # the model runs by the files available. If restarting, modify the 
         # namelist files appropriately. Then, restart the model. If anything goes wrong, notifications
@@ -363,6 +364,7 @@ def main(argv):
                 if jobData.gageGroup[basin] != int(args.groupNum[0]):
                     keySlot[basin,iteration] = 1.0
                     continue
+                basCount += 1
                 print("PROCESSING ITERATION: " + str(iteration))
                 # Holding onto the status value before the workflow iterates for checking below.
                 keyStatusCheck1 = keySlot[basin,iteration]
@@ -383,7 +385,7 @@ def main(argv):
         # Check to see if program requirements have been met.
         if keySlot.sum() == entryValue:
             if len(args.groupNum[0]) == 0:
-                # If we aren't doing groups, this means all basins are complete.
+            # If we aren't doing groups, this means all basins are complete.
                 jobData.calibComplete = 1
                 try:
                     db.updateCalibStatus(jobData)

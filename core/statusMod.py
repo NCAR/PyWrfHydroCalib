@@ -5,7 +5,7 @@
 # National Center for Atmospheric Research
 
 from glob import glob
-import os
+import os,sys
 import pwd
 import subprocess
 import pandas as pd
@@ -14,8 +14,10 @@ import psutil
 import math
 import time
 import shutil
-
+import pickle
+import json
 import warnings
+import ast
 warnings.filterwarnings("ignore")
 
 class statusMeta:
@@ -76,6 +78,8 @@ class statusMeta:
         self.slackObj = None
         self.gSQL = []
         self.dbPath = []
+        self.trouteLock = []
+        self.trouteCompleteBasin = []
     def checkGages(self,db):
         # Function to check number of gages in output directory. Function
         # also calls the database module to extract unique ID values for each
@@ -471,7 +475,6 @@ def checkBasJob(jobData,gageNum,pbsJobId):
             
     return status
    
-
 def walkModTroute(bDate,eDate,runDir,yamlDict): 
     """
     Generic function to walk a simulation directory, and determine where the model
@@ -2145,6 +2148,7 @@ def checkBasGroupJob(jobData, groupNum, pbsJobId, programType):
             # this instance of the workflow.
             # Try running qstat for the job ID. If it's unsucessfull, then we
             # can make a good assumption that the job is no longer running.
+            time.sleep(120)
             try:
                 jobsTmpStatus = subprocess.call(['qstat', str(pbsJobId[groupNum])])
                  
