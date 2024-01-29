@@ -423,14 +423,13 @@ def main(argv):
                 idHydroTbl.variables['NEXP'][:,:] = np.where(np.flipud(mask[0])==1,idHydroTbl.variables['NEXP'][:,:],idHydroTbl.variables['NEXP'][:,:]*float(newParams.nexp[0]))
 
             if param == "AXAJ":
-                idSoil2D.variables['AXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['AXAJ'][:,:,:],idSoil2D.variables['AXAJ'][:,:,:]*0+float(newParams.AXAJ[0]))
+                idSoil2D.variables['AXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['AXAJ'][:,:,:],idSoil2D.variables['AXAJ'][:,:,:]*float(newParams.AXAJ[0]))
 
             if param == "BXAJ":
-                idSoil2D.variables['BXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['BXAJ'][:,:,:],idSoil2D.variables['BXAJ'][:,:,:]*0+float(newParams.BXAJ[0]))
+                idSoil2D.variables['BXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['BXAJ'][:,:,:],idSoil2D.variables['BXAJ'][:,:,:]*float(newParams.BXAJ[0]))
 
             if param == "XXAJ":
-                idSoil2D.variables['XXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['XXAJ'][:,:,:],idSoil2D.variables['XXAJ'][:,:,:]*0+float(newParams.XXAJ[0]))
-
+                idSoil2D.variables['XXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['XXAJ'][:,:,:],idSoil2D.variables['XXAJ'][:,:,:]*float(newParams.XXAJ[0]))
 		
             if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:   
                 if param == "zmax":
