@@ -293,10 +293,6 @@ for (i in 1:length(runList[[1]])) {
       # Subset data
       chrt.obj <- get(runList[["df"]][i])
       chrt.obj <- chrt.obj[POSIXct >= dtList[["start"]][j] & POSIXct < dtList[["end"]][j],]
-
-      # this is being added since for IWAA project we want to have discontinuous dataset
-      if (j == 2) {chrt.obj <- chrt.obj[!(POSIXct >= dtList[["start"]][1] & POSIXct < dtList[["end"]][1]),]}
-
       chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
 
       if (enableMultiSites == 0) {
