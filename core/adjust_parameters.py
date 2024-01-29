@@ -430,7 +430,6 @@ def main(argv):
 
             if param == "XXAJ":
                 idSoil2D.variables['XXAJ'][:,:,:] = np.where(np.flipud(mask[0])==1,idSoil2D.variables['XXAJ'][:,:,:],idSoil2D.variables['XXAJ'][:,:,:]*float(newParams.XXAJ[0]))
-
 		
             if args.gwFlag[0] == 1 or args.gwFlag[0] == 4:   
                 if param == "zmax":
