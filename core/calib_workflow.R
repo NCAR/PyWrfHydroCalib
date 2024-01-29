@@ -262,11 +262,13 @@ if (cyclecount > 0) {
          if (calcDailyStats) {
             chrt.d <- Convert2Daily(chrt)
             assign(paste0("chrt.obj.", cyclecount), chrt.d)
+            save(chrt.d, file = paste0("chrt.obj.", cyclecount))
             chrt.obj <- copy(chrt.d)
             obs.obj <- Convert2Daily(obsStreamData)
             obs.obj$threshold <- obsStreamData$threshold[1]
          } else {
             assign(paste0("chrt.obj.", cyclecount), chrt)
+            save(chrt, file = paste0("chrt.obj.", cyclecount))
             chrt.obj <- copy(chrt)
             obs.obj <- copy(obsStreamData[, c("site_no", "POSIXct", "obs", "threshold")])  # this extra step is to remove the basinType from the osbervation file if specified. Otherwise it will be used instead of variable BasinType when calling MultiEvent function
          }
@@ -790,7 +792,8 @@ if (cyclecount > 0) {
       lastRun <- copy(get(paste0("chrt.obj.", ifelse(lastcycle, cyclecount, cyclecount-1))))
       lastRun [ , run := "Last Run"]
       # the best iteration should be find
-      bestRun <- copy(get(paste0("chrt.obj.", iter_best)))
+      #bestRun <- copy(get(paste0("chrt.obj.", iter_best)))
+      bestRun <- get(load(paste0("chrt.obj.", iter_best)))
       bestRun [ , run := "Best Run"]
       
       obsStrDataPlot <- copy(chrt.obj)
@@ -1050,8 +1053,9 @@ if (cyclecount > 0) {
       
       # Save and exit
       rm(objFn, mCurrent, r, siteId, rtlinkFile, linkId, startDate, ncores)
-      save.image(paste0(runDir, "/proj_data.Rdata"))
-      
+      if (cyclecount > 2) rm(list = paste0("chrt.obj.", cyclecount - 1))
+      save.image(paste0(runDir, "/proj_data.Rdata")) 
+
       # Write param files
       cat("cyclecount== ", cyclecount, "\n")
       write.table(paramStats, file=paste0(runDir, "/params_stats.txt"), row.names=FALSE, sep=" ")
