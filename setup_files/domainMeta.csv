@@ -1,2 +1,2 @@
 "site_no","link","hyd_w","hyd_e","hyd_s","hyd_n","geo_w","geo_e","geo_s","geo_n","dirname","agency_cd","site_name","lat","lon","area_sqmi","area_sqkm","county_cd","state","HUC2","HUC4","HUC6","HUC8","ecol3","ecol4","rfc"
-"01473000",4782107,16133,16292,8725,8844,4034,4073,2182,2211,"/glade/scratch/arezoo/RFC_Training/01473000","USGS","Perkiomen Creek at Graterford, PA",40.2274284362793,-75.4523696899414,279.245104305294,723.241797,"091",NA,NA,NA,NA,NA,NA,NA,"MARFC_snowy"
+"01473000",4782107,16133,16292,8725,8844,4034,4073,2182,2211,"PATH/TO/PyWrfHydroCalib_TestCase/01473000","USGS","Perkiomen Creek at Graterford, PA",40.2274284362793,-75.4523696899414,279.245104305294,723.241797,"091",NA,NA,NA,NA,NA,NA,NA,"MARFC_snowy"

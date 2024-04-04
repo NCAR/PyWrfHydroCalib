@@ -1,3 +1,0 @@
-"site_no","link","hyd_w","hyd_e","hyd_s","hyd_n","geo_w","geo_e","geo_s","geo_n","dirname","agency_cd","site_name","lat","lon","area_sqmi","area_sqkm","county_cd","state","HUC2","HUC4","HUC6","HUC8","ecol3","ecol4","rfc"
-"07165562",368019,9605,9648,5949,5992,2402,2412,1488,1498,"/glade/scratch/arezoo/RFC_Training/07165562/","USGS","Haikey Creek at 101st St South at Tulsa, OK",36.0295066833496,-95.8386917114258,19.552321496702,50.640301,"143",NA,NA,NA,NA,NA,NA,NA,"RFC_PR_no_snowy"
-

@@ -20,36 +20,36 @@
 # Top level directory where output from model runs, etc
 # will be placed. This is essentially your "job" directory
 # containing all the model output, analysis, etc. 
-outDir = /glade/scratch/ishitas/
-expName = troute_run
-acctKey = NRAL0017
-optQueName = regular
+outDir = /PATH/TO/PyWrfHydroCalib_TestCase/output
+expName = Test 
+acctKey = ACCOUNT_KEY
+optQueName = main
 nCoresModel = 9
 nNodesModel = 1
 nCoresPerNode = 36
 
 # Flag to turn sensitivity analysis on: 0 - Off, 1 - On.
 runSens = 0 
-sensParmTbl = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/sens_params.tbl
+sensParmTbl = PATH/sens_params.tbl
 
 # Flag to turn calibration on: 0 - Off, 1 - On.
 runCalib = 1
 
 # Path to the calibration parameters, and their range. Paranmeters flagged 1 will be calibrated. 
-calibParmTbl = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/calib_params.tbl
+calibParmTbl = /PATH/TO/PyWrfHydroCalib_TestCase/PyWrfHydroCalib/setup_files/calib_params.tbl
 
 # Flag to turn troute on instead of running MC 
-runTroute = 1
+runTroute = 0
 
 # Path to the troute_config, the config file will be used as is 
 # only the path to the domain files will be changed. 
-trouteConfig = /glade/work/ishitas/troute_calib/PyWrfHydroCalib/setup_files/troute_config.yaml
+trouteConfig = PATH/troute_config.yaml
 
 # list of all srings to add to the submisssion jobs. This will guarantee to load the proper libraries (python, R, ...)
-moduleLoadStr = ['module load eccodes/2.19.1', 'module load ncarenv/1.3', 'module load ncarcompilers/0.5.0', 'module load nco/4.9.5', 'module load intel/18.0.5', 'module load impi/2018.4.274', 'module load netcdf', 'source /glade/work/ishitas/python_envs/368_demo/bin/activate']
+moduleLoadStr = ['module purge','module load ncarenv/23.09','module load intel/2023.2.1','module load intel-mpi/2021.10.0','module load hdf5/1.12.2','module load netcdf/4.9.2']
 
 # list of all srings to add to the submisssion jobs for Troute. 
-moduleLoadTrouteStr = ['module load eccodes/2.19.1','source /glade/work/rcabell/inland/inland-py39/bin/activate']
+moduleLoadTrouteStr = ['module1', 'module2']
 
 # By default, R code will run hourly analysis on model output. This flag will
 # direct the R code to run daily statistics instead. This means hourly output
@@ -99,8 +99,10 @@ stripCalibHours = 120
 # 4 - No job scheduler. Run via MPI.
 # jobRunType is how you plan on executing the WRF-Hydro simulations
 jobRunType = 2
+
 # Specify the MPI command to use.
 mpiCmd = mpiexec -np
+
 # Specify the CPU pinning command to supplement the MPI command to pin the model
 # to specific CPUs.
 cpuPinCmd = 
@@ -170,31 +172,31 @@ enableMultiSites = 0
 
 
 # Specify email to send updates/error messages to.
-email = ishitas@ucar.edu 
+email = arezoo@ucar.edu 
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
-wrfExe = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/wrf_hydro.exe
+wrfExe = /PATH/TO/PyWrfHydroCalib_TestCase/wrf_hydro_nwm_public/build/Run/wrf_hydro.exe
 # Specify parameter tables to use for Noah-MP
-genParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/GENPARM.TBL
-mpParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/MPTABLE.TBL
-urbParmTbl = /glade/work/arezoo/calibration_v30/Task_7/sample_calib/TBLs/URBPARM.TBL
-vegParmTbl = /glade/work/arezoo/calibration_v30/Task_7/sample_calib/TBLs/VEGPARM.TBL
-soilParmTbl = /glade/work/arezoo/RFC_Training/Post_RFC_CalibTrain2021/wrf_hydro_nwm_public/trunk/NDHMS/Run/SOILPARM.TBL
+genParmTbl =  /PATH/TO/PyWrfHydroCalib_TestCase/wrf_hydro_nwm_public/build/Run/GENPARM.TBL
+mpParmTbl =   /PATH/TO/PyWrfHydroCalib_TestCase/wrf_hydro_nwm_public/build/Run/MPTABLE.TBL
+urbParmTbl =  /PATH/TO/PyWrfHydroCalib_TestCase/wrf_hydro_nwm_public/build/Run/URBPARM.TBL
+vegParmTbl =  /PATH/TO/PyWrfHydroCalib_TestCase/wrf_hydro_nwm_public/build/Run/VEGPARM.TBL
+soilParmTbl = /PATH/TO/PyWrfHydroCalib_TestCase/wrf_hydro_nwm_public/build/Run/SOILPARM.TBL
 
 # NOTE Date values should be specified in YYYY-MM-DD format.
 # Specify date range for spinup
-bSpinDate = 2009-10-01
-eSpinDate = 2010-01-01
+bSpinDate = 2018-08-01
+eSpinDate = 2018-10-01
 
 # Specify date range for calibration period
-bCalibDate = 2010-02-01
-eCalibDate = 2010-03-01
-bCalibEvalDate = 2010-02-05
+bCalibDate = 2018-08-01
+eCalibDate = 2018-09-01
+bCalibEvalDate = 2018-08-10
 
 # Specify date range for validation period
-bValidDate = 2010-03-01
-eValidDate = 2010-04-01
-bValidEvalDate = 2010-03-05
+bValidDate = 2018-08-01
+eValidDate = 2018-10-01
+bValidEvalDate = 2018-09-01
 
 [Sensitivity]
 # Specify parameter sample size
@@ -267,12 +269,12 @@ zLvl = 10.0
 # Switch to turn on or off the namelist option CROCUS_nlist
 # enableCrocusNamelist = 0 will not add the crocus namelist to the namelist.hrldas
 # enableCrocusNamelist = 1 will add the crocus namelist to the namellist.hrldas
-enableCrocusNamelist = 1
+enableCrocusNamelist = 0
 # Crocus option 
 # crocusOpt = 0 will skipp the CROCUS 
 # crocusOpt = 1 will run CROCUS on the glacier pixels 
 # glacier pixels are specified in the wrfinput.nc file 
-crocusOpt = 1
+crocusOpt = 0
 # An option in crocus 
 actLev = 40
 
