@@ -57,5 +57,5 @@ python $PATH_TO_PyWrfHydroCalib/calibOrchestrator.py 1 --optDbPath $PATH_TO_Data
 ```
 Step 6: Run validation
 ```bash 
-python $PATH_TO_PyWrfHydroCalib/validOrchestrator.py 1 --optDbPath $PATH_TO_Database
+python $PATH_TO_PyWrfHydroCalib/runValidOrchestrator.py PATH_TO_PyWrfHydroCalib 1 --optDbPath $PATH_TO_Database
 ```
