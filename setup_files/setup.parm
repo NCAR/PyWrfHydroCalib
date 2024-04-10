@@ -172,7 +172,7 @@ enableMultiSites = 0
 
 
 # Specify email to send updates/error messages to.
-email = arezoo@ucar.edu 
+email = YourEmail@YourEmailAddress 
 
 # Specify executable to run. This must be a WRF-Hydro executable. 
 wrfExe = /PATH/TO/PyWrfHydroCalib_TestCase/wrf_hydro_nwm_public/build/Run/wrf_hydro.exe
