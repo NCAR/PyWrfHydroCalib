@@ -28,6 +28,8 @@ CREATE TABLE "Calib_Stats" (
    "nse" real DEFAULT NULL,
    "nselog" real DEFAULT NULL,
    "kge" real DEFAULT NULL,
+   "kgelf" real DEFAULT NULL, 
+   "skge" real DEFAULT NULL,
    "fdcerr" real DEFAULT NULL,
    "msof" real DEFAULT NULL,
    "hyperResMultiObj" real DEFAULT NULL,
@@ -47,6 +49,8 @@ CREATE TABLE "Sens_Stats" (
     "nse" real DEFAULT NULL,
     "nselog" real DEFAULT NULL,
     "kge" real DEFAULT NULL,
+    "kgelf" real DEFAULT NULL,
+    "skge" real DEFAULT NULL,
     "fdcerr" real DEFAULT NULL,
     "msof" real DEFAULT NULL,
     "hyperResMultiObj" real DEFAULT NULL,
@@ -173,6 +177,8 @@ CREATE TABLE "Valid_Stats" (
    "nselog" real DEFAULT NULL,
    "nseWt" real DEFAULT NULL,
    "kge" real DEFAULT NULL,
+   "kgelf" real DEFAULT NULL,
+   "skge" real DEFAULT NULL,
    "msof" real DEFAULT NULL,
    "hyperResMultiObj" real DEFAULT NULL
 );

@@ -398,7 +398,7 @@ def main(argv):
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
                     cmd = "insert into \"Sens_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias," \
-                          "rmse,cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",timestep,complete) " \
+                          "rmse,cor,nse,nselog,kge,kgelf,skge,fdcerr,msof,\"hyperResMultiObj\",timestep,complete) " \
                           "values ('%s','%s','%s','%s','%s','%s'," \
                           "'%s','%s','%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),
                                                                                str(entryTmp[2]),str(entryTmp[3]),
@@ -407,7 +407,8 @@ def main(argv):
                                                                                str(entryTmp[8]),str(entryTmp[9]),
                                                                                str(entryTmp[10]),str(entryTmp[11]),
                                                                                str(entryTmp[12]),str(entryTmp[13]),
-                                                                               str(entryTmp[14]))
+                                                                               str(entryTmp[14]),str(entryTmp[15]),
+                                                                               str(entryTmp[16]))
                     try:
                         dbCursorExt.execute(cmd)
                         connExt.commit()
@@ -420,8 +421,9 @@ def main(argv):
                           str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"objfnVal\"='" + str(entryTmp[3]) + \
                           "', bias='" + str(entryTmp[4]) + "', rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
                           "', nse='" + str(entryTmp[7]) + "', nselog='" + str(entryTmp[8]) + "', kge='" + str(entryTmp[9]) + \
-                          "', fdcerr='" + str(entryTmp[10]) + "', msof='" + entryTmp[11] + "', \"hyperResMultiObj\"='" + \
-                          str(entryTmp[12]) + "', timestep='" + str(entryTmp[13]) + "', complete='" + str(entryTmp[14]) + \
+                          "', kgelf='" + str(entryTmp[10]) + "', skge='" + str(entryTmp[11]) +\
+                          "', fdcerr='" + str(entryTmp[12]) + "', msof='" + entryTmp[13] + "', \"hyperResMultiObj\"='" + \
+                          str(entryTmp[14]) + "', timestep='" + str(entryTmp[15]) + "', complete='" + str(entryTmp[16]) + \
                           "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + "';"
                     try:
@@ -546,7 +548,7 @@ def main(argv):
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
                     cmd = "insert into \"Calib_Stats\" (\"jobID\",\"domainID\",iteration,\"objfnVal\",bias," \
-                          "rmse,cor,nse,nselog,kge,fdcerr,msof,\"hyperResMultiObj\",best,complete) " \
+                          "rmse,cor,nse,nselog,kge,kgelf,skge,fdcerr,msof,\"hyperResMultiObj\",best,complete) " \
                           "values ('%s','%s','%s','%s','%s','%s'," \
                           "'%s','%s','%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),
                                                                                str(entryTmp[2]),str(entryTmp[3]),
@@ -555,7 +557,8 @@ def main(argv):
                                                                                str(entryTmp[8]),str(entryTmp[9]),
                                                                                str(entryTmp[10]),str(entryTmp[11]),
                                                                                str(entryTmp[12]),str(entryTmp[13]),
-                                                                               str(entryTmp[14]))
+                                                                               str(entryTmp[14]), str(entryTmp[15], 
+                                                                               str(entryTmp[16])
                     try:
                         dbCursorExt.execute(cmd)
                         connExt.commit()
@@ -568,8 +571,9 @@ def main(argv):
                           str(bsnIdUnique) + "', iteration='" + str(entryTmp[2]) + "', \"objfnVal\"='" + str(entryTmp[3]) + \
                           "', bias='" + str(entryTmp[4]) + "', rmse='" + str(entryTmp[5]) + "', cor='" + str(entryTmp[6]) + \
                           "', nse='" + str(entryTmp[7]) + "', nselog='" + str(entryTmp[8]) + "', kge='" + str(entryTmp[9]) + \
-                          "', fdcerr='" + str(entryTmp[10]) + "', msof='" + str(entryTmp[11]) + "', \"hyperResMultiObj\"='" + \
-                          str(entryTmp[12]) + "', best='" + str(entryTmp[13]) + "', complete='" + str(entryTmp[14]) + \
+                          "', kgelf='" + str(entryTmp[10]) + "', skge='" + str(entryTmp[11]) +\
+                          "', fdcerr='" + str(entryTmp[12]) + "', msof='" + str(entryTmp[13]) + "', \"hyperResMultiObj\"='" + \
+                          str(entryTmp[12]) + "', best='" + str(entryTmp[15]) + "', complete='" + str(entryTmp[16]) + \
                           "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "' and \"domainID\"='" + str(bsnIdUnique) + "' and iteration='" + str(updatesTmp[2]) + "';"
                     try:
@@ -628,7 +632,7 @@ def main(argv):
                 if updatesTmp == None:
                     # This is a new entry, we need run an INSERT.
                     cmd = "insert into \"Valid_Stats\" (\"jobID\",\"domainID\",simulation,\"evalPeriod\",\"objfnVal\"," \
-                          "bias,rmse,cor,nse,nselog,\"nseWt\",kge,msof,\"hyperResMultiObj\") " \
+                          "bias,rmse,cor,nse,nselog,\"nseWt\",kge,kgelf, skge,msof,\"hyperResMultiObj\") " \
                           "values ('%s','%s','%s','%s','%s'," \
                           "'%s','%s','%s','%s','%s','%s','%s','%s','%s'); " % (str(entryTmp[0]),str(bsnIdUnique),
                                                                                str(entryTmp[2]),str(entryTmp[3]),
@@ -636,7 +640,8 @@ def main(argv):
                                                                                str(entryTmp[6]),str(entryTmp[7]),
                                                                                str(entryTmp[8]),str(entryTmp[9]),
                                                                                str(entryTmp[10]),str(entryTmp[11]),
-                                                                               str(entryTmp[12]),str(entryTmp[13]))
+                                                                               str(entryTmp[12]),str(entryTmp[13]), 
+                                                                               str(entryTmp[14]),str(entryTmp[15]))
                     try:
                         dbCursorExt.execute(cmd)
                         connExt.commit()
@@ -650,8 +655,9 @@ def main(argv):
                           + "', \"objfnVal\"='" + str(entryTmp[4]) + \
                           "', bias='" + str(entryTmp[5]) + "', rmse='" + str(entryTmp[6]) + "', cor='" + str(entryTmp[7]) + \
                           "', nse='" + str(entryTmp[8]) + "', nselog='" + str(entryTmp[9]) + "', \"nseWt\"='" + str(entryTmp[10]) + \
-                          "', kge='" + str(entryTmp[11]) + "', msof='" + str(entryTmp[12]) + "', \"hyperResMultiObj\"='" + \
-                          str(entryTmp[13]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
+                          "', kge='" + str(entryTmp[11]) +"', kgelf='" + str(entryTmp[12]) +"', skge='" + str(entryTmp[13]) + \
+                          "', msof='" + str(entryTmp[14]) + "', \"hyperResMultiObj\"='" + \
+                          str(entryTmp[15]) + "' where \"jobID\"='" + str(updatesTmp[0]) + \
                           "' and \"domainID\"='" + str(bsnIdUnique) + "' and simulation='" + str(updatesTmp[2]) + \
                           "' and \"evalPeriod\"='" + str(updatesTmp[3]) + "';"
                     try:

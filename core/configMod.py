@@ -661,9 +661,9 @@ def checkConfig(parser):
     # For now, restrict the user to a set of pre-defined objective functions.
     #if check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj":
     #    print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, and hyperResMultiObj") # commented by Xia 20200618
-    if (check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Msof" and check != "hyperResMultiObj"  
+    if (check != "Rmse" and check != "Nse" and check != "NseLog" and check != "NseWt" and check != "Kge" and check != "Kgelf" and check != "Skge" and check != "Msof" and check != "hyperResMultiObj"  
       and check != "NNseSq" and check != "LBEmPrime" and check != "EventMultiObj"):
-        print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, hyperResMultiObj, NNseSq, LBEmPrime, EventMultiObj")
+        print("ERROR: Only acceptable objectiveFunction values are: Rmse, Nse, NseLog, NseWt, Kge, Kgelf, Skge, hyperResMultiObj, NNseSq, LBEmPrime, EventMultiObj")
         raise Exception()
         
     check = int(parser.get('logistics','numIter'))
@@ -801,7 +801,7 @@ def checkConfig(parser):
         
     # Check LSM physics options
     check = int(parser.get('lsmPhysics','dynVegOption'))
-    if check < 0 or check > 4:
+    if check < 0 or check > 9:
         print("ERROR: Invalid dynamic vegetation option chosen.")
         raise Exception()
     

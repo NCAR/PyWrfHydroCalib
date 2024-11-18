@@ -10,6 +10,7 @@ library(ggplot2)
 library(plyr)
 library(gridExtra)
 library(zoo)
+library(foreach)
 #library(qmap)
 #########################################################
 # SETUP
@@ -293,6 +294,10 @@ for (i in 1:length(runList[[1]])) {
       # Subset data
       chrt.obj <- get(runList[["df"]][i])
       chrt.obj <- chrt.obj[POSIXct >= dtList[["start"]][j] & POSIXct < dtList[["end"]][j],]
+
+      # this is being added since for IWAA project we want to have discontinuous dataset
+      if (j == 2) {chrt.obj <- chrt.obj[!(POSIXct >= dtList[["start"]][1] & POSIXct < dtList[["end"]][1]),]}
+
       chrt.obj.nona <- chrt.obj[!is.na(q_cms) & !is.na(obs),]
 
       if (enableMultiSites == 0) {
@@ -318,7 +323,8 @@ for (i in 1:length(runList[[1]])) {
         nsewt = NseWtM(q_cms, obs), 
         nnse = NNse(q_cms, obs),
         nnsesq = NNseSq(q_cms, obs), 
-        kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), 
+        kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"),
+        kgelf = hydroGOF::KGElf(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), 
         hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
         msof = Msof(q_cms, obs, scales),
         #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
@@ -333,10 +339,14 @@ for (i in 1:length(runList[[1]])) {
       if (length(basinType) > 1) print("Basin Type should be unique for a given basin")
 
       my_exprs3 = quote(list( # Xia 20210610 to use all data with NA included
-        eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
-        peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
-        peak_tm_err_hr = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[3]],
-        event_volume_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[4]]
+#       eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
+#       peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
+#       peak_tm_err_hr = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[3]],
+#       event_volume_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[4]]
+       eventmultiobj = -9999,
+       peak_bias = -9999,
+       event_volume_bias = -9999,
+       peak_tm_err_hr  = -9999
       ))
       w = which(names(my_exprs) %in% metrics)
       w2 = which(names(my_exprs2) %in% metrics)
@@ -357,7 +367,14 @@ for (i in 1:length(runList[[1]])) {
            stat$CSI = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
         }
 
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]
+       if ("skge" %in% metrics_streamflow) {
+          # calculation of the sKGE
+          zoo_object <- zoo(chrt.obj.nona$q_cms, chrt.obj.nona$POSIXct)
+          zoo_object2 <- zoo(chrt.obj.nona$obs, chrt.obj.nona$POSIXct)
+          stat$skge=hydroGOF::sKGE(zoo_object, zoo_object2, na.rm=TRUE, method="2009")
+        }
+
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","kgelf", "skge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]
         if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- stat[, objFn, with = FALSE] 
 
         # Archive results
@@ -382,13 +399,25 @@ for (i in 1:length(runList[[1]])) {
                            by = c("site_no", "weight"))
         }
 
+        if ("skge" %in% metrics_streamflow) {
+             skgedf <- foreach (g = unique(chrt.obj.nona$site_no), .combine = rbind.data.frame) %do% {
+                     subdf <- subset(chrt.obj.nona, site_no == g)
+                    # calculation of the sKGE
+                    zoo_object <- zoo(subdf$q_cms, subdf$POSIXct)
+                    zoo_object2 <- zoo(subdf$obs, subdf$POSIXct)
+                    statdf <-data.frame(skge= hydroGOF::sKGE(zoo_object, zoo_object2, na.rm=TRUE, method="2009"), site_no = g, weight = unique(subdf$weight))
+              }
+           stat <- merge(stat, skgedf,  by = c("site_no", "weight"))
+        }
+
+
         statW <- c() # calculate the weighted metrics
         for (im in metrics){
           statW <- c(statW, stat[, c(im, "weight"), with = FALSE][, .(fn = sum(weight*get(im)))]$fn)
         }
         names(statW) <- metrics
 
-        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE] 
+        if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse","kge","kgelf","skge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE] 
         if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- statW[objFn] 
 
       # Archive results

@@ -11,6 +11,7 @@ library(ncdf4)
 library(plyr)
 library(hydroGOF)
 library(zoo)
+library(foreach)
 #library(qmap)
 
 #########################################################
@@ -23,7 +24,7 @@ source(namelistFile)
 # Metrics
 #metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge", "msof", "hyperResMultiObj", "eventmultiobj","POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") 
 #metrics_snow <-  c("cor", "rmse", "bias", "nse", "nselog", "nsewt", "nnsesq","nnse", "kge")
-metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "msof", "hyperResMultiObj", "eventmultiobj","peak_bias","peak_tm_err_hr","event_volume_bias",
+metrics <- c("cor", "rmse", "bias", "nse", "nselog", "nsewt","nnse","nnsesq","kge", "kgelf", "skge", "msof", "hyperResMultiObj", "eventmultiobj","peak_bias","peak_tm_err_hr","event_volume_bias",
              "POD", "FAR", "CSI", "corr1", "lbem", "lbemprime") # Xia 20210610
 metrics_streamflow <- metrics
 event_metrics_daily<-data.table(eventmultiobj=-9999, peak_bias=-9999, peak_tm_err_hr=-9999, event_volume_bias=-9999) # Xia 20210610
@@ -316,6 +317,7 @@ if (cyclecount > 0) {
             nnse = NNse(q_cms, obs),
             nnsesq = NNseSq(q_cms, obs), 
             kge = hydroGOF::KGE(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"), # Gupta et al (2009) is the basis of lbeprime 
+            kgelf = hydroGOF::KGElf(q_cms, obs, na.rm=TRUE, method="2009", out.type="single"),
             hyperResMultiObj = hyperResMultiObj(q_cms, obs, na.rm=TRUE),
             msof = Msof(q_cms, obs, scales),
             #eventmultiobj = EventMultiObj(q_cms, obs, weight1=1, weight2=0, POSIXct, siteId) 
@@ -325,20 +327,25 @@ if (cyclecount > 0) {
             lbem = LBEms_function(q_cms, obs, period, calcDailyStats)[1],
             lbemprime =  LBEms_function(q_cms, obs, period, calcDailyStats)[2]
          ))
-          
+         
          if (is.na(basinType)) basinType = unique(obsStreamData$basinType)
          if (length(basinType) > 1) print("Basin Type should be unique for a given basin")
 
          if (!calcDailyStats) my_exprs3 = quote(list( # Xia 20210610 to use all data with NA included
-            eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
-            peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
-            peak_tm_err_hr = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[3]],
-            event_volume_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[4]]
+#            eventmultiobj = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[1]],
+#            peak_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[2]],
+#            peak_tm_err_hr = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[3]],
+#            event_volume_bias = EventMultiObj(q_cms, obs, weight1, weight2, POSIXct, siteId, basinType)[[4]]
+          eventmultiobj = -9999, 
+          peak_bias = -9999, 
+          peak_tm_err_hr = -9999,
+          event_volume_bias = -9999
          ))
          w = which(names(my_exprs) %in% metrics_streamflow)
          w2 = which(names(my_exprs2) %in% metrics_streamflow)
          if (!calcDailyStats) w3 = which(names(my_exprs3) %in% metrics) # Xia added 20210610
          
+
          # let s just take care of objective function being capital
          objFn <- tolower(streamflowObjFunc)
          
@@ -354,8 +361,15 @@ if (cyclecount > 0) {
                stat$CSI = calc_contingency_stats(chrt.obj.nona.abcd1, groupVars = c("site_no", "threshName"))$CSI
             }
             
+              if ("skge" %in% metrics_streamflow) {
+                 # calculation of the sKGE
+                 zoo_object <- zoo(chrt.obj.nona$q_cms, chrt.obj.nona$POSIXct)
+                 zoo_object2 <- zoo(chrt.obj.nona$obs, chrt.obj.nona$POSIXct)
+                 stat$skge=hydroGOF::sKGE(zoo_object, zoo_object2, na.rm=TRUE, method="2009")
+              }
+
             # Calc objective function
-            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]  
+            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","kgelf", "skge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]  
             if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- stat[, objFn, with = FALSE] 
             
             # Archive results
@@ -379,13 +393,26 @@ if (cyclecount > 0) {
                              by = c("site_no", "weight"))
             }
             
+
+              if ("skge" %in% metrics_streamflow) {
+                 skgedf <- foreach (g = unique(chrt.obj.nona$site_no), .combine = rbind.data.frame) %do% {
+                     subdf <- subset(chrt.obj.nona, site_no == g)
+                    # calculation of the sKGE
+                    zoo_object <- zoo(subdf$q_cms, subdf$POSIXct)
+                    zoo_object2 <- zoo(subdf$obs, subdf$POSIXct)
+                    statdf <-data.frame(skge= hydroGOF::sKGE(zoo_object, zoo_object2, na.rm=TRUE, method="2009"), site_no = g, weight = unique(subdf$weight))
+                }
+                 stat <- merge(stat, skgedf,  by = c("site_no", "weight"))
+              }
+
+
             statW <- c() # calculate the weighted metrics_streamflow
             for (im in metrics_streamflow){
                statW <- c(statW, stat[, c(im, "weight"), with = FALSE][, .(fn = sum(weight*get(im)))]$fn)
             }
             names(statW) <- metrics_streamflow
             
-            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - statW[objFn] 
+            if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","kgelf", "skge", "cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - statW[objFn] 
             if (objFn %in% c("rmse","msof","hyperResMultiObj","eventmultiobj")) F_new_streamflow <- statW[objFn] 
             
             # Archive results
