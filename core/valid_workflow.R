@@ -371,7 +371,7 @@ for (i in 1:length(runList[[1]])) {
           # calculation of the sKGE
           zoo_object <- zoo(chrt.obj.nona$q_cms, chrt.obj.nona$POSIXct)
           zoo_object2 <- zoo(chrt.obj.nona$obs, chrt.obj.nona$POSIXct)
-          stat$skge=hydroGOF::sKGE(zoo_object, zoo_object2, na.rm=TRUE, method="2009")
+          stat$skge=hydroGOF::sKGE(zoo_object, zoo_object2, start.month=10, na.rm=TRUE, method="2009")
         }
 
         if (objFn %in% c("nsewt","nse","nselog","nnsesq","nnse", "kge","kgelf", "skge","cor","corr1", "lbem","lbemprime")) F_new_streamflow <- 1 - stat[, objFn, with = FALSE]
@@ -405,7 +405,7 @@ for (i in 1:length(runList[[1]])) {
                     # calculation of the sKGE
                     zoo_object <- zoo(subdf$q_cms, subdf$POSIXct)
                     zoo_object2 <- zoo(subdf$obs, subdf$POSIXct)
-                    statdf <-data.frame(skge= hydroGOF::sKGE(zoo_object, zoo_object2, na.rm=TRUE, method="2009"), site_no = g, weight = unique(subdf$weight))
+                    statdf <-data.frame(skge= hydroGOF::sKGE(zoo_object, zoo_object2, start.month=10, na.rm=TRUE, method="2009"), site_no = g, weight = unique(subdf$weight))
               }
            stat <- merge(stat, skgedf,  by = c("site_no", "weight"))
         }
